@@ -1,20 +1,20 @@
 package com.mudrichenkoevgeny.backend.feature.user.network.response.token
 
-import com.mudrichenkoevgeny.backend.feature.user.network.constants.UserNetworkFields
+import com.mudrichenkoevgeny.backend.feature.user.network.constants.UserApiFields
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class SessionTokenResponse(
-    @SerialName(UserNetworkFields.ACCESS_TOKEN)
+    @SerialName(UserApiFields.ACCESS_TOKEN)
     val accessToken: String,
 
-    @SerialName(UserNetworkFields.REFRESH_TOKEN)
+    @SerialName(UserApiFields.REFRESH_TOKEN)
     val refreshToken: String,
 
-    @SerialName(UserNetworkFields.EXPIRES_AT)
+    @SerialName(UserApiFields.EXPIRES_AT)
     val expiresAt: Long,
 
-    @SerialName(UserNetworkFields.TOKEN_TYPE)
+    @SerialName(UserApiFields.TOKEN_TYPE)
     val tokenType: String
 )

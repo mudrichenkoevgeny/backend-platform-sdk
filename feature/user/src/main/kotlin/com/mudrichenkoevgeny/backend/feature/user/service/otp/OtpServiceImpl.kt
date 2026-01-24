@@ -1,5 +1,6 @@
 package com.mudrichenkoevgeny.backend.feature.user.service.otp
 
+import com.mudrichenkoevgeny.backend.core.common.result.AppResult
 import com.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import com.mudrichenkoevgeny.backend.feature.user.enums.OtpVerificationType
 import javax.inject.Inject
@@ -10,14 +11,36 @@ class OtpServiceImpl @Inject constructor(
     private val redisManager: RedisManager
 ) : OtpService {
 
-    override suspend fun generateOtp(identifier: String, type: OtpVerificationType, expirationSeconds: Long): String {
-        val code = (100000..999999).random().toString()
-
+    override suspend fun getOtp(
+        identifier: String,
+        type: OtpVerificationType,
+        expirationSeconds: Long
+    ): AppResult<String> {
         val key = buildKey(identifier, type)
+        val savedCodeResult = redisManager.get(key)
+
+        val savedCode = when (savedCodeResult) {
+            is AppResult.Success -> savedCodeResult.data
+            is AppResult.Error -> return savedCodeResult
+        }
+
+        if (savedCode != null) {
+            return AppResult.Success(savedCode)
+        }
+
+        val code = (100000..999999).random().toString()
 
         redisManager.setWithExpiration(key, code, expirationSeconds)
 
-        return code
+        return AppResult.Success(code)
+    }
+
+    override suspend fun getOtpFake(identifier: String): AppResult<String> {
+        return getOtp(
+            identifier = identifier,
+            type = OtpVerificationType.FAKE,
+            expirationSeconds = 1
+        )
     }
 
     override suspend fun verifyOtp(
@@ -25,19 +48,24 @@ class OtpServiceImpl @Inject constructor(
         type: OtpVerificationType,
         code: String,
         deleteOnSuccess: Boolean
-    ): Boolean {
+    ): AppResult<Boolean> {
         val key = buildKey(identifier, type)
-        val savedCode = redisManager.get(key)
+        val savedCodeResult = redisManager.get(key)
+
+        val savedCode = when (savedCodeResult) {
+            is AppResult.Success -> savedCodeResult.data
+            is AppResult.Error -> return savedCodeResult
+        }
 
         if (savedCode == null || savedCode != code) {
-            return false
+            return AppResult.Success(false)
         }
 
         if (deleteOnSuccess) {
             redisManager.delete(key)
         }
 
-        return true
+        return AppResult.Success(true)
     }
 
     private fun buildKey(identifier: String, type: OtpVerificationType): String {

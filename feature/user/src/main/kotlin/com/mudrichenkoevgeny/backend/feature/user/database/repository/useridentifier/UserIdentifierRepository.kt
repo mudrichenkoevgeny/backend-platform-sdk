@@ -4,9 +4,9 @@ import com.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PagePa
 import com.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PagedResponse
 import com.mudrichenkoevgeny.backend.core.common.result.AppResult
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
-import com.mudrichenkoevgeny.backend.feature.user.model.UserId
-import com.mudrichenkoevgeny.backend.feature.user.model.UserIdentifier
-import com.mudrichenkoevgeny.backend.feature.user.model.UserIdentifierId
+import com.mudrichenkoevgeny.backend.core.common.model.UserId
+import com.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
+import com.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
 
 interface UserIdentifierRepository {
     suspend fun createUserIdentifier(userIdentifier: UserIdentifier): AppResult<UserIdentifier>

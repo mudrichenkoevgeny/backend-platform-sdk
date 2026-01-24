@@ -1,9 +1,8 @@
 package com.mudrichenkoevgeny.backend.core.common.healthcheck
 
-import com.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import com.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
+import com.mudrichenkoevgeny.backend.core.common.result.AppSystemResult
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -20,28 +19,22 @@ class HealthCheckerManager @Inject constructor(
     fun verifyCriticalHealth() {
         runBlocking {
             val criticalResult = runCriticalChecks()
-            if (criticalResult is AppResult.Error) {
-                val appError = criticalResult.error
-                val throwable = (appError as? CommonError.Throwable)?.throwable
-                    ?: IllegalStateException("Application cannot start, critical health check failed")
-
-                appLogger.logSystemError(appError.errorId, throwable, null)
-
-                throw throwable
+            if (criticalResult is AppSystemResult.Error) {
+                val systemError = criticalResult.systemError
+                appLogger.logError(systemError)
+                throw systemError.throwable
             }
         }
     }
 
     suspend fun checkNonCriticalHealth() {
         val nonCriticalErrors = runNonCriticalChecks()
-        nonCriticalErrors.forEach { appError ->
-            val throwable = (appError as? CommonError.Throwable)?.throwable
-                ?: IllegalStateException("Non critical health check failed")
-            appLogger.logSystemError(appError.errorId, throwable, null)
+        nonCriticalErrors.forEach { systemError ->
+            appLogger.logError(systemError)
         }
     }
 
-    private suspend fun runCriticalChecks(): AppResult<Unit> = coroutineScope {
+    private suspend fun runCriticalChecks(): AppSystemResult<Unit> = coroutineScope {
         val criticalChecks = healthChecks.filter { it.severity == HealthCheckSeverity.CRITICAL }
         val deferredList = criticalChecks.map { check ->
             async {
@@ -52,30 +45,30 @@ class HealthCheckerManager @Inject constructor(
         try {
             deferredList.forEach { deferred ->
                 val result = deferred.await()
-                if (result is AppResult.Error) {
+                if (result is AppSystemResult.Error) {
                     deferredList.forEach { it.cancel() }
                     return@coroutineScope result
                 }
             }
         } catch (_: CancellationException) { }
 
-        AppResult.Success(Unit)
+        AppSystemResult.Success(Unit)
     }
 
-    private suspend fun runNonCriticalChecks(): List<AppError> {
-        val errors = mutableListOf<AppError>()
+    private suspend fun runNonCriticalChecks(): List<CommonError.System> {
+        val systemErrors = mutableListOf<CommonError.System>()
         coroutineScope {
             healthChecks
                 .filter { it.severity == HealthCheckSeverity.NON_CRITICAL }
                 .map { healthCheck ->
                     async {
                         val result = healthCheck.check()
-                        if (result is AppResult.Error) {
-                            errors += result.error
+                        if (result is AppSystemResult.Error) {
+                            systemErrors += result.systemError
                         }
                     }
                 }.awaitAll()
         }
-        return errors
+        return systemErrors
     }
 }

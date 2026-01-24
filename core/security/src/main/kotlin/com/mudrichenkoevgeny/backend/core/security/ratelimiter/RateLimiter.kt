@@ -3,9 +3,8 @@ package com.mudrichenkoevgeny.backend.core.security.ratelimiter
 import com.mudrichenkoevgeny.backend.core.common.result.AppResult
 
 interface RateLimiter {
-    suspend fun check(
+    suspend fun isRateLimited(
         action: RateLimitAction,
-        identifier: String,
-        ip: String?
-    ): AppResult<Unit>
+        identifier: String
+    ): AppResult<RateLimitResult>
 }

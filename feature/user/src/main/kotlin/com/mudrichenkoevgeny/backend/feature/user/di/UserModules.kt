@@ -1,5 +1,6 @@
 package com.mudrichenkoevgeny.backend.feature.user.di
 
+import com.mudrichenkoevgeny.backend.feature.user.di.module.UserAuditModule
 import com.mudrichenkoevgeny.backend.feature.user.di.module.UserAuthInfrastructureModule
 import com.mudrichenkoevgeny.backend.feature.user.di.module.UserConfigModule
 import com.mudrichenkoevgeny.backend.feature.user.di.module.UserManagersModule
@@ -15,6 +16,7 @@ import dagger.Module
         UserRepositoriesModule::class,
         UserManagersModule::class,
         UserServicesModule::class,
+        UserAuditModule::class,
         UserTablesModule::class
     ]
 )

@@ -2,18 +2,21 @@ package com.mudrichenkoevgeny.backend.feature.user.security.tokenprovider
 
 import com.mudrichenkoevgeny.backend.core.common.result.AppResult
 import com.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
-import com.mudrichenkoevgeny.backend.feature.user.model.AccessToken
-import com.mudrichenkoevgeny.backend.feature.user.model.RefreshToken
-import com.mudrichenkoevgeny.backend.feature.user.model.RefreshTokenHash
+import com.mudrichenkoevgeny.backend.feature.user.model.auth.AccessToken
+import com.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshToken
+import com.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
 import com.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import com.mudrichenkoevgeny.backend.feature.user.model.UserId
+import com.mudrichenkoevgeny.backend.core.common.model.UserId
+import com.mudrichenkoevgeny.backend.core.common.model.UserSessionId
+import com.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
+import com.mudrichenkoevgeny.backend.feature.user.security.jwt.withSessionIdSubject
+import com.mudrichenkoevgeny.backend.feature.user.security.jwt.withUserIdSubject
 import com.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import java.time.Instant
 import java.util.Date
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,10 +28,16 @@ class JwtTokenProvider @Inject constructor(
 
     private val key = Keys.hmacShaKeyFor(userConfig.jwtSecret.toByteArray())
 
-    override fun generateAccessToken(userId: UserId, issuedAt: Instant, expiration: Instant): AppResult<AccessToken> {
+    override fun generateAccessToken(
+        userId: UserId,
+        sessionId: UserSessionId,
+        issuedAt: Instant,
+        expiration: Instant
+    ): AppResult<AccessToken> {
         return try {
             val accessToken = Jwts.builder()
-                .subject(userId.value.toString())
+                .withUserIdSubject(userId)
+                .withSessionIdSubject(sessionId)
                 .issuedAt(Date.from(issuedAt))
                 .expiration(Date.from(expiration))
                 .signWith(key)
@@ -47,7 +56,7 @@ class JwtTokenProvider @Inject constructor(
                 .build()
                 .parseSignedClaims(accessToken.value)
 
-            AppResult.Success(UserId(UUID.fromString(claims.payload.subject)))
+            claims.getUserIdFromPayload()
         } catch (_: ExpiredJwtException) {
             AppResult.Error(UserError.AccessTokenExpired())
         } catch (_: Exception) {
@@ -55,11 +64,11 @@ class JwtTokenProvider @Inject constructor(
         }
     }
 
-    override fun generateRefreshToken(): RefreshToken {
+    override fun generateRefreshToken(): AppResult<RefreshToken> {
         return refreshTokenProvider.getRefreshToken()
     }
 
-    override fun getRefreshTokenHash(refreshToken: RefreshToken): RefreshTokenHash {
+    override fun getRefreshTokenHash(refreshToken: RefreshToken): AppResult<RefreshTokenHash> {
         return refreshTokenProvider.getRefreshTokenHash(refreshToken)
     }
 }

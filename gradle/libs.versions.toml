@@ -84,7 +84,7 @@ logback = { group = "ch.qos.logback", name = "logback-classic", version.ref = "l
 logstash = { group = "net.logstash.logback", name = "logstash-logback-encoder", version.ref = "logstash" }
 
 # dotenv
-dotenv = { group = "io.github.cdimascio", name = "java-dotenv", version.ref = "dotenv" }
+dotenv = { group = "io.github.cdimascio", name = "java-dotenv", version.ref = "dotenv" } # todo deprecated
 
 # postgresql
 postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }

@@ -1,6 +1,7 @@
 package com.mudrichenkoevgeny.backend.core.common.network.httpclient
 
 import com.mudrichenkoevgeny.backend.core.common.constants.NetworkConstants
+import com.mudrichenkoevgeny.backend.core.common.constants.TracingConstants
 import com.mudrichenkoevgeny.backend.core.common.serialization.DefaultJson
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
@@ -51,7 +52,7 @@ class HttpClientProvider() {
                     header(key, value)
                 }
 
-                val currentTraceId = MDC.get(NetworkConstants.MDC_TRACE_ID_KEY)
+                val currentTraceId = MDC.get(TracingConstants.TRACE_ID_KEY)
                 if (!currentTraceId.isNullOrBlank()) {
                     header(NetworkConstants.TRACE_HEADER_NAME, currentTraceId)
                 }

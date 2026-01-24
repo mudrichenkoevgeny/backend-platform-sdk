@@ -19,7 +19,8 @@ val coreModules = listOf(
     "security",
     "audit",
     "storage",
-    "events"
+    "events",
+    "crosscutting"
 )
 coreModules.forEach {
     registerModule(":core.$it", "core/$it")

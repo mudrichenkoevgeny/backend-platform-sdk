@@ -4,8 +4,7 @@ import com.mudrichenkoevgeny.backend.core.common.di.qualifiers.BusinessLogger
 import com.mudrichenkoevgeny.backend.core.common.di.qualifiers.SystemLogger
 import com.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import com.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
-import com.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
-import io.ktor.server.application.ApplicationCall
+import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
 import org.slf4j.Logger
@@ -17,19 +16,27 @@ class AppLoggerImpl(
     @param:BusinessLogger private val businessLogger: Logger
 ) : AppLogger {
 
-    override fun logSystemError(errorId: ErrorId, throwable: Throwable, call: ApplicationCall?) {
-        val parts = mutableListOf("Unhandled exception", "errorId=${errorId.value}")
+    override fun logError(appError: AppError) {
+        if (appError is CommonError.System) {
+            logSystemError(appError)
+        } else {
+            logBusinessError(appError)
+        }
+    }
 
-        call?.let {
+    private fun logSystemError(systemError: CommonError.System) {
+        val parts = mutableListOf("Unhandled exception", "errorId=${systemError.errorId.value}")
+
+        systemError.call?.let {
             parts += "path=${it.request.path()}"
             parts += "method=${it.request.httpMethod.value}"
         }
 
         val message = parts.joinToString(", ")
-        systemLogger.error(message, throwable)
+        systemLogger.error(message, systemError.throwable)
     }
 
-    override fun logBusinessError(appError: AppError) {
+    private fun logBusinessError(appError: AppError) {
         val message = buildString {
             append("Business error, ")
             append("errorId=${appError.errorId.value}, ")

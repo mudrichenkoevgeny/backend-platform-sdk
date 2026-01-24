@@ -38,13 +38,11 @@ interface RedisModule {
         @Provides
         @Singleton
         fun provideRedisManager(
-            factory: RedisFactory,
-            appLogger: AppLogger
+            factory: RedisFactory
         ): RedisManager {
             val redisClient = factory.create()
             return RedisManagerImpl(
-                redisClient = redisClient,
-                appLogger = appLogger
+                redisClient = redisClient
             )
         }
     }

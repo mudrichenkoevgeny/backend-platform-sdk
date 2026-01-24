@@ -1,5 +1,6 @@
 package com.mudrichenkoevgeny.backend.core.database.di.module
 
+import com.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import com.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import com.mudrichenkoevgeny.backend.core.database.datasource.DataSourceCreator
 import com.mudrichenkoevgeny.backend.core.database.datasource.HikariDatasourceCreator
@@ -36,10 +37,12 @@ interface DatabaseModule {
         @Singleton
         fun provideDataSourceCreator(
             @DriverClassName driverClassName: String,
-            telemetryProvider: TelemetryProvider
+            telemetryProvider: TelemetryProvider,
+            appLogger: AppLogger
         ): DataSourceCreator = HikariDatasourceCreator(
             hikariDriverClassName = driverClassName,
-            prometheusMeterRegistry = telemetryProvider.prometheusMeterRegistry
+            prometheusMeterRegistry = telemetryProvider.prometheusMeterRegistry,
+            appLogger = appLogger
         )
 
         @Provides
@@ -61,13 +64,15 @@ interface DatabaseModule {
             dataSource: DataSource,
             @DatabaseMigratorFlyway databaseMigrator: DatabaseMigrator,
             databaseTables: Set<@JvmSuppressWildcards BaseTable>,
-            databaseConfig: DatabaseConfig
+            databaseConfig: DatabaseConfig,
+            appLogger: AppLogger
         ): DatabaseManager {
             return DatabaseManagerImpl(
                 dataSource = dataSource,
                 databaseMigrator = databaseMigrator,
                 databaseTables = databaseTables,
-                databaseConfig = databaseConfig
+                databaseConfig = databaseConfig,
+                appLogger = appLogger
             )
         }
 

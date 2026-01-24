@@ -4,8 +4,8 @@ import com.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserR
 import com.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepositoryImpl
 import com.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
 import com.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepositoryImpl
-import com.mudrichenkoevgeny.backend.feature.user.database.repository.userrefreshtoken.UserRefreshTokenRepository
-import com.mudrichenkoevgeny.backend.feature.user.database.repository.userrefreshtoken.UserRefreshTokenRepositoryImpl
+import com.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
+import com.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
@@ -25,7 +25,7 @@ interface UserRepositoriesModule {
 
     @Binds
     @Singleton
-    fun bindUserRefreshTokenRepository(
-        userRefreshTokenRepositoryImpl: UserRefreshTokenRepositoryImpl
-    ): UserRefreshTokenRepository
+    fun bindUserSessionRepository(
+        userSessionRepositoryImpl: UserSessionRepositoryImpl
+    ): UserSessionRepository
 }

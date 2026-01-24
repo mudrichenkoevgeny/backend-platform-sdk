@@ -17,10 +17,16 @@ object JsonConverter {
         is UUID -> JsonPrimitive(value.toString())
         is Iterable<*> -> JsonArray(value.map { toElement(it) })
         is Map<*, *> -> JsonObject(value.map { it.key.toString() to toElement(it.value) }.toMap())
-        else -> JsonPrimitive(value.toString()) // Безопасный фоллбек
+        else -> JsonPrimitive(value.toString())
     }
 
     fun toJsonObject(map: Map<String, Any?>): JsonObject {
         return JsonObject(map.mapValues { toElement(it.value) })
     }
 }
+
+fun Map<String, Any?>.toJsonElementMap(): Map<String, JsonElement> =
+    mapNotNull { (key, value) ->
+        val jsonValue = value?.let { JsonConverter.toElement(it) }
+        jsonValue?.let { key to it }
+    }.toMap()

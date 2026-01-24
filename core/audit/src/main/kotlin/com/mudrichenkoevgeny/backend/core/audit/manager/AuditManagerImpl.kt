@@ -7,8 +7,7 @@ import com.mudrichenkoevgeny.backend.core.audit.model.AuditEventId
 import com.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PageParams
 import com.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PagedResponse
 import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.core.common.util.JsonConverter
-import com.mudrichenkoevgeny.backend.core.database.utils.dbQuery
+import com.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
@@ -19,26 +18,8 @@ class AuditManagerImpl @Inject constructor(
     private val auditRepository: AuditEventRepository
 ) : AuditManager {
 
-    override suspend fun createEvent(
-        action: String,
-        resource: String,
-        actorId: AuditEventId?,
-        resourceId: String?,
-        status: AuditStatus,
-        metadata: Map<String, Any?>,
-        message: String?
-    ): AppResult<AuditEvent> = dbQuery {
-        val event = AuditEvent(
-            actorId = actorId,
-            action = action,
-            resource = resource,
-            resourceId = resourceId,
-            status = status,
-            metadata = JsonConverter.toJsonObject(metadata),
-            message = message
-        )
-
-        auditRepository.createEvent(event)
+    override suspend fun createEvent(auditEvent: AuditEvent): AppResult<AuditEvent> = dbQuery {
+        auditRepository.createEvent(auditEvent)
     }
 
     override suspend fun getEventById(eventId: AuditEventId): AppResult<AuditEvent?> = dbQuery {

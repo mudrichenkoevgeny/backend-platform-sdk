@@ -3,7 +3,7 @@ package com.mudrichenkoevgeny.backend.core.database.healthcheck
 import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import com.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheck
 import com.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheckSeverity
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
+import com.mudrichenkoevgeny.backend.core.common.result.AppSystemResult
 import com.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,15 +15,22 @@ class RedisHealthCheck @Inject constructor(
 
     override val severity: HealthCheckSeverity = HealthCheckSeverity.CRITICAL
 
-    override suspend fun check(): AppResult<Unit> {
+    override suspend fun check(): AppSystemResult<Unit> {
         return try {
-            if (redisManager.isAvailable()) {
-                AppResult.Success(Unit)
-            } else {
-                AppResult.Error(CommonError.Redis("Redis not available"))
+            val isAvailableResult = redisManager.isAvailable()
+
+            val isAvailable = when (isAvailableResult) {
+                is AppSystemResult.Success -> isAvailableResult.data
+                is AppSystemResult.Error -> return isAvailableResult
             }
-        } catch (e: Exception) {
-            AppResult.Error(CommonError.Throwable(e))
+
+            if (isAvailable) {
+                AppSystemResult.Success(Unit)
+            } else {
+                throw RuntimeException("Redis not available")
+            }
+        } catch (t: Throwable) {
+            AppSystemResult.Error(CommonError.System(t))
         }
     }
 }

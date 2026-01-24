@@ -1,7 +1,8 @@
 package com.mudrichenkoevgeny.backend.core.database.manager.redis
 
-import com.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
-import com.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import com.mudrichenkoevgeny.backend.core.common.result.AppResult
+import com.mudrichenkoevgeny.backend.core.common.result.AppSystemResult
 import io.lettuce.core.RedisClient
 import io.lettuce.core.ScriptOutputType
 import io.lettuce.core.api.StatefulRedisConnection
@@ -11,11 +12,9 @@ import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
 @Singleton
 class RedisManagerImpl @Inject constructor(
-    private val redisClient: RedisClient,
-    private val appLogger: AppLogger
+    private val redisClient: RedisClient
 ) : RedisManager {
 
     @Volatile
@@ -30,87 +29,91 @@ class RedisManagerImpl @Inject constructor(
         return current
     """.trimIndent()
 
-    override suspend fun setWithExpiration(key: String, value: String, expirationSeconds: Long) {
-        try {
+    override suspend fun setWithExpiration(key: String, value: String, expirationSeconds: Long): AppResult<Unit> {
+        return try {
             getConnection().async().setex(key, expirationSeconds, value).await()
-        } catch (e: Exception) {
-            appLogger.logSystemError(ErrorId.generate(), e)
+            AppResult.Success(Unit)
+        } catch (t: Throwable) {
+            AppResult.Error(CommonError.System(t))
         }
     }
 
-    override suspend fun incrementWithExpiration(key: String, expirationSeconds: Long): Long {
+    override suspend fun incrementWithExpiration(key: String, expirationSeconds: Long): AppResult<Long> {
         return try {
-            getConnection().async().eval<Long>(
+            val incrementResult = getConnection().async().eval<Long>(
                 incrementScript,
                 ScriptOutputType.INTEGER,
                 arrayOf(key),
                 expirationSeconds.toString()
             ).await()
-        } catch (e: Exception) {
-            appLogger.logSystemError(ErrorId.generate(), e)
-            0L
+            AppResult.Success(incrementResult)
+        } catch (t: Throwable) {
+            AppResult.Error(CommonError.System(t))
         }
     }
 
-    override suspend fun get(key: String): String? {
+    override suspend fun get(key: String): AppResult<String?> {
         return try {
-            getConnection().async().get(key).await()
-        } catch (e: Exception) {
-            appLogger.logSystemError(ErrorId.generate(), e)
-            null
+            val value = getConnection().async().get(key).await()
+            AppResult.Success(value)
+        } catch (t: Throwable) {
+            AppResult.Error(CommonError.System(t))
         }
     }
 
-    override suspend fun getTtl(key: String): Long {
+    override suspend fun getTtl(key: String): AppResult<Long> {
         return try {
-            getConnection().async().ttl(key).await()
-        } catch (e: Exception) {
-            appLogger.logSystemError(ErrorId.generate(), e)
-            -2L
+            val ttl = getConnection().async().ttl(key).await()
+            AppResult.Success(ttl)
+        } catch (t: Throwable) {
+            AppResult.Error(CommonError.System(t))
         }
     }
 
-    override suspend fun exists(key: String): Boolean {
+    override suspend fun exists(key: String): AppResult<Boolean> {
         return try {
-            getConnection().async().exists(key).await() > 0
-        } catch (e: Exception) {
-            appLogger.logSystemError(ErrorId.generate(), e)
-            false
+            val exist = getConnection().async().exists(key).await() > 0
+            AppResult.Success(exist)
+        } catch (t: Throwable) {
+            AppResult.Error(CommonError.System(t))
         }
     }
 
-    override suspend fun delete(key: String) {
-        try {
+    override suspend fun delete(key: String): AppResult<Unit> {
+        return try {
             getConnection().async().del(key).await()
-        } catch (e: Exception) {
-            appLogger.logSystemError(ErrorId.generate(), e)
+            AppResult.Success(Unit)
+        } catch (t: Throwable) {
+            AppResult.Error(CommonError.System(t))
         }
     }
 
-    override suspend fun isAvailable(): Boolean {
+    override suspend fun isAvailable(): AppSystemResult<Boolean> {
         return try {
             val response = getConnection().async().ping().await()
-            response == PING_RESPONSE
-        } catch (e: Exception) {
-            appLogger.logSystemError(ErrorId.generate(), e)
-            false
+            val isAvailable = response == PING_RESPONSE
+            AppSystemResult.Success(isAvailable)
+        } catch (t: Throwable) {
+            AppSystemResult.Error(CommonError.System(t))
         }
     }
 
-    override suspend fun warmup() {
-        try {
+    override suspend fun warmup(): AppSystemResult<Unit> {
+        return try {
             getConnection()
-        } catch (e: Exception) {
-            appLogger.logSystemError(ErrorId.generate(), e)
+            AppSystemResult.Success(Unit)
+        } catch (t: Throwable) {
+            AppSystemResult.Error(CommonError.System(t))
         }
     }
 
-    override fun shutdown() {
-        try {
+    override fun shutdown(): AppSystemResult<Unit> {
+        return try {
             connection?.close()
             redisClient.shutdown()
-        } catch (e: Exception) {
-            appLogger.logSystemError(ErrorId.generate(), e)
+            AppSystemResult.Success(Unit)
+        } catch (t: Throwable) {
+            AppSystemResult.Error(CommonError.System(t))
         }
     }
 

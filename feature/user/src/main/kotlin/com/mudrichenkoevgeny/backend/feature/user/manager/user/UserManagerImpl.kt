@@ -1,12 +1,14 @@
 package com.mudrichenkoevgeny.backend.feature.user.manager.user
 
 import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.core.database.utils.dbQuery
+import com.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import com.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserAccountStatus
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserRole
-import com.mudrichenkoevgeny.backend.feature.user.model.User
-import com.mudrichenkoevgeny.backend.feature.user.model.UserId
+import com.mudrichenkoevgeny.backend.feature.user.model.user.User
+import com.mudrichenkoevgeny.backend.core.common.model.UserId
+import com.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import com.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
@@ -35,5 +37,26 @@ class UserManagerImpl @Inject constructor(
         )
 
         userRepository.createUser(user)
+    }
+
+    override suspend fun getOrCreateUser(
+        userId: UserId?,
+        role: UserRole,
+        accountStatus: UserAccountStatus
+    ): AppResult<User> {
+        return if (userId == null) {
+            createUser(
+                role = role,
+                accountStatus = accountStatus
+            )
+        } else {
+            getUserById(userId).mapNotNullOrError(
+                UserError.UserNotFound()
+            )
+        }
+    }
+
+    override suspend fun deleteUserById(userId: UserId): AppResult<Unit> = dbQuery {
+        userRepository.deleteUser(userId)
     }
 }

@@ -6,11 +6,11 @@ import com.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PagedR
 import com.mudrichenkoevgeny.backend.core.common.result.AppResult
 import com.mudrichenkoevgeny.backend.core.common.util.CollectionUtils.isAllArgsNull
 import com.mudrichenkoevgeny.backend.core.database.extensions.applyPagination
-import com.mudrichenkoevgeny.backend.feature.user.model.User
+import com.mudrichenkoevgeny.backend.feature.user.model.user.User
 import com.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserAccountStatus
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserRole
-import com.mudrichenkoevgeny.backend.feature.user.model.UserId
+import com.mudrichenkoevgeny.backend.core.common.model.UserId
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.andWhere

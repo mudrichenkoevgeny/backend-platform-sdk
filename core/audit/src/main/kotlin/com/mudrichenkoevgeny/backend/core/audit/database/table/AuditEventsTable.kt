@@ -1,10 +1,11 @@
 package com.mudrichenkoevgeny.backend.core.audit.database.table
 
 import com.mudrichenkoevgeny.backend.core.audit.enums.AuditStatus
+import com.mudrichenkoevgeny.backend.core.common.serialization.DefaultJson
 import com.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
 import com.mudrichenkoevgeny.backend.core.database.table.BaseTable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.serializer
 import org.jetbrains.exposed.sql.json.jsonb
 
 object AuditEventsTable : BaseTable("audit_events") {
@@ -15,8 +16,8 @@ object AuditEventsTable : BaseTable("audit_events") {
     val status = enumerationByName("status", BaseDbConstraints.ENUM_MAX_LENGTH, AuditStatus::class)
     val metadata = jsonb<Map<String, JsonElement>>(
         "metadata",
-        Json.Default,
-        kotlinx.serialization.serializer<Map<String, JsonElement>>()
+        DefaultJson,
+        serializer<Map<String, JsonElement>>()
     )
     val message = text("message").nullable()
 

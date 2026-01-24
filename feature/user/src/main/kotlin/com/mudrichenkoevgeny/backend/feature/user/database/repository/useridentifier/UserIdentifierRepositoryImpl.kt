@@ -8,9 +8,9 @@ import com.mudrichenkoevgeny.backend.core.common.util.CollectionUtils.isAllArgsN
 import com.mudrichenkoevgeny.backend.core.database.extensions.applyPagination
 import com.mudrichenkoevgeny.backend.feature.user.database.table.UserIdentifiersTable
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
-import com.mudrichenkoevgeny.backend.feature.user.model.UserId
-import com.mudrichenkoevgeny.backend.feature.user.model.UserIdentifier
-import com.mudrichenkoevgeny.backend.feature.user.model.UserIdentifierId
+import com.mudrichenkoevgeny.backend.core.common.model.UserId
+import com.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
+import com.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and

@@ -23,14 +23,15 @@ import javax.inject.Singleton
 class AuditEventRepositoryImpl @Inject constructor() : AuditEventRepository {
 
     override suspend fun createEvent(event: AuditEvent): AppResult<AuditEvent> {
-        val inserted = AuditEventsTable.insert { row ->
-            row[actorId] = event.actorId?.value
-            row[action] = event.action
-            row[resource] = event.resource
-            row[resourceId] = event.resourceId
-            row[status] = event.status
-            row[metadata] = event.metadata
-            row[message] = event.message
+        val inserted = AuditEventsTable.insert { auditEventRow ->
+            auditEventRow[id] = event.id.value
+            auditEventRow[actorId] = event.actorId
+            auditEventRow[action] = event.action
+            auditEventRow[resource] = event.resource
+            auditEventRow[resourceId] = event.resourceId
+            auditEventRow[status] = event.status
+            auditEventRow[metadata] = event.metadata
+            auditEventRow[message] = event.message
         }
 
         if (inserted.insertedCount == 0) {
@@ -109,7 +110,8 @@ class AuditEventRepositoryImpl @Inject constructor() : AuditEventRepository {
     }
 
     private fun ResultRow.toAuditEvent(): AuditEvent = AuditEvent(
-        actorId = this[AuditEventsTable.actorId]?.let { AuditEventId(it) },
+        id = AuditEventId(this[AuditEventsTable.id].value),
+        actorId = this[AuditEventsTable.actorId],
         action = this[AuditEventsTable.action],
         resource = this[AuditEventsTable.resource],
         resourceId = this[AuditEventsTable.resourceId],

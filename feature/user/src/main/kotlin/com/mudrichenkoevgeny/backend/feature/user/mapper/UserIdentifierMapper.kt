@@ -1,6 +1,6 @@
 package com.mudrichenkoevgeny.backend.feature.user.mapper
 
-import com.mudrichenkoevgeny.backend.feature.user.model.UserIdentifier
+import com.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import com.mudrichenkoevgeny.backend.feature.user.network.response.useridentifier.UserIdentifierResponse
 
 fun UserIdentifier.toResponse(): UserIdentifierResponse = UserIdentifierResponse(

@@ -5,8 +5,8 @@ import com.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PagedR
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserAccountStatus
 import com.mudrichenkoevgeny.backend.core.common.result.AppResult
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserRole
-import com.mudrichenkoevgeny.backend.feature.user.model.User
-import com.mudrichenkoevgeny.backend.feature.user.model.UserId
+import com.mudrichenkoevgeny.backend.feature.user.model.user.User
+import com.mudrichenkoevgeny.backend.core.common.model.UserId
 import java.time.Instant
 
 interface UserRepository {
@@ -17,7 +17,7 @@ interface UserRepository {
         user: User,
         status: UserAccountStatus? = null,
         lastLoginAt: Instant? = null,
-        lastActiveAt: Instant? = null,
+        lastActiveAt: Instant? = null
     ): AppResult<User>
 
     suspend fun getUserById(userId: UserId): AppResult<User?>

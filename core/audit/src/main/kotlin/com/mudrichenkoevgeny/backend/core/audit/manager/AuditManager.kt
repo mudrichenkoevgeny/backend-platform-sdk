@@ -10,15 +10,7 @@ import java.time.Instant
 import java.util.UUID
 
 interface AuditManager {
-    suspend fun createEvent(
-        action: String,
-        resource: String,
-        actorId: AuditEventId? = null,
-        resourceId: String? = null,
-        status: AuditStatus = AuditStatus.SUCCESS,
-        metadata: Map<String, Any?> = emptyMap(),
-        message: String? = null
-    ): AppResult<AuditEvent>
+    suspend fun createEvent(auditEvent: AuditEvent): AppResult<AuditEvent>
 
     suspend fun getEventById(eventId: AuditEventId): AppResult<AuditEvent?>
 

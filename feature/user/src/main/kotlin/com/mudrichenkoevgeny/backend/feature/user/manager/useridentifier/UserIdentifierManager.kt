@@ -2,8 +2,9 @@ package com.mudrichenkoevgeny.backend.feature.user.manager.useridentifier
 
 import com.mudrichenkoevgeny.backend.core.common.result.AppResult
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
-import com.mudrichenkoevgeny.backend.feature.user.model.UserId
-import com.mudrichenkoevgeny.backend.feature.user.model.UserIdentifier
+import com.mudrichenkoevgeny.backend.core.common.model.UserId
+import com.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
+import com.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 
 interface UserIdentifierManager {
     suspend fun getUserIdentifier(
@@ -19,6 +20,16 @@ interface UserIdentifierManager {
         userId: UserId,
         userAuthProvider: UserAuthProvider,
         identifier: String,
-        passwordHash: String? = null
+        password: String? = null
+    ): AppResult<UserIdentifier>
+
+    suspend fun deleteUserIdentifier(
+        userIdentifierId: UserIdentifierId
+    ): AppResult<Unit>
+
+    suspend fun updateUserIdentifierPassword(
+        userIdentifier: UserIdentifier,
+        identifier: String,
+        password: String
     ): AppResult<UserIdentifier>
 }

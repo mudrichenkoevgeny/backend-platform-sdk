@@ -1,6 +1,7 @@
 package com.mudrichenkoevgeny.backend.core.events.subscriber
 
 import com.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
+import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import com.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import com.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import com.mudrichenkoevgeny.backend.core.common.serialization.DefaultJson
@@ -57,8 +58,8 @@ class EventSubscriberImpl @Inject constructor(
                                 .associate { it.key() to String(it.value()) }
 
                             handler(event, metadata)
-                        } catch (e: Exception) {
-                            appLogger.logSystemError(ErrorId.generate(), e)
+                        } catch (t: Throwable) {
+                            appLogger.logError(CommonError.System(t))
                         }
                     }
                 }

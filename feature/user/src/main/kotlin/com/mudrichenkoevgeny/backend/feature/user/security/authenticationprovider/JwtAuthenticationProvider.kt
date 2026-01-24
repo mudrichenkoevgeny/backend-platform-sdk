@@ -9,20 +9,18 @@ import com.mudrichenkoevgeny.backend.core.common.result.AppResult
 import com.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import com.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import com.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
+import com.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserAccountStatus
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserRole
 import com.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import com.mudrichenkoevgeny.backend.feature.user.model.AccessToken
-import com.mudrichenkoevgeny.backend.feature.user.model.User
-import com.mudrichenkoevgeny.backend.feature.user.model.UserId
-import com.mudrichenkoevgeny.backend.feature.user.network.constants.UserNetworkConstants
-import com.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
-import io.ktor.http.HttpHeaders
+import com.mudrichenkoevgeny.backend.feature.user.model.user.User
+import com.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionId
+import com.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserId
+import com.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,7 +28,7 @@ import javax.inject.Singleton
 class JwtAuthenticationProvider @Inject constructor(
     private val userConfig: UserConfig,
     private val userRepository: UserRepository,
-    private val tokenProvider: TokenProvider,
+    private val userSessionRepository: UserSessionRepository,
     private val appErrorParser: AppErrorParser
 ) : AuthenticationProvider {
 
@@ -43,15 +41,16 @@ class JwtAuthenticationProvider @Inject constructor(
 
                 validate { credential ->
                     try {
-                        val subject = credential.payload.subject
-                        if (subject.isNullOrBlank()) {
-                            return@validate JwtValidationError.InvalidToken
-                        }
-
-                        val userId = UUID.fromString(subject)
-                        val userResult = userRepository.getUserById(UserId(userId))
+                        val userId = credential.getUserId()
+                        val userResult = userRepository.getUserById(userId)
                         return@validate when (userResult) {
-                            is AppResult.Success -> JWTPrincipal(credential.payload)
+                            is AppResult.Success -> {
+                                val sessionId = credential.getSessionId()
+                                if (sessionId != null) {
+                                    userSessionRepository.updateLastAccessed(sessionId)
+                                }
+                                JWTPrincipal(credential.payload)
+                            }
                             is AppResult.Error -> JwtValidationError.UserNotFound
                         }
                     } catch (_: JWTDecodeException) {
@@ -72,20 +71,13 @@ class JwtAuthenticationProvider @Inject constructor(
         }
     }
 
-    override suspend fun authorize(
+    override suspend fun requireUser(
         call: ApplicationCall,
-        checkToken: Boolean,
         allowedRoles: Set<UserRole>,
         allowReadOnlyAccounts: Boolean,
         allowBannedAccounts: Boolean
     ): AppResult<User> {
-        val userIdResult = if (checkToken) {
-            getUserIdFromAccessToken(call)
-        } else {
-            getUserIdFromPayload(call)
-        }
-
-        val userId = when (userIdResult) {
+        val userId = when (val userIdResult = call.getUserIdFromPayload()) {
             is AppResult.Success -> {
                 userIdResult.data
             }
@@ -116,26 +108,5 @@ class JwtAuthenticationProvider @Inject constructor(
         }
 
         return AppResult.Success(user)
-    }
-
-    private fun getUserIdFromPayload(call: ApplicationCall): AppResult<UserId> {
-        val principal = call.principal<JWTPrincipal>()
-            ?: return AppResult.Error(UserError.InvalidAccessToken())
-
-        val subject = principal.payload.subject
-        if (subject.isNullOrBlank()) return AppResult.Error(UserError.InvalidAccessToken())
-        return try {
-            AppResult.Success(UserId(UUID.fromString(subject)))
-        } catch (_: Exception) {
-            AppResult.Error(UserError.InvalidAccessToken())
-        }
-    }
-
-    private fun getUserIdFromAccessToken(call: ApplicationCall): AppResult<UserId> {
-        val authHeader = call.request.headers[HttpHeaders.Authorization]
-            ?.removePrefix("${UserNetworkConstants.AUTHORIZATION_HEADER_BEARER} ")
-            ?: return AppResult.Error(UserError.InvalidAccessToken())
-
-        return tokenProvider.verifyAccessToken(AccessToken(authHeader))
     }
 }

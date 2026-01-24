@@ -1,0 +1,3 @@
+{
+  "PASSWORD_TOO_WEAK": "Password is too weak. Password too short: {passwordTooShort} (minimum length: {passwordMinLength}), No letters: {passwordNoLetter}, No uppercase letters: {passwordNoUpperCase}, No lowercase letters: {passwordNoLowerCase}, No digits: {passwordNoDigit}, No special characters: {passwordNoSpecialChar}, Password too common: {passwordTooCommon}"
+}

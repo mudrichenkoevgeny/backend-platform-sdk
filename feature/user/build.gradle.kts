@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":core.database"))
     implementation(project(":core.security"))
     implementation(project(":core.audit"))
+    implementation(project(":core.crosscutting"))
 
     // libs
     implementation(libs.kotlinx.serialization.json)

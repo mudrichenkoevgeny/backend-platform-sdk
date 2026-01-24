@@ -18,28 +18,28 @@ fun Application.configureStatusPages(
     install(StatusPages) {
         exception<ValidationException> { call, cause ->
             val appError = cause.error
-            appLogger.logBusinessError(appError)
+            appLogger.logError(appError)
             val apiError = appErrorParser.getApiError(appError)
             call.respond(cause.error.httpStatusCode, apiError)
         }
 
         exception<ContentTransformationException> { call, cause ->
             val appError = CommonError.InvalidJsonBody(cause.message)
-            appLogger.logBusinessError(appError)
+            appLogger.logError(appError)
             val apiError = appErrorParser.getApiError(appError)
             call.respond(appError.httpStatusCode, apiError)
         }
 
         exception<BadRequestException> { call, cause ->
             val appError = CommonError.BadRequest(cause.message)
-            appLogger.logBusinessError(appError)
+            appLogger.logError(appError)
             val apiError = appErrorParser.getApiError(appError)
             call.respond(appError.httpStatusCode, apiError)
         }
 
         exception<Throwable> { call, cause ->
-            val appError = CommonError.Throwable()
-            appLogger.logSystemError(appError.errorId, cause, call)
+            val appError = CommonError.System(cause, call)
+            appLogger.logError(appError)
             val apiError = appErrorParser.getApiError(appError)
             call.respond(appError.httpStatusCode, apiError)
         }

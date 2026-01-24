@@ -1,13 +1,14 @@
 package com.mudrichenkoevgeny.backend.feature.user.route.auth.refreshtoken
 
 import com.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
+import com.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import com.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import com.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import com.mudrichenkoevgeny.backend.core.common.validation.validateRequest
 import com.mudrichenkoevgeny.backend.feature.user.mapper.toResponse
-import com.mudrichenkoevgeny.backend.feature.user.model.RefreshToken
-import com.mudrichenkoevgeny.backend.feature.user.model.extractClientInfo
-import com.mudrichenkoevgeny.backend.feature.user.network.request.refreshtoken.RefreshTokenRequest
+import com.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshToken
+import com.mudrichenkoevgeny.backend.feature.user.network.request.auth.refreshtoken.RefreshTokenRequest
+import com.mudrichenkoevgeny.backend.feature.user.network.request.context.getRequestContext
 import com.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import com.mudrichenkoevgeny.backend.feature.user.route.auth.AuthRoutes
 import com.mudrichenkoevgeny.backend.feature.user.usecase.auth.refreshtoken.RefreshTokenUseCase
@@ -25,6 +26,7 @@ object RefreshTokenRoutes {
 
 @Singleton
 class RefreshTokenRouter @Inject constructor(
+    private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val refreshTokenUseCase: RefreshTokenUseCase
 ) : BaseRouter {
@@ -37,16 +39,16 @@ class RefreshTokenRouter @Inject constructor(
     }
 
     private fun RouteConfig.refreshTokenDocs() {
-        summary = "refresh auth token"
-        description = "Initiates refresh token process."
-        operationId = "refreshToken"
+        summary = REFRESH_TOKEN_ROUTE_SUMMARY
+        description = REFRESH_TOKEN_ROUTE_DESCRIPTION
+        operationId = REFRESH_TOKEN_ROUTE_OPERATION_ID
         tags = listOf(UserSwaggerTags.AUTH)
         request {
             body<RefreshTokenRequest>()
         }
         response {
             code(HttpStatusCode.OK) {
-                description = "Success. Token refreshed."
+                description = REFRESH_TOKEN_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -56,11 +58,18 @@ class RefreshTokenRouter @Inject constructor(
 
         val result = refreshTokenUseCase.execute(
             refreshToken = RefreshToken(request.refreshToken),
-            clientInfo = call.extractClientInfo()
+            requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appErrorParser) {
+        call.respondResult(result, appLogger, appErrorParser) {
             sessionToken -> sessionToken.toResponse()
         }
+    }
+
+    companion object {
+        const val REFRESH_TOKEN_ROUTE_SUMMARY = "refresh auth token"
+        const val REFRESH_TOKEN_ROUTE_DESCRIPTION = "Initiates refresh token process."
+        const val REFRESH_TOKEN_ROUTE_OPERATION_ID = "refreshToken"
+        const val REFRESH_TOKEN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Token refreshed."
     }
 }

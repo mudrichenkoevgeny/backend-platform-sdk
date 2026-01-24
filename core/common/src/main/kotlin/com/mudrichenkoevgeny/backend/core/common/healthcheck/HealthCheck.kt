@@ -1,8 +1,8 @@
 package com.mudrichenkoevgeny.backend.core.common.healthcheck
 
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
+import com.mudrichenkoevgeny.backend.core.common.result.AppSystemResult
 
 interface HealthCheck {
     val severity: HealthCheckSeverity
-    suspend fun check(): AppResult<Unit>
+    suspend fun check(): AppSystemResult<Unit>
 }

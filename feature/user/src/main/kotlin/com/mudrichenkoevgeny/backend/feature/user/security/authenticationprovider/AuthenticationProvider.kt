@@ -2,7 +2,7 @@ package com.mudrichenkoevgeny.backend.feature.user.security.authenticationprovid
 
 import com.mudrichenkoevgeny.backend.core.common.result.AppResult
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserRole
-import com.mudrichenkoevgeny.backend.feature.user.model.User
+import com.mudrichenkoevgeny.backend.feature.user.model.user.User
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 
@@ -21,9 +21,8 @@ interface AuthenticationProvider {
      * @param allowBannedAccounts Whether users with BANNED status are allowed. Default is false.
      * @return Result containing the authorized User or an error if authorization fails.
      */
-    suspend fun authorize(
+    suspend fun requireUser(
         call: ApplicationCall,
-        checkToken: Boolean = false,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
         allowReadOnlyAccounts: Boolean = true,
         allowBannedAccounts: Boolean = false

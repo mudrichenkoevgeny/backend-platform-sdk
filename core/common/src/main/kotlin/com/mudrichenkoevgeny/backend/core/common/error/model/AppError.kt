@@ -1,6 +1,7 @@
 package com.mudrichenkoevgeny.backend.core.common.error.model
 
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
 
 /**
  * Represents an application error that can be propagated through the layers of the system.
@@ -11,6 +12,7 @@ import io.ktor.http.HttpStatusCode
  */
 interface AppError {
     val errorId: ErrorId
+    val call: ApplicationCall? // todo do we need that on every error? log it?
     val code: String
     val publicArgs: Map<String, Any>?
     val secretArgs: Map<String, Any>?

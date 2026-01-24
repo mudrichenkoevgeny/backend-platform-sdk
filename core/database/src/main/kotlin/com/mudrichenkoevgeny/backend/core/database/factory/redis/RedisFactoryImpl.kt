@@ -1,5 +1,6 @@
 package com.mudrichenkoevgeny.backend.core.database.factory.redis
 
+import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import com.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import com.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import com.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
@@ -21,9 +22,9 @@ class RedisFactoryImpl @Inject constructor(
                 url = databaseConfig.redisUrl,
                 timeoutSeconds = databaseConfig.redisTimeoutSeconds
             )
-        } catch (e: Exception) {
-            appLogger.logSystemError(ErrorId.generate(), e)
-            throw e
+        } catch (t: Throwable) {
+            appLogger.logError(CommonError.System(t))
+            throw t
         }
     }
 }

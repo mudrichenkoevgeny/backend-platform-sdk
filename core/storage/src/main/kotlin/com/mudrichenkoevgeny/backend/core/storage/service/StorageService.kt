@@ -1,14 +1,16 @@
 package com.mudrichenkoevgeny.backend.core.storage.service
 
+import com.mudrichenkoevgeny.backend.core.common.result.AppResult
+
 interface StorageService {
     suspend fun save(
         fileName: String,
         content: ByteArray,
         contentType: String,
         bucket: String? = null
-    ): String
+    ): AppResult<String>
 
-    suspend fun delete(key: String, bucket: String? = null): Boolean
+    suspend fun delete(key: String, bucket: String? = null): AppResult<Boolean>
 
-    fun getUrl(key: String): String
+    fun getUrl(key: String): AppResult<String>
 }

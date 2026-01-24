@@ -1,26 +1,27 @@
 package com.mudrichenkoevgeny.backend.feature.user.network.response.useridentifier
 
-import com.mudrichenkoevgeny.backend.feature.user.network.constants.UserNetworkFields
+import com.mudrichenkoevgeny.backend.core.common.network.constants.ApiFields
+import com.mudrichenkoevgeny.backend.feature.user.network.constants.UserApiFields
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class UserIdentifierResponse(
-    @SerialName(UserNetworkFields.ID)
+    @SerialName(ApiFields.ID)
     val id: String,
 
-    @SerialName(UserNetworkFields.USER_ID)
+    @SerialName(UserApiFields.USER_ID)
     val userId: String,
 
-    @SerialName(UserNetworkFields.USER_AUTH_PROVIDER)
+    @SerialName(UserApiFields.USER_AUTH_PROVIDER)
     val userAuthProvider: String,
 
-    @SerialName(UserNetworkFields.IDENTIFIER)
+    @SerialName(UserApiFields.IDENTIFIER)
     val identifier: String,
 
-    @SerialName(UserNetworkFields.CREATED_AT)
+    @SerialName(ApiFields.CREATED_AT)
     val createdAt: Long,
 
-    @SerialName(UserNetworkFields.UPDATED_AT)
+    @SerialName(ApiFields.UPDATED_AT)
     val updatedAt: Long? = null
 )

@@ -1,12 +1,15 @@
 package com.mudrichenkoevgeny.backend.core.common.config.pathresolver
 
+import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import com.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
     class PathResolverImpl @Inject constructor(
-    pathResolverConfig: PathResolverConfig
+    pathResolverConfig: PathResolverConfig,
+    appLogger: AppLogger
 ) : PathResolver {
 
     private val envFile: File
@@ -14,21 +17,35 @@ import javax.inject.Singleton
 
     init {
         val secretsPath = pathResolverConfig.secretsDirPath
-            ?: throw IllegalStateException(
+        if (secretsPath == null) {
+            val exception = IllegalStateException(
                 "Required environment variable '${pathResolverConfig.secretsDirPath}' is missing"
             )
+            appLogger.logError(CommonError.System(exception))
+            throw exception
+        }
+
         secretsDir = resolveFile(pathResolverConfig.projectRoot, secretsPath)
         if (!secretsDir.exists()) {
-            throw NoSuchFileException(secretsDir)
+            val exception = NoSuchFileException(secretsDir)
+            appLogger.logError(CommonError.System(exception))
+            throw exception
         }
 
         val envFilePath = pathResolverConfig.envFilePath
-            ?: throw IllegalStateException(
+        if (envFilePath == null) {
+            val exception = IllegalStateException(
                 "Required environment variable '${pathResolverConfig.envFilePath}' is missing"
             )
+            appLogger.logError(CommonError.System(exception))
+            throw exception
+        }
+
         envFile = resolveFile(pathResolverConfig.projectRoot, envFilePath)
         if (!envFile.exists()) {
-            throw NoSuchFileException(envFile)
+            val exception = NoSuchFileException(envFile)
+            appLogger.logError(CommonError.System(exception))
+            throw exception
         }
     }
 

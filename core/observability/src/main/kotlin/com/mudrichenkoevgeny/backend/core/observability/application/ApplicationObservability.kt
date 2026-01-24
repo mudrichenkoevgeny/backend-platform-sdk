@@ -1,6 +1,9 @@
 package com.mudrichenkoevgeny.backend.core.observability.application
 
 import com.mudrichenkoevgeny.backend.core.common.constants.NetworkConstants
+import com.mudrichenkoevgeny.backend.core.common.constants.TracingConstants
+import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import com.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import com.mudrichenkoevgeny.backend.core.observability.metrics.MetricsConstants
 import com.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
 import io.ktor.server.application.Application
@@ -24,15 +27,21 @@ const val ROUTING_ATTRIBUTE_KEY = "Routing"
 const val DEFAULT_ROUTE_PATH = "unknown_route"
 const val UNKNOWN_ERROR_MESSAGE = "Unknown error"
 
-fun Application.configureObservability(telemetryProvider: TelemetryProvider) {
+fun Application.configureObservability(
+    telemetryProvider: TelemetryProvider,
+    appLogger: AppLogger
+) {
     install(MicrometerMetrics) {
         registry = telemetryProvider.prometheusMeterRegistry
     }
 
-    setupTracing(telemetryProvider)
+    setupTracing(telemetryProvider, appLogger)
 }
 
-private fun Application.setupTracing(telemetryProvider: TelemetryProvider) {
+private fun Application.setupTracing(
+    telemetryProvider: TelemetryProvider,
+    appLogger: AppLogger
+) {
     val tracer = telemetryProvider.tracer
     val meter = telemetryProvider.meter
 
@@ -75,17 +84,18 @@ private fun Application.setupTracing(telemetryProvider: TelemetryProvider) {
 
         var isThrowable = false
         try {
-            MDC.put(NetworkConstants.MDC_TRACE_ID_KEY, traceId)
+            MDC.put(TracingConstants.TRACE_ID_KEY, traceId)
             call.response.headers.append(NetworkConstants.TRACE_HEADER_NAME, traceId)
 
             withContext(contextWithSpan.asContextElement()) {
                 proceed()
             }
-        } catch (e: Throwable) {
+        } catch (t: Throwable) {
+            appLogger.logError(CommonError.System(t))
             isThrowable = true
-            span.recordException(e)
-            span.setStatus(StatusCode.ERROR, e.message ?: UNKNOWN_ERROR_MESSAGE)
-            throw e
+            span.recordException(t)
+            span.setStatus(StatusCode.ERROR, t.message ?: UNKNOWN_ERROR_MESSAGE)
+            throw t
         } finally {
             val durationMs = (System.nanoTime() - startTimeNs) / 1_000_000
 
@@ -110,7 +120,7 @@ private fun Application.setupTracing(telemetryProvider: TelemetryProvider) {
             }
 
             span.end()
-            MDC.remove(NetworkConstants.MDC_TRACE_ID_KEY)
+            MDC.remove(TracingConstants.TRACE_ID_KEY)
         }
     }
 }

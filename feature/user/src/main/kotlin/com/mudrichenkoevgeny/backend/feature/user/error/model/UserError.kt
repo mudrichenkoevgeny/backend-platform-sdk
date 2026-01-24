@@ -5,12 +5,14 @@ import com.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
 import com.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import com.mudrichenkoevgeny.backend.feature.user.error.constants.UserErrorArgs
 import com.mudrichenkoevgeny.backend.feature.user.error.constants.UserErrorCodes
-import com.mudrichenkoevgeny.backend.feature.user.model.UserId
+import com.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
 import java.util.UUID
 
 sealed class UserError(
     override val errorId: ErrorId,
+    override val call: ApplicationCall? = null,
     override val code: String,
     override val publicArgs: Map<String, Any>? = null,
     override val secretArgs: Map<String, Any>? = null,
@@ -35,6 +37,13 @@ sealed class UserError(
     class InvalidRefreshToken() : UserError(
         errorId = ErrorId(UUID.randomUUID()),
         code = UserErrorCodes.INVALID_REFRESH_TOKEN,
+        httpStatusCode = HttpStatusCode.Unauthorized,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    class InvalidSession() : UserError(
+        errorId = ErrorId(UUID.randomUUID()),
+        code = UserErrorCodes.INVALID_SESSION,
         httpStatusCode = HttpStatusCode.Unauthorized,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -102,18 +111,54 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
-    class PasswordTooWeak() : UserError(
+    class CannotDeleteUserIdentifier() : UserError(
+        errorId = ErrorId(UUID.randomUUID()),
+        code = UserErrorCodes.CAN_NOT_DELETE_USER_IDENTIFIER,
+        httpStatusCode = HttpStatusCode.Conflict,
+        appErrorSeverity = AppErrorSeverity.MEDIUM
+    )
+
+    class CannotCreateUserIdentifier() : UserError(
+        errorId = ErrorId(UUID.randomUUID()),
+        code = UserErrorCodes.CAN_NOT_CREATE_USER_IDENTIFIER,
+        httpStatusCode = HttpStatusCode.Conflict,
+        appErrorSeverity = AppErrorSeverity.MEDIUM
+    )
+
+    class AlreadyHasUserIdentifierWithThatType() : UserError(
+        errorId = ErrorId(UUID.randomUUID()),
+        code = UserErrorCodes.ALREADY_HAS_USER_IDENTIFIER_WITH_THAT_TYPE,
+        httpStatusCode = HttpStatusCode.Conflict,
+        appErrorSeverity = AppErrorSeverity.MEDIUM
+    )
+
+    class AuthenticationConfirmationRequired() : UserError(
+        errorId = ErrorId(UUID.randomUUID()),
+        code = UserErrorCodes.AUTHENTICATION_CONFIRMATION_REQUIRED,
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.MEDIUM
+    )
+
+    class WrongPassword() : UserError(
+        errorId = ErrorId(UUID.randomUUID()),
+        code = UserErrorCodes.WRONG_PASSWORD,
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.MEDIUM
+    )
+
+    class PasswordTooWeak(publicArgs: Map<String, Any>) : UserError(
         errorId = ErrorId(UUID.randomUUID()),
         code = UserErrorCodes.PASSWORD_TOO_WEAK,
-        httpStatusCode = HttpStatusCode.NotFound,
+        publicArgs = publicArgs,
+        httpStatusCode = HttpStatusCode.UnprocessableEntity,
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
     class WrongConfirmationCode() : UserError(
         errorId = ErrorId(UUID.randomUUID()),
         code = UserErrorCodes.WRONG_CONFIRMATION_CODE,
-        httpStatusCode = HttpStatusCode.NotFound,
-        appErrorSeverity = AppErrorSeverity.LOW
+        httpStatusCode = HttpStatusCode.UnprocessableEntity,
+        appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 
     class ExternalIdMismatch() : UserError(

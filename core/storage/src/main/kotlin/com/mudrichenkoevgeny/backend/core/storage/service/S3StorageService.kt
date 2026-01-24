@@ -1,5 +1,8 @@
 package com.mudrichenkoevgeny.backend.core.storage.service
 
+import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import com.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import com.mudrichenkoevgeny.backend.core.common.result.AppResult
 import com.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
 import kotlinx.coroutines.future.await
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
@@ -34,7 +37,7 @@ class S3StorageService @Inject constructor(
         content: ByteArray,
         contentType: String,
         bucket: String?
-    ): String {
+    ): AppResult<String> {
         val targetBucket = bucket ?: config.s3BucketName
 
         val request = PutObjectRequest.builder()
@@ -43,12 +46,15 @@ class S3StorageService @Inject constructor(
             .contentType(contentType)
             .build()
 
-        s3Client.putObject(request, AsyncRequestBody.fromBytes(content)).await()
-
-        return fileName
+        return try {
+            s3Client.putObject(request, AsyncRequestBody.fromBytes(content)).await()
+            AppResult.Success(fileName)
+        } catch (t: Throwable) {
+            AppResult.Error(CommonError.System(t))
+        }
     }
 
-    override suspend fun delete(key: String, bucket: String?): Boolean {
+    override suspend fun delete(key: String, bucket: String?): AppResult<Boolean> {
         val targetBucket = bucket ?: config.s3BucketName
 
         val request = DeleteObjectRequest.builder()
@@ -56,12 +62,17 @@ class S3StorageService @Inject constructor(
             .key(key)
             .build()
 
-        val response = s3Client.deleteObject(request).await()
-        return response.sdkHttpResponse().isSuccessful
+        return try {
+            val response = s3Client.deleteObject(request).await()
+            val isSuccessful = response.sdkHttpResponse().isSuccessful
+            AppResult.Success(isSuccessful)
+        } catch (t: Throwable) {
+            AppResult.Error(CommonError.System(t))
+        }
     }
 
-    override fun getUrl(key: String): String {
+    override fun getUrl(key: String): AppResult<String> {
         val baseUrl = config.s3PublicUrl.removeSuffix("/")
-        return "$baseUrl/$key"
+        return AppResult.Success("$baseUrl/$key")
     }
 }

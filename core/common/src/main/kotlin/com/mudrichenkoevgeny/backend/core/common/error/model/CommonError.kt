@@ -3,16 +3,31 @@ package com.mudrichenkoevgeny.backend.core.common.error.model
 import com.mudrichenkoevgeny.backend.core.common.error.constants.CommonErrorArgs
 import com.mudrichenkoevgeny.backend.core.common.error.constants.CommonErrorCodes
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.ApplicationCall
 import java.util.UUID
 
 sealed class CommonError(
     override val errorId: ErrorId,
+    override val call: ApplicationCall? = null,
     override val code: String,
     override val publicArgs: Map<String, Any>? = null,
     override val secretArgs: Map<String, Any>? = null,
     override val httpStatusCode: HttpStatusCode,
     override val appErrorSeverity: AppErrorSeverity
 ) : AppError {
+
+    class System(
+        val throwable: Throwable,
+        call: ApplicationCall? = null
+    ) : CommonError(
+        errorId = ErrorId(UUID.randomUUID()),
+        call = call,
+        code = CommonErrorCodes.THROWABLE,
+        secretArgs = throwable.message
+            ?.let { message -> mapOf(CommonErrorArgs.MESSAGE to message) },
+        httpStatusCode = HttpStatusCode.InternalServerError,
+        appErrorSeverity = AppErrorSeverity.HIGH
+    )
 
     class Unknown(
         val message: String? = null
@@ -24,17 +39,6 @@ sealed class CommonError(
                 put(CommonErrorArgs.MESSAGE, message)
             }
         }.takeIf { it.isNotEmpty() },
-        httpStatusCode = HttpStatusCode.InternalServerError,
-        appErrorSeverity = AppErrorSeverity.HIGH
-    )
-
-    class Throwable(
-        val throwable: kotlin.Throwable? = null
-    ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
-        code = CommonErrorCodes.THROWABLE,
-        secretArgs = throwable?.message
-            ?.let { message -> mapOf(CommonErrorArgs.MESSAGE to message) },
         httpStatusCode = HttpStatusCode.InternalServerError,
         appErrorSeverity = AppErrorSeverity.HIGH
     )
@@ -98,6 +102,30 @@ sealed class CommonError(
             put(CommonErrorArgs.IDENTIFIER, identifier)
         },
         httpStatusCode = HttpStatusCode.TooManyRequests,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    class MissingRequiredParameter(
+        val parameterName: String
+    ) : CommonError(
+        errorId = ErrorId(UUID.randomUUID()),
+        code = CommonErrorCodes.MISSING_REQUIRED_PARAMETER,
+        publicArgs = buildMap {
+            put(CommonErrorArgs.PARAMETER_NAME, parameterName)
+        }.takeIf { it.isNotEmpty() },
+        httpStatusCode = HttpStatusCode.BadRequest,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    class InvalidParameterValue(
+        val parameterName: String
+    ) : CommonError(
+        errorId = ErrorId(UUID.randomUUID()),
+        code = CommonErrorCodes.INVALID_PARAMETER_VALUE,
+        publicArgs = buildMap {
+            put(CommonErrorArgs.PARAMETER_NAME, parameterName)
+        }.takeIf { it.isNotEmpty() },
+        httpStatusCode = HttpStatusCode.BadRequest,
         appErrorSeverity = AppErrorSeverity.LOW
     )
 

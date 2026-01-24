@@ -1,5 +1,7 @@
 package com.mudrichenkoevgeny.backend.core.events.publisher
 
+import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import com.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import com.mudrichenkoevgeny.backend.core.common.serialization.DefaultJson
 import com.mudrichenkoevgeny.backend.core.events.config.model.EventsConfig
 import com.mudrichenkoevgeny.backend.core.events.event.AppEvent
@@ -16,7 +18,8 @@ import kotlin.coroutines.resumeWithException
 
 @Singleton
 class EventPublisherImpl @Inject constructor(
-    private val eventsConfig: EventsConfig
+    private val eventsConfig: EventsConfig,
+    private val appLogger: AppLogger
 ) : EventPublisher {
 
     private val json = DefaultJson
@@ -39,20 +42,28 @@ class EventPublisherImpl @Inject constructor(
         serializer: KSerializer<T>,
         metadata: Map<String, String>
     ) {
-        val jsonPayload = json.encodeToString(serializer, event)
-        val record = ProducerRecord<String, String>(topic, jsonPayload)
-
-        metadata.forEach { (k, v) ->
-            record.headers().add(k, v.toByteArray())
+        val jsonPayload = try {
+            json.encodeToString(serializer, event)
+        } catch (t: Throwable) {
+            appLogger.logError(CommonError.System(t))
+            throw t
         }
 
-        return suspendCancellableCoroutine { continuation ->
+        val record = try {
+            ProducerRecord<String, String>(topic, jsonPayload).apply {
+                metadata.forEach { (k, v) -> headers().add(k, v.toByteArray()) }
+            }
+        } catch (t: Throwable) {
+            appLogger.logError(CommonError.System(t))
+            throw t
+        }
+
+        suspendCancellableCoroutine { continuation ->
             val future = producer.send(record) { _, exception ->
                 if (exception != null) {
                     continuation.resumeWithException(exception)
                 } else {
-                    continuation.resume(Unit) { _, _, _ ->
-                    }
+                    continuation.resumeWith(Result.success(Unit))
                 }
             }
 
