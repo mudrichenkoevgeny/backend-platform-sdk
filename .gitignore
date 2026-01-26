@@ -19,7 +19,7 @@ kotlin-js-store/
 Thumbs.db
 captures/
 
-# --- Compiled class files (твои старые правила) ---
+# --- Compiled class files ---
 *.class
 *.log
 *.jar

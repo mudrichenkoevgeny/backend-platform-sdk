@@ -8,7 +8,7 @@ import javax.inject.Singleton
 
 @Singleton
 class PasswordPolicyCheckerImpl @Inject constructor(
-    private val passwordPolicy: PasswordPolicy = PasswordPolicy()
+    private val passwordPolicy: PasswordPolicy
 ): PasswordPolicyChecker {
     override fun check(password: String): PasswordPolicyCheckResult {
         val reasons = mutableListOf<PasswordPolicyFailReason>()

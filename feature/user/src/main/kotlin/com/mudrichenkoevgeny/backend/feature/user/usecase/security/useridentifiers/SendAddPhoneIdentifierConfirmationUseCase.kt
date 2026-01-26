@@ -9,32 +9,30 @@ import com.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import com.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
 import com.mudrichenkoevgeny.backend.feature.user.enums.OtpVerificationType
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserRole
 import com.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import com.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import com.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import com.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
-import com.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
+import com.mudrichenkoevgeny.backend.feature.user.model.confirmation.SendConfirmation
 import com.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
+import com.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneService
 import com.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUtil
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AddUserIdentifierPhoneUseCase @Inject constructor(
+class SendAddPhoneIdentifierConfirmationUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,
     private val userAuditLogger: UserAuditLogger,
     private val otpService: OtpService,
+    private val phoneService: PhoneService,
     private val sessionManager: SessionManager,
     private val userIdentifierManager: UserIdentifierManager,
-    private val authManager: AuthManager,
     private val authenticationPolicyChecker: AuthenticationPolicyChecker
 ) {
     suspend fun execute(
         phoneNumber: String,
-        confirmationCode: String,
         requestContext: RequestContext
-    ): AppResult<UserIdentifier> {
+    ): AppResult<SendConfirmation> {
         val userId = requestContext.userId
             ?: return AppResult.Error(UserError.InvalidAccessToken())
 
@@ -50,7 +48,7 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
 
         val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
             requestContext = requestContext,
-            rateLimitAction = RateLimitAction.USER_IDENTIFIER_CHANGE,
+            rateLimitAction = RateLimitAction.SEND_OTP_PHONE,
             rateLimitIdentifier = phoneNumber,
             auditAction = AUDIT_ACTION,
             auditResource = AUDIT_RESOURCE,
@@ -99,122 +97,126 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
             return AppResult.Error(UserError.AuthenticationConfirmationRequired())
         }
 
-        val userIdentifiersListResult = userIdentifierManager.getUserIdentifierListByUserId(userId)
-
-        val userIdentifiersList = when (userIdentifiersListResult) {
-            is AppResult.Success -> userIdentifiersListResult.data
-            is AppResult.Error -> {
-                logAuditInternalError(
-                    requestContext = requestContext,
-                    auditResourceId = auditResourceId,
-                    auditMetadata = auditMetadata
-                )
-                return userIdentifiersListResult
-            }
-        }
-
-        val existingUserIdentifierPhone = userIdentifiersList.find { userIdentifier ->
-            userIdentifier.userAuthProvider == UserAuthProvider.PHONE
-        }
-
-        if (existingUserIdentifierPhone != null) {
-            userAuditLogger.logFail(
-                requestContext = requestContext,
-                action = AUDIT_ACTION,
-                resource = AUDIT_RESOURCE,
-                resourceId = auditResourceId,
-                type = UserAuditMetadata.Types.ALREADY_HAS_USER_IDENTIFIER_WITH_THAT_TYPE,
-                metadata = auditMetadata
-            )
-            return AppResult.Error(UserError.AlreadyHasUserIdentifierWithThatType())
-        }
-
-        val verifyOtpResult = otpService.verifyOtp(
-            identifier = phoneNumber,
-            type = OtpVerificationType.PHONE_VERIFICATION,
-            code = confirmationCode
-        )
-
-        val isConfirmationCodeCorrect = when (verifyOtpResult) {
-            is AppResult.Success -> verifyOtpResult.data
-            is AppResult.Error -> {
-                logAuditInternalError(
-                    requestContext = requestContext,
-                    auditResourceId = auditResourceId,
-                    auditMetadata = auditMetadata
-                )
-                return verifyOtpResult
-            }
-        }
-
-        if (!isConfirmationCodeCorrect) {
-            userAuditLogger.logFail(
-                requestContext = requestContext,
-                action = AUDIT_ACTION,
-                resource = AUDIT_RESOURCE,
-                resourceId = auditResourceId,
-                type = UserAuditMetadata.Types.WRONG_VERIFICATION_CODE,
-                metadata = auditMetadata
-            )
-            return AppResult.Error(UserError.WrongConfirmationCode())
-        }
-
-        val getUserIdentifierResult = userIdentifierManager.getUserIdentifier(
+        val identifierResult = userIdentifierManager.getUserIdentifier(
             userAuthProvider = UserAuthProvider.PHONE,
             identifier = phoneNumber
         )
 
-        val existingUserIdentifier = when (getUserIdentifierResult) {
-            is AppResult.Success -> getUserIdentifierResult.data
+        val identifier = when (identifierResult) {
+            is AppResult.Success -> identifierResult.data
             is AppResult.Error -> {
                 logAuditInternalError(
                     requestContext = requestContext,
                     auditResourceId = auditResourceId,
                     auditMetadata = auditMetadata
                 )
-                return getUserIdentifierResult
+                return identifierResult
             }
         }
 
-        if (existingUserIdentifier != null) {
-            userAuditLogger.logFail(
-                requestContext = requestContext,
-                action = AUDIT_ACTION,
-                resource = AUDIT_RESOURCE,
-                resourceId = auditResourceId,
-                type = UserAuditMetadata.Types.PHONE_ALREADY_REGISTERED,
-                metadata = auditMetadata
-            )
-            return AppResult.Error(UserError.CannotCreateUserIdentifier())
+        return if (identifier != null) {
+            sendAlreadyRegistered(phoneNumber, requestContext, auditResourceId, auditMetadata)
+        } else {
+            sendConfirmationCode(phoneNumber, requestContext, auditResourceId, auditMetadata)
         }
+    }
 
-        val userIdentifierResult = authManager.getOrCreateUserIdentifier(
-            userAuthProvider = UserAuthProvider.PHONE,
-            identifier = phoneNumber,
-            userRole = UserRole.USER
+    private suspend fun sendAlreadyRegistered(
+        phoneNumber: String,
+        requestContext: RequestContext,
+        auditResourceId: String,
+        auditMetadata: MutableMap<String, String>
+    ): AppResult<SendConfirmation> {
+        val getOtpResult = otpService.getOtpFake(
+            identifier = phoneNumber
         )
 
-        return when (userIdentifierResult) {
-            is AppResult.Success -> {
-                auditMetadata[UserAuditMetadata.Keys.USER_IDENTIFIER_ID] = userIdentifierResult.data.id.asString()
-                userAuditLogger.logSuccess(
-                    requestContext = requestContext,
-                    action = AUDIT_ACTION,
-                    resource = AUDIT_RESOURCE,
-                    resourceId = auditResourceId,
-                    metadata = auditMetadata
-                )
-                userIdentifierResult
-            }
+        if (getOtpResult is AppResult.Error) {
+            logAuditInternalError(
+                requestContext = requestContext,
+                auditResourceId = auditResourceId,
+                auditMetadata = auditMetadata
+            )
+            return getOtpResult
+        }
+
+        val sendAlreadyRegisteredResult = phoneService.sendAlreadyRegisteredPhoneNumber(
+            phoneNumber = phoneNumber,
+            ipAddress = requestContext.clientInfo.ipAddress,
+            deviceName = requestContext.clientInfo.deviceName
+        )
+
+        if (sendAlreadyRegisteredResult is AppResult.Error) {
+            logAuditInternalError(
+                requestContext = requestContext,
+                auditResourceId = auditResourceId,
+                auditMetadata = auditMetadata
+            )
+            return sendAlreadyRegisteredResult
+        }
+
+        userAuditLogger.logSuccess(
+            requestContext = requestContext,
+            action = AUDIT_ACTION,
+            resource = AUDIT_RESOURCE,
+            resourceId = auditResourceId,
+            type = UserAuditMetadata.Types.ALREADY_REGISTERED
+        )
+
+        return AppResult.Success(
+            SendConfirmation(
+                retryAfterSeconds = RETRY_AFTER_SECONDS
+            )
+        )
+    }
+
+    private suspend fun sendConfirmationCode(
+        phoneNumber: String,
+        requestContext: RequestContext,
+        auditResourceId: String,
+        auditMetadata: MutableMap<String, String>
+    ): AppResult<SendConfirmation> {
+        val getOtpResult = otpService.getOtp(
+            identifier = phoneNumber,
+            type = OtpVerificationType.PHONE_VERIFICATION
+        )
+
+        val code = when (getOtpResult) {
+            is AppResult.Success -> getOtpResult.data
             is AppResult.Error -> {
                 logAuditInternalError(
                     requestContext = requestContext,
                     auditResourceId = auditResourceId,
                     auditMetadata = auditMetadata
                 )
-                return userIdentifierResult
+                return getOtpResult
             }
         }
+
+        val sendCodeResult = phoneService.sendVerificationCode(phoneNumber, code)
+
+        if (sendCodeResult is AppResult.Error) {
+            logAuditInternalError(
+                requestContext = requestContext,
+                auditResourceId = auditResourceId,
+                auditMetadata = auditMetadata
+            )
+            return sendCodeResult
+        }
+
+        userAuditLogger.logSuccess(
+            requestContext = requestContext,
+            action = AUDIT_ACTION,
+            resource = AUDIT_RESOURCE,
+            resourceId = auditResourceId,
+            type = UserAuditMetadata.Types.VERIFICATION_CODE_SENT
+        )
+
+        return AppResult.Success(
+            SendConfirmation(
+                retryAfterSeconds = RETRY_AFTER_SECONDS
+            )
+        )
     }
 
     private fun logAuditInternalError(
@@ -232,7 +234,9 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
     }
 
     companion object {
-        const val AUDIT_ACTION = "add_user_identifier_phone"
+        const val RETRY_AFTER_SECONDS = 60
+
+        const val AUDIT_ACTION = "send_add_phone_identifier_confirmation"
         const val AUDIT_RESOURCE = "user"
     }
 }

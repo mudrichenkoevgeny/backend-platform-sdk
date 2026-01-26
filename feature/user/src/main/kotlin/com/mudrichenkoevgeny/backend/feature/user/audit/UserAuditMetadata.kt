@@ -41,5 +41,7 @@ object UserAuditMetadata {
         const val AUTHENTICATION_CONFIRMATION_REQUIRED = "authentication_confirmation_required"
         const val CAN_NOT_DELETE_USER = "can_not_delete_user"
         const val CAN_NOT_GET_USER = "can_not_get_user"
+        const val EMAIL_ALREADY_REGISTERED = "email_already_registered"
+        const val PHONE_ALREADY_REGISTERED = "phone_already_registered"
     }
 }

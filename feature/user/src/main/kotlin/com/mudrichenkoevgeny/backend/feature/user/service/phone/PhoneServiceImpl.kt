@@ -11,4 +11,14 @@ class PhoneServiceImpl @Inject constructor() : PhoneService {
         return AppResult.Success(Unit)
         // todo
     }
+
+    override fun sendAlreadyRegisteredPhoneNumber(
+        phoneNumber: String,
+        ipAddress: String?,
+        deviceName: String?
+    ): AppResult<Unit> {
+        println("PhoneService: sendAlreadyRegisteredPhoneNumber | $phoneNumber")
+        return AppResult.Success(Unit)
+        // todo
+    }
 }

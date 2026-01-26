@@ -9,6 +9,8 @@ import com.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import com.mudrichenkoevgeny.backend.core.common.validation.validatePathParameter
 import com.mudrichenkoevgeny.backend.core.common.validation.validateRequest
 import com.mudrichenkoevgeny.backend.feature.user.mapper.toResponse
+import com.mudrichenkoevgeny.backend.feature.user.network.request.confirmation.SendConfirmationToEmailRequest
+import com.mudrichenkoevgeny.backend.feature.user.network.request.confirmation.SendConfirmationToPhoneRequest
 import com.mudrichenkoevgeny.backend.feature.user.network.request.context.getRequestContext
 import com.mudrichenkoevgeny.backend.feature.user.network.request.security.useridentifiers.AddUserIdentifierEmailRequest
 import com.mudrichenkoevgeny.backend.feature.user.network.request.security.useridentifiers.AddUserIdentifierExternalAuthProviderRequest
@@ -20,6 +22,8 @@ import com.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifie
 import com.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers.AddUserIdentifierPhoneUseCase
 import com.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers.DeleteUserIdentifierUseCase
 import com.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers.GetUserIdentifiersUseCase
+import com.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers.SendAddEmailIdentifierConfirmationUseCase
+import com.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers.SendAddPhoneIdentifierConfirmationUseCase
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get
@@ -37,6 +41,9 @@ object SecurityUserIdentifiersRoutes {
     const val ADD_USER_IDENTIFIER_EMAIL = "$BASE_SECURITY_USER_IDENTIFIERS_ROUTE/email/{id}"
     const val ADD_USER_IDENTIFIER_PHONE = "$BASE_SECURITY_USER_IDENTIFIERS_ROUTE/phone/{id}"
     const val ADD_USER_IDENTIFIER_EXTERNAL_AUTH_PROVIDER = "$BASE_SECURITY_USER_IDENTIFIERS_ROUTE/external-auth-provider/{id}"
+    const val BASE_SECURITY_USER_IDENTIFIERS_CONFIRMATION_ROUTE = "${SecurityRoutes.BASE_SECURITY_ROUTE}/confirmation"
+    const val SEND_ADD_EMAIL_IDENTIFIER_CONFIRMATION = "$BASE_SECURITY_USER_IDENTIFIERS_CONFIRMATION_ROUTE/send-to-email"
+    const val SEND_ADD_PHONE_IDENTIFIER_CONFIRMATION = "$BASE_SECURITY_USER_IDENTIFIERS_CONFIRMATION_ROUTE/send-to-phone"
 }
 
 @Singleton
@@ -47,7 +54,9 @@ class SecurityUserIdentifiersRouter @Inject constructor(
     private val deleteUserIdentifierUseCase: DeleteUserIdentifierUseCase,
     private val addUserIdentifierEmailUseCase: AddUserIdentifierEmailUseCase,
     private val addUserIdentifierPhoneUseCase: AddUserIdentifierPhoneUseCase,
-    private val addUserIdentifierExternalAuthProviderUseCase: AddUserIdentifierExternalAuthProviderUseCase
+    private val addUserIdentifierExternalAuthProviderUseCase: AddUserIdentifierExternalAuthProviderUseCase,
+    private val sendAddEmailIdentifierConfirmationUseCase: SendAddEmailIdentifierConfirmationUseCase,
+    private val sendAddPhoneIdentifierConfirmationUseCase: SendAddPhoneIdentifierConfirmationUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
@@ -79,6 +88,18 @@ class SecurityUserIdentifiersRouter @Inject constructor(
             path = SecurityUserIdentifiersRoutes.ADD_USER_IDENTIFIER_EXTERNAL_AUTH_PROVIDER,
             builder = { addUserIdentifierExternalAuthProviderDocs() },
             body = { addUserIdentifierExternalAuthProvider() }
+        )
+
+        route.post(
+            path = SecurityUserIdentifiersRoutes.SEND_ADD_EMAIL_IDENTIFIER_CONFIRMATION,
+            builder = { sendAddEmailIdentifierConfirmationDocs() },
+            body = { sendAddEmailIdentifierConfirmation() }
+        )
+
+        route.post(
+            path = SecurityUserIdentifiersRoutes.SEND_ADD_PHONE_IDENTIFIER_CONFIRMATION,
+            builder = { sendAddPhoneIdentifierConfirmationDocs() },
+            body = { sendAddPhoneIdentifierConfirmation() }
         )
     }
 
@@ -217,6 +238,50 @@ class SecurityUserIdentifiersRouter @Inject constructor(
         }
     }
 
+    private fun RouteConfig.sendAddEmailIdentifierConfirmationDocs() {
+        summary = SEND_ADD_EMAIL_CONFIRMATION_SUMMARY
+        description = SEND_ADD_EMAIL_CONFIRMATION_DESCRIPTION
+        operationId = SEND_ADD_EMAIL_CONFIRMATION_OPERATION_ID
+        tags = listOf(UserSwaggerTags.SECURITY)
+        request { body<SendConfirmationToEmailRequest>() }
+        response {
+            code(HttpStatusCode.OK) {
+                description = CONFIRMATION_SENT_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.sendAddEmailIdentifierConfirmation() {
+        val request = call.validateRequest<SendConfirmationToEmailRequest>()
+        val result = sendAddEmailIdentifierConfirmationUseCase.execute(
+            email = request.email,
+            requestContext = call.getRequestContext()
+        )
+        call.respondResult(result, appLogger, appErrorParser) { it.toResponse() }
+    }
+
+    private fun RouteConfig.sendAddPhoneIdentifierConfirmationDocs() {
+        summary = SEND_ADD_PHONE_CONFIRMATION_SUMMARY
+        description = SEND_ADD_PHONE_CONFIRMATION_DESCRIPTION
+        operationId = SEND_ADD_PHONE_CONFIRMATION_OPERATION_ID
+        tags = listOf(UserSwaggerTags.SECURITY)
+        request { body<SendConfirmationToPhoneRequest>() }
+        response {
+            code(HttpStatusCode.OK) {
+                description = CONFIRMATION_SENT_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.sendAddPhoneIdentifierConfirmation() {
+        val request = call.validateRequest<SendConfirmationToPhoneRequest>()
+        val result = sendAddPhoneIdentifierConfirmationUseCase.execute(
+            phoneNumber = request.phoneNumber,
+            requestContext = call.getRequestContext()
+        )
+        call.respondResult(result, appLogger, appErrorParser) { it.toResponse() }
+    }
+
     companion object {
         const val GET_USER_IDENTIFIERS_ROUTE_SUMMARY = "Get user identifiers"
         const val GET_USER_IDENTIFIERS_ROUTE_DESCRIPTION = "Returns all authentication identifiers of the current user."
@@ -241,5 +306,15 @@ class SecurityUserIdentifiersRouter @Inject constructor(
         const val ADD_EXTERNAL_OPERATION_ID = "addUserIdentifierExternalAuthProvider"
 
         const val ADD_IDENTIFIER_RESPONSE_OK_DESCRIPTION = "Success. User identifier added."
+
+        const val SEND_ADD_EMAIL_CONFIRMATION_SUMMARY = "Send email confirmation (identity add)"
+        const val SEND_ADD_EMAIL_CONFIRMATION_DESCRIPTION = "Sends a code to a new email to link it to the current account."
+        const val SEND_ADD_EMAIL_CONFIRMATION_OPERATION_ID = "sendAddEmailIdentifierConfirmation"
+
+        const val SEND_ADD_PHONE_CONFIRMATION_SUMMARY = "Send phone confirmation (identity add)"
+        const val SEND_ADD_PHONE_CONFIRMATION_DESCRIPTION = "Sends a code to a new phone number to link it to the current account."
+        const val SEND_ADD_PHONE_CONFIRMATION_OPERATION_ID = "sendAddPhoneIdentifierConfirmation"
+
+        const val CONFIRMATION_SENT_DESCRIPTION = "Success. Confirmation code sent."
     }
 }

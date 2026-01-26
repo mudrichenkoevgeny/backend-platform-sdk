@@ -1,4 +1,4 @@
-package com.mudrichenkoevgeny.backend.feature.user.usecase.confirmation
+package com.mudrichenkoevgeny.backend.feature.user.usecase.auth.register
 
 import com.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
 import com.mudrichenkoevgeny.backend.core.common.result.AppResult
@@ -12,11 +12,12 @@ import com.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIde
 import com.mudrichenkoevgeny.backend.feature.user.model.confirmation.SendConfirmation
 import com.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import com.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
+import com.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUtil
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SendConfirmationToEmailUseCase @Inject constructor(
+class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,
     private val userAuditLogger: UserAuditLogger,
     private val otpService: OtpService,
@@ -27,13 +28,15 @@ class SendConfirmationToEmailUseCase @Inject constructor(
         email: String,
         requestContext: RequestContext
     ): AppResult<SendConfirmation> {
+        val auditResourceId = IdentifierMaskerUtil.maskEmail(email)
+
         val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
             requestContext = requestContext,
             rateLimitAction = RateLimitAction.SEND_OTP_EMAIL,
             rateLimitIdentifier = email,
             auditAction = AUDIT_ACTION,
             auditResource = AUDIT_RESOURCE,
-            auditResourceId = email
+            auditResourceId = auditResourceId
         )
         if (rateLimiterEnforcerResult is AppResult.Error) {
             return rateLimiterEnforcerResult
@@ -46,25 +49,36 @@ class SendConfirmationToEmailUseCase @Inject constructor(
 
         val identifier = when (identifierResult) {
             is AppResult.Success -> identifierResult.data
-            is AppResult.Error -> return identifierResult
+            is AppResult.Error -> {
+                logAuditInternalError(
+                    requestContext = requestContext,
+                    auditResourceId = auditResourceId
+                )
+                return identifierResult
+            }
         }
 
         return if (identifier != null) {
-            sendAlreadyRegistered(email, requestContext)
+            sendAlreadyRegistered(email, requestContext, auditResourceId)
         } else {
-            sendConfirmationCode(email, requestContext)
+            sendConfirmationCode(email, requestContext, auditResourceId)
         }
     }
 
     private suspend fun sendAlreadyRegistered(
         email: String,
-        requestContext: RequestContext
+        requestContext: RequestContext,
+        auditResourceId: String?
     ): AppResult<SendConfirmation> {
         val getOtpResult = otpService.getOtpFake(
             identifier = email
         )
 
         if (getOtpResult is AppResult.Error) {
+            logAuditInternalError(
+                requestContext = requestContext,
+                auditResourceId = auditResourceId
+            )
             return getOtpResult
         }
 
@@ -75,6 +89,10 @@ class SendConfirmationToEmailUseCase @Inject constructor(
         )
 
         if (sendEmailResult is AppResult.Error) {
+            logAuditInternalError(
+                requestContext = requestContext,
+                auditResourceId = auditResourceId
+            )
             return sendEmailResult
         }
 
@@ -82,7 +100,7 @@ class SendConfirmationToEmailUseCase @Inject constructor(
             requestContext = requestContext,
             action = AUDIT_ACTION,
             resource = AUDIT_RESOURCE,
-            resourceId = email,
+            resourceId = auditResourceId,
             type = UserAuditMetadata.Types.ALREADY_REGISTERED
         )
 
@@ -95,7 +113,8 @@ class SendConfirmationToEmailUseCase @Inject constructor(
 
     private suspend fun sendConfirmationCode(
         email: String,
-        requestContext: RequestContext
+        requestContext: RequestContext,
+        auditResourceId: String?
     ): AppResult<SendConfirmation> {
         val getOtpResult = otpService.getOtp(
             identifier = email,
@@ -104,12 +123,22 @@ class SendConfirmationToEmailUseCase @Inject constructor(
 
         val code = when (getOtpResult) {
             is AppResult.Success -> getOtpResult.data
-            is AppResult.Error -> return getOtpResult
+            is AppResult.Error -> {
+                logAuditInternalError(
+                    requestContext = requestContext,
+                    auditResourceId = auditResourceId
+                )
+                return getOtpResult
+            }
         }
 
         val sendEmailResult = emailService.sendVerificationCode(email, code)
 
         if (sendEmailResult is AppResult.Error) {
+            logAuditInternalError(
+                requestContext = requestContext,
+                auditResourceId = auditResourceId
+            )
             return sendEmailResult
         }
 
@@ -117,7 +146,7 @@ class SendConfirmationToEmailUseCase @Inject constructor(
             requestContext = requestContext,
             action = AUDIT_ACTION,
             resource = AUDIT_RESOURCE,
-            resourceId = email,
+            resourceId = auditResourceId,
             type = UserAuditMetadata.Types.VERIFICATION_CODE_SENT
         )
 
@@ -125,6 +154,18 @@ class SendConfirmationToEmailUseCase @Inject constructor(
             SendConfirmation(
                 retryAfterSeconds = RETRY_AFTER_SECONDS
             )
+        )
+    }
+
+    private fun logAuditInternalError(
+        requestContext: RequestContext,
+        auditResourceId: String?
+    ) {
+        userAuditLogger.logInternalError(
+            requestContext = requestContext,
+            action = AUDIT_ACTION,
+            resource = AUDIT_RESOURCE,
+            resourceId = auditResourceId
         )
     }
 

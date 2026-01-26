@@ -1,4 +1,4 @@
-package com.mudrichenkoevgeny.backend.feature.user.usecase.confirmation
+package com.mudrichenkoevgeny.backend.feature.user.usecase.auth.login
 
 import com.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
 import com.mudrichenkoevgeny.backend.core.common.result.AppResult
@@ -10,11 +10,12 @@ import com.mudrichenkoevgeny.backend.feature.user.enums.OtpVerificationType
 import com.mudrichenkoevgeny.backend.feature.user.model.confirmation.SendConfirmation
 import com.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
 import com.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneService
+import com.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUtil
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SendConfirmationToPhoneUseCase @Inject constructor(
+class SendLoginConfirmationToPhoneUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,
     private val userAuditLogger: UserAuditLogger,
     private val otpService: OtpService,
@@ -24,13 +25,15 @@ class SendConfirmationToPhoneUseCase @Inject constructor(
         phoneNumber: String,
         requestContext: RequestContext
     ): AppResult<SendConfirmation> {
+        val auditResourceId = IdentifierMaskerUtil.maskPhone(phoneNumber)
+
         val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
             requestContext = requestContext,
             rateLimitAction = RateLimitAction.SEND_OTP_PHONE,
             rateLimitIdentifier = phoneNumber,
             auditAction = AUDIT_ACTION,
             auditResource = AUDIT_RESOURCE,
-            auditResourceId = phoneNumber
+            auditResourceId = auditResourceId
         )
         if (rateLimiterEnforcerResult is AppResult.Error) {
             return rateLimiterEnforcerResult
@@ -43,12 +46,22 @@ class SendConfirmationToPhoneUseCase @Inject constructor(
 
         val code = when (getOtpResult) {
             is AppResult.Success -> getOtpResult.data
-            is AppResult.Error -> return getOtpResult
+            is AppResult.Error -> {
+                logAuditInternalError(
+                    requestContext = requestContext,
+                    auditResourceId = auditResourceId
+                )
+                return getOtpResult
+            }
         }
 
         val sendCodeResult = phoneService.sendVerificationCode(phoneNumber, code)
 
         if (sendCodeResult is AppResult.Error) {
+            logAuditInternalError(
+                requestContext = requestContext,
+                auditResourceId = auditResourceId
+            )
             return sendCodeResult
         }
 
@@ -56,7 +69,7 @@ class SendConfirmationToPhoneUseCase @Inject constructor(
             requestContext = requestContext,
             action = AUDIT_ACTION,
             resource = AUDIT_RESOURCE,
-            resourceId = phoneNumber,
+            resourceId = auditResourceId,
             type = UserAuditMetadata.Types.VERIFICATION_CODE_SENT
         )
 
@@ -64,6 +77,18 @@ class SendConfirmationToPhoneUseCase @Inject constructor(
             SendConfirmation(
                 retryAfterSeconds = RETRY_AFTER_SECONDS
             )
+        )
+    }
+
+    private fun logAuditInternalError(
+        requestContext: RequestContext,
+        auditResourceId: String?
+    ) {
+        userAuditLogger.logInternalError(
+            requestContext = requestContext,
+            action = AUDIT_ACTION,
+            resource = AUDIT_RESOURCE,
+            resourceId = auditResourceId
         )
     }
 

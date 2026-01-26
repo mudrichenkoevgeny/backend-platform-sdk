@@ -2,7 +2,6 @@ package com.mudrichenkoevgeny.backend.feature.user.route
 
 import com.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import com.mudrichenkoevgeny.backend.feature.user.route.auth.AuthRouter
-import com.mudrichenkoevgeny.backend.feature.user.route.confirmation.ConfirmationRouter
 import com.mudrichenkoevgeny.backend.feature.user.route.security.SecurityRouter
 import com.mudrichenkoevgeny.backend.feature.user.route.session.SessionRouter
 import com.mudrichenkoevgeny.backend.feature.user.route.user.UserRouter
@@ -17,8 +16,7 @@ class UserFeatureRoutes @Inject constructor(
     private val authRouter: AuthRouter,
     private val userRouter: UserRouter,
     private val sessionRouter: SessionRouter,
-    private val securityRouter: SecurityRouter,
-    private val confirmationRouter: ConfirmationRouter,
+    private val securityRouter: SecurityRouter
 ) : BaseRouter {
     override fun register(route: Route) {
         authRouter.register(route)

@@ -4,42 +4,35 @@ import com.mudrichenkoevgeny.backend.core.common.network.request.model.RequestCo
 import com.mudrichenkoevgeny.backend.core.common.result.AppResult
 import com.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
 import com.mudrichenkoevgeny.backend.core.security.authenticationpolicychecker.AuthenticationPolicyChecker
-import com.mudrichenkoevgeny.backend.core.security.passwordpolicychecker.PasswordPolicyChecker
-import com.mudrichenkoevgeny.backend.core.security.passwordpolicychecker.result.PasswordPolicyCheckResult
 import com.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitAction
 import com.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import com.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
 import com.mudrichenkoevgeny.backend.feature.user.enums.OtpVerificationType
 import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserRole
-import com.mudrichenkoevgeny.backend.feature.user.error.helper.convertToPasswordTooWeak
 import com.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import com.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import com.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import com.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
-import com.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
+import com.mudrichenkoevgeny.backend.feature.user.model.confirmation.SendConfirmation
+import com.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import com.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
 import com.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUtil
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AddUserIdentifierEmailUseCase @Inject constructor(
+class SendAddEmailIdentifierConfirmationUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,
     private val userAuditLogger: UserAuditLogger,
     private val otpService: OtpService,
-    private val passwordPolicyChecker: PasswordPolicyChecker,
+    private val emailService: EmailService,
     private val sessionManager: SessionManager,
     private val userIdentifierManager: UserIdentifierManager,
-    private val authManager: AuthManager,
     private val authenticationPolicyChecker: AuthenticationPolicyChecker
 ) {
     suspend fun execute(
         email: String,
-        password: String,
-        confirmationCode: String,
         requestContext: RequestContext
-    ): AppResult<UserIdentifier> {
+    ): AppResult<SendConfirmation> {
         val userId = requestContext.userId
             ?: return AppResult.Error(UserError.InvalidAccessToken())
 
@@ -55,7 +48,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
 
         val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
             requestContext = requestContext,
-            rateLimitAction = RateLimitAction.USER_IDENTIFIER_CHANGE,
+            rateLimitAction = RateLimitAction.SEND_OTP_EMAIL,
             rateLimitIdentifier = email,
             auditAction = AUDIT_ACTION,
             auditResource = AUDIT_RESOURCE,
@@ -104,137 +97,126 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
             return AppResult.Error(UserError.AuthenticationConfirmationRequired())
         }
 
-        val userIdentifiersListResult = userIdentifierManager.getUserIdentifierListByUserId(userId)
-
-        val userIdentifiersList = when (userIdentifiersListResult) {
-            is AppResult.Success -> userIdentifiersListResult.data
-            is AppResult.Error -> {
-                logAuditInternalError(
-                    requestContext = requestContext,
-                    auditResourceId = auditResourceId,
-                    auditMetadata = auditMetadata
-                )
-                return userIdentifiersListResult
-            }
-        }
-
-        val existingUserIdentifierEmail = userIdentifiersList.find { userIdentifier ->
-            userIdentifier.userAuthProvider == UserAuthProvider.EMAIL
-        }
-
-        if (existingUserIdentifierEmail != null) {
-            userAuditLogger.logFail(
-                requestContext = requestContext,
-                action = AUDIT_ACTION,
-                resource = AUDIT_RESOURCE,
-                resourceId = auditResourceId,
-                type = UserAuditMetadata.Types.ALREADY_HAS_USER_IDENTIFIER_WITH_THAT_TYPE,
-                metadata = auditMetadata
-            )
-            return AppResult.Error(UserError.AlreadyHasUserIdentifierWithThatType())
-        }
-
-        val passwordPolicyCheckResult = passwordPolicyChecker.check(password)
-
-        if (passwordPolicyCheckResult is PasswordPolicyCheckResult.Fail) {
-            userAuditLogger.logFail(
-                requestContext = requestContext,
-                action = AUDIT_ACTION,
-                resource = AUDIT_RESOURCE,
-                resourceId = auditResourceId,
-                type = UserAuditMetadata.Types.TOO_WEAK_PASSWORD,
-                metadata = auditMetadata
-            )
-            return AppResult.Error(passwordPolicyCheckResult.convertToPasswordTooWeak())
-        }
-
-        val verifyOtpResult = otpService.verifyOtp(
-            identifier = email,
-            type = OtpVerificationType.EMAIL_VERIFICATION,
-            code = confirmationCode
-        )
-
-        val isConfirmationCodeCorrect = when (verifyOtpResult) {
-            is AppResult.Success -> verifyOtpResult.data
-            is AppResult.Error -> {
-                logAuditInternalError(
-                    requestContext = requestContext,
-                    auditResourceId = auditResourceId,
-                    auditMetadata = auditMetadata
-                )
-                return verifyOtpResult
-            }
-        }
-
-        if (!isConfirmationCodeCorrect) {
-            userAuditLogger.logFail(
-                requestContext = requestContext,
-                action = AUDIT_ACTION,
-                resource = AUDIT_RESOURCE,
-                resourceId = auditResourceId,
-                type = UserAuditMetadata.Types.WRONG_VERIFICATION_CODE,
-                metadata = auditMetadata
-            )
-            return AppResult.Error(UserError.WrongConfirmationCode())
-        }
-
-        val getUserIdentifierResult = userIdentifierManager.getUserIdentifier(
+        val identifierResult = userIdentifierManager.getUserIdentifier(
             userAuthProvider = UserAuthProvider.EMAIL,
             identifier = email
         )
 
-        val existingUserIdentifier = when (getUserIdentifierResult) {
-            is AppResult.Success -> getUserIdentifierResult.data
+        val identifier = when (identifierResult) {
+            is AppResult.Success -> identifierResult.data
             is AppResult.Error -> {
                 logAuditInternalError(
                     requestContext = requestContext,
                     auditResourceId = auditResourceId,
                     auditMetadata = auditMetadata
                 )
-                return getUserIdentifierResult
+                return identifierResult
             }
         }
 
-        if (existingUserIdentifier != null) {
-            userAuditLogger.logFail(
-                requestContext = requestContext,
-                action = AUDIT_ACTION,
-                resource = AUDIT_RESOURCE,
-                resourceId = auditResourceId,
-                type = UserAuditMetadata.Types.EMAIL_ALREADY_REGISTERED,
-                metadata = auditMetadata
-            )
-            return AppResult.Error(UserError.CannotCreateUserIdentifier())
+        return if (identifier != null) {
+            sendAlreadyRegistered(email, requestContext, auditResourceId, auditMetadata)
+        } else {
+            sendConfirmationCode(email, requestContext, auditResourceId, auditMetadata)
         }
+    }
 
-        val userIdentifierResult = authManager.getOrCreateUserIdentifier(
-            userAuthProvider = UserAuthProvider.EMAIL,
-            identifier = email,
-            password = password,
-            userRole = UserRole.USER
+    private suspend fun sendAlreadyRegistered(
+        email: String,
+        requestContext: RequestContext,
+        auditResourceId: String,
+        auditMetadata: MutableMap<String, String>
+    ): AppResult<SendConfirmation> {
+        val getOtpResult = otpService.getOtpFake(
+            identifier = email
         )
 
-        return when (userIdentifierResult) {
-            is AppResult.Success -> {
-                auditMetadata[UserAuditMetadata.Keys.USER_IDENTIFIER_ID] = userIdentifierResult.data.id.asString()
-                userAuditLogger.logSuccess(
-                    requestContext = requestContext,
-                    action = AUDIT_ACTION,
-                    resource = AUDIT_RESOURCE,
-                    resourceId = auditResourceId,
-                    metadata = auditMetadata
-                )
-                userIdentifierResult
-            }
+        if (getOtpResult is AppResult.Error) {
+            logAuditInternalError(
+                requestContext = requestContext,
+                auditResourceId = auditResourceId,
+                auditMetadata = auditMetadata
+            )
+            return getOtpResult
+        }
+
+        val sendEmailResult = emailService.sendAlreadyRegisteredEmail(
+            email = email,
+            ipAddress = requestContext.clientInfo.ipAddress,
+            deviceName = requestContext.clientInfo.deviceName
+        )
+
+        if (sendEmailResult is AppResult.Error) {
+            logAuditInternalError(
+                requestContext = requestContext,
+                auditResourceId = auditResourceId,
+                auditMetadata = auditMetadata
+            )
+            return sendEmailResult
+        }
+
+        userAuditLogger.logSuccess(
+            requestContext = requestContext,
+            action = AUDIT_ACTION,
+            resource = AUDIT_RESOURCE,
+            resourceId = auditResourceId,
+            type = UserAuditMetadata.Types.ALREADY_REGISTERED
+        )
+
+        return AppResult.Success(
+            SendConfirmation(
+                retryAfterSeconds = RETRY_AFTER_SECONDS
+            )
+        )
+    }
+
+    private suspend fun sendConfirmationCode(
+        email: String,
+        requestContext: RequestContext,
+        auditResourceId: String,
+        auditMetadata: MutableMap<String, String>
+    ): AppResult<SendConfirmation> {
+        val getOtpResult = otpService.getOtp(
+            identifier = email,
+            type = OtpVerificationType.EMAIL_VERIFICATION
+        )
+
+        val code = when (getOtpResult) {
+            is AppResult.Success -> getOtpResult.data
             is AppResult.Error -> {
                 logAuditInternalError(
                     requestContext = requestContext,
                     auditResourceId = auditResourceId,
                     auditMetadata = auditMetadata
                 )
-                return userIdentifierResult
+                return getOtpResult
             }
         }
+
+        val sendEmailResult = emailService.sendVerificationCode(email, code)
+
+        if (sendEmailResult is AppResult.Error) {
+            logAuditInternalError(
+                requestContext = requestContext,
+                auditResourceId = auditResourceId,
+                auditMetadata = auditMetadata
+            )
+            return sendEmailResult
+        }
+
+        userAuditLogger.logSuccess(
+            requestContext = requestContext,
+            action = AUDIT_ACTION,
+            resource = AUDIT_RESOURCE,
+            resourceId = auditResourceId,
+            type = UserAuditMetadata.Types.VERIFICATION_CODE_SENT
+        )
+
+        return AppResult.Success(
+            SendConfirmation(
+                retryAfterSeconds = RETRY_AFTER_SECONDS
+            )
+        )
     }
 
     private fun logAuditInternalError(
@@ -252,7 +234,9 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
     }
 
     companion object {
-        const val AUDIT_ACTION = "add_user_identifier_email"
+        const val RETRY_AFTER_SECONDS = 60
+
+        const val AUDIT_ACTION = "send_add_email_identifier_confirmation"
         const val AUDIT_RESOURCE = "user"
     }
 }
