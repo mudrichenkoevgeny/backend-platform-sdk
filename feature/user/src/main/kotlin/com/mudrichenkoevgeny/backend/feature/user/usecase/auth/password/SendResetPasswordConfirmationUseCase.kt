@@ -1,17 +1,17 @@
-package com.mudrichenkoevgeny.backend.feature.user.usecase.auth.password
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.password
 
-import com.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
-import com.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitAction
-import com.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
-import com.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
-import com.mudrichenkoevgeny.backend.feature.user.enums.OtpVerificationType
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
-import com.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
-import com.mudrichenkoevgeny.backend.feature.user.model.confirmation.SendConfirmation
-import com.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
-import com.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
+import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitAction
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.OtpVerificationType
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.model.confirmation.SendConfirmation
+import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
+import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
 import javax.inject.Inject
 import javax.inject.Singleton
 

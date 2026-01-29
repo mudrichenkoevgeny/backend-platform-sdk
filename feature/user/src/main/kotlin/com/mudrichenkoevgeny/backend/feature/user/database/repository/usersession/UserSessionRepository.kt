@@ -1,10 +1,10 @@
-package com.mudrichenkoevgeny.backend.feature.user.database.repository.usersession
+package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession
 
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
-import com.mudrichenkoevgeny.backend.core.common.model.UserId
-import com.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
-import com.mudrichenkoevgeny.backend.core.common.model.UserSessionId
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserSessionId
 
 interface UserSessionRepository {
     suspend fun createUserSession(userSession: UserSession): AppResult<UserSession>

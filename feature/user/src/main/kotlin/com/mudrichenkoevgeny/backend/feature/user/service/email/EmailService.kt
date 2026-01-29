@@ -1,6 +1,6 @@
-package com.mudrichenkoevgeny.backend.feature.user.service.email
+package io.github.mudrichenkoevgeny.backend.feature.user.service.email
 
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 
 interface EmailService {
     fun sendVerificationCode(email: String, code: String): AppResult<Unit>

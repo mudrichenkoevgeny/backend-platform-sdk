@@ -1,4 +1,4 @@
-package com.mudrichenkoevgeny.backend.feature.user.enums
+package io.github.mudrichenkoevgeny.backend.feature.user.enums
 
 enum class OtpVerificationType {
     EMAIL_VERIFICATION,

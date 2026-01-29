@@ -1,11 +1,11 @@
-package com.mudrichenkoevgeny.backend.feature.user.usecase.system
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.system
 
-import com.mudrichenkoevgeny.backend.core.common.config.seed.AdminAccount
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserRole
-import com.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
+import io.github.mudrichenkoevgeny.backend.core.common.config.seed.AdminAccount
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserRole
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope

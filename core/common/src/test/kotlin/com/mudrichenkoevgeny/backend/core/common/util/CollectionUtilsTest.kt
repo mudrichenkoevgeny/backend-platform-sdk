@@ -1,5 +1,5 @@
 /*
-package com.mudrichenkoevgeny.backend.core.common.util
+package io.github.mudrichenkoevgeny.backend.core.common.util
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

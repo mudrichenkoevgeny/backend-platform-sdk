@@ -1,11 +1,11 @@
-package com.mudrichenkoevgeny.backend.feature.user.route
+package io.github.mudrichenkoevgeny.backend.feature.user.route
 
-import com.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
-import com.mudrichenkoevgeny.backend.feature.user.route.auth.AuthRouter
-import com.mudrichenkoevgeny.backend.feature.user.route.security.SecurityRouter
-import com.mudrichenkoevgeny.backend.feature.user.route.session.SessionRouter
-import com.mudrichenkoevgeny.backend.feature.user.route.user.UserRouter
-import com.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthenticationConstants
+import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.auth.AuthRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.security.SecurityRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.session.SessionRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.user.UserRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthenticationConstants
 import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.Route
 import javax.inject.Inject

@@ -1,6 +1,6 @@
-package com.mudrichenkoevgeny.backend.feature.user.model.auth
+package io.github.mudrichenkoevgeny.backend.feature.user.model.auth
 
-import com.mudrichenkoevgeny.backend.feature.user.network.constants.UserNetworkConstants
+import io.github.mudrichenkoevgeny.backend.feature.user.network.constants.UserNetworkConstants
 import java.time.Instant
 
 data class SessionToken(

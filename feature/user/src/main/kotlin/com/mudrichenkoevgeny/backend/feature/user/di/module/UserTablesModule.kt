@@ -1,9 +1,9 @@
-package com.mudrichenkoevgeny.backend.feature.user.di.module
+package io.github.mudrichenkoevgeny.backend.feature.user.di.module
 
-import com.mudrichenkoevgeny.backend.core.database.table.BaseTable
-import com.mudrichenkoevgeny.backend.feature.user.database.table.UserIdentifiersTable
-import com.mudrichenkoevgeny.backend.feature.user.database.table.UserSessionsTable
-import com.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
+import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
+import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserIdentifiersTable
+import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserSessionsTable
+import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet

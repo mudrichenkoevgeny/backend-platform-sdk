@@ -1,13 +1,13 @@
-package com.mudrichenkoevgeny.backend.feature.user.security.jwt
+package io.github.mudrichenkoevgeny.backend.feature.user.security.jwt
 
 import com.auth0.jwt.exceptions.JWTDecodeException
-import com.mudrichenkoevgeny.backend.core.common.model.UserId
-import com.mudrichenkoevgeny.backend.core.common.model.UserSessionId
-import com.mudrichenkoevgeny.backend.core.common.model.toUserIdOrNull
-import com.mudrichenkoevgeny.backend.core.common.model.toUserSessionIdOrNull
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import com.mudrichenkoevgeny.backend.feature.user.network.constants.UserNetworkConstants
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserSessionId
+import io.github.mudrichenkoevgeny.backend.core.common.model.toUserIdOrNull
+import io.github.mudrichenkoevgeny.backend.core.common.model.toUserSessionIdOrNull
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.network.constants.UserNetworkConstants
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
 import io.jsonwebtoken.JwtBuilder

@@ -1,14 +1,14 @@
-package com.mudrichenkoevgeny.backend.feature.user.usecase.auth.login
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.login
 
-import com.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
-import com.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitAction
-import com.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
-import com.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
-import com.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import com.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
+import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitAction
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
 import javax.inject.Inject
 import javax.inject.Singleton
 

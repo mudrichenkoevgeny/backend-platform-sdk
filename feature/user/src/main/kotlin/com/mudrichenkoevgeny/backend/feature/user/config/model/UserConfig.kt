@@ -1,6 +1,6 @@
-package com.mudrichenkoevgeny.backend.feature.user.config.model
+package io.github.mudrichenkoevgeny.backend.feature.user.config.model
 
-import com.mudrichenkoevgeny.backend.core.common.config.seed.AdminAccount
+import io.github.mudrichenkoevgeny.backend.core.common.config.seed.AdminAccount
 import java.time.Duration
 
 data class UserConfig(

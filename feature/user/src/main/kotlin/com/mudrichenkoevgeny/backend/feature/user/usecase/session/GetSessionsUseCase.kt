@@ -1,11 +1,11 @@
-package com.mudrichenkoevgeny.backend.feature.user.usecase.session
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.session
 
-import com.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
-import com.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import com.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
-import com.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import io.github.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
 import javax.inject.Inject
 import javax.inject.Singleton
 

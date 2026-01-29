@@ -1,7 +1,7 @@
-package com.mudrichenkoevgeny.backend.feature.user.di.module
+package io.github.mudrichenkoevgeny.backend.feature.user.di.module
 
-import com.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
-import com.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLoggerImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLoggerImpl
 import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton

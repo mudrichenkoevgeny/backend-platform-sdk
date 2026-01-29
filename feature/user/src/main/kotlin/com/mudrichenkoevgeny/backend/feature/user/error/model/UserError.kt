@@ -1,11 +1,11 @@
-package com.mudrichenkoevgeny.backend.feature.user.error.model
+package io.github.mudrichenkoevgeny.backend.feature.user.error.model
 
-import com.mudrichenkoevgeny.backend.core.common.error.model.AppError
-import com.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
-import com.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
-import com.mudrichenkoevgeny.backend.feature.user.error.constants.UserErrorArgs
-import com.mudrichenkoevgeny.backend.feature.user.error.constants.UserErrorCodes
-import com.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
+import io.github.mudrichenkoevgeny.backend.feature.user.error.constants.UserErrorArgs
+import io.github.mudrichenkoevgeny.backend.feature.user.error.constants.UserErrorCodes
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import java.util.UUID

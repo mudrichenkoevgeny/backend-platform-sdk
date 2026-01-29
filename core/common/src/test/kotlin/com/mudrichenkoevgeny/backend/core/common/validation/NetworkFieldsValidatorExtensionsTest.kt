@@ -1,7 +1,7 @@
 /*
-package com.mudrichenkoevgeny.backend.core.common.validation
+package io.github.mudrichenkoevgeny.backend.core.common.validation
 
-import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.receive
 import io.mockk.coEvery

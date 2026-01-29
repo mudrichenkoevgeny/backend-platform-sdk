@@ -1,9 +1,9 @@
-package com.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider
+package io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider
 
-import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshToken
-import com.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshToken
+import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
 import java.security.MessageDigest
 import java.util.Base64
 import java.util.UUID

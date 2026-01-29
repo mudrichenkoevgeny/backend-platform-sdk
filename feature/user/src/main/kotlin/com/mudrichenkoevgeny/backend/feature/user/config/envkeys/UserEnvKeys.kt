@@ -1,4 +1,4 @@
-package com.mudrichenkoevgeny.backend.feature.user.config.envkeys
+package io.github.mudrichenkoevgeny.backend.feature.user.config.envkeys
 
 object UserEnvKeys {
     const val JWT_SECRET_FILE = "JWT_SECRET_FILE"

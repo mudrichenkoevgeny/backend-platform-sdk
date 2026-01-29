@@ -1,13 +1,13 @@
-package com.mudrichenkoevgeny.backend.feature.user.di.module
+package io.github.mudrichenkoevgeny.backend.feature.user.di.module
 
-import com.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
-import com.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManagerImpl
-import com.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
-import com.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManagerImpl
-import com.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import com.mudrichenkoevgeny.backend.feature.user.manager.user.UserManagerImpl
-import com.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
-import com.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManagerImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManagerImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManagerImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManagerImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManagerImpl
 import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton

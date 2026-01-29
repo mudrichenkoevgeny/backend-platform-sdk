@@ -1,15 +1,15 @@
-package com.mudrichenkoevgeny.backend.feature.user.route.security.password
+package io.github.mudrichenkoevgeny.backend.feature.user.route.security.password
 
-import com.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
-import com.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import com.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
-import com.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import com.mudrichenkoevgeny.backend.core.common.validation.validateRequest
-import com.mudrichenkoevgeny.backend.feature.user.network.request.context.getRequestContext
-import com.mudrichenkoevgeny.backend.feature.user.network.request.security.password.PasswordChangeRequest
-import com.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
-import com.mudrichenkoevgeny.backend.feature.user.route.security.SecurityRoutes
-import com.mudrichenkoevgeny.backend.feature.user.usecase.security.password.PasswordChangeUseCase
+import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
+import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
+import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
+import io.github.mudrichenkoevgeny.backend.core.common.validation.validateRequest
+import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.security.password.PasswordChangeRequest
+import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
+import io.github.mudrichenkoevgeny.backend.feature.user.route.security.SecurityRoutes
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.password.PasswordChangeUseCase
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.post
 import io.ktor.http.HttpStatusCode

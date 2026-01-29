@@ -7,6 +7,8 @@ kotlin = "2.2.21"
 dependency-analysis = "3.3.0"
 gradleup-shadow = "9.3.0"
 
+maven-publish-plugin = "0.36.0"
+
 # libraries
 kotlinx-serialization-json = "1.9.0"
 kotlinx-coroutines-core = "1.10.2"
@@ -139,7 +141,6 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 h2database = { group = "com.h2database", name = "h2", version.ref = "h2database" }
 
 [plugins]
-maven-publish = { id = "maven-publish" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
@@ -147,3 +148,4 @@ dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.r
 java-library = { id = "java-library" }
 application = { id = "application" }
 gradleup-shadow = { id = "com.gradleup.shadow", version.ref = "gradleup-shadow" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish-plugin" }

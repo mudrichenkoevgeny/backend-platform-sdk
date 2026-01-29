@@ -1,11 +1,11 @@
-package com.mudrichenkoevgeny.backend.feature.user.di.module
+package io.github.mudrichenkoevgeny.backend.feature.user.di.module
 
-import com.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
-import com.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthenticationProvider
-import com.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
-import com.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProviderImpl
-import com.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.JwtTokenProvider
-import com.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthenticationProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProviderImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.JwtTokenProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
 import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton

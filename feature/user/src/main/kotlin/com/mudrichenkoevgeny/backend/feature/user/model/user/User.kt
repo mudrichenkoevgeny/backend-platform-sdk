@@ -1,8 +1,8 @@
-package com.mudrichenkoevgeny.backend.feature.user.model.user
+package io.github.mudrichenkoevgeny.backend.feature.user.model.user
 
-import com.mudrichenkoevgeny.backend.core.common.model.UserId
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserAccountStatus
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserRole
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserAccountStatus
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserRole
 import java.time.Instant
 
 data class User(

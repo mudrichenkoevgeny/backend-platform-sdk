@@ -1,9 +1,9 @@
-package com.mudrichenkoevgeny.backend.feature.user.database.table
+package io.github.mudrichenkoevgeny.backend.feature.user.database.table
 
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserAccountStatus
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserRole
-import com.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
-import com.mudrichenkoevgeny.backend.core.database.table.BaseTable
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserAccountStatus
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserRole
+import io.github.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
+import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
 import org.jetbrains.exposed.sql.javatime.timestamp
 
 object UsersTable : BaseTable("users") {

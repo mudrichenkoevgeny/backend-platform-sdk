@@ -1,4 +1,4 @@
-package com.mudrichenkoevgeny.backend.core.database.extensions
+package io.github.mudrichenkoevgeny.backend.core.database.extensions
 
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Table

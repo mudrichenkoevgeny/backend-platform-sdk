@@ -1,11 +1,11 @@
-package com.mudrichenkoevgeny.backend.feature.user.di.module
+package io.github.mudrichenkoevgeny.backend.feature.user.di.module
 
-import com.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
-import com.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepositoryImpl
-import com.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
-import com.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepositoryImpl
-import com.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
-import com.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepositoryImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepositoryImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepositoryImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton

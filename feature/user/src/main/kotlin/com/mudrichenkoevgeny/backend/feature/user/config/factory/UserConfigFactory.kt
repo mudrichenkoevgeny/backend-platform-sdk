@@ -1,6 +1,6 @@
-package com.mudrichenkoevgeny.backend.feature.user.config.factory
+package io.github.mudrichenkoevgeny.backend.feature.user.config.factory
 
-import com.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
+import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 
 interface UserConfigFactory {
     fun create(): UserConfig

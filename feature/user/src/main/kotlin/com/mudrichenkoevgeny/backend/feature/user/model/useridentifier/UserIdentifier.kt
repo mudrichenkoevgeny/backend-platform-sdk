@@ -1,8 +1,8 @@
-package com.mudrichenkoevgeny.backend.feature.user.model.useridentifier
+package io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier
 
-import com.mudrichenkoevgeny.backend.core.common.model.UserId
-import com.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
 import java.time.Instant
 
 data class UserIdentifier(

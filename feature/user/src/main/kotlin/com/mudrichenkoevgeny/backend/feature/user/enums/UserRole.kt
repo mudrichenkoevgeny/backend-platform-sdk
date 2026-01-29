@@ -1,4 +1,4 @@
-package com.mudrichenkoevgeny.backend.feature.user.enums
+package io.github.mudrichenkoevgeny.backend.feature.user.enums
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

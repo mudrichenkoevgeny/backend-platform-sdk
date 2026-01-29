@@ -1,11 +1,11 @@
-package com.mudrichenkoevgeny.backend.feature.user.audit.logger
+package io.github.mudrichenkoevgeny.backend.feature.user.audit.logger
 
-import com.mudrichenkoevgeny.backend.core.audit.enums.AuditStatus
-import com.mudrichenkoevgeny.backend.core.audit.model.AuditEvent
-import com.mudrichenkoevgeny.backend.core.audit.service.AuditService
-import com.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
-import com.mudrichenkoevgeny.backend.core.common.util.toJsonElementMap
-import com.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
+import io.github.mudrichenkoevgeny.backend.core.audit.enums.AuditStatus
+import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent
+import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.core.common.util.toJsonElementMap
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import kotlinx.serialization.json.JsonElement
 import javax.inject.Inject
 import javax.inject.Singleton

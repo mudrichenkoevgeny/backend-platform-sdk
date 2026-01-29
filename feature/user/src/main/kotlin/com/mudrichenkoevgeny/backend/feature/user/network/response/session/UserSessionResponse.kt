@@ -1,7 +1,7 @@
-package com.mudrichenkoevgeny.backend.feature.user.network.response.session
+package io.github.mudrichenkoevgeny.backend.feature.user.network.response.session
 
-import com.mudrichenkoevgeny.backend.core.common.network.constants.ApiFields
-import com.mudrichenkoevgeny.backend.feature.user.network.constants.UserApiFields
+import io.github.mudrichenkoevgeny.backend.core.common.network.constants.ApiFields
+import io.github.mudrichenkoevgeny.backend.feature.user.network.constants.UserApiFields
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

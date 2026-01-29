@@ -1,4 +1,4 @@
-package com.mudrichenkoevgeny.backend.feature.user.util
+package io.github.mudrichenkoevgeny.backend.feature.user.util
 
 object IdentifierMaskerUtil {
 

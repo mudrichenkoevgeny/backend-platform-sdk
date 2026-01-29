@@ -1,7 +1,7 @@
-package com.mudrichenkoevgeny.backend.feature.user.mapper
+package io.github.mudrichenkoevgeny.backend.feature.user.mapper
 
-import com.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
-import com.mudrichenkoevgeny.backend.feature.user.network.response.useridentifier.UserIdentifierResponse
+import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
+import io.github.mudrichenkoevgeny.backend.feature.user.network.response.useridentifier.UserIdentifierResponse
 
 fun UserIdentifier.toResponse(): UserIdentifierResponse = UserIdentifierResponse(
     id = id.value.toString(),

@@ -1,8 +1,8 @@
-package com.mudrichenkoevgeny.backend.feature.user.network.response.user
+package io.github.mudrichenkoevgeny.backend.feature.user.network.response.user
 
-import com.mudrichenkoevgeny.backend.core.common.network.constants.ApiFields
-import com.mudrichenkoevgeny.backend.feature.user.network.constants.UserApiFields
-import com.mudrichenkoevgeny.backend.feature.user.network.response.useridentifier.UserIdentifierResponse
+import io.github.mudrichenkoevgeny.backend.core.common.network.constants.ApiFields
+import io.github.mudrichenkoevgeny.backend.feature.user.network.constants.UserApiFields
+import io.github.mudrichenkoevgeny.backend.feature.user.network.response.useridentifier.UserIdentifierResponse
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

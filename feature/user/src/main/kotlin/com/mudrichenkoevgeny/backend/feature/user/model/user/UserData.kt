@@ -1,6 +1,6 @@
-package com.mudrichenkoevgeny.backend.feature.user.model.user
+package io.github.mudrichenkoevgeny.backend.feature.user.model.user
 
-import com.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
+import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 
 data class UserData(
     val user: User,

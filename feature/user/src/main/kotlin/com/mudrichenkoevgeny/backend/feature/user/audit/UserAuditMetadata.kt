@@ -1,4 +1,4 @@
-package com.mudrichenkoevgeny.backend.feature.user.audit
+package io.github.mudrichenkoevgeny.backend.feature.user.audit
 
 object UserAuditMetadata {
     object Keys {

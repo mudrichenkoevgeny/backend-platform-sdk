@@ -1,10 +1,10 @@
 /*
-package com.mudrichenkoevgeny.backend.core.database.factory
+package io.github.mudrichenkoevgeny.backend.core.database.factory
 
-import com.mudrichenkoevgeny.backend.core.database.datasource.DataSourceCreator
-import com.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManagerImpl
-import com.mudrichenkoevgeny.backend.core.database.migrator.DatabaseMigrator
-import com.mudrichenkoevgeny.backend.core.database.table.TestTable
+import io.github.mudrichenkoevgeny.backend.core.database.datasource.DataSourceCreator
+import io.github.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManagerImpl
+import io.github.mudrichenkoevgeny.backend.core.database.migrator.DatabaseMigrator
+import io.github.mudrichenkoevgeny.backend.core.database.table.TestTable
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.h2.jdbcx.JdbcDataSource

@@ -1,9 +1,9 @@
-package com.mudrichenkoevgeny.backend.feature.user.di.module
+package io.github.mudrichenkoevgeny.backend.feature.user.di.module
 
-import com.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
-import com.mudrichenkoevgeny.backend.feature.user.config.factory.UserConfigFactory
-import com.mudrichenkoevgeny.backend.feature.user.config.factory.UserConfigFactoryImpl
-import com.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
+import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
+import io.github.mudrichenkoevgeny.backend.feature.user.config.factory.UserConfigFactory
+import io.github.mudrichenkoevgeny.backend.feature.user.config.factory.UserConfigFactoryImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton

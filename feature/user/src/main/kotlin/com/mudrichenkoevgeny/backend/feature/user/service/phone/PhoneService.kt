@@ -1,6 +1,6 @@
-package com.mudrichenkoevgeny.backend.feature.user.service.phone
+package io.github.mudrichenkoevgeny.backend.feature.user.service.phone
 
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 
 interface PhoneService {
     fun sendVerificationCode(phoneNumber: String, code: String): AppResult<Unit>

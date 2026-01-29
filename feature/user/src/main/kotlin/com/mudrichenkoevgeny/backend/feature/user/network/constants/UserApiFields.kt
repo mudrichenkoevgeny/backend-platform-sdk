@@ -1,4 +1,4 @@
-package com.mudrichenkoevgeny.backend.feature.user.network.constants
+package io.github.mudrichenkoevgeny.backend.feature.user.network.constants
 
 object UserApiFields {
     const val SESSION_TOKEN = "session_token"

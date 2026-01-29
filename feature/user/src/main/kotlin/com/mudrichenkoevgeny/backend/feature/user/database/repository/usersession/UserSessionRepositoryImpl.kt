@@ -1,14 +1,14 @@
-package com.mudrichenkoevgeny.backend.feature.user.database.repository.usersession
+package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession
 
-import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
-import com.mudrichenkoevgeny.backend.core.common.model.UserDeviceId
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.feature.user.database.table.UserSessionsTable
-import com.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
-import com.mudrichenkoevgeny.backend.core.common.model.UserId
-import com.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
-import com.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
-import com.mudrichenkoevgeny.backend.core.common.model.UserSessionId
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserDeviceId
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserSessionsTable
+import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
+import io.github.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserSessionId
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList

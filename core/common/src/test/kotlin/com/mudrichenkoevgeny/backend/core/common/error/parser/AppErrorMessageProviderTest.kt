@@ -1,9 +1,9 @@
 /*
-package com.mudrichenkoevgeny.backend.core.common.error.parser
+package io.github.mudrichenkoevgeny.backend.core.common.error.parser
 
-import com.mudrichenkoevgeny.backend.core.common.error.constants.CommonErrorArgs
-import com.mudrichenkoevgeny.backend.core.common.error.constants.CommonErrorCodes
-import com.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
+import io.github.mudrichenkoevgeny.backend.core.common.error.constants.CommonErrorArgs
+import io.github.mudrichenkoevgeny.backend.core.common.error.constants.CommonErrorCodes
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

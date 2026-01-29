@@ -1,7 +1,7 @@
-package com.mudrichenkoevgeny.backend.feature.user.mapper
+package io.github.mudrichenkoevgeny.backend.feature.user.mapper
 
-import com.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
-import com.mudrichenkoevgeny.backend.feature.user.network.response.auth.AuthDataResponse
+import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
+import io.github.mudrichenkoevgeny.backend.feature.user.network.response.auth.AuthDataResponse
 
 fun AuthData.toResponse(): AuthDataResponse = AuthDataResponse(
     userResponse = this.user.toResponse(this.userIdentifiersList),

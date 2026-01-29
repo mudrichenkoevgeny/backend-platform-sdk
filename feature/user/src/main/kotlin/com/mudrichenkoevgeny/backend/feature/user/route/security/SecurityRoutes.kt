@@ -1,8 +1,8 @@
-package com.mudrichenkoevgeny.backend.feature.user.route.security
+package io.github.mudrichenkoevgeny.backend.feature.user.route.security
 
-import com.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
-import com.mudrichenkoevgeny.backend.feature.user.route.security.password.PasswordRouter
-import com.mudrichenkoevgeny.backend.feature.user.route.security.useridentifiers.SecurityUserIdentifiersRouter
+import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.security.password.PasswordRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.security.useridentifiers.SecurityUserIdentifiersRouter
 import io.ktor.server.routing.Route
 import javax.inject.Inject
 import javax.inject.Singleton

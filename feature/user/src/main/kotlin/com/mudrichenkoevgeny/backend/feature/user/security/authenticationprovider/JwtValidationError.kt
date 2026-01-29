@@ -1,7 +1,7 @@
-package com.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider
+package io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider
 
-import com.mudrichenkoevgeny.backend.core.common.error.model.AppError
-import com.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 
 sealed class JwtValidationError {
     object InvalidToken : JwtValidationError()

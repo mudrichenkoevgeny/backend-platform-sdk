@@ -1,20 +1,20 @@
-package com.mudrichenkoevgeny.backend.feature.user.usecase.security.password
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.password
 
-import com.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
-import com.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
-import com.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
-import com.mudrichenkoevgeny.backend.core.security.passwordpolicychecker.PasswordPolicyChecker
-import com.mudrichenkoevgeny.backend.core.security.passwordpolicychecker.result.PasswordPolicyCheckResult
-import com.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitAction
-import com.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
-import com.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
-import com.mudrichenkoevgeny.backend.feature.user.error.helper.convertToPasswordTooWeak
-import com.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import com.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
-import com.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
+import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
+import io.github.mudrichenkoevgeny.backend.core.security.passwordpolicychecker.PasswordPolicyChecker
+import io.github.mudrichenkoevgeny.backend.core.security.passwordpolicychecker.result.PasswordPolicyCheckResult
+import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitAction
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.error.helper.convertToPasswordTooWeak
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import javax.inject.Inject
 import javax.inject.Singleton
 

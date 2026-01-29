@@ -1,12 +1,12 @@
-package com.mudrichenkoevgeny.backend.feature.user.di
+package io.github.mudrichenkoevgeny.backend.feature.user.di
 
-import com.mudrichenkoevgeny.backend.feature.user.di.module.UserAuditModule
-import com.mudrichenkoevgeny.backend.feature.user.di.module.UserAuthInfrastructureModule
-import com.mudrichenkoevgeny.backend.feature.user.di.module.UserConfigModule
-import com.mudrichenkoevgeny.backend.feature.user.di.module.UserManagersModule
-import com.mudrichenkoevgeny.backend.feature.user.di.module.UserRepositoriesModule
-import com.mudrichenkoevgeny.backend.feature.user.di.module.UserServicesModule
-import com.mudrichenkoevgeny.backend.feature.user.di.module.UserTablesModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserAuditModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserAuthInfrastructureModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserConfigModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserManagersModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserRepositoriesModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserServicesModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserTablesModule
 import dagger.Module
 
 @Module(

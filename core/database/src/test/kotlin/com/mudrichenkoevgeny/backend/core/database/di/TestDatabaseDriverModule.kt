@@ -1,6 +1,6 @@
-package com.mudrichenkoevgeny.backend.core.database.di
+package io.github.mudrichenkoevgeny.backend.core.database.di
 
-import com.mudrichenkoevgeny.backend.core.database.di.qualifiers.DriverClassName
+import io.github.mudrichenkoevgeny.backend.core.database.di.qualifiers.DriverClassName
 import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton

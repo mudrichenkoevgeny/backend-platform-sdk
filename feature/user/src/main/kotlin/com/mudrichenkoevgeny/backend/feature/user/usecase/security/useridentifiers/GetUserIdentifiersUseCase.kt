@@ -1,11 +1,11 @@
-package com.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers
 
-import com.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
-import com.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import com.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
-import com.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import javax.inject.Inject
 import javax.inject.Singleton
 

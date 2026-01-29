@@ -1,12 +1,12 @@
 /*
-package com.mudrichenkoevgeny.backend.core.common.application.statuspages
+package io.github.mudrichenkoevgeny.backend.core.common.application.statuspages
 
-import com.mudrichenkoevgeny.backend.core.common.error.constants.CommonErrorCodes
-import com.mudrichenkoevgeny.backend.core.common.error.model.ApiError
-import com.mudrichenkoevgeny.backend.core.common.error.model.CommonError
-import com.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
-import com.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import com.mudrichenkoevgeny.backend.core.common.validation.ValidationException
+import io.github.mudrichenkoevgeny.backend.core.common.error.constants.CommonErrorCodes
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.ApiError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
+import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.validation.ValidationException
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody

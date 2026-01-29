@@ -1,8 +1,8 @@
-package com.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider
+package io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider
 
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserRole
-import com.mudrichenkoevgeny.backend.feature.user.model.user.User
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserRole
+import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 

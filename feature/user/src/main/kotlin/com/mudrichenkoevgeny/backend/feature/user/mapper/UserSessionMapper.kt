@@ -1,7 +1,7 @@
-package com.mudrichenkoevgeny.backend.feature.user.mapper
+package io.github.mudrichenkoevgeny.backend.feature.user.mapper
 
-import com.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
-import com.mudrichenkoevgeny.backend.feature.user.network.response.session.UserSessionResponse
+import io.github.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
+import io.github.mudrichenkoevgeny.backend.feature.user.network.response.session.UserSessionResponse
 
 fun UserSession.toResponse(): UserSessionResponse = UserSessionResponse(
     id = id.value.toString(),

@@ -1,6 +1,6 @@
-package com.mudrichenkoevgeny.backend.feature.user.audit.logger
+package io.github.mudrichenkoevgeny.backend.feature.user.audit.logger
 
-import com.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
 
 interface UserAuditLogger {
     fun logInternalError(

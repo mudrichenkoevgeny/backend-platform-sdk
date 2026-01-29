@@ -1,10 +1,10 @@
-package com.mudrichenkoevgeny.backend.feature.user.config.factory
+package io.github.mudrichenkoevgeny.backend.feature.user.config.factory
 
-import com.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
-import com.mudrichenkoevgeny.backend.core.common.config.env.readJsonSecret
-import com.mudrichenkoevgeny.backend.core.common.config.seed.AdminList
-import com.mudrichenkoevgeny.backend.feature.user.config.envkeys.UserEnvKeys
-import com.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
+import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
+import io.github.mudrichenkoevgeny.backend.core.common.config.env.readJsonSecret
+import io.github.mudrichenkoevgeny.backend.core.common.config.seed.AdminList
+import io.github.mudrichenkoevgeny.backend.feature.user.config.envkeys.UserEnvKeys
+import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import javax.inject.Inject
 import javax.inject.Singleton
 

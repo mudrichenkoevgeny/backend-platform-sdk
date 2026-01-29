@@ -1,7 +1,7 @@
 /*
-package com.mudrichenkoevgeny.backend.core.database.datasource
+package io.github.mudrichenkoevgeny.backend.core.database.datasource
 
-import com.mudrichenkoevgeny.backend.core.database.di.DaggerTestDatabaseComponent
+import io.github.mudrichenkoevgeny.backend.core.database.di.DaggerTestDatabaseComponent
 import com.zaxxer.hikari.HikariDataSource
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

@@ -1,8 +1,8 @@
-package com.mudrichenkoevgeny.backend.core.database.di
+package io.github.mudrichenkoevgeny.backend.core.database.di
 
-import com.mudrichenkoevgeny.backend.core.database.datasource.DataSourceCreator
-import com.mudrichenkoevgeny.backend.core.database.di.qualifiers.DriverClassName
-import com.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManager
+import io.github.mudrichenkoevgeny.backend.core.database.datasource.DataSourceCreator
+import io.github.mudrichenkoevgeny.backend.core.database.di.qualifiers.DriverClassName
+import io.github.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManager
 import dagger.Component
 import javax.inject.Singleton
 

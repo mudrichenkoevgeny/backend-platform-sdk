@@ -1,8 +1,8 @@
 /*
-package com.mudrichenkoevgeny.backend.core.common.util
+package io.github.mudrichenkoevgeny.backend.core.common.util
 
-import com.mudrichenkoevgeny.backend.core.common.util.TimeUtils.toInstantUTC
-import com.mudrichenkoevgeny.backend.core.common.util.TimeUtils.toLocalDateTime
+import io.github.mudrichenkoevgeny.backend.core.common.util.TimeUtils.toInstantUTC
+import io.github.mudrichenkoevgeny.backend.core.common.util.TimeUtils.toLocalDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.Instant

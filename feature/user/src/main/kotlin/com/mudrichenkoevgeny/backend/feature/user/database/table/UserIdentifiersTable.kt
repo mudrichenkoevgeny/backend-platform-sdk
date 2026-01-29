@@ -1,9 +1,9 @@
-package com.mudrichenkoevgeny.backend.feature.user.database.table
+package io.github.mudrichenkoevgeny.backend.feature.user.database.table
 
-import com.mudrichenkoevgeny.backend.feature.user.database.UserDbConstraints
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
-import com.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
-import com.mudrichenkoevgeny.backend.core.database.table.BaseTable
+import io.github.mudrichenkoevgeny.backend.feature.user.database.UserDbConstraints
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
+import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
 import org.jetbrains.exposed.sql.ReferenceOption
 
 object UserIdentifiersTable : BaseTable("user_identifiers") {

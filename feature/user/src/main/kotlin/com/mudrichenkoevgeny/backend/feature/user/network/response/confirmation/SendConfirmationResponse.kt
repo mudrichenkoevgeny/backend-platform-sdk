@@ -1,6 +1,6 @@
-package com.mudrichenkoevgeny.backend.feature.user.network.response.confirmation
+package io.github.mudrichenkoevgeny.backend.feature.user.network.response.confirmation
 
-import com.mudrichenkoevgeny.backend.feature.user.network.constants.UserApiFields
+import io.github.mudrichenkoevgeny.backend.feature.user.network.constants.UserApiFields
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

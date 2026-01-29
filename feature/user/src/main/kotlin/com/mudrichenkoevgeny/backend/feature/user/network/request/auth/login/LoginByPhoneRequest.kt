@@ -1,7 +1,7 @@
-package com.mudrichenkoevgeny.backend.feature.user.network.request.auth.login
+package io.github.mudrichenkoevgeny.backend.feature.user.network.request.auth.login
 
-import com.mudrichenkoevgeny.backend.core.common.validation.NotBlankStringField
-import com.mudrichenkoevgeny.backend.feature.user.network.constants.UserApiFields
+import io.github.mudrichenkoevgeny.backend.core.common.validation.NotBlankStringField
+import io.github.mudrichenkoevgeny.backend.feature.user.network.constants.UserApiFields
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

@@ -1,6 +1,6 @@
-package com.mudrichenkoevgeny.backend.feature.user.di.mapkeys
+package io.github.mudrichenkoevgeny.backend.feature.user.di.mapkeys
 
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
 import dagger.MapKey
 
 @MapKey

@@ -1,12 +1,12 @@
-package com.mudrichenkoevgeny.backend.feature.user.manager.auth
+package io.github.mudrichenkoevgeny.backend.feature.user.manager.auth
 
-import com.mudrichenkoevgeny.backend.core.common.model.UserId
-import com.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
-import com.mudrichenkoevgeny.backend.core.common.result.AppResult
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserRole
-import com.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
-import com.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserRole
+import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
+import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
 
 interface AuthManager {
     suspend fun provideAuthData(

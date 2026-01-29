@@ -1,12 +1,12 @@
-package com.mudrichenkoevgeny.backend.feature.user.model.session
+package io.github.mudrichenkoevgeny.backend.feature.user.model.session
 
-import com.mudrichenkoevgeny.backend.core.common.model.UserDeviceId
-import com.mudrichenkoevgeny.backend.core.common.model.UserId
-import com.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
-import com.mudrichenkoevgeny.backend.core.common.model.UserSessionId
-import com.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
-import com.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
-import com.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserDeviceId
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserSessionId
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
+import io.github.mudrichenkoevgeny.backend.feature.user.enums.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
 import java.time.Instant
 
 data class UserSession(

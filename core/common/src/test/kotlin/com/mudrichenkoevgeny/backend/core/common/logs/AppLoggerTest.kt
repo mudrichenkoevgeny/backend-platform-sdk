@@ -1,9 +1,9 @@
 /*
-package com.mudrichenkoevgeny.backend.core.common.logs
+package io.github.mudrichenkoevgeny.backend.core.common.logs
 
-import com.mudrichenkoevgeny.backend.core.common.error.model.AppError
-import com.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
-import com.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.httpMethod
