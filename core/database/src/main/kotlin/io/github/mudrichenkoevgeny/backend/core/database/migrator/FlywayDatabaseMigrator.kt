@@ -16,15 +16,21 @@ class FlywayDatabaseMigrator @Inject constructor(
 
     override fun migrate(dataSource: DataSource, resources: List<String>) {
         try {
+            val sdkBaseLocation = "classpath:db/migration"
+            val allLocations = (resources + sdkBaseLocation).distinct()
+
             val flyway = Flyway.configure()
                 .dataSource(dataSource)
-                .locations(*resources.toTypedArray())
+                .locations(*allLocations.toTypedArray())
                 .baselineOnMigrate(true)
+                .outOfOrder(true)
+                .failOnMissingLocations(false)
                 .load()
 
             flyway.migrate()
         } catch (t: Throwable) {
             appLogger.logError(CommonError.Internal(t))
+            throw t
         }
     }
 }

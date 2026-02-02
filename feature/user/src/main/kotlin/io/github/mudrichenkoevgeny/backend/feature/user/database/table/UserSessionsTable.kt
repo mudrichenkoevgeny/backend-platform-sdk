@@ -8,7 +8,7 @@ import org.jetbrains.exposed.v1.javatime.timestamp
 import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalUuidApi::class)
-object UserSessionsTable : BaseTable("user_refresh_tokens") {
+object UserSessionsTable : BaseTable("user_sessions") {
     val userId = reference("user_id", UsersTable.id, onDelete = ReferenceOption.CASCADE)
     val userIdentifierId = reference(
         "user_identifier_id",

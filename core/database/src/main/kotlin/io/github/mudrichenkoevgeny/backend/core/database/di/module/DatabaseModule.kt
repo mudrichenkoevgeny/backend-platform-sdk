@@ -10,7 +10,6 @@ import io.github.mudrichenkoevgeny.backend.core.database.manager.database.Databa
 import io.github.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManagerImpl
 import io.github.mudrichenkoevgeny.backend.core.database.migrator.DatabaseMigrator
 import io.github.mudrichenkoevgeny.backend.core.database.migrator.FlywayDatabaseMigrator
-import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
 import dagger.Binds
 import dagger.Module
@@ -63,14 +62,12 @@ interface DatabaseModule {
         fun provideDatabaseManager(
             dataSource: DataSource,
             @DatabaseMigratorFlyway databaseMigrator: DatabaseMigrator,
-            databaseTables: Set<@JvmSuppressWildcards BaseTable>,
             databaseConfig: DatabaseConfig,
             appLogger: AppLogger
         ): DatabaseManager {
             return DatabaseManagerImpl(
                 dataSource = dataSource,
                 databaseMigrator = databaseMigrator,
-                databaseTables = databaseTables,
                 databaseConfig = databaseConfig,
                 appLogger = appLogger
             )

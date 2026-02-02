@@ -4,11 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import io.github.mudrichenkoevgeny.backend.core.database.migrator.DatabaseMigrator
-import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
-import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.jdbc.Database
-import org.jetbrains.exposed.v1.jdbc.SchemaUtils
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.sql.DataSource
@@ -17,7 +13,6 @@ import javax.sql.DataSource
 class DatabaseManagerImpl @Inject constructor(
     private val dataSource: DataSource,
     private val databaseMigrator: DatabaseMigrator,
-    private val databaseTables: Set<@JvmSuppressWildcards BaseTable>,
     private val databaseConfig: DatabaseConfig,
     private val appLogger: AppLogger
 ): DatabaseManager {
@@ -28,8 +23,6 @@ class DatabaseManagerImpl @Inject constructor(
 
             databaseMigrator.migrate(dataSource, databaseConfig.migrationPaths)
 
-            createTables(databaseTables)
-
             database
         } catch (t: Throwable) {
             appLogger.logError(CommonError.Internal(t))
@@ -39,11 +32,5 @@ class DatabaseManagerImpl @Inject constructor(
 
     override fun shutdown() {
         (dataSource as? AutoCloseable)?.close()
-    }
-
-    private fun createTables(tables: Set<Table>) = transaction {
-        if (tables.isNotEmpty()) {
-            SchemaUtils.create(*tables.toTypedArray())
-        }
     }
 }
