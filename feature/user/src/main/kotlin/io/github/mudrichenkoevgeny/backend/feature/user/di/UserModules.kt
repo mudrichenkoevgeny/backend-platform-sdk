@@ -6,7 +6,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserConfigModu
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserManagersModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserRepositoriesModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserServicesModule
-import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserTablesModule
 import dagger.Module
 
 @Module(
@@ -16,8 +15,7 @@ import dagger.Module
         UserRepositoriesModule::class,
         UserManagersModule::class,
         UserServicesModule::class,
-        UserAuditModule::class,
-        UserTablesModule::class
+        UserAuditModule::class
     ]
 )
 interface UserModules
