@@ -12,7 +12,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
 
     // Ktor
-    implementation(platform(libs.ktor.bom))
     implementation(libs.ktor.server.core) // Transitive for Project Modules
 
     // DI
@@ -23,7 +22,6 @@ dependencies {
     // Infrastructure
     implementation(libs.aws.s3)
     runtimeOnly(libs.aws.apache.client)
-    implementation(platform(libs.aws.sdk.bom))
     implementation(libs.aws.auth) // Transitive for aws
     implementation(libs.aws.core) // Transitive for aws
     implementation(libs.aws.http.client.spi) // Transitive for aws

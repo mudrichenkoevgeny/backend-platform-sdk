@@ -7,11 +7,9 @@ plugins {
 
 dependencies {
     // Shared Foundation
-    api(platform(libs.shared.foundation.bom))
     api(libs.shared.foundation.core.common)
 
     // Kotlin
-    api(platform(libs.kotlinx.serialization.bom))
     api(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.serialization.core) // Transitive for Shared Foundation, Ktor, kotlinx-serialization
     api(libs.kotlinx.coroutines.core) // Transitive for Ktor
@@ -19,7 +17,6 @@ dependencies {
     implementation(libs.kotlin.reflect) // Transitive for Ktor
 
     // Ktor
-    api(platform(libs.ktor.bom))
     api(libs.ktor.server.core)
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.server.status.pages)
@@ -56,7 +53,6 @@ dependencies {
 
     // Testing
     testRuntimeOnly(libs.kotlin.test.junit5)
-    testImplementation(platform(libs.junit.bom))
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.mockk)
 }

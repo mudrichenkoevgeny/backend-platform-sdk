@@ -14,7 +14,6 @@ dependencies {
     api(project(":core:crosscutting"))
 
     // Shared Foundation
-    api(platform(libs.shared.foundation.bom))
     api(libs.shared.foundation.core.common)
     api(libs.shared.foundation.core.security)
     api(libs.shared.foundation.feature.user)
@@ -26,7 +25,6 @@ dependencies {
     implementation(libs.kotlin.reflect) // Transitive for Ktor
 
     // Ktor
-    api(platform(libs.ktor.bom))
     api(libs.ktor.server.core)
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.auth.jwt)
@@ -40,7 +38,6 @@ dependencies {
     api(libs.javax.inject) // Transitive for dagger
 
     // Database
-    api(platform(libs.exposed.bom))
     api(libs.exposed.core)
     runtimeOnly(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
@@ -53,14 +50,12 @@ dependencies {
     implementation(libs.slf4j) // Transitive for Ktor, Swagger
 
     // Auth & Security
-    api(platform(libs.jjwt.bom))
     api(libs.jjwt.api)
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.jackson)
 
     // Testing
     testRuntimeOnly(libs.kotlin.test.junit5)
-    testImplementation(platform(libs.junit.bom))
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.mockk)
 }

@@ -9,14 +9,12 @@ dependencies {
     api(project(":core:common"))
 
     // Shared Foundation
-    api(platform(libs.shared.foundation.bom))
     api(libs.shared.foundation.core.common)
 
     // Kotlin
     implementation(libs.kotlinx.coroutines.core) // Transitive for Ktor
 
     // Ktor
-    api(platform(libs.ktor.bom))
     api(libs.ktor.server.core) // Transitive for Project Modules, ktor-server-metrics-micrometer
     implementation(libs.ktor.server.metrics.micrometer)
     implementation(libs.ktor.http) // Transitive for Ktor
@@ -34,7 +32,6 @@ dependencies {
     implementation(libs.slf4j) // Transitive for Project Modules, Ktor
 
     // Observability
-    api(platform(libs.opentelemetry.bom))
     api(libs.opentelemetry.api)
     runtimeOnly(libs.opentelemetry.exporter.otlp)
     implementation(libs.opentelemetry.extension.kotlin)

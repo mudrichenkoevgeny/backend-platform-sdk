@@ -10,11 +10,9 @@ dependencies {
     api(project(":core:database"))
 
     // Shared Foundation
-    api(platform(libs.shared.foundation.bom))
     api(libs.shared.foundation.core.security)
 
     // Ktor
-    implementation(platform(libs.ktor.bom))
     implementation(libs.ktor.server.core) // Transitive for Project Modules
 
     // DI

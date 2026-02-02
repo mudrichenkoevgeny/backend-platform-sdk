@@ -10,7 +10,6 @@ dependencies {
     api(project(":core:common"))
 
     // Shared Foundation
-    api(platform(libs.shared.foundation.bom))
     api(libs.shared.foundation.core.common)
 
     // Kotlin
@@ -19,7 +18,6 @@ dependencies {
     api(libs.kotlinx.serialization.core) // Transitive for Shared Foundation, Project Modules, kotlinx-serialization
 
     // Ktor
-    implementation(platform(libs.ktor.bom)) // Transitive for Project Modules
     implementation(libs.ktor.server.core) // Transitive for Project Modules
 
     // DI

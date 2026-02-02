@@ -89,4 +89,25 @@ subprojects {
             }
         }
     }
+
+    configure<PublishingExtension> {
+        publications.withType<MavenPublication> {
+            pom.withXml {
+                val dependenciesNode = asNode().get("dependencies") as? groovy.util.Node ?: return@withXml
+                val runtimeConfig = configurations.findByName("runtimeClasspath") ?: return@withXml
+
+                runtimeConfig.resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
+                    val dep = (dependenciesNode.children().find {
+                        val node = it as groovy.util.Node
+                        node.get("groupId") == artifact.moduleVersion.id.group &&
+                                node.get("artifactId") == artifact.moduleVersion.id.name
+                    } as? groovy.util.Node)
+
+                    if (dep != null && (dep.get("version") == null || (dep.get("version") as groovy.util.NodeList).isEmpty())) {
+                        dep.appendNode("version", artifact.moduleVersion.id.version)
+                    }
+                }
+            }
+        }
+    }
 }

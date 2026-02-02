@@ -10,17 +10,14 @@ dependencies {
     api(project(":core:database"))
 
     // Shared Foundation
-    api(platform(libs.shared.foundation.bom))
     api(libs.shared.foundation.core.common)
 
     // Kotlin
-    api(platform(libs.kotlinx.serialization.bom))
     api(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.serialization.core) // Transitive for Shared Foundation, Ktor, kotlinx-serialization
     api(libs.kotlinx.coroutines.core) // Transitive for Ktor
 
     // Ktor
-    implementation(platform(libs.ktor.bom))
     implementation(libs.ktor.server.core)
 
     // DI
@@ -29,7 +26,6 @@ dependencies {
     api(libs.javax.inject) // Transitive for dagger
 
     // Database
-    api(platform(libs.exposed.bom))
     api(libs.exposed.core)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.json)

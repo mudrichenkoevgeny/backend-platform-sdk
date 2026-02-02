@@ -13,7 +13,6 @@ dependencies {
     api(libs.kotlinx.coroutines.core) // Transitive for Project Modules
 
     // Ktor
-    implementation(platform(libs.ktor.bom))
     implementation(libs.ktor.server.core) // Transitive for Project Modules
 
     // DI
@@ -22,7 +21,6 @@ dependencies {
     api(libs.javax.inject) // Transitive for dagger
 
     // Database
-    api(platform(libs.exposed.bom))
     api(libs.exposed.core)
     runtimeOnly(libs.exposed.dao)
     api(libs.exposed.jdbc)
@@ -44,7 +42,6 @@ dependencies {
 
     // Testing
     testRuntimeOnly(libs.kotlin.test.junit5)
-    testImplementation(platform(libs.junit.bom))
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.mockk)
     testRuntimeOnly(libs.h2database)
