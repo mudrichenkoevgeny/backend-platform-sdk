@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver
 
+import io.github.mudrichenkoevgeny.backend.core.common.config.common.envkeys.CommonEnvKeys
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import java.io.File
@@ -7,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-    class PathResolverImpl @Inject constructor(
+class PathResolverImpl @Inject constructor(
     pathResolverConfig: PathResolverConfig,
     appLogger: AppLogger
 ) : PathResolver {
@@ -17,34 +18,34 @@ import javax.inject.Singleton
 
     init {
         val secretsPath = pathResolverConfig.secretsDirPath
-        if (secretsPath == null) {
+        if (secretsPath.isNullOrBlank()) {
             val exception = IllegalStateException(
-                "Required environment variable '${pathResolverConfig.secretsDirPath}' is missing"
+                "Required environment variable '${CommonEnvKeys.SECRETS_DIR}' is missing"
             )
-            appLogger.logError(CommonError.System(exception))
+            appLogger.logError(CommonError.Internal(exception))
             throw exception
         }
 
         secretsDir = resolveFile(pathResolverConfig.projectRoot, secretsPath)
         if (!secretsDir.exists()) {
             val exception = NoSuchFileException(secretsDir)
-            appLogger.logError(CommonError.System(exception))
+            appLogger.logError(CommonError.Internal(exception))
             throw exception
         }
 
         val envFilePath = pathResolverConfig.envFilePath
-        if (envFilePath == null) {
+        if (envFilePath.isNullOrBlank()) {
             val exception = IllegalStateException(
-                "Required environment variable '${pathResolverConfig.envFilePath}' is missing"
+                "Required environment variable '${CommonEnvKeys.ENV_FILE}' is missing"
             )
-            appLogger.logError(CommonError.System(exception))
+            appLogger.logError(CommonError.Internal(exception))
             throw exception
         }
 
         envFile = resolveFile(pathResolverConfig.projectRoot, envFilePath)
         if (!envFile.exists()) {
             val exception = NoSuchFileException(envFile)
-            appLogger.logError(CommonError.System(exception))
+            appLogger.logError(CommonError.Internal(exception))
             throw exception
         }
     }

@@ -1,37 +1,54 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.java.library)
 }
 
 dependencies {
-    implementation(project(":core.common"))
-    implementation(project(":core.observability"))
+    // Project Modules
+    api(project(":core:common"))
+    api(project(":core:observability"))
 
-    // libs
-    implementation(libs.exposed.core)
-    implementation(libs.exposed.dao)
-    implementation(libs.exposed.jdbc)
+    // Kotlin
+    api(libs.kotlinx.coroutines.core) // Transitive for Project Modules
+
+    // Ktor
+    implementation(platform(libs.ktor.bom))
+    implementation(libs.ktor.server.core) // Transitive for Project Modules
+
+    // DI
+    ksp(libs.dagger.compiler)
+    api(libs.dagger)
+    api(libs.javax.inject) // Transitive for dagger
+
+    // Database
+    api(platform(libs.exposed.bom))
+    api(libs.exposed.core)
+    runtimeOnly(libs.exposed.dao)
+    api(libs.exposed.jdbc)
     implementation(libs.exposed.java.time)
-
-    kapt(libs.dagger.compiler)
-    implementation(libs.dagger)
-
-    implementation(libs.logback)
-    implementation(libs.postgresql)
+    runtimeOnly(libs.postgresql)
     implementation(libs.hikari)
     implementation(libs.flyway.core)
-    implementation(libs.flyway.postgresql)
-    implementation(libs.lettuce.core)
+    runtimeOnly(libs.flyway.postgresql)
 
-    implementation(libs.micrometer.registry.prometheus)
+    // Logging
+    runtimeOnly(libs.logback)
 
-    // test
+    // Observability
+    api(libs.micrometer.registry.prometheus)
+    implementation(libs.micrometer.core) // Transitive for Micrometer
+
+    // Infrastructure
+    api(libs.lettuce.core)
+
+    // Testing
     testRuntimeOnly(libs.kotlin.test.junit5)
-    testImplementation(libs.junit.jupiter.api)
+    testImplementation(platform(libs.junit.bom))
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.mockk)
-    testImplementation(libs.h2database)
+    testRuntimeOnly(libs.h2database)
+    testImplementation(libs.kotlinx.coroutines.core) // Transitive for Project Modules
 }
 
 tasks.test {

@@ -1,10 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.core.common.error.model
 
-import io.github.mudrichenkoevgeny.backend.core.common.error.constants.CommonErrorArgs
-import io.github.mudrichenkoevgeny.backend.core.common.error.constants.CommonErrorCodes
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.constants.CommonErrorArgs
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.constants.CommonErrorCodes
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
-import java.util.UUID
 
 sealed class CommonError(
     override val errorId: ErrorId,
@@ -16,23 +15,10 @@ sealed class CommonError(
     override val appErrorSeverity: AppErrorSeverity
 ) : AppError {
 
-    class System(
-        val throwable: Throwable,
-        call: ApplicationCall? = null
-    ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
-        call = call,
-        code = CommonErrorCodes.THROWABLE,
-        secretArgs = throwable.message
-            ?.let { message -> mapOf(CommonErrorArgs.MESSAGE to message) },
-        httpStatusCode = HttpStatusCode.InternalServerError,
-        appErrorSeverity = AppErrorSeverity.HIGH
-    )
-
     class Unknown(
         val message: String? = null
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
+        errorId = ErrorId.generate(),
         code = CommonErrorCodes.UNKNOWN,
         secretArgs = buildMap {
             if (message != null) {
@@ -43,25 +29,24 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.HIGH
     )
 
-    class Database(
-        val message: String? = null
+    class Internal(
+        val throwable: Throwable,
+        call: ApplicationCall? = null
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
-        code = CommonErrorCodes.DATABASE,
-        secretArgs = buildMap {
-            if (message != null) {
-                put(CommonErrorArgs.MESSAGE, message)
-            }
-        }.takeIf { it.isNotEmpty() },
+        errorId = ErrorId.generate(),
+        call = call,
+        code = CommonErrorCodes.INTERNAL,
+        secretArgs = throwable.message
+            ?.let { message -> mapOf(CommonErrorArgs.MESSAGE to message) },
         httpStatusCode = HttpStatusCode.InternalServerError,
         appErrorSeverity = AppErrorSeverity.HIGH
     )
 
-    class Redis(
+    class Database(
         val message: String? = null
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
-        code = CommonErrorCodes.REDIS,
+        errorId = ErrorId.generate(),
+        code = CommonErrorCodes.INTERNAL,
         secretArgs = buildMap {
             if (message != null) {
                 put(CommonErrorArgs.MESSAGE, message)
@@ -74,7 +59,7 @@ sealed class CommonError(
     class ServiceUnavailable(
         val message: String? = null
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
+        errorId = ErrorId.generate(),
         code = CommonErrorCodes.SERVICE_UNAVAILABLE,
         secretArgs = buildMap {
             if (message != null) {
@@ -91,7 +76,7 @@ sealed class CommonError(
         identifier: String,
         retryAfterSeconds: Int,
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
+        errorId = ErrorId.generate(),
         code = CommonErrorCodes.TOO_MANY_REQUESTS,
         publicArgs = buildMap {
             put(CommonErrorArgs.RETRY_AFTER_SECONDS, retryAfterSeconds)
@@ -108,7 +93,7 @@ sealed class CommonError(
     class MissingRequiredParameter(
         val parameterName: String
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
+        errorId = ErrorId.generate(),
         code = CommonErrorCodes.MISSING_REQUIRED_PARAMETER,
         publicArgs = buildMap {
             put(CommonErrorArgs.PARAMETER_NAME, parameterName)
@@ -120,7 +105,7 @@ sealed class CommonError(
     class InvalidParameterValue(
         val parameterName: String
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
+        errorId = ErrorId.generate(),
         code = CommonErrorCodes.INVALID_PARAMETER_VALUE,
         publicArgs = buildMap {
             put(CommonErrorArgs.PARAMETER_NAME, parameterName)
@@ -132,7 +117,7 @@ sealed class CommonError(
     class MissingRequiredField(
         val fieldName: String
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
+        errorId = ErrorId.generate(),
         code = CommonErrorCodes.MISSING_REQUIRED_FIELD,
         publicArgs = buildMap {
             put(CommonErrorArgs.FIELD_NAME, fieldName)
@@ -144,7 +129,7 @@ sealed class CommonError(
     class BlankStringField(
         val fieldName: String
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
+        errorId = ErrorId.generate(),
         code = CommonErrorCodes.BLANK_STRING_FIELD,
         publicArgs = buildMap {
             put(CommonErrorArgs.FIELD_NAME, fieldName)
@@ -156,7 +141,7 @@ sealed class CommonError(
     class EmptyCollectionField(
         val fieldName: String
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
+        errorId = ErrorId.generate(),
         code = CommonErrorCodes.EMPTY_COLLECTION_FIELD,
         publicArgs = buildMap {
             put(CommonErrorArgs.FIELD_NAME, fieldName)
@@ -168,7 +153,7 @@ sealed class CommonError(
     class InvalidFieldValue(
         val fieldName: String
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
+        errorId = ErrorId.generate(),
         code = CommonErrorCodes.INVALID_FIELD_VALUE,
         publicArgs = buildMap {
             put(CommonErrorArgs.FIELD_NAME, fieldName)
@@ -180,7 +165,7 @@ sealed class CommonError(
     class BadRequest(
         val message: String? = null
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
+        errorId = ErrorId.generate(),
         code = CommonErrorCodes.BAD_REQUEST,
         secretArgs = buildMap {
             if (message != null) {
@@ -194,7 +179,7 @@ sealed class CommonError(
     class InvalidJsonBody(
         val message: String? = null
     ) : CommonError(
-        errorId = ErrorId(UUID.randomUUID()),
+        errorId = ErrorId.generate(),
         code = CommonErrorCodes.INVALID_JSON_BODY,
         secretArgs = buildMap {
             if (message != null) {

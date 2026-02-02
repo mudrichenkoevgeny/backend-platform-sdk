@@ -1,25 +1,24 @@
 package io.github.mudrichenkoevgeny.backend.core.security.di.module
 
-import io.github.mudrichenkoevgeny.backend.core.security.passwordpolicychecker.PasswordPolicyChecker
-import io.github.mudrichenkoevgeny.backend.core.security.passwordpolicychecker.PasswordPolicyCheckerImpl
-import io.github.mudrichenkoevgeny.backend.core.security.passwordpolicychecker.model.PasswordPolicy
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.PasswordPolicyChecker
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.PasswordPolicyCheckerImpl
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.model.PasswordPolicy
 import javax.inject.Singleton
 
 @Module
-interface PasswordPolicyCheckerModule {
+class PasswordPolicyCheckerModule {
 
-    @Binds
+    @Provides
     @Singleton
-    fun bindPasswordPolicyChecker(passwordPolicyCheckerImpl: PasswordPolicyCheckerImpl): PasswordPolicyChecker
+    fun providePasswordPolicy(): PasswordPolicy {
+        return PasswordPolicy()
+    }
 
-    companion object {
-        @Provides
-        @Singleton
-        fun providePasswordPolicy(): PasswordPolicy {
-            return PasswordPolicy()
-        }
+    @Provides
+    @Singleton
+    fun providePasswordPolicyChecker(passwordPolicy: PasswordPolicy): PasswordPolicyChecker {
+        return PasswordPolicyCheckerImpl(passwordPolicy)
     }
 }

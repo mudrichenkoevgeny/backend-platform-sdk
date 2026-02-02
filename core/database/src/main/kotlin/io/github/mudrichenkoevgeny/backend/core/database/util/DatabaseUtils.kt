@@ -1,8 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.core.database.util
 
 import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import kotlinx.coroutines.withContext
+import org.jetbrains.exposed.v1.core.Transaction
+import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 
 suspend fun <T> dbQuery(block: suspend Transaction.() -> T): T =
-    newSuspendedTransaction(Dispatchers.IO) { block() }
+    withContext(Dispatchers.IO) {
+        suspendTransaction {
+            block()
+        }
+    }

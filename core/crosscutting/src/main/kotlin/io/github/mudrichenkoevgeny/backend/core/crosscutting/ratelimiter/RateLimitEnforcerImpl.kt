@@ -11,7 +11,9 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitRe
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.uuid.ExperimentalUuidApi
 
+@OptIn(ExperimentalUuidApi::class)
 @Singleton
 class RateLimitEnforcerImpl @Inject constructor(
     private val rateLimiter: RateLimiter,

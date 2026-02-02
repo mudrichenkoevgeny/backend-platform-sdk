@@ -1,7 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.service
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
-import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
 import kotlinx.coroutines.future.await
@@ -50,7 +49,7 @@ class S3StorageService @Inject constructor(
             s3Client.putObject(request, AsyncRequestBody.fromBytes(content)).await()
             AppResult.Success(fileName)
         } catch (t: Throwable) {
-            AppResult.Error(CommonError.System(t))
+            AppResult.Error(CommonError.Internal(t))
         }
     }
 
@@ -67,7 +66,7 @@ class S3StorageService @Inject constructor(
             val isSuccessful = response.sdkHttpResponse().isSuccessful
             AppResult.Success(isSuccessful)
         } catch (t: Throwable) {
-            AppResult.Error(CommonError.System(t))
+            AppResult.Error(CommonError.Internal(t))
         }
     }
 

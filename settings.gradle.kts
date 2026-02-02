@@ -5,11 +5,22 @@ pluginManagement {
     }
 }
 
+dependencyResolutionManagement {
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    repositories {
+        mavenCentral()
+    }
+}
+
 rootProject.name = "backend-platform-sdk"
 
-fun registerModule(name: String, path: String) {
-    include(name)
-    project(name).projectDir = file(path)
+fun registerModules(group: String, modules: List<String>) {
+    modules.forEach { name ->
+        val gradlePath = ":$group:$name"
+        val folderPath = "$group/$name"
+        include(gradlePath)
+        project(gradlePath).projectDir = file(folderPath)
+    }
 }
 
 val coreModules = listOf(
@@ -22,13 +33,11 @@ val coreModules = listOf(
     "events",
     "crosscutting"
 )
-coreModules.forEach {
-    registerModule(":core.$it", "core/$it")
-}
+registerModules("core", coreModules)
 
 val featureModules = listOf(
     "user"
 )
-featureModules.forEach {
-    registerModule(":feature.$it", "feature/$it")
-}
+registerModules("feature", featureModules)
+
+include(":bom")

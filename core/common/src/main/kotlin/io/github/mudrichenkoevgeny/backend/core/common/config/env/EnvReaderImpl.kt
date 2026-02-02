@@ -1,30 +1,39 @@
 package io.github.mudrichenkoevgeny.backend.core.common.config.env
 
-import io.github.cdimascio.dotenv.Dotenv
+import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.ResolvedPaths
 import java.io.File
+import java.util.Properties
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class EnvReaderImpl @Inject constructor(
-    private val dotenv: Dotenv,
-    private val secretsRoot: File
+    private val paths: ResolvedPaths
 ): EnvReader {
 
-    override fun getByKey(key: String): String = dotenv[key] ?: error("Environment variable '$key' not found.")
+    private val fileVariables: Map<String, String> by lazy {
+        val props = Properties()
+        if (paths.envFile.exists()) {
+            paths.envFile.inputStream().use { props.load(it) }
+        }
+        props.map { it.key.toString() to it.value.toString() }.toMap()
+    }
 
-    override fun getByKeyOrNull(key: String): String? = dotenv[key]
+    override fun getByKey(key: String): String {
+        return getByKeyOrNull(key)
+            ?: error("Environment variable '$key' not found.")
+    }
+
+    override fun getByKeyOrNull(key: String): String? {
+        return System.getenv(key) ?: fileVariables[key]
+    }
 
     override fun readSecret(relativeFile: String): String {
-        val rawFile = File(relativeFile)
-
-        val secretFile = if (rawFile.isAbsolute) {
-            rawFile
+        val secretFile = if (File(relativeFile).isAbsolute) {
+            File(relativeFile)
         } else {
-            File(secretsRoot, relativeFile)
+            File(paths.secretsDir, relativeFile)
         }
-
-        println("DEBUG: Reading secret from: ${secretFile.absolutePath}")
 
         if (!secretFile.exists()) {
             error("Secret file not found at: ${secretFile.absolutePath}")

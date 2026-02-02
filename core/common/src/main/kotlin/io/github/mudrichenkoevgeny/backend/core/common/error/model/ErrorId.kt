@@ -1,10 +1,14 @@
 package io.github.mudrichenkoevgeny.backend.core.common.error.model
 
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 @JvmInline
-value class ErrorId(val value: UUID) {
+value class ErrorId(val value: Uuid) {
+    fun asHexDashString(): String = value.toHexDashString()
+
     companion object {
-        fun generate(): ErrorId = ErrorId(UUID.randomUUID())
+        fun generate() = ErrorId(Uuid.random())
     }
 }

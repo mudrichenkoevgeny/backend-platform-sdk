@@ -5,10 +5,10 @@ import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import io.github.mudrichenkoevgeny.backend.core.database.migrator.DatabaseMigrator
 import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.Table
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.v1.core.Table
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.sql.DataSource
@@ -32,7 +32,7 @@ class DatabaseManagerImpl @Inject constructor(
 
             database
         } catch (t: Throwable) {
-            appLogger.logError(CommonError.System(t))
+            appLogger.logError(CommonError.Internal(t))
             throw t
         }
     }

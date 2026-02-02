@@ -6,28 +6,35 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.ksp) apply false
     alias(libs.plugins.maven.publish) apply false
+    alias(libs.plugins.dependency.analysis)
 }
 
 allprojects {
     group = "io.github.mudrichenkoevgeny"
-    version = "0.0.3"
-
-    repositories {
-        mavenCentral()
-    }
+    version = "0.0.4"
 }
 
 subprojects {
-    val isModule = file("src").exists()
-    if (!isModule) return@subprojects
+    val isBom = project.name == "bom"
+    val isModule = file("src").exists() || isBom
+    if (!isModule) {
+        return@subprojects
+    }
 
-    apply(plugin = "org.jetbrains.kotlin.jvm")
     apply(plugin = "com.vanniktech.maven.publish")
+    apply(plugin = "com.autonomousapps.dependency-analysis")
 
-    tasks.withType<KotlinCompile>().configureEach {
-        compilerOptions {
-            jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmToolchain.get()))
+    if (isBom) {
+        apply(plugin = "java-platform")
+    } else {
+        apply(plugin = "org.jetbrains.kotlin.jvm")
+
+        tasks.withType<KotlinCompile>().configureEach {
+            compilerOptions {
+                jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmToolchain.get()))
+            }
         }
     }
 
@@ -52,7 +59,11 @@ subprojects {
         publishToMavenCentral()
         signAllPublications()
 
-        configure(KotlinJvm(javadocJar = JavadocJar.Javadoc()))
+        if (isBom) {
+            configure(com.vanniktech.maven.publish.JavaPlatform())
+        } else {
+            configure(KotlinJvm(javadocJar = JavadocJar.Javadoc()))
+        }
 
         pom {
             name.set("Backend SDK - ${project.name}")

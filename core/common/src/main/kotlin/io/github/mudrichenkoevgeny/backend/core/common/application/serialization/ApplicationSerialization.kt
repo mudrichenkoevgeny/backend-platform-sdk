@@ -1,11 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.core.common.application.serialization
 
-import io.github.mudrichenkoevgeny.backend.core.common.serialization.DefaultJson
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 
 fun Application.configureSerialization() {
-    install(ContentNegotiation) { json(DefaultJson) }
+    install(ContentNegotiation) { json(FoundationJson) }
 }

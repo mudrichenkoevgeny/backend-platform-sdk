@@ -1,11 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.core.common.error.parser
 
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.ApiError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorParserConfig
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
-import io.github.mudrichenkoevgeny.backend.core.common.serialization.DefaultJson
-import kotlinx.serialization.json.Json
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.model.ApiErrorResponse
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,7 +14,7 @@ class AppErrorParserImpl @Inject constructor(
     appErrorParserConfig: AppErrorParserConfig
 ) : AppErrorParser {
 
-    private val json = DefaultJson
+    private val json = FoundationJson
     private val cache: MutableMap<String, MutableMap<String, String>> = mutableMapOf()
 
     init {
@@ -39,18 +38,23 @@ class AppErrorParserImpl @Inject constructor(
         }
     }
 
-    override fun getApiError(errorId: ErrorId, code: String, args: Map<String, Any>?, locale: String): ApiError {
-        return ApiError(
-            id = errorId.value.toString(),
+    override fun getApiErrorResponse(
+        errorId: ErrorId,
+        code: String,
+        args: Map<String, Any>?,
+        locale: String
+    ): ApiErrorResponse {
+        return ApiErrorResponse(
+            id = errorId.asHexDashString(),
             code = code,
             message = parseError(code, args, locale),
             args = args?.mapValues { it.value.toString() } ?: emptyMap()
         )
     }
 
-    override fun getApiError(appError: AppError, locale: String): ApiError {
-        return ApiError(
-            id = appError.errorId.value.toString(),
+    override fun getApiErrorResponse(appError: AppError, locale: String): ApiErrorResponse {
+        return ApiErrorResponse(
+            id = appError.errorId.asHexDashString(),
             code = appError.code,
             message = parseError(appError.code, appError.publicArgs, locale),
             args = appError.publicArgs?.mapValues { it.value.toString() } ?: emptyMap()

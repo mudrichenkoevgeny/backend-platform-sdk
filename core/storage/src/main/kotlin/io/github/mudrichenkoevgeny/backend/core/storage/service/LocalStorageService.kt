@@ -44,7 +44,7 @@ class LocalStorageService @Inject constructor(
             }
             AppResult.Success(fileName)
         } catch (t: Throwable) {
-            AppResult.Error(CommonError.System(t))
+            AppResult.Error(CommonError.Internal(t))
         }
     }
 
@@ -58,7 +58,7 @@ class LocalStorageService @Inject constructor(
             }
             AppResult.Success(isExist)
         } catch (t: Throwable) {
-            AppResult.Error(CommonError.System(t))
+            AppResult.Error(CommonError.Internal(t))
         }
     }
 

@@ -9,16 +9,21 @@ import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.
 import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PagedResponse
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.extensions.applyPagination
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.andWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.greaterEq
+import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.jdbc.andWhere
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.time.Instant
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 @Singleton
 class AuditEventRepositoryImpl @Inject constructor() : AuditEventRepository {
 
@@ -54,7 +59,7 @@ class AuditEventRepositoryImpl @Inject constructor() : AuditEventRepository {
 
     override suspend fun getEventsList(
         params: PageParams,
-        actorId: UUID?,
+        actorId: Uuid?,
         action: String?,
         resource: String?,
         resourceId: String?,
@@ -89,7 +94,7 @@ class AuditEventRepositoryImpl @Inject constructor() : AuditEventRepository {
         )
     }
 
-    override suspend fun getEventsByActor(params: PageParams, actorId: UUID): AppResult<PagedResponse<AuditEvent>> {
+    override suspend fun getEventsByActor(params: PageParams, actorId: Uuid): AppResult<PagedResponse<AuditEvent>> {
         val query = AuditEventsTable.selectAll().where { AuditEventsTable.actorId eq actorId }
 
         val totalCount = query.count()

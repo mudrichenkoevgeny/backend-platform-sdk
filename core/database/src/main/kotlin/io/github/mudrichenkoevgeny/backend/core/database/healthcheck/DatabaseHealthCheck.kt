@@ -28,7 +28,7 @@ class DatabaseHealthCheck @Inject constructor(
                     }
                 }
             } catch (t: Throwable) {
-                AppSystemResult.Error(CommonError.System(t))
+                AppSystemResult.Error(CommonError.Internal(t))
             }
         }
     }

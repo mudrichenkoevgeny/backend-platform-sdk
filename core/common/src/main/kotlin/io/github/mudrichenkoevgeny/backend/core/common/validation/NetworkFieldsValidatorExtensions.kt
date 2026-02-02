@@ -1,6 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.core.common.validation
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.validation.NotBlankStringField
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.validation.NotEmptyCollectionField
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.validation.RequiredField
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.receive
 import kotlinx.serialization.SerialName

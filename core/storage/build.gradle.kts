@@ -1,22 +1,37 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.java.library)
 }
 
 dependencies {
-    implementation(project(":core.common"))
+    // Project Modules
+    api(project(":core:common"))
 
-    // libs
+    // Kotlin
     implementation(libs.kotlinx.coroutines.core)
 
-    kapt(libs.dagger.compiler)
-    implementation(libs.dagger)
+    // Ktor
+    implementation(platform(libs.ktor.bom))
+    implementation(libs.ktor.server.core) // Transitive for Project Modules
 
+    // DI
+    ksp(libs.dagger.compiler)
+    api(libs.dagger)
+    api(libs.javax.inject) // Transitive for dagger
+
+    // Infrastructure
     implementation(libs.aws.s3)
-    implementation(libs.aws.apache.client)
+    runtimeOnly(libs.aws.apache.client)
+    implementation(platform(libs.aws.sdk.bom))
+    implementation(libs.aws.auth) // Transitive for aws
+    implementation(libs.aws.core) // Transitive for aws
+    implementation(libs.aws.http.client.spi) // Transitive for aws
+    implementation(libs.aws.regions) // Transitive for aws
+    implementation(libs.aws.sdk.core) // Transitive for aws
 
-    testImplementation(kotlin("test"))
+    // Testing
+    testRuntimeOnly(libs.kotlin.test.junit5)
 }
 
 tasks.test {

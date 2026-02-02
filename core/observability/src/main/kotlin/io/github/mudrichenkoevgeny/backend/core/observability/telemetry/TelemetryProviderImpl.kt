@@ -1,6 +1,5 @@
 package io.github.mudrichenkoevgeny.backend.core.observability.telemetry
 
-import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.observability.config.model.ObservabilityConfig
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
@@ -18,8 +17,7 @@ import javax.inject.Singleton
 
 @Singleton
 class TelemetryProviderImpl @Inject constructor(
-    observabilityConfig: ObservabilityConfig,
-    private val appLogger: AppLogger
+    observabilityConfig: ObservabilityConfig
 ) : TelemetryProvider {
 
     override val openTelemetry: OpenTelemetry = GlobalOpenTelemetry.get()

@@ -19,29 +19,29 @@ fun Application.configureStatusPages(
         exception<ValidationException> { call, cause ->
             val appError = cause.error
             appLogger.logError(appError)
-            val apiError = appErrorParser.getApiError(appError)
-            call.respond(cause.error.httpStatusCode, apiError)
+            val apiErrorResponse = appErrorParser.getApiErrorResponse(appError)
+            call.respond(cause.error.httpStatusCode, apiErrorResponse)
         }
 
         exception<ContentTransformationException> { call, cause ->
             val appError = CommonError.InvalidJsonBody(cause.message)
             appLogger.logError(appError)
-            val apiError = appErrorParser.getApiError(appError)
-            call.respond(appError.httpStatusCode, apiError)
+            val apiErrorResponse = appErrorParser.getApiErrorResponse(appError)
+            call.respond(appError.httpStatusCode, apiErrorResponse)
         }
 
         exception<BadRequestException> { call, cause ->
             val appError = CommonError.BadRequest(cause.message)
             appLogger.logError(appError)
-            val apiError = appErrorParser.getApiError(appError)
-            call.respond(appError.httpStatusCode, apiError)
+            val apiErrorResponse = appErrorParser.getApiErrorResponse(appError)
+            call.respond(appError.httpStatusCode, apiErrorResponse)
         }
 
         exception<Throwable> { call, cause ->
-            val appError = CommonError.System(cause, call)
+            val appError = CommonError.Internal(cause, call)
             appLogger.logError(appError)
-            val apiError = appErrorParser.getApiError(appError)
-            call.respond(appError.httpStatusCode, apiError)
+            val apiErrorResponse = appErrorParser.getApiErrorResponse(appError)
+            call.respond(appError.httpStatusCode, apiErrorResponse)
         }
     }
 }

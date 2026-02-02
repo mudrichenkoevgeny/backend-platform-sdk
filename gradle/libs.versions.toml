@@ -2,150 +2,175 @@
 # @keep
 jvmToolchain = "21"
 
-# plugins
-kotlin = "2.2.21"
-dependency-analysis = "3.3.0"
+# Plugins & Core
+kotlin = "2.3.20-Beta2"
+ksp = "2.3.5"
 gradleup-shadow = "9.3.0"
-
 maven-publish-plugin = "0.36.0"
+dependency-analysis = "3.3.0"
 
-# libraries
-kotlinx-serialization-json = "1.9.0"
-kotlinx-coroutines-core = "1.10.2"
-exposed = "0.61.0"
+# Shared Foundation
+shared-foundation = "0.0.5"
+
+# Kotlin
+kotlinx-serialization = "1.9.0"
+kotlinx-coroutines = "1.10.2"
+kotlinx-io-core = "0.8.0"
+kotlin-reflect = "2.2.20"
+
+# Ktor
 ktor = "3.3.1"
+
+# DI
 dagger = "2.57.2"
-logback = "1.5.19"
-logstash = "7.4"
-dotenv = "5.2.2"
+javax-inject = "1"
+
+# Database
+exposed = "1.0.0"
 postgresql = "42.7.8"
-bcrypt = "0.4"
 hikari = "7.0.2"
 flyway = "11.19.0"
-lettuce = "7.2.1.RELEASE"
+
+# Swagger
+smiley4-ktor = "5.4.0"
+smiley4-schema = "2.6.0"
+
+# Logging
+logback = "1.5.26"
+logstash = "9.0"
+slf4j = "2.0.17"
+
+# Auth & Security
 jjwt = "0.13.0"
 password4j = "1.8.4"
+java-jwt = "4.5.0"
+
+# Observability
 opentelemetry = "1.57.0"
 opentelemetry-semconv = "1.37.0"
-micrometer-registry-prometheus = "1.16.0"
-smiley4-ktor = "5.4.0"
-smiley4-schema = "2.5.0"
+micrometer = "1.16.0"
+
+# Infrastructure
+lettuce = "7.2.1.RELEASE"
 apache-kafka = "4.1.1"
 aws-sdk = "2.41.1"
 
-# libraries test
-kotlin-test-junit5 = "2.2.21"
-junit-jupiter = "6.0.0"
+# Testing
+junit = "6.0.2"
 mockk = "1.14.6"
 h2database = "2.4.240"
 
 [libraries]
-# kotlin
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
-kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines-core" }
+# Shared Foundation
+shared-foundation-bom = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-bom", version.ref = "shared-foundation" }
+shared-foundation-core-common = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-common" }
+shared-foundation-core-security = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-security" }
+shared-foundation-feature-user = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-feature-user" }
 
-# exposed
-exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
-exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
-exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
-exposed-json = { group = "org.jetbrains.exposed", name = "exposed-json", version.ref = "exposed" }
-exposed-java-time = { group = "org.jetbrains.exposed", name = "exposed-java-time", version.ref = "exposed" }
+# Kotlin
+kotlinx-serialization-bom = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-bom", version.ref = "kotlinx-serialization" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json" }
+kotlinx-serialization-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-core" } # Transitive for Shared Foundation, Ktor, kotlinx-serialization
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" } # Transitive for Ktor
+kotlinx-io-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-io-core", version.ref = "kotlinx-io-core" } # Transitive for Ktor
+kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin-reflect" } # Transitive for Ktor
 
-# ktor
-ktor-bom = { module = "io.ktor:ktor-bom", version.ref = "ktor" }
-ktor-server-core = { group = "io.ktor", name = "ktor-server-core-jvm", version.ref = "ktor" }
-ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty-jvm", version.ref = "ktor" }
-ktor-server-auth = { group = "io.ktor", name = "ktor-server-auth", version.ref = "ktor" }
-ktor-server-auth-jwt = { group = "io.ktor", name = "ktor-server-auth-jwt", version.ref = "ktor" }
-ktor-server-content-negotiation = { group = "io.ktor", name = "ktor-server-content-negotiation-jvm", version.ref = "ktor" }
-ktor-server-status-pages = { group = "io.ktor", name = "ktor-server-status-pages", version.ref = "ktor" }
-ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json-jvm", version.ref = "ktor" }
-ktor-server-cors = { group = "io.ktor", name = "ktor-server-cors", version.ref = "ktor" }
-ktor-server-default-headers-jvm = { group = "io.ktor", name = "ktor-server-default-headers-jvm", version.ref = "ktor" }
-ktor-server-rate-limit = { group = "io.ktor", name = "ktor-server-rate-limit", version.ref = "ktor" }
-ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
-ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
-ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-server-test-host = { group = "io.ktor", name = "ktor-server-test-host", version.ref = "ktor" }
+# Ktor
+ktor-bom = { group = "io.ktor", name = "ktor-bom", version.ref = "ktor" }
+ktor-server-core = { group = "io.ktor", name = "ktor-server-core-jvm" }
+ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty-jvm" }
+ktor-server-auth = { group = "io.ktor", name = "ktor-server-auth" }
+ktor-server-auth-jwt = { group = "io.ktor", name = "ktor-server-auth-jwt" }
+ktor-server-content-negotiation = { group = "io.ktor", name = "ktor-server-content-negotiation-jvm" }
+ktor-server-status-pages = { group = "io.ktor", name = "ktor-server-status-pages" }
+ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json-jvm" }
+ktor-server-cors = { group = "io.ktor", name = "ktor-server-cors" }
+ktor-server-default-headers-jvm = { group = "io.ktor", name = "ktor-server-default-headers-jvm" }
+ktor-server-rate-limit = { group = "io.ktor", name = "ktor-server-rate-limit" }
+ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio" }
+ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation" }
+ktor-server-metrics-micrometer = { group = "io.ktor", name = "ktor-server-metrics-micrometer" }
+ktor-server-test-host = { group = "io.ktor", name = "ktor-server-test-host" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core" } # Transitive for Ktor
+ktor-http = { group = "io.ktor", name = "ktor-http" } # Transitive for Ktor
+ktor-serialization = { group = "io.ktor", name = "ktor-serialization" } # Transitive for Ktor
+ktor-utils = { group = "io.ktor", name = "ktor-utils" } # Transitive for Ktor
 
-# swagger
+# DI
+dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
+dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
+javax-inject = { group = "javax.inject", name = "javax.inject", version.ref = "javax-inject" } # Transitive for dagger
+
+# Database
+exposed-bom = { group = "org.jetbrains.exposed", name = "exposed-bom", version.ref = "exposed" }
+exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core" }
+exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao" }
+exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc" }
+exposed-json = { group = "org.jetbrains.exposed", name = "exposed-json" }
+exposed-java-time = { group = "org.jetbrains.exposed", name = "exposed-java-time" }
+postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
+hikari = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikari" }
+flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway" }
+flyway-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway" }
+
+# Swagger
 smiley4-ktor-openapi = { group = "io.github.smiley4", name = "ktor-openapi", version.ref = "smiley4-ktor" }
 smiley4-ktor-swagger-ui = { group = "io.github.smiley4", name = "ktor-swagger-ui", version.ref = "smiley4-ktor" }
 smiley4-schema-kenerator-core = { group = "io.github.smiley4", name = "schema-kenerator-core", version.ref = "smiley4-schema" }
 smiley4-schema-kenerator-serialization = { group = "io.github.smiley4", name = "schema-kenerator-serialization", version.ref = "smiley4-schema" }
 smiley4-schema-kenerator-swagger = { group = "io.github.smiley4", name = "schema-kenerator-swagger", version.ref = "smiley4-schema" }
 
-# dagger
-dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
-dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
-
-# logback
+# Logging
 logback = { group = "ch.qos.logback", name = "logback-classic", version.ref = "logback" }
-
-# logstash
 logstash = { group = "net.logstash.logback", name = "logstash-logback-encoder", version.ref = "logstash" }
+slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" } # Transitive for Ktor, Swagger
 
-# dotenv
-dotenv = { group = "io.github.cdimascio", name = "java-dotenv", version.ref = "dotenv" } # todo deprecated
-
-# postgresql
-postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
-
-# bcrypt
-bcrypt = { group = "org.mindrot", name = "jbcrypt", version.ref = "bcrypt" }
-
-# hikari
-hikari = { group = "com.zaxxer", name = "HikariCP", version.ref = "hikari" }
-
-# flyway
-flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway" }
-flyway-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway" }
-
-# redis
-lettuce-core = { group = "io.lettuce", name = "lettuce-core", version.ref = "lettuce" }
-
-# jjwt
-jwt-api = { group = "io.jsonwebtoken", name = "jjwt-api", version.ref = "jjwt" }
-jwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt" }
-jwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwt" }
-
-# password4j
+# Auth & Security
+jjwt-bom = { group = "io.jsonwebtoken", name = "jjwt-bom", version.ref = "jjwt" }
+jjwt-api = { group = "io.jsonwebtoken", name = "jjwt-api" }
+jjwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl" }
+jjwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson" }
 password4j = { group = "com.password4j", name = "password4j", version.ref = "password4j" }
+java-jwt = { group = "com.auth0", name = "java-jwt", version.ref = "java-jwt" }
 
-# opentelemetry
+# Observability
 opentelemetry-bom = { group = "io.opentelemetry", name = "opentelemetry-bom", version.ref = "opentelemetry" }
-opentelemetry-api = { group = "io.opentelemetry", name = "opentelemetry-api", version.ref = "opentelemetry" }
-opentelemetry-sdk = { group = "io.opentelemetry", name = "opentelemetry-sdk", version.ref = "opentelemetry" }
-opentelemetry-exporter-otlp = { group = "io.opentelemetry", name = "opentelemetry-exporter-otlp", version.ref = "opentelemetry" }
-opentelemetry-sdk-metrics = { group = "io.opentelemetry", name = "opentelemetry-sdk-metrics", version.ref = "opentelemetry" }
-opentelemetry-sdk-extension-autoconfigure = { group = "io.opentelemetry", name = "opentelemetry-sdk-extension-autoconfigure", version.ref = "opentelemetry" }
-opentelemetry-extension-kotlin = { group = "io.opentelemetry", name = "opentelemetry-extension-kotlin", version.ref = "opentelemetry" }
-opentelemetry-semconv = { group = "io.opentelemetry.semconv", name = "opentelemetry-semconv", version.ref = "opentelemetry-semconv" }
+opentelemetry-api = { group = "io.opentelemetry", name = "opentelemetry-api" }
+opentelemetry-extension-kotlin = { group = "io.opentelemetry", name = "opentelemetry-extension-kotlin" }
+opentelemetry-exporter-otlp = { group = "io.opentelemetry", name = "opentelemetry-exporter-otlp" }
+opentelemetry-context = { group = "io.opentelemetry", name = "opentelemetry-context" } # Transitive for Opentelemetry
+micrometer-registry-prometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometer" }
+micrometer-core = { group = "io.micrometer", name = "micrometer-core", version.ref = "micrometer" }
 
-# micrometer
-ktor-server-metrics-micrometer = { group = "io.ktor", name = "ktor-server-metrics-micrometer", version.ref = "ktor" }
-micrometer-registry-prometheus = { group = "io.micrometer", name = "micrometer-registry-prometheus", version.ref = "micrometer-registry-prometheus" }
-
-# kafka
+# Infrastructure
+lettuce-core = { group = "io.lettuce", name = "lettuce-core", version.ref = "lettuce" }
 apache-kafka = { group = "org.apache.kafka", name = "kafka-clients", version.ref = "apache-kafka" }
+aws-sdk-bom = { group = "software.amazon.awssdk", name = "bom", version.ref = "aws-sdk" }
+aws-s3 = { group = "software.amazon.awssdk", name = "s3" }
+aws-apache-client = { group = "software.amazon.awssdk", name = "apache-client" }
+aws-auth = { group = "software.amazon.awssdk", name = "auth" } # Transitive for aws
+aws-core = { group = "software.amazon.awssdk", name = "aws-core" } # Transitive for aws
+aws-http-client-spi = { group = "software.amazon.awssdk", name = "http-client-spi" } # Transitive for aws
+aws-regions = { group = "software.amazon.awssdk", name = "regions" } # Transitive for aws
+aws-sdk-core = { group = "software.amazon.awssdk", name = "sdk-core" } # Transitive for aws
 
-# aws
-aws-s3 = { group = "software.amazon.awssdk", name = "s3", version.ref = "aws-sdk" }
-aws-apache-client = { group = "software.amazon.awssdk", name = "apache-client", version.ref = "aws-sdk" }
-
-# test
-kotlin-test-junit5 = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit5", version.ref = "kotlin-test-junit5" }
-junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit-jupiter" }
-junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit-jupiter" }
+# Testing
+kotlin-test-junit5 = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit5", version.ref = "kotlin" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+junit-bom = { group = "org.junit", name = "junit-bom", version.ref = "junit" }
+junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api" }
+junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 h2database = { group = "com.h2database", name = "h2", version.ref = "h2database" }
+ktor-client-apache = { group = "io.ktor", name = "ktor-client-apache ", version.ref = "ktor" } # Transitive for Ktor
 
 [plugins]
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependency-analysis" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 java-library = { id = "java-library" }
 application = { id = "application" }
 gradleup-shadow = { id = "com.gradleup.shadow", version.ref = "gradleup-shadow" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish-plugin" }
+dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependency-analysis" }

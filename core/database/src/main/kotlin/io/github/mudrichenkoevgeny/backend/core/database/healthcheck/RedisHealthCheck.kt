@@ -30,7 +30,7 @@ class RedisHealthCheck @Inject constructor(
                 throw RuntimeException("Redis not available")
             }
         } catch (t: Throwable) {
-            AppSystemResult.Error(CommonError.System(t))
+            AppSystemResult.Error(CommonError.Internal(t))
         }
     }
 }

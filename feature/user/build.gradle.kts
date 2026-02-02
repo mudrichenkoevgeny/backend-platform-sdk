@@ -1,43 +1,66 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.kotlin.kapt)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.java.library)
 }
 
 dependencies {
-    implementation(project(":core.common"))
-    implementation(project(":core.database"))
-    implementation(project(":core.security"))
-    implementation(project(":core.audit"))
-    implementation(project(":core.crosscutting"))
+    // Project Modules
+    api(project(":core:common"))
+    api(project(":core:database"))
+    api(project(":core:security"))
+    api(project(":core:audit"))
+    api(project(":core:crosscutting"))
 
-    // libs
+    // Shared Foundation
+    api(platform(libs.shared.foundation.bom))
+    api(libs.shared.foundation.core.common)
+    api(libs.shared.foundation.core.security)
+    api(libs.shared.foundation.feature.user)
+
+    // Kotlin
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.exposed.core)
-    implementation(libs.exposed.dao)
+    implementation(libs.kotlinx.serialization.core) // Transitive for Shared Foundation, Ktor, kotlinx-serialization
+    implementation(libs.kotlinx.coroutines.core) // Transitive for Ktor
+    implementation(libs.kotlin.reflect) // Transitive for Ktor
+
+    // Ktor
+    api(platform(libs.ktor.bom))
+    api(libs.ktor.server.core)
+    implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.auth.jwt)
+    implementation(libs.ktor.http) // Transitive for Ktor
+    implementation(libs.ktor.utils) // Transitive for Ktor
+    implementation(libs.java.jwt) // Transitive for ktor-server-auth-jwt
+
+    // DI
+    ksp(libs.dagger.compiler)
+    api(libs.dagger)
+    api(libs.javax.inject) // Transitive for dagger
+
+    // Database
+    api(platform(libs.exposed.bom))
+    api(libs.exposed.core)
+    runtimeOnly(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.java.time)
 
-    implementation(platform(libs.ktor.bom))
-    implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.netty)
-    implementation(libs.ktor.server.auth)
-    implementation(libs.ktor.server.auth.jwt)
-
+    // Swagger
     implementation(libs.smiley4.ktor.openapi)
-    implementation(libs.smiley4.ktor.swagger.ui)
 
-    kapt(libs.dagger.compiler)
-    implementation(libs.dagger)
+    // Logging
+    implementation(libs.slf4j) // Transitive for Ktor, Swagger
 
-    implementation(libs.jwt.api)
-    runtimeOnly(libs.jwt.impl)
-    runtimeOnly(libs.jwt.jackson)
+    // Auth & Security
+    api(platform(libs.jjwt.bom))
+    api(libs.jjwt.api)
+    runtimeOnly(libs.jjwt.impl)
+    runtimeOnly(libs.jjwt.jackson)
 
-    // test
+    // Testing
     testRuntimeOnly(libs.kotlin.test.junit5)
-    testImplementation(libs.junit.jupiter.api)
+    testImplementation(platform(libs.junit.bom))
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.mockk)
 }

@@ -5,8 +5,10 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 object JsonConverter {
     fun toElement(value: Any?): JsonElement = when (value) {
         null -> JsonNull
@@ -14,7 +16,7 @@ object JsonConverter {
         is String -> JsonPrimitive(value)
         is Number -> JsonPrimitive(value)
         is Boolean -> JsonPrimitive(value)
-        is UUID -> JsonPrimitive(value.toString())
+        is Uuid -> JsonPrimitive(value.toHexDashString())
         is Iterable<*> -> JsonArray(value.map { toElement(it) })
         is Map<*, *> -> JsonObject(value.map { it.key.toString() to toElement(it.value) }.toMap())
         else -> JsonPrimitive(value.toString())

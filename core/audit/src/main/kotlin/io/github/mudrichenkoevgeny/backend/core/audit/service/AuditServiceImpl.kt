@@ -28,7 +28,7 @@ class AuditServiceImpl @Inject constructor(
                     appLogger.logError(createEventResult.error)
                 }
             } catch (t: Throwable) {
-                appLogger.logError(CommonError.System(t))
+                appLogger.logError(CommonError.Internal(t))
             }
         }
     }

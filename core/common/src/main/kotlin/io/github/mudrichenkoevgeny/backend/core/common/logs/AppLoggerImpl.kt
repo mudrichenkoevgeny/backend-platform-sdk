@@ -17,29 +17,39 @@ class AppLoggerImpl(
 ) : AppLogger {
 
     override fun logError(appError: AppError) {
-        if (appError is CommonError.System) {
-            logSystemError(appError)
-        } else {
-            logBusinessError(appError)
+        when (appError) {
+            is CommonError.Internal -> {
+                logSystemError(appError, appError.throwable)
+            }
+            is CommonError.Database -> {
+                logSystemError(appError)
+            }
+            else -> {
+                logBusinessError(appError)
+            }
         }
     }
 
-    private fun logSystemError(systemError: CommonError.System) {
-        val parts = mutableListOf("Unhandled exception", "errorId=${systemError.errorId.value}")
+    private fun logSystemError(internalError: CommonError, throwable: Throwable? = null) {
+        val parts = mutableListOf("Unhandled exception", "errorId=${internalError.errorId.asHexDashString()}")
 
-        systemError.call?.let {
+        internalError.call?.let {
             parts += "path=${it.request.path()}"
             parts += "method=${it.request.httpMethod.value}"
         }
 
         val message = parts.joinToString(", ")
-        systemLogger.error(message, systemError.throwable)
+        if (throwable != null) {
+            systemLogger.error(message, throwable)
+        } else {
+            systemLogger.error(message)
+        }
     }
 
     private fun logBusinessError(appError: AppError) {
         val message = buildString {
             append("Business error, ")
-            append("errorId=${appError.errorId.value}, ")
+            append("errorId=${appError.errorId.asHexDashString()}, ")
             append("code=${appError.code}, ")
             append("httpStatus=${appError.httpStatusCode.value}, ")
             append("publicArgs=${appError.publicArgs}, ")

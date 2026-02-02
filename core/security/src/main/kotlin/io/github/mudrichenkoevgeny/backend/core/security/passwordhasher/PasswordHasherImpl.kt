@@ -19,7 +19,7 @@ class PasswordHasherImpl @Inject constructor(
                 .result
             AppResult.Success(passwordHash)
         } catch (t: Throwable) {
-            appLogger.logError(CommonError.System(t))
+            appLogger.logError(CommonError.Internal(t))
             throw t
         }
     }
@@ -29,7 +29,7 @@ class PasswordHasherImpl @Inject constructor(
             val checkResult = Password.check(password, storedHash).withArgon2()
             AppResult.Success(checkResult)
         } catch (t: Throwable) {
-            appLogger.logError(CommonError.System(t))
+            appLogger.logError(CommonError.Internal(t))
             throw t
         }
     }

@@ -24,7 +24,7 @@ class FlywayDatabaseMigrator @Inject constructor(
 
             flyway.migrate()
         } catch (t: Throwable) {
-            appLogger.logError(CommonError.System(t))
+            appLogger.logError(CommonError.Internal(t))
         }
     }
 }

@@ -20,7 +20,7 @@ class HealthCheckerManager @Inject constructor(
         runBlocking {
             val criticalResult = runCriticalChecks()
             if (criticalResult is AppSystemResult.Error) {
-                val systemError = criticalResult.systemError
+                val systemError = criticalResult.internalError
                 appLogger.logError(systemError)
                 throw systemError.throwable
             }
@@ -55,8 +55,8 @@ class HealthCheckerManager @Inject constructor(
         AppSystemResult.Success(Unit)
     }
 
-    private suspend fun runNonCriticalChecks(): List<CommonError.System> {
-        val systemErrors = mutableListOf<CommonError.System>()
+    private suspend fun runNonCriticalChecks(): List<CommonError.Internal> {
+        val internalErrors = mutableListOf<CommonError.Internal>()
         coroutineScope {
             healthChecks
                 .filter { it.severity == HealthCheckSeverity.NON_CRITICAL }
@@ -64,11 +64,11 @@ class HealthCheckerManager @Inject constructor(
                     async {
                         val result = healthCheck.check()
                         if (result is AppSystemResult.Error) {
-                            systemErrors += result.systemError
+                            internalErrors += result.internalError
                         }
                     }
                 }.awaitAll()
         }
-        return systemErrors
+        return internalErrors
     }
 }

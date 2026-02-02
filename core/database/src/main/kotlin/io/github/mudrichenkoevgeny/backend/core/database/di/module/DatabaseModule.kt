@@ -15,7 +15,7 @@ import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.Telemetr
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.v1.jdbc.Database
 import javax.inject.Singleton
 import javax.sql.DataSource
 

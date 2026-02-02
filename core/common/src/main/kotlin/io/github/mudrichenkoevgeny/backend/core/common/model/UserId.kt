@@ -1,17 +1,21 @@
 package io.github.mudrichenkoevgeny.backend.core.common.model
 
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 @JvmInline
-value class UserId(val value: UUID) {
-    fun asString(): String = value.toString()
+value class UserId(val value: Uuid) {
+    fun asHexDashString(): String = value.toHexDashString()
+
+    companion object {
+        fun generate() = UserId(Uuid.random())
+    }
 }
 
+@OptIn(ExperimentalUuidApi::class)
 fun String.toUserIdOrNull(): UserId? =
-    try {
-        UserId(UUID.fromString(this))
-    } catch (_: IllegalArgumentException) {
-        null
-    }
+    Uuid.parseOrNull(this)?.let { UserId(it) }
 
-fun String.toUserIdOrThrow(): UserId = UserId(UUID.fromString(this))
+@OptIn(ExperimentalUuidApi::class)
+fun String.toUserIdOrThrow(): UserId = UserId(Uuid.parse(this))

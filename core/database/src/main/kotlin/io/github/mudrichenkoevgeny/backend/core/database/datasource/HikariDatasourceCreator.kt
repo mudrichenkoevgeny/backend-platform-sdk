@@ -37,7 +37,7 @@ class HikariDatasourceCreator @Inject constructor(
 
             dataSource
         } catch (t: Throwable) {
-            appLogger.logError(CommonError.System(t))
+            appLogger.logError(CommonError.Internal(t))
             throw t
         }
     }

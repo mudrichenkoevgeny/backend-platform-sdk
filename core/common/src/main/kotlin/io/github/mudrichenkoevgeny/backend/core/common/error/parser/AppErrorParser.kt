@@ -1,8 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.common.error.parser
 
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.ApiError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.model.ApiErrorResponse
 
 const val DEFAULT_LOCALE = "en"
 const val UNKNOWN_ERROR_MESSAGE = "Unknown error"
@@ -15,15 +15,15 @@ const val UNKNOWN_ERROR_MESSAGE = "Unknown error"
  * formatting them with arguments.
  */
 interface AppErrorParser {
-    fun getApiError(
+    fun getApiErrorResponse(
         errorId: ErrorId,
         code: String,
         args: Map<String, Any>? = null,
         locale: String = DEFAULT_LOCALE
-    ): ApiError
+    ): ApiErrorResponse
 
-    fun getApiError(
+    fun getApiErrorResponse(
         appError: AppError,
         locale: String = DEFAULT_LOCALE
-    ): ApiError
+    ): ApiErrorResponse
 }

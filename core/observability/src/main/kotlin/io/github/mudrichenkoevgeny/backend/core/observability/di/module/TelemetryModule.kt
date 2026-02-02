@@ -1,6 +1,5 @@
 package io.github.mudrichenkoevgeny.backend.core.observability.di.module
 
-import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.observability.config.model.ObservabilityConfig
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProviderImpl
@@ -14,10 +13,8 @@ class TelemetryModule {
     @Provides
     @Singleton
     fun provideTelemetryProvider(
-        observabilityConfig: ObservabilityConfig,
-        appLogger: AppLogger
+        observabilityConfig: ObservabilityConfig
     ): TelemetryProvider = TelemetryProviderImpl(
-        observabilityConfig = observabilityConfig,
-        appLogger = appLogger
+        observabilityConfig = observabilityConfig
     )
 }

@@ -1,8 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.common.network.httpclient
 
-import io.github.mudrichenkoevgeny.backend.core.common.constants.NetworkConstants
 import io.github.mudrichenkoevgeny.backend.core.common.constants.TracingConstants
-import io.github.mudrichenkoevgeny.backend.core.common.serialization.DefaultJson
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.constants.CommonNetworkFoundationConstants
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.ktor.client.HttpClient
 import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.cio.CIO
@@ -27,7 +27,7 @@ class HttpClientProvider() {
         return HttpClient(CIO) {
             block()
 
-            install(ContentNegotiation) { json(DefaultJson) }
+            install(ContentNegotiation) { json(FoundationJson) }
 
             install(HttpTimeout) {
                 requestTimeoutMillis = config.requestTimeout
@@ -54,7 +54,7 @@ class HttpClientProvider() {
 
                 val currentTraceId = MDC.get(TracingConstants.TRACE_ID_KEY)
                 if (!currentTraceId.isNullOrBlank()) {
-                    header(NetworkConstants.TRACE_HEADER_NAME, currentTraceId)
+                    header(CommonNetworkFoundationConstants.TRACE_HEADER_NAME, currentTraceId)
                 }
             }
         }

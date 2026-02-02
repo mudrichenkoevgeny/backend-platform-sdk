@@ -7,8 +7,10 @@ import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.
 import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PagedResponse
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import java.time.Instant
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 interface AuditManager {
     suspend fun createEvent(auditEvent: AuditEvent): AppResult<AuditEvent>
 
@@ -16,7 +18,7 @@ interface AuditManager {
 
     suspend fun getEventsList(
         params: PageParams,
-        actorId: UUID?,
+        actorId: Uuid?,
         action: String?,
         resource: String?,
         resourceId: String?,

@@ -2,11 +2,10 @@ package io.github.mudrichenkoevgeny.backend.core.events.subscriber
 
 import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.serialization.DefaultJson
 import io.github.mudrichenkoevgeny.backend.core.events.config.model.EventsConfig
 import io.github.mudrichenkoevgeny.backend.core.events.event.AppEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -26,7 +25,7 @@ class EventSubscriberImpl @Inject constructor(
     @param:BackgroundScope private val scope: CoroutineScope
 ) : EventSubscriber {
 
-    private val json = DefaultJson
+    private val json = FoundationJson
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : AppEvent> subscribe(
@@ -59,7 +58,7 @@ class EventSubscriberImpl @Inject constructor(
 
                             handler(event, metadata)
                         } catch (t: Throwable) {
-                            appLogger.logError(CommonError.System(t))
+                            appLogger.logError(CommonError.Internal(t))
                         }
                     }
                 }

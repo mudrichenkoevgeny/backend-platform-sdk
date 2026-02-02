@@ -34,7 +34,7 @@ class RedisManagerImpl @Inject constructor(
             getConnection().async().setex(key, expirationSeconds, value).await()
             AppResult.Success(Unit)
         } catch (t: Throwable) {
-            AppResult.Error(CommonError.System(t))
+            AppResult.Error(CommonError.Internal(t))
         }
     }
 
@@ -48,7 +48,7 @@ class RedisManagerImpl @Inject constructor(
             ).await()
             AppResult.Success(incrementResult)
         } catch (t: Throwable) {
-            AppResult.Error(CommonError.System(t))
+            AppResult.Error(CommonError.Internal(t))
         }
     }
 
@@ -57,7 +57,7 @@ class RedisManagerImpl @Inject constructor(
             val value = getConnection().async().get(key).await()
             AppResult.Success(value)
         } catch (t: Throwable) {
-            AppResult.Error(CommonError.System(t))
+            AppResult.Error(CommonError.Internal(t))
         }
     }
 
@@ -66,7 +66,7 @@ class RedisManagerImpl @Inject constructor(
             val ttl = getConnection().async().ttl(key).await()
             AppResult.Success(ttl)
         } catch (t: Throwable) {
-            AppResult.Error(CommonError.System(t))
+            AppResult.Error(CommonError.Internal(t))
         }
     }
 
@@ -75,7 +75,7 @@ class RedisManagerImpl @Inject constructor(
             val exist = getConnection().async().exists(key).await() > 0
             AppResult.Success(exist)
         } catch (t: Throwable) {
-            AppResult.Error(CommonError.System(t))
+            AppResult.Error(CommonError.Internal(t))
         }
     }
 
@@ -84,7 +84,7 @@ class RedisManagerImpl @Inject constructor(
             getConnection().async().del(key).await()
             AppResult.Success(Unit)
         } catch (t: Throwable) {
-            AppResult.Error(CommonError.System(t))
+            AppResult.Error(CommonError.Internal(t))
         }
     }
 
@@ -94,7 +94,7 @@ class RedisManagerImpl @Inject constructor(
             val isAvailable = response == PING_RESPONSE
             AppSystemResult.Success(isAvailable)
         } catch (t: Throwable) {
-            AppSystemResult.Error(CommonError.System(t))
+            AppSystemResult.Error(CommonError.Internal(t))
         }
     }
 
@@ -103,7 +103,7 @@ class RedisManagerImpl @Inject constructor(
             getConnection()
             AppSystemResult.Success(Unit)
         } catch (t: Throwable) {
-            AppSystemResult.Error(CommonError.System(t))
+            AppSystemResult.Error(CommonError.Internal(t))
         }
     }
 
@@ -113,7 +113,7 @@ class RedisManagerImpl @Inject constructor(
             redisClient.shutdown()
             AppSystemResult.Success(Unit)
         } catch (t: Throwable) {
-            AppSystemResult.Error(CommonError.System(t))
+            AppSystemResult.Error(CommonError.Internal(t))
         }
     }
 

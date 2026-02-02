@@ -1,11 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.core.observability.application
 
-import io.github.mudrichenkoevgeny.backend.core.common.constants.NetworkConstants
 import io.github.mudrichenkoevgeny.backend.core.common.constants.TracingConstants
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.observability.metrics.MetricsConstants
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.constants.CommonNetworkFoundationConstants
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.call
@@ -85,13 +85,13 @@ private fun Application.setupTracing(
         var isThrowable = false
         try {
             MDC.put(TracingConstants.TRACE_ID_KEY, traceId)
-            call.response.headers.append(NetworkConstants.TRACE_HEADER_NAME, traceId)
+            call.response.headers.append(CommonNetworkFoundationConstants.TRACE_HEADER_NAME, traceId)
 
             withContext(contextWithSpan.asContextElement()) {
                 proceed()
             }
         } catch (t: Throwable) {
-            appLogger.logError(CommonError.System(t))
+            appLogger.logError(CommonError.Internal(t))
             isThrowable = true
             span.recordException(t)
             span.setStatus(StatusCode.ERROR, t.message ?: UNKNOWN_ERROR_MESSAGE)

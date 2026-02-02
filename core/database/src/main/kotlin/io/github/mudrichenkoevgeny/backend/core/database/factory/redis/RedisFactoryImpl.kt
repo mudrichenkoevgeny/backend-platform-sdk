@@ -1,7 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.database.factory.redis
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import io.github.mudrichenkoevgeny.backend.core.database.redisclient.RedisClientCreator
@@ -23,7 +22,7 @@ class RedisFactoryImpl @Inject constructor(
                 timeoutSeconds = databaseConfig.redisTimeoutSeconds
             )
         } catch (t: Throwable) {
-            appLogger.logError(CommonError.System(t))
+            appLogger.logError(CommonError.Internal(t))
             throw t
         }
     }

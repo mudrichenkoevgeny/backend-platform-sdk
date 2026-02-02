@@ -1,13 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.database.table
 
 import io.github.mudrichenkoevgeny.backend.core.audit.enums.AuditStatus
-import io.github.mudrichenkoevgeny.backend.core.common.serialization.DefaultJson
 import io.github.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
 import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.serializer
-import org.jetbrains.exposed.sql.json.jsonb
+import org.jetbrains.exposed.v1.json.jsonb
+import kotlin.uuid.ExperimentalUuidApi
 
+@OptIn(ExperimentalUuidApi::class)
 object AuditEventsTable : BaseTable("audit_events") {
     val actorId = uuid("actor_id").nullable()
     val action = varchar("action", BaseDbConstraints.DEFAULT_MAX_LENGTH)
@@ -16,7 +18,7 @@ object AuditEventsTable : BaseTable("audit_events") {
     val status = enumerationByName("status", BaseDbConstraints.ENUM_MAX_LENGTH, AuditStatus::class)
     val metadata = jsonb<Map<String, JsonElement>>(
         "metadata",
-        DefaultJson,
+        FoundationJson,
         serializer<Map<String, JsonElement>>()
     )
     val message = text("message").nullable()

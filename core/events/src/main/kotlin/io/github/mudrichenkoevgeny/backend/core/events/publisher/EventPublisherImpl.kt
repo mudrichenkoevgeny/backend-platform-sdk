@@ -2,9 +2,9 @@ package io.github.mudrichenkoevgeny.backend.core.events.publisher
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.serialization.DefaultJson
 import io.github.mudrichenkoevgeny.backend.core.events.config.model.EventsConfig
 import io.github.mudrichenkoevgeny.backend.core.events.event.AppEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.KSerializer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -22,7 +22,7 @@ class EventPublisherImpl @Inject constructor(
     private val appLogger: AppLogger
 ) : EventPublisher {
 
-    private val json = DefaultJson
+    private val json = FoundationJson
 
     private val producer: KafkaProducer<String, String> by lazy {
         val props = Properties().apply {
@@ -45,7 +45,7 @@ class EventPublisherImpl @Inject constructor(
         val jsonPayload = try {
             json.encodeToString(serializer, event)
         } catch (t: Throwable) {
-            appLogger.logError(CommonError.System(t))
+            appLogger.logError(CommonError.Internal(t))
             throw t
         }
 
@@ -54,7 +54,7 @@ class EventPublisherImpl @Inject constructor(
                 metadata.forEach { (k, v) -> headers().add(k, v.toByteArray()) }
             }
         } catch (t: Throwable) {
-            appLogger.logError(CommonError.System(t))
+            appLogger.logError(CommonError.Internal(t))
             throw t
         }
 

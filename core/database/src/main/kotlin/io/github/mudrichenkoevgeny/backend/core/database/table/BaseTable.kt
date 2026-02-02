@@ -1,11 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.core.database.table
 
-import org.jetbrains.exposed.dao.id.IdTable
-import org.jetbrains.exposed.sql.javatime.CurrentTimestamp
-import org.jetbrains.exposed.sql.javatime.timestamp
-import java.util.UUID
+import org.jetbrains.exposed.v1.core.dao.id.IdTable
+import org.jetbrains.exposed.v1.javatime.CurrentTimestamp
+import org.jetbrains.exposed.v1.javatime.timestamp
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-open class BaseTable(name: String) : IdTable<UUID>(name) {
+@OptIn(ExperimentalUuidApi::class)
+open class BaseTable(name: String) : IdTable<Uuid>(name) {
     override val id = uuid("id").entityId()
     override val primaryKey = PrimaryKey(id)
 

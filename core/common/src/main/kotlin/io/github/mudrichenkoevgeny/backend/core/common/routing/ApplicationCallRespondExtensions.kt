@@ -28,7 +28,7 @@ suspend inline fun <reified T : Any> ApplicationCall.respondResult(
             appLogger.logError(result.error)
             respond(
                 result.error.httpStatusCode,
-                appErrorParser.getApiError(result.error)
+                appErrorParser.getApiErrorResponse(result.error)
             )
         }
     }
