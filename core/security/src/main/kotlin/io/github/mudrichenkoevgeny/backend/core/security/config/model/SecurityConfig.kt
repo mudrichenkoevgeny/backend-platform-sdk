@@ -1,6 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.security.config.model
 
-// todo add password policy config
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.model.PasswordPolicy
+
 data class SecurityConfig(
-    val authenticationConfirmationValidityMinutes : Long
+    val authenticationConfirmationValidityMinutes : Long,
+    val passwordPolicy: PasswordPolicy
 )

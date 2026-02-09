@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.config.common.factory
 
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.envkeys.CommonEnvKeys
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.AppInfo
-import io.github.mudrichenkoevgeny.backend.core.common.config.enums.AppEnvironment
+import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironment
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.CommonConfig
 import javax.inject.Inject

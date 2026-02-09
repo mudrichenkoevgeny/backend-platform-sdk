@@ -7,7 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.model.toUserIdOrNull
 import io.github.mudrichenkoevgeny.backend.core.common.model.toUserSessionIdOrNull
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.network.constants.UserNetworkConstants
+import io.github.mudrichenkoevgeny.backend.feature.user.network.contract.UserTokenClaims
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jws
 import io.jsonwebtoken.JwtBuilder
@@ -22,7 +22,7 @@ fun JwtBuilder.withUserIdSubject(userId: UserId): JwtBuilder {
 }
 
 fun JwtBuilder.withSessionIdSubject(sessionId: UserSessionId): JwtBuilder {
-    return this.claim(UserNetworkConstants.SESSION_ID_CLAIM, sessionId.asHexDashString())
+    return this.claim(UserTokenClaims.SESSION_ID, sessionId.asHexDashString())
 }
 
 /** JWTCredential **/
@@ -38,7 +38,7 @@ fun JWTCredential.getUserId(): UserId {
 }
 
 fun JWTCredential.getSessionId(): UserSessionId? {
-    val sessionId = this.getClaim(UserNetworkConstants.SESSION_ID_CLAIM, String::class)
+    val sessionId = this.getClaim(UserTokenClaims.SESSION_ID, String::class)
         ?: return null
     return sessionId.toUserSessionIdOrNull()
 }
@@ -54,7 +54,7 @@ fun JWTPrincipal.getUserId(): UserId? {
 }
 
 fun JWTPrincipal.getSessionId(): UserSessionId? {
-    val sessionId = this.getClaim(UserNetworkConstants.SESSION_ID_CLAIM, String::class)
+    val sessionId = this.getClaim(UserTokenClaims.SESSION_ID, String::class)
         ?: return null
     return sessionId.toUserSessionIdOrNull()
 }

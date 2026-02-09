@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.service.otp
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
-import io.github.mudrichenkoevgeny.backend.feature.user.enums.OtpVerificationType
+import io.github.mudrichenkoevgeny.backend.feature.user.model.otp.OtpVerificationType
 import javax.inject.Inject
 import javax.inject.Singleton
 

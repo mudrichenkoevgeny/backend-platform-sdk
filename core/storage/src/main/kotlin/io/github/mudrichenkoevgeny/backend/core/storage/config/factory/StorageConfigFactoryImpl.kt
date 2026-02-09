@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.storage.config.factory
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.storage.config.envkeys.StorageEnvKeys
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
-import io.github.mudrichenkoevgeny.backend.core.storage.enums.StorageType
+import io.github.mudrichenkoevgeny.backend.core.storage.model.StorageType
 import javax.inject.Inject
 import javax.inject.Singleton
 

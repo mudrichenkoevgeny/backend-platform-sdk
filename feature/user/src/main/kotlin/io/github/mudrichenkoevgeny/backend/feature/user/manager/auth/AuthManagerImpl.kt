@@ -11,9 +11,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -58,18 +58,9 @@ class AuthManagerImpl @Inject constructor(
             is AppResult.Error -> return@dbQuery sessionTokenResult
         }
 
-        val userIdentifiersListResult = userIdentifierManager.getUserIdentifierListByUserId(userIdentifier.userId)
-
-        val userIdentifiersList = if (userIdentifiersListResult is AppResult.Success) {
-            userIdentifiersListResult.data
-        } else {
-            emptyList()
-        }
-
         AppResult.Success(
             AuthData(
-                user = user,
-                userIdentifiersList = userIdentifiersList,
+                currentUser = user,
                 sessionToken = sessionToken
             )
         )
@@ -83,9 +74,8 @@ class AuthManagerImpl @Inject constructor(
     ): AppResult<UserIdentifier> = dbQuery {
         val userResult = userManager.getUserById(userId).mapNotNullOrError(UserError.UserNotFound())
 
-        val user = when (userResult) {
-            is AppResult.Success -> userResult.data
-            is AppResult.Error -> return@dbQuery userResult
+        if (userResult is AppResult.Error) {
+            return@dbQuery userResult
         }
 
         val userIdentifierResult = userIdentifierManager.getUserIdentifier(

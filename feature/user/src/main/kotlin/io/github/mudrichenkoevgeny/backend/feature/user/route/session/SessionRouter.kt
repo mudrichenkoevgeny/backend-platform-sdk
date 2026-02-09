@@ -6,14 +6,14 @@ import io.github.mudrichenkoevgeny.backend.core.common.model.toUserSessionIdOrTh
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.validation.validatePathParameter
-import io.github.mudrichenkoevgeny.backend.feature.user.mapper.toResponse
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.session.toUserSessionResponse
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.session.DeleteAllOtherSessionsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.session.DeleteSessionUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.session.GetSessionsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.session.LogoutFromCurrentSessionUseCase
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.constants.CommonApiFields
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.route.session.SessionRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
@@ -42,7 +42,7 @@ class SessionRouter @Inject constructor(
         )
 
         route.post(
-            path = SessionRoutes.LOGOUT_ROUTE,
+            path = SessionRoutes.LOGOUT,
             builder = { logoutFromCurrentSessionDocs() },
             body = { logoutFromCurrentSession() }
         )
@@ -78,7 +78,7 @@ class SessionRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) {
-            userSessions -> userSessions.map { userSession -> userSession.toResponse() }
+            userSessions -> userSessions.map { userSession -> userSession.toUserSessionResponse() }
         }
     }
 

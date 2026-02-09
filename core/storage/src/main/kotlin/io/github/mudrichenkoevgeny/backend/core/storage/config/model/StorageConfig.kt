@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.config.model
 
-import io.github.mudrichenkoevgeny.backend.core.storage.enums.StorageType
+import io.github.mudrichenkoevgeny.backend.core.storage.model.StorageType
 
 data class StorageConfig(
     val storageType: StorageType,

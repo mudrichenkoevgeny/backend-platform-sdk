@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier
 
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import java.time.Instant
 
 data class UserIdentifier(

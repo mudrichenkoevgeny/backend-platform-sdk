@@ -3,8 +3,8 @@ package io.github.mudrichenkoevgeny.backend.feature.user.manager.user
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 
 interface UserManager {
     suspend fun getUserById(

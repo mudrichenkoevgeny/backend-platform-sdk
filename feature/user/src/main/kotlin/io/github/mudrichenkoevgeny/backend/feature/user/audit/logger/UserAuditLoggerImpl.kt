@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.audit.logger
 
-import io.github.mudrichenkoevgeny.backend.core.audit.enums.AuditStatus
+import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditStatus
 import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent
 import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext

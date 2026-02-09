@@ -8,21 +8,19 @@ import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserData
+import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class GetUserUseCase @Inject constructor(
     private val userAuditLogger: UserAuditLogger,
-    private val userManager: UserManager,
-    private val userIdentifierManager: UserIdentifierManager
+    private val userManager: UserManager
 ) {
     suspend fun execute(
         userId: UserId,
         requestContext: RequestContext
-    ): AppResult<UserData> {
+    ): AppResult<User> {
         val currentUserId = requestContext.userId
             ?: return AppResult.Error(UserError.InvalidAccessToken())
 
@@ -59,14 +57,6 @@ class GetUserUseCase @Inject constructor(
             }
         }
 
-        val userIdentifiersListResult = userIdentifierManager.getUserIdentifierListByUserId(currentUserId)
-
-        val userIdentifiersList = if (userIdentifiersListResult is AppResult.Success) {
-            userIdentifiersListResult.data
-        } else {
-            emptyList()
-        }
-
         userAuditLogger.logSuccess(
             requestContext = requestContext,
             action = AUDIT_ACTION,
@@ -75,12 +65,7 @@ class GetUserUseCase @Inject constructor(
             metadata = auditMetadata
         )
 
-        return AppResult.Success(
-            UserData(
-                user = user,
-                userIdentifiersList = userIdentifiersList
-            )
-        )
+        return AppResult.Success(user)
     }
 
     private fun logAuditInternalError(

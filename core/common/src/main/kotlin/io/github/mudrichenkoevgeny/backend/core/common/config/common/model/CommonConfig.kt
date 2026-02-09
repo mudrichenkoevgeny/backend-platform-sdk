@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.common.config.common.model
 
-import io.github.mudrichenkoevgeny.backend.core.common.config.enums.AppEnvironment
+import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironment
 
 data class CommonConfig(
     val environment: AppEnvironment,

@@ -6,7 +6,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserSessionId
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.UserClientType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import java.time.Instant
 
 data class UserSession(
@@ -17,8 +18,9 @@ data class UserSession(
     val refreshTokenHash: RefreshTokenHash,
     val expiresAt: Instant,
     val revoked: Boolean,
-    val userAgent: String? = null,
-    val ipAddress: String? = null,
+    val userClientType: UserClientType?,
+    val userAgent: String?,
+    val ipAddress: String?,
     val userDeviceId: UserDeviceId?,
     val userDeviceName: String?,
     val createdAt: Instant,

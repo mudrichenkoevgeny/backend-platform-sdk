@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.manager
 
-import io.github.mudrichenkoevgeny.backend.core.audit.enums.AuditStatus
+import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditStatus
 import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent
 import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEventId
 import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PageParams

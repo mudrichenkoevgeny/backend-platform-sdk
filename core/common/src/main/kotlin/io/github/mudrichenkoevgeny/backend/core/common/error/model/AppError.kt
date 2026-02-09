@@ -12,7 +12,6 @@ import io.ktor.server.application.ApplicationCall
  */
 interface AppError {
     val errorId: ErrorId
-    val call: ApplicationCall? // todo do we need that on every error? log it?
     val code: String
     val publicArgs: Map<String, Any>?
     val secretArgs: Map<String, Any>?

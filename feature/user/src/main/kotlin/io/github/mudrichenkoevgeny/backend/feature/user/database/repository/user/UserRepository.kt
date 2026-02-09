@@ -5,8 +5,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 import java.time.Instant
 
 interface UserRepository {

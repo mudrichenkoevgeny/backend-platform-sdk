@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.SystemLogge
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.path
 import org.slf4j.Logger
@@ -19,7 +20,7 @@ class AppLoggerImpl(
     override fun logError(appError: AppError) {
         when (appError) {
             is CommonError.Internal -> {
-                logSystemError(appError, appError.throwable)
+                logSystemError(appError, appError.throwable, appError.call)
             }
             is CommonError.Database -> {
                 logSystemError(appError)
@@ -30,10 +31,10 @@ class AppLoggerImpl(
         }
     }
 
-    private fun logSystemError(internalError: CommonError, throwable: Throwable? = null) {
-        val parts = mutableListOf("Unhandled exception", "errorId=${internalError.errorId.asHexDashString()}")
+    private fun logSystemError(appError: AppError, throwable: Throwable? = null, call: ApplicationCall? = null) {
+        val parts = mutableListOf("Unhandled exception", "errorId=${appError.errorId.asHexDashString()}")
 
-        internalError.call?.let {
+        call?.let {
             parts += "path=${it.request.path()}"
             parts += "method=${it.request.httpMethod.value}"
         }

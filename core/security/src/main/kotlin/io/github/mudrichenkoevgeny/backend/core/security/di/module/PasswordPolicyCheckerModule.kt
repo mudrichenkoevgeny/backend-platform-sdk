@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.security.di.module
 
 import dagger.Module
 import dagger.Provides
+import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.PasswordPolicyChecker
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.PasswordPolicyCheckerImpl
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.model.PasswordPolicy
@@ -12,8 +13,8 @@ class PasswordPolicyCheckerModule {
 
     @Provides
     @Singleton
-    fun providePasswordPolicy(): PasswordPolicy {
-        return PasswordPolicy()
+    fun providePasswordPolicy(securityConfig: SecurityConfig): PasswordPolicy {
+        return securityConfig.passwordPolicy
     }
 
     @Provides

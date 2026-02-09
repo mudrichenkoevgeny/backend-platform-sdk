@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.common.application.ratelimit
 
-import io.github.mudrichenkoevgeny.backend.core.common.constants.CommonNetworkConstants
+import io.github.mudrichenkoevgeny.backend.core.common.network.contract.CommonNetworkHttpHeaders
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.ratelimit.RateLimit
@@ -18,7 +18,7 @@ fun Application.configureGlobalRateLimit(
             )
 
             requestKey { call ->
-                call.request.headers[CommonNetworkConstants.X_FORWARDED_FOR]
+                call.request.headers[CommonNetworkHttpHeaders.X_FORWARDED_FOR]
                     ?: call.request.local.remoteAddress
             }
         }

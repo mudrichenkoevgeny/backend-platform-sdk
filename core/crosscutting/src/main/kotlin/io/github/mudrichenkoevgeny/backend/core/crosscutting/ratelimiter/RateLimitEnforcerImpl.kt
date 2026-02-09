@@ -1,12 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter
 
-import io.github.mudrichenkoevgeny.backend.core.audit.enums.AuditStatus
+import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditStatus
 import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent
 import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.toJsonElementMap
-import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitAction
+import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import javax.inject.Inject

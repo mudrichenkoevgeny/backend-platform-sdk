@@ -15,8 +15,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionId
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserId
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -34,7 +34,7 @@ class JwtAuthenticationProvider @Inject constructor(
 
     override fun configureAuthentication(application: Application) {
         application.install(Authentication) {
-            jwt(JwtAuthenticationConstants.AUTHENTICATE_CONFIGURATION) {
+            jwt(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
                 realm = userConfig.authRealm
 
                 this.verifier(JWT.require(Algorithm.HMAC256(userConfig.jwtSecret)).build())

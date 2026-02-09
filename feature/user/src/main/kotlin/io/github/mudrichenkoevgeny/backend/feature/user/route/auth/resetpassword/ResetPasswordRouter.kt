@@ -5,7 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.validation.validateRequest
-import io.github.mudrichenkoevgeny.backend.feature.user.mapper.toResponse
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.confirmation.toSendConfirmationResponse
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.password.ResetPasswordUseCase
@@ -66,7 +66,7 @@ class ResetPasswordRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) {
-                sendConfirmation -> sendConfirmation.toResponse()
+                sendConfirmation -> sendConfirmation.toSendConfirmationResponse()
         }
     }
 

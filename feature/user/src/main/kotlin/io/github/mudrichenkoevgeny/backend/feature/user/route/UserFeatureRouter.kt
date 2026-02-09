@@ -5,7 +5,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.auth.AuthRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.security.SecurityRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.session.SessionRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.user.UserRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthenticationConstants
+import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
 import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.Route
 import javax.inject.Inject
@@ -20,7 +20,7 @@ class UserFeatureRouter @Inject constructor(
 ) : BaseRouter {
     override fun register(route: Route) {
         authRouter.register(route)
-        route.authenticate(JwtAuthenticationConstants.AUTHENTICATE_CONFIGURATION) {
+        route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             userRouter.register(route)
             sessionRouter.register(route)
             securityRouter.register(route)

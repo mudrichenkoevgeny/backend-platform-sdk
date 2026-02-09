@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.di.module
 
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
-import io.github.mudrichenkoevgeny.backend.core.storage.enums.StorageType
+import io.github.mudrichenkoevgeny.backend.core.storage.model.StorageType
 import io.github.mudrichenkoevgeny.backend.core.storage.service.LocalStorageService
 import io.github.mudrichenkoevgeny.backend.core.storage.service.S3StorageService
 import io.github.mudrichenkoevgeny.backend.core.storage.service.StorageService

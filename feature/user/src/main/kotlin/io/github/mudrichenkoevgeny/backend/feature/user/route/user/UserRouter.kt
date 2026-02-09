@@ -8,12 +8,12 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.validation.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.mapper.user.toUserResponse
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.user.toCurrentUserResponse
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.user.DeleteUserUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.user.GetUserUseCase
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.constants.CommonApiFields
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.route.user.UserRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
@@ -71,7 +71,7 @@ class UserRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) {
-            userData -> userData.toUserResponse()
+            userData -> userData.toCurrentUserResponse()
         }
     }
 

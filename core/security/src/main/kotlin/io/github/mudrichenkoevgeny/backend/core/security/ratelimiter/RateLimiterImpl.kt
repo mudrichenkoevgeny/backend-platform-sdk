@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
+import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
 import javax.inject.Inject
 import javax.inject.Singleton
 

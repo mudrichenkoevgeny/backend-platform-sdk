@@ -7,8 +7,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton

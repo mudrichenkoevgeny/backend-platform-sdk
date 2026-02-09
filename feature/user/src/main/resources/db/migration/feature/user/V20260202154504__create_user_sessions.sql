@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     token_hash TEXT NOT NULL,
     expires_at TIMESTAMPTZ NOT NULL,
     revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    user_client_type VARCHAR(32),
     user_agent VARCHAR(255),
     ip_address VARCHAR(64),
     device_id TEXT,

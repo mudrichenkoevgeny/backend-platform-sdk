@@ -1,13 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.core.common.error.model
 
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.constants.CommonErrorArgs
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.constants.CommonErrorCodes
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.CommonErrorArgs
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.CommonErrorCodes
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 
 sealed class CommonError(
     override val errorId: ErrorId,
-    override val call: ApplicationCall? = null,
     override val code: String,
     override val publicArgs: Map<String, Any>? = null,
     override val secretArgs: Map<String, Any>? = null,
@@ -31,10 +30,9 @@ sealed class CommonError(
 
     class Internal(
         val throwable: Throwable,
-        call: ApplicationCall? = null
+        val call: ApplicationCall? = null
     ) : CommonError(
         errorId = ErrorId.generate(),
-        call = call,
         code = CommonErrorCodes.INTERNAL,
         secretArgs = throwable.message
             ?.let { message -> mapOf(CommonErrorArgs.MESSAGE to message) },

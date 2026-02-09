@@ -5,8 +5,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.Cli
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 
 interface AuthManager {
     suspend fun provideAuthData(

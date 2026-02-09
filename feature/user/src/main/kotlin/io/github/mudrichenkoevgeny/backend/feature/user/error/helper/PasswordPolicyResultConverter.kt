@@ -1,9 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.error.helper
 
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.enums.PasswordPolicyFailReason
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.model.PasswordPolicyFailReason
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.result.PasswordPolicyCheckResult
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.constants.UserErrorArgs
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorArgs
 
 fun PasswordPolicyCheckResult.Fail.convertToPasswordTooWeak(): UserError.PasswordTooWeak {
     val errorArgs: MutableMap<String, Any> = mutableMapOf()

@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.common.network.request.model
 
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserDeviceId
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.constants.CommonNetworkFoundationConstants
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonHttpHeaders
 import io.ktor.http.HttpHeaders
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.plugins.origin
@@ -21,15 +21,15 @@ data class ClientInfo(
 
 fun ApplicationCall.extractClientInfo(): ClientInfo {
     return ClientInfo(
-        clientType = request.headers[CommonNetworkFoundationConstants.CLIENT_TYPE_HEADER_NAME],
+        clientType = request.headers[CommonHttpHeaders.CLIENT_TYPE_HEADER_NAME],
         userAgent = request.userAgent(),
         ipAddress = request.origin.remoteAddress,
         language = request.headers[HttpHeaders.AcceptLanguage],
         host = request.host(),
         origin = request.headers[HttpHeaders.Origin],
-        deviceId = request.headers[CommonNetworkFoundationConstants.DEVICE_ID_HEADER_NAME]?.let { deviceId ->
+        deviceId = request.headers[CommonHttpHeaders.DEVICE_ID_HEADER_NAME]?.let { deviceId ->
             UserDeviceId(deviceId)
         },
-        deviceName = request.headers[CommonNetworkFoundationConstants.DEVICE_NAME_HEADER_NAME]
+        deviceName = request.headers[CommonHttpHeaders.DEVICE_NAME_HEADER_NAME]
     )
 }

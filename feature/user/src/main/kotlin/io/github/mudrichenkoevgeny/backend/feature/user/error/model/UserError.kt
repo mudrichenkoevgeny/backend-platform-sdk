@@ -4,16 +4,14 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.constants.UserErrorArgs
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.constants.UserErrorCodes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorArgs
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorCodes
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.ApplicationCall
 import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalUuidApi::class)
 sealed class UserError(
     override val errorId: ErrorId,
-    override val call: ApplicationCall? = null,
     override val code: String,
     override val publicArgs: Map<String, Any>? = null,
     override val secretArgs: Map<String, Any>? = null,

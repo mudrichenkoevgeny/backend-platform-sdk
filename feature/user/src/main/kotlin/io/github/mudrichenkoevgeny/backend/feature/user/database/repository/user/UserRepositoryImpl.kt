@@ -9,8 +9,8 @@ import io.github.mudrichenkoevgeny.backend.core.database.extensions.applyPaginat
 import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere

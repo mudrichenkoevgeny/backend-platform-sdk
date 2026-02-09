@@ -3,10 +3,10 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.login
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
-import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitAction
+import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
-import io.github.mudrichenkoevgeny.backend.feature.user.enums.OtpVerificationType
+import io.github.mudrichenkoevgeny.backend.feature.user.model.otp.OtpVerificationType
 import io.github.mudrichenkoevgeny.backend.feature.user.model.confirmation.SendConfirmation
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneService

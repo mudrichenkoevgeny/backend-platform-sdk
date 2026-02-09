@@ -5,7 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.validation.validateRequest
-import io.github.mudrichenkoevgeny.backend.feature.user.mapper.toResponse
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.auth.toSessionTokenResponse
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshToken
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
@@ -58,7 +58,7 @@ class RefreshTokenRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) {
-            sessionToken -> sessionToken.toResponse()
+            sessionToken -> sessionToken.toSessionTokenResponse()
         }
     }
 

@@ -10,7 +10,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserIdent
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.enums.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq

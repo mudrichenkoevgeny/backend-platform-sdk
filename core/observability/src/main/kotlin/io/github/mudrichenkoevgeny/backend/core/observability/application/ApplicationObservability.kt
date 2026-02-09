@@ -1,11 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.core.observability.application
 
-import io.github.mudrichenkoevgeny.backend.core.common.constants.TracingConstants
+import io.github.mudrichenkoevgeny.backend.core.common.logs.naming.TracingKeys
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.observability.metrics.MetricsConstants
+import io.github.mudrichenkoevgeny.backend.core.observability.metrics.naming.MetricAttributes
+import io.github.mudrichenkoevgeny.backend.core.observability.metrics.naming.MetricDefaults
+import io.github.mudrichenkoevgeny.backend.core.observability.metrics.naming.MetricSpecs
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.constants.CommonNetworkFoundationConstants
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonHttpHeaders
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.call
@@ -46,21 +48,21 @@ private fun Application.setupTracing(
     val meter = telemetryProvider.meter
 
     val requestCounter = meter
-        .counterBuilder(MetricsConstants.HTTP_REQUESTS_TOTAL)
-        .setDescription(MetricsConstants.HTTP_REQUESTS_TOTAL_DESCRIPTION)
-        .setUnit(MetricsConstants.COUNTER_UNIT)
+        .counterBuilder(MetricSpecs.HTTP_REQUESTS_TOTAL)
+        .setDescription(MetricSpecs.HTTP_REQUESTS_TOTAL_DESCRIPTION)
+        .setUnit(MetricDefaults.COUNTER_UNIT)
         .build()
 
     val requestLatency = meter
-        .histogramBuilder(MetricsConstants.HTTP_REQUEST_LATENCY_MS)
-        .setDescription(MetricsConstants.HTTP_REQUEST_LATENCY_MS_DESCRIPTION)
-        .setUnit(MetricsConstants.LATENCY_UNIT)
+        .histogramBuilder(MetricSpecs.HTTP_REQUEST_LATENCY_MS)
+        .setDescription(MetricSpecs.HTTP_REQUEST_LATENCY_MS_DESCRIPTION)
+        .setUnit(MetricDefaults.LATENCY_UNIT)
         .build()
 
     val errorCounter = meter
-        .counterBuilder(MetricsConstants.HTTP_REQUEST_ERRORS_TOTAL)
-        .setDescription(MetricsConstants.HTTP_REQUEST_ERRORS_TOTAL_DESCRIPTION)
-        .setUnit(MetricsConstants.COUNTER_UNIT)
+        .counterBuilder(MetricSpecs.HTTP_REQUEST_ERRORS_TOTAL)
+        .setDescription(MetricSpecs.HTTP_REQUEST_ERRORS_TOTAL_DESCRIPTION)
+        .setUnit(MetricDefaults.COUNTER_UNIT)
         .build()
 
     intercept(ApplicationCallPipeline.Monitoring) {
@@ -84,8 +86,8 @@ private fun Application.setupTracing(
 
         var isThrowable = false
         try {
-            MDC.put(TracingConstants.TRACE_ID_KEY, traceId)
-            call.response.headers.append(CommonNetworkFoundationConstants.TRACE_HEADER_NAME, traceId)
+            MDC.put(TracingKeys.TRACE_ID_KEY, traceId)
+            call.response.headers.append(CommonHttpHeaders.TRACE_HEADER_NAME, traceId)
 
             withContext(contextWithSpan.asContextElement()) {
                 proceed()
@@ -107,20 +109,20 @@ private fun Application.setupTracing(
             }
 
             val attributes = Attributes.builder()
-                .put(MetricsConstants.ATTR_ENDPOINT, routePath)
-                .put(MetricsConstants.ATTR_METHOD, method)
-                .put(MetricsConstants.ATTR_STATUS_CODE, statusCode.toLong())
+                .put(MetricAttributes.ENDPOINT, routePath)
+                .put(MetricAttributes.METHOD, method)
+                .put(MetricAttributes.STATUS_CODE, statusCode.toLong())
                 .build()
 
-            requestCounter.add(MetricsConstants.COUNTER_VALUE, attributes)
+            requestCounter.add(MetricDefaults.COUNTER_VALUE, attributes)
             requestLatency.record(durationMs.toDouble(), attributes)
 
             if (isThrowable || statusCode >= 400) {
-                errorCounter.add(MetricsConstants.COUNTER_VALUE, attributes)
+                errorCounter.add(MetricDefaults.COUNTER_VALUE, attributes)
             }
 
             span.end()
-            MDC.remove(TracingConstants.TRACE_ID_KEY)
+            MDC.remove(TracingKeys.TRACE_ID_KEY)
         }
     }
 }

@@ -7,7 +7,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.validation.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.validation.validateRequest
-import io.github.mudrichenkoevgeny.backend.feature.user.mapper.toResponse
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.confirmation.toSendConfirmationResponse
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.useridentifier.toUserIdentifierResponse
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers.AddUserIdentifierEmailUseCase
@@ -17,7 +18,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.useride
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers.GetUserIdentifiersUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers.SendAddEmailIdentifierConfirmationUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers.SendAddPhoneIdentifierConfirmationUseCase
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.constants.CommonApiFields
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToPhoneRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.useridentifiers.AddUserIdentifierEmailRequest
@@ -49,7 +50,7 @@ class SecurityUserIdentifiersRouter @Inject constructor(
 
     override fun register(route: Route) {
         route.get(
-            path = SecurityUserIdentifiersRoutes.GET_USER_IDENTIFIERS_ROUTE,
+            path = SecurityUserIdentifiersRoutes.GET_USER_IDENTIFIERS,
             builder = { getUserIdentifiersDocs() },
             body = { getUserIdentifiers() }
         )
@@ -109,7 +110,7 @@ class SecurityUserIdentifiersRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) {
-            identifiers -> identifiers.map { it.toResponse() }
+            identifiers -> identifiers.map { it.toUserIdentifierResponse() }
         }
     }
 
@@ -164,7 +165,7 @@ class SecurityUserIdentifiersRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) {
-            it.toResponse()
+            it.toUserIdentifierResponse()
         }
     }
 
@@ -193,7 +194,7 @@ class SecurityUserIdentifiersRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) {
-            it.toResponse()
+            it.toUserIdentifierResponse()
         }
     }
 
@@ -222,7 +223,7 @@ class SecurityUserIdentifiersRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) {
-            it.toResponse()
+            it.toUserIdentifierResponse()
         }
     }
 
@@ -245,7 +246,9 @@ class SecurityUserIdentifiersRouter @Inject constructor(
             email = request.email,
             requestContext = call.getRequestContext()
         )
-        call.respondResult(result, appLogger, appErrorParser) { it.toResponse() }
+        call.respondResult(result, appLogger, appErrorParser) {
+            it.toSendConfirmationResponse()
+        }
     }
 
     private fun RouteConfig.sendAddPhoneIdentifierConfirmationDocs() {
@@ -267,7 +270,9 @@ class SecurityUserIdentifiersRouter @Inject constructor(
             phoneNumber = request.phoneNumber,
             requestContext = call.getRequestContext()
         )
-        call.respondResult(result, appLogger, appErrorParser) { it.toResponse() }
+        call.respondResult(result, appLogger, appErrorParser) {
+            it.toSendConfirmationResponse()
+        }
     }
 
     companion object {

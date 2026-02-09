@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.database.repository
 
 import io.github.mudrichenkoevgeny.backend.core.audit.database.table.AuditEventsTable
-import io.github.mudrichenkoevgeny.backend.core.audit.enums.AuditStatus
+import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditStatus
 import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent
 import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEventId
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError

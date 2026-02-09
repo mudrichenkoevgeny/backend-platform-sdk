@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter
 
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitAction
+import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
 
 interface RateLimitEnforcer {
     suspend fun enforce(

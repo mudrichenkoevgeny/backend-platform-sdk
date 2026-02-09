@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.database.table
 
-import io.github.mudrichenkoevgeny.backend.core.audit.enums.AuditStatus
+import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditStatus
 import io.github.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
 import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson

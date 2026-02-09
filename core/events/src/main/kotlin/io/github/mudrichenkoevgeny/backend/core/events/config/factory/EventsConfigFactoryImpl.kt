@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.events.config.factory
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.events.config.envkeys.EventsEnvKeys
 import io.github.mudrichenkoevgeny.backend.core.events.config.model.EventsConfig
-import io.github.mudrichenkoevgeny.backend.core.events.enums.EventsType
+import io.github.mudrichenkoevgeny.backend.core.events.model.EventsType
 import javax.inject.Inject
 import javax.inject.Singleton
 

@@ -39,6 +39,7 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
             userSessionRow[tokenHash] = userSession.refreshTokenHash.value
             userSessionRow[expiresAt] = userSession.expiresAt
             userSessionRow[revoked] = userSession.revoked
+            userSessionRow[userClientType] = userSession.userClientType
             userSessionRow[userAgent] = userSession.userAgent
             userSessionRow[ipAddress] = userSession.ipAddress
             userSessionRow[deviceId] = userSession.userDeviceId?.value
@@ -197,6 +198,7 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         refreshTokenHash = RefreshTokenHash(this[UserSessionsTable.tokenHash]),
         expiresAt = this[UserSessionsTable.expiresAt],
         revoked = this[UserSessionsTable.revoked],
+        userClientType = this[UserSessionsTable.userClientType],
         userAgent = this[UserSessionsTable.userAgent],
         ipAddress = this[UserSessionsTable.ipAddress],
         userDeviceId = this[UserSessionsTable.deviceId]?.let { deviceId -> UserDeviceId(deviceId) },
