@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.config.model
 
 import io.github.mudrichenkoevgeny.backend.core.common.config.seed.AdminAccount
+import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthSettings
 import java.time.Duration
 
 data class UserConfig(
@@ -8,7 +9,8 @@ data class UserConfig(
     val accessTokenValidityHours: Long,
     val refreshTokenValidityDays: Long,
     val authRealm: String,
-    val adminAccountsList: List<AdminAccount>
+    val adminAccountsList: List<AdminAccount>,
+    val authSettings: AuthSettings
 ) {
 
     fun getAccessTokenValidityHoursDuration(): Duration = Duration.ofHours(accessTokenValidityHours)

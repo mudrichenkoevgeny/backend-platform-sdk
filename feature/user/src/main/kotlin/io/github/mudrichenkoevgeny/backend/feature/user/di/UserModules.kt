@@ -7,15 +7,19 @@ import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserManagersMo
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserRepositoriesModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserServicesModule
 import dagger.Module
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.AuthSettingsProviderModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserExternalAuthVerifierModule
 
 @Module(
     includes = [
         UserConfigModule::class,
         UserAuthInfrastructureModule::class,
+        UserExternalAuthVerifierModule::class,
         UserRepositoriesModule::class,
         UserManagersModule::class,
         UserServicesModule::class,
-        UserAuditModule::class
+        UserAuditModule::class,
+        AuthSettingsProviderModule::class
     ]
 )
 interface UserModules

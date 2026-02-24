@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.config.factory.UserConfi
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import dagger.Module
 import dagger.Provides
+import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthSettings
 import javax.inject.Singleton
 
 @Module
@@ -27,5 +28,13 @@ class UserConfigModule {
         userConfigFactory: UserConfigFactory
     ): UserConfig {
         return userConfigFactory.create()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthSettings(
+        userConfig: UserConfig
+    ): AuthSettings {
+        return userConfig.authSettings
     }
 }

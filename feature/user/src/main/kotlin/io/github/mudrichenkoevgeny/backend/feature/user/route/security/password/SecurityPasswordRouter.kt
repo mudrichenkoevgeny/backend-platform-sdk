@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequest
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.password.PasswordChangeUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.password.PasswordChangeRequest
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.route.security.password.PasswordRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.security.password.PasswordRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.post
 import io.ktor.http.HttpStatusCode

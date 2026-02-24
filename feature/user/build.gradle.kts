@@ -11,10 +11,12 @@ dependencies {
     api(project(":core:database"))
     api(project(":core:security"))
     api(project(":core:audit"))
+    api(project(":core:settings"))
     api(project(":core:crosscutting"))
 
     // Shared Foundation
     api(libs.shared.foundation.core.common)
+    api(libs.shared.foundation.core.settings)
     api(libs.shared.foundation.core.security)
     api(libs.shared.foundation.feature.user)
 
@@ -26,6 +28,7 @@ dependencies {
 
     // Ktor
     api(libs.ktor.server.core)
+    implementation(libs.ktor.server.websockets)
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.auth.jwt)
     implementation(libs.ktor.http) // Transitive for Ktor
@@ -53,6 +56,8 @@ dependencies {
     api(libs.jjwt.api)
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.jackson)
+    implementation(libs.google.auth.oauth2.http)
+    implementation(libs.google.http.client)
 
     // Testing
     testRuntimeOnly(libs.kotlin.test.junit5)

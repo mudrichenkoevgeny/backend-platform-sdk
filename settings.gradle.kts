@@ -31,6 +31,7 @@ val coreModules = listOf(
     "audit",
     "storage",
     "events",
+    "settings",
     "crosscutting"
 )
 registerModules("core", coreModules)

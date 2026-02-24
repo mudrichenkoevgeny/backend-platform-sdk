@@ -8,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SecurityRouter @Inject constructor(
+class UserSecurityRouter @Inject constructor(
     private val passwordRouter: PasswordRouter,
     private val securityUserIdentifiersRouter: SecurityUserIdentifiersRouter
 ) : BaseRouter {

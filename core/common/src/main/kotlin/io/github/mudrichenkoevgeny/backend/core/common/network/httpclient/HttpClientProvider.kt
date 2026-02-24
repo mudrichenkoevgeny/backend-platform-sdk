@@ -19,7 +19,25 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.io.IOException
 import org.slf4j.MDC
 
+/**
+ * A factory for creating and configuring pre-configured Ktor [HttpClient] instances.
+ * * **Usage**: This provider is designed for outbound communication with external
+ * services, third-party APIs, or other microservices.
+ *
+ * This provider centralizes common concerns such as:
+ * - **Serialization**: Pre-configured with the project-wide `FoundationJson`.
+ * - **Resilience**: Built-in retry mechanisms and timeouts to prevent cascading failures.
+ * - **Observability**: Integrated logging and distributed tracing via MDC.
+ */
 class HttpClientProvider() {
+    /**
+     * Creates a new [HttpClient] instance with the provided settings for external integration.
+     *
+     * @param config The [HttpClientSettings] containing baseUrl, timeouts, retry policies, and default headers.
+     * @param block An optional configuration block for additional fine-tuning of the client
+     * (e.g., adding specific plugins or interceptors for a particular external service).
+     * @return A fully initialized [HttpClient] ready for outbound requests.
+     */
     fun create(
         config: HttpClientSettings,
         block: HttpClientConfig<CIOEngineConfig>.() -> Unit = {}

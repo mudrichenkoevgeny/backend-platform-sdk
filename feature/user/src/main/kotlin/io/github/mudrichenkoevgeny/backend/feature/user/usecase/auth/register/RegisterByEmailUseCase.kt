@@ -4,17 +4,15 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.Req
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
+import io.github.mudrichenkoevgeny.backend.core.security.settings.usecase.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
 import io.github.mudrichenkoevgeny.backend.feature.user.model.otp.OtpVerificationType
-import io.github.mudrichenkoevgeny.backend.feature.user.error.helper.convertToPasswordTooWeak
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUtil
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.PasswordPolicyChecker
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.result.PasswordPolicyCheckResult
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 import javax.inject.Inject
@@ -25,8 +23,8 @@ class RegisterByEmailUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,
     private val userAuditLogger: UserAuditLogger,
     private val otpService: OtpService,
-    private val passwordPolicyChecker: PasswordPolicyChecker,
-    private val authManager: AuthManager
+    private val authManager: AuthManager,
+    private val validatePasswordUseCase: ValidatePasswordUseCase
 ) {
     suspend fun execute(
         email: String,
@@ -49,9 +47,9 @@ class RegisterByEmailUseCase @Inject constructor(
             return rateLimiterEnforcerResult
         }
 
-        val passwordPolicyCheckResult = passwordPolicyChecker.check(password)
+        val passwordPolicyCheckResult = validatePasswordUseCase(password)
 
-        if (passwordPolicyCheckResult is PasswordPolicyCheckResult.Fail) {
+        if (passwordPolicyCheckResult is AppResult.Error) {
             userAuditLogger.logFail(
                 requestContext = requestContext,
                 action = AUDIT_ACTION,
@@ -60,7 +58,7 @@ class RegisterByEmailUseCase @Inject constructor(
                 type = UserAuditMetadata.Types.TOO_WEAK_PASSWORD,
                 metadata = auditMetadata
             )
-            return AppResult.Error(passwordPolicyCheckResult.convertToPasswordTooWeak())
+            return passwordPolicyCheckResult
         }
 
         val verifyOtpResult = otpService.verifyOtp(

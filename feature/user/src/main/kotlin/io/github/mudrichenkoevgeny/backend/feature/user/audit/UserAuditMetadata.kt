@@ -36,6 +36,7 @@ object UserAuditMetadata {
         const val TOO_WEAK_PASSWORD = "too_weak_password"
         const val INVALID_REFRESH_TOKEN = "invalid_refresh_token"
         const val NOT_SUPPORTED_EXTERNAL_AUTH_PROVIDER = "not_supported_external_auth_provider"
+        const val EXTERNAL_ID_MISMATCH = "external_id_mismatch"
         const val CAN_NOT_DELETE_USER_IDENTIFIER = "can_not_delete_user_identifier"
         const val ALREADY_HAS_USER_IDENTIFIER_WITH_THAT_TYPE = "already_has_user_identifier_with_that_type"
         const val AUTHENTICATION_CONFIRMATION_REQUIRED = "authentication_confirmation_required"

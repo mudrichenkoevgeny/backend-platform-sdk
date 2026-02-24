@@ -24,7 +24,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.reques
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.useridentifiers.AddUserIdentifierEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.useridentifiers.AddUserIdentifierExternalAuthProviderRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.useridentifiers.AddUserIdentifierPhoneRequest
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.route.security.useridentifiers.SecurityUserIdentifiersRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.security.useridentifiers.SecurityUserIdentifiersRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get

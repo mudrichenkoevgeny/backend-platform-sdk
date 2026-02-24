@@ -12,7 +12,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.password.Re
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.password.SendResetPasswordConfirmationUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.password.ResetPasswordRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.password.SendResetPasswordConfirmationRequest
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.route.auth.resetpassword.ResetPasswordRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.auth.resetpassword.ResetPasswordRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.post
 import io.ktor.http.HttpStatusCode
@@ -66,7 +66,7 @@ class ResetPasswordRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) {
-                sendConfirmation -> sendConfirmation.toSendConfirmationResponse()
+            sendConfirmation -> sendConfirmation.toSendConfirmationResponse()
         }
     }
 

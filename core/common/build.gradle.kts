@@ -24,6 +24,7 @@ dependencies {
     implementation(libs.ktor.serialization.json)
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.default.headers.jvm)
+    implementation(libs.ktor.server.websockets)
     implementation(libs.ktor.server.rate.limit)
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.logging)
@@ -33,6 +34,7 @@ dependencies {
     implementation(libs.ktor.http) // Transitive for Ktor
     implementation(libs.ktor.serialization) // Transitive for Ktor
     implementation(libs.ktor.utils) // Transitive for Ktor
+    implementation(libs.ktor.websockets) // Transitive for Ktor
 
     // DI
     ksp(libs.dagger.compiler)

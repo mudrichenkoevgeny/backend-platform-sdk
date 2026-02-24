@@ -5,16 +5,14 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
+import io.github.mudrichenkoevgeny.backend.core.security.settings.usecase.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
 import io.github.mudrichenkoevgeny.backend.feature.user.model.otp.OtpVerificationType
-import io.github.mudrichenkoevgeny.backend.feature.user.error.helper.convertToPasswordTooWeak
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.PasswordPolicyChecker
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicychecker.result.PasswordPolicyCheckResult
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,8 +22,8 @@ class ResetPasswordUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,
     private val userAuditLogger: UserAuditLogger,
     private val otpService: OtpService,
-    private val passwordPolicyChecker: PasswordPolicyChecker,
-    private val userIdentifierManager: UserIdentifierManager
+    private val userIdentifierManager: UserIdentifierManager,
+    private val validatePasswordUseCase: ValidatePasswordUseCase
 ) {
     suspend fun execute(
         email: String,
@@ -47,9 +45,9 @@ class ResetPasswordUseCase @Inject constructor(
             return rateLimiterEnforcerResult
         }
 
-        val passwordPolicyCheckResult = passwordPolicyChecker.check(newPassword)
+        val passwordPolicyCheckResult = validatePasswordUseCase(newPassword)
 
-        if (passwordPolicyCheckResult is PasswordPolicyCheckResult.Fail) {
+        if (passwordPolicyCheckResult is AppResult.Error) {
             userAuditLogger.logFail(
                 requestContext = requestContext,
                 action = AUDIT_ACTION,
@@ -57,8 +55,7 @@ class ResetPasswordUseCase @Inject constructor(
                 resourceId = auditResourceId,
                 type = UserAuditMetadata.Types.TOO_WEAK_PASSWORD
             )
-
-            return AppResult.Error(passwordPolicyCheckResult.convertToPasswordTooWeak())
+            return passwordPolicyCheckResult
         }
 
         val verifyOtpResult = otpService.verifyOtp(

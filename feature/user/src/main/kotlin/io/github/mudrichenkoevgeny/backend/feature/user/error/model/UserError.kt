@@ -131,26 +131,11 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 
-    class AuthenticationConfirmationRequired() : UserError(
-        errorId = ErrorId.generate(),
-        code = UserErrorCodes.AUTHENTICATION_CONFIRMATION_REQUIRED,
-        httpStatusCode = HttpStatusCode.Forbidden,
-        appErrorSeverity = AppErrorSeverity.MEDIUM
-    )
-
     class WrongPassword() : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.WRONG_PASSWORD,
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.MEDIUM
-    )
-
-    class PasswordTooWeak(publicArgs: Map<String, Any>) : UserError(
-        errorId = ErrorId.generate(),
-        code = UserErrorCodes.PASSWORD_TOO_WEAK,
-        publicArgs = publicArgs,
-        httpStatusCode = HttpStatusCode.UnprocessableEntity,
-        appErrorSeverity = AppErrorSeverity.LOW
     )
 
     class WrongConfirmationCode() : UserError(
@@ -160,7 +145,9 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 
-    class ExternalIdMismatch() : UserError(
+    class ExternalIdMismatch(
+        val throwable: Throwable? = null
+    ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.EXTERNAL_ID_MISMATCH,
         httpStatusCode = HttpStatusCode.NotFound,

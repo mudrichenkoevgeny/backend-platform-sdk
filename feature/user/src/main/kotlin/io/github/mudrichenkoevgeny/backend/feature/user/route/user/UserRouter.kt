@@ -14,7 +14,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.user.DeleteUserUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.user.GetUserUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.route.user.UserRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.user.UserRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get

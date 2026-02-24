@@ -14,7 +14,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.session.DeleteSe
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.session.GetSessionsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.session.LogoutFromCurrentSessionUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.route.session.SessionRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.session.SessionRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get
@@ -77,8 +77,8 @@ class SessionRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) {
-            userSessions -> userSessions.map { userSession -> userSession.toUserSessionResponse() }
+        call.respondResult(result, appLogger, appErrorParser) { userSessions ->
+            userSessions.map { userSession -> userSession.toUserSessionResponse() }
         }
     }
 

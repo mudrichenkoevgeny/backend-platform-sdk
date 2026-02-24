@@ -12,7 +12,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.register.Re
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.register.SendRegistrationConfirmationToEmailUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.register.RegisterByEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToEmailRequest
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.route.auth.register.RegisterRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.auth.register.RegisterRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.post
 import io.ktor.http.HttpStatusCode

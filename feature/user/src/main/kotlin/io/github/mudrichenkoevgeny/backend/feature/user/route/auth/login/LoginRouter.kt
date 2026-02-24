@@ -17,7 +17,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.reques
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByExternalAuthProviderRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByPhoneRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToPhoneRequest
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.route.auth.login.LoginRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.auth.login.LoginRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.post
 import io.ktor.http.HttpStatusCode

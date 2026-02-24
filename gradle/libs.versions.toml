@@ -10,7 +10,7 @@ maven-publish-plugin = "0.36.0"
 dependency-analysis = "3.3.0"
 
 # Shared Foundation
-shared-foundation = "0.0.11"
+shared-foundation = "0.0.16"
 
 # Kotlin
 kotlinx-serialization = "1.9.0"
@@ -44,6 +44,8 @@ slf4j = "2.0.17"
 jjwt = "0.13.0"
 password4j = "1.8.4"
 java-jwt = "4.5.0"
+google-auth = "1.42.1"
+google-http-client = "2.1.0"
 
 # Observability
 opentelemetry = "1.57.0"
@@ -63,6 +65,7 @@ h2database = "2.4.240"
 [libraries]
 # Shared Foundation
 shared-foundation-core-common = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-common", version.ref = "shared-foundation" }
+shared-foundation-core-settings = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-settings", version.ref = "shared-foundation" }
 shared-foundation-core-security = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-security", version.ref = "shared-foundation" }
 shared-foundation-feature-user = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-feature-user", version.ref = "shared-foundation" }
 
@@ -83,6 +86,7 @@ ktor-server-status-pages = { group = "io.ktor", name = "ktor-server-status-pages
 ktor-serialization-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json-jvm", version.ref = "ktor" }
 ktor-server-cors = { group = "io.ktor", name = "ktor-server-cors", version.ref = "ktor" }
 ktor-server-default-headers-jvm = { group = "io.ktor", name = "ktor-server-default-headers-jvm", version.ref = "ktor" }
+ktor-server-websockets = { module = "io.ktor:ktor-server-websockets", version.ref = "ktor" }
 ktor-server-rate-limit = { group = "io.ktor", name = "ktor-server-rate-limit", version.ref = "ktor" }
 ktor-client-cio = { group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
 ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
@@ -93,6 +97,7 @@ ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref =
 ktor-http = { group = "io.ktor", name = "ktor-http", version.ref = "ktor" } # Transitive for Ktor
 ktor-serialization = { group = "io.ktor", name = "ktor-serialization", version.ref = "ktor" } # Transitive for Ktor
 ktor-utils = { group = "io.ktor", name = "ktor-utils", version.ref = "ktor" } # Transitive for Ktor
+ktor-websockets = { group = "io.ktor", name = "ktor-websockets", version.ref = "ktor" } # Transitive for Ktor
 
 # DI
 dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
@@ -128,6 +133,8 @@ jjwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt
 jjwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwt" }
 password4j = { group = "com.password4j", name = "password4j", version.ref = "password4j" }
 java-jwt = { group = "com.auth0", name = "java-jwt", version.ref = "java-jwt" }
+google-auth-oauth2-http = { group = "com.google.auth", name = "google-auth-library-oauth2-http", version.ref = "google-auth" }
+google-http-client = { group = "com.google.http-client", name = "google-http-client", version.ref = "google-http-client" } # Transitive for google-auth-oauth2-http
 
 # Observability
 opentelemetry-api = { group = "io.opentelemetry", name = "opentelemetry-api", version.ref = "opentelemetry" }

@@ -13,7 +13,7 @@ plugins {
 
 allprojects {
     group = "io.github.mudrichenkoevgeny"
-    version = "0.0.5"
+    version = "0.0.6"
 }
 
 subprojects {

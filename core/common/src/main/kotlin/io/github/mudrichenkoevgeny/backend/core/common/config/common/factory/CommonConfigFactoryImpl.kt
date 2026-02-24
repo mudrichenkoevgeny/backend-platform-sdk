@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.AppIn
 import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironment
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.CommonConfig
+import io.github.mudrichenkoevgeny.backend.core.common.config.env.getStringList
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,10 +24,7 @@ class CommonConfigFactoryImpl @Inject constructor(
         val ktorHost = envReader.getByKey(CommonEnvKeys.KTOR_SERVER_HOST)
         val ktorPort = envReader.getByKey(CommonEnvKeys.KTOR_SERVER_PORT).toInt()
         val ktorManagementPort = envReader.getByKey(CommonEnvKeys.KTOR_MANAGEMENT_PORT).toInt()
-        val allowedOrigins = envReader.getByKey(CommonEnvKeys.ALLOWED_ORIGINS)
-            .split(",")
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
+        val allowedOrigins = envReader.getStringList(CommonEnvKeys.ALLOWED_ORIGINS)
         val rateLimit = envReader.getByKey(CommonEnvKeys.RATE_LIMIT).toInt()
         val rateLimitPeriodSeconds = envReader.getByKey(CommonEnvKeys.RATE_LIMIT_PERIOD_SECONDS).toInt()
 

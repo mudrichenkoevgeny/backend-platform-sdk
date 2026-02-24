@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.Req
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
 import io.github.mudrichenkoevgeny.backend.core.security.authenticationpolicychecker.AuthenticationPolicyChecker
+import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
@@ -96,7 +97,7 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
                 type = UserAuditMetadata.Types.AUTHENTICATION_CONFIRMATION_REQUIRED,
                 metadata = auditMetadata
             )
-            return AppResult.Error(UserError.AuthenticationConfirmationRequired())
+            return AppResult.Error(SecurityError.AuthenticationConfirmationRequired())
         }
 
         val userIdentifiersListResult = userIdentifierManager.getUserIdentifierListByUserId(userId)

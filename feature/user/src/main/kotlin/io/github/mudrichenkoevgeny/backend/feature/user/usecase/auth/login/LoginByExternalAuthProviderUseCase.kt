@@ -6,16 +6,21 @@ import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLim
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
+import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class LoginByExternalAuthProviderUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,
-    private val userAuditLogger: UserAuditLogger
+    private val userAuditLogger: UserAuditLogger,
+    private val externalAuthVerifiers: Set<@JvmSuppressWildcards ExternalAuthVerifier>,
+    private val authManager: AuthManager
 ) {
     suspend fun execute(
         authProviderKey: String,
@@ -39,21 +44,92 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
 
         val authProvider = UserAuthProvider.fromValue(authProviderKey)
         val supportedExternalProviders: Set<UserAuthProvider> = emptySet()
+        val externalAuthVerifier = externalAuthVerifiers.find { it.provider == authProvider }
 
-        if (authProvider == null || !supportedExternalProviders.contains(authProvider)) {
-            userAuditLogger.logFail(
+        if (authProvider == null || !supportedExternalProviders.contains(authProvider) || externalAuthVerifier == null) {
+            logAuditFail(
                 requestContext = requestContext,
-                action = AUDIT_ACTION,
-                resource = AUDIT_RESOURCE,
-                resourceId = auditResourceId,
+                auditResourceId = auditResourceId,
                 type = UserAuditMetadata.Types.NOT_SUPPORTED_EXTERNAL_AUTH_PROVIDER,
-                metadata = auditMetadata
+                auditMetadata = auditMetadata
             )
             return AppResult.Error(UserError.ExternalIdMismatch())
         }
 
-        // todo not implemented
-        return AppResult.Error(UserError.ExternalIdMismatch())
+        val verificationResult = externalAuthVerifier.verify(token)
+
+        if (verificationResult is AppResult.Error) {
+            logAuditFail(
+                requestContext = requestContext,
+                auditResourceId = auditResourceId,
+                type = UserAuditMetadata.Types.EXTERNAL_ID_MISMATCH,
+                auditMetadata = auditMetadata
+            )
+            return verificationResult
+        }
+
+        val verificationData = (verificationResult as AppResult.Success).data
+
+        val userIdentifierResult = authManager.getOrCreateUserIdentifier(
+            userAuthProvider = verificationData.authProvider,
+            identifier = verificationData.externalId,
+            userRole = UserRole.USER
+        )
+
+        val userIdentifier = when (userIdentifierResult) {
+            is AppResult.Success -> userIdentifierResult.data
+            is AppResult.Error -> {
+                logAuditInternalError(
+                    requestContext = requestContext,
+                    auditResourceId = auditResourceId,
+                    auditMetadata = auditMetadata
+                )
+                return userIdentifierResult
+            }
+        }
+
+        val authDataResult = authManager.provideAuthData(
+            userIdentifier = userIdentifier,
+            clientInfo = requestContext.clientInfo,
+            allowedRoles = setOf(UserRole.USER)
+        )
+
+        when (authDataResult) {
+            is AppResult.Success -> {
+                userAuditLogger.logSuccess(
+                    requestContext = requestContext,
+                    action = AUDIT_ACTION,
+                    resource = AUDIT_RESOURCE,
+                    resourceId = auditResourceId,
+                    metadata = auditMetadata
+                )
+            }
+            is AppResult.Error -> {
+                logAuditInternalError(
+                    requestContext = requestContext,
+                    auditResourceId = auditResourceId,
+                    auditMetadata = auditMetadata
+                )
+            }
+        }
+
+        return authDataResult
+    }
+
+    private fun logAuditFail(
+        requestContext: RequestContext,
+        auditResourceId: String?,
+        auditMetadata: Map<String, String>,
+        type: String?
+    ) {
+        userAuditLogger.logFail(
+            requestContext = requestContext,
+            action = AUDIT_ACTION,
+            resource = AUDIT_RESOURCE,
+            resourceId = auditResourceId,
+            type = type,
+            metadata = auditMetadata
+        )
     }
 
     private fun logAuditInternalError(
