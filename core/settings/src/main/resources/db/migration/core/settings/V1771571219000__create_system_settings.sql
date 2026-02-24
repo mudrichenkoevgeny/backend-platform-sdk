@@ -8,5 +8,4 @@ CREATE TABLE IF NOT EXISTS system_settings (
     updated_at TIMESTAMPTZ
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_server_settings_key ON server_settings(key);
-CREATE INDEX IF NOT EXISTS idx_server_settings_created_at ON server_settings(created_at);
+CREATE INDEX IF NOT EXISTS idx_system_settings_created_at ON system_settings(created_at);

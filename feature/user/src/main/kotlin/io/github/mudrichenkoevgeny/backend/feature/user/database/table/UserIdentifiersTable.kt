@@ -17,9 +17,4 @@ object UserIdentifiersTable : BaseTable("user_identifiers") {
     )
     val identifier = varchar("identifier", BaseDbConstraints.DEFAULT_MAX_LENGTH)
     val passwordHash = varchar("password_hash", UserDbConstraints.PASSWORD_HASH_MAX_LENGTH).nullable()
-
-    init {
-        uniqueIndex("uk_user_identifiers_userid_provider", userId, userAuthProvider)
-        uniqueIndex("uk_user_identifiers_provider_identifier", userAuthProvider, identifier)
-    }
 }

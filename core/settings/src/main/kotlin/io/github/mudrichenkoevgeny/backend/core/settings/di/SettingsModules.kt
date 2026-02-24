@@ -16,4 +16,4 @@ import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsServi
         GlobalSettingsProviderModule::class
     ]
 )
-interface SettingsModule
+interface SettingsModules

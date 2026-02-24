@@ -11,8 +11,4 @@ object UsersTable : BaseTable("users") {
     val accountStatus = enumerationByName("account_status", BaseDbConstraints.ENUM_MAX_LENGTH, UserAccountStatus::class)
     val lastLoginAt = timestamp("last_login_at").nullable()
     val lastActiveAt = timestamp("last_active_at").nullable()
-
-    init {
-        index("idx_users_created_at", isUnique = false, createdAt)
-    }
 }

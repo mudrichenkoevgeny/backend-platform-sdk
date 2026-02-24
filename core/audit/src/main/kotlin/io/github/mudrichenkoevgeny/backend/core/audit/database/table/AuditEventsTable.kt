@@ -22,11 +22,4 @@ object AuditEventsTable : BaseTable("audit_events") {
         serializer<Map<String, JsonElement>>()
     )
     val message = text("message").nullable()
-
-    init {
-        index("idx_audit_events_actor_id", isUnique = false, actorId)
-        index("idx_audit_events_action", isUnique = false, action)
-        index("idx_audit_events_resource_resource_id", isUnique = false, resource, resourceId)
-        index("idx_audit_events_created_at", isUnique = false, createdAt)
-    }
 }

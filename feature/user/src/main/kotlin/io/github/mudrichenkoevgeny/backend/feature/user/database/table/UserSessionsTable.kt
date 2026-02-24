@@ -35,9 +35,4 @@ object UserSessionsTable : BaseTable("user_sessions") {
     val deviceName = text("device_name").nullable()
     val lastAccessedAt = timestamp("last_accessed_at")
     val lastReauthenticatedAt = timestamp("last_reauthenticated_at")
-
-    init {
-        index("idx_tokens_hash", false, tokenHash)
-        index("idx_tokens_user_id", false, userId)
-    }
 }

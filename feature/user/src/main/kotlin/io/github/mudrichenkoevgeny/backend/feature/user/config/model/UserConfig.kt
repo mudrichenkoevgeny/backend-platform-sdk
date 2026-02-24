@@ -10,7 +10,8 @@ data class UserConfig(
     val refreshTokenValidityDays: Long,
     val authRealm: String,
     val adminAccountsList: List<AdminAccount>,
-    val authSettings: AuthSettings
+    val authSettings: AuthSettings,
+    val googleWebClientId: String?
 ) {
 
     fun getAccessTokenValidityHoursDuration(): Duration = Duration.ofHours(accessTokenValidityHours)

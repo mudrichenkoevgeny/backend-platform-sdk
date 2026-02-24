@@ -43,13 +43,16 @@ class UserConfigFactoryImpl @Inject constructor(
             availableAuthProviders = availableAuthProviders
         )
 
+        val googleWebClientId = envReader.getByKey(UserEnvKeys.GOOGLE_WEB_CLIENT_ID)
+
         return UserConfig(
             jwtSecret = jwtSecret,
             accessTokenValidityHours = accessTokenValidityHours,
             refreshTokenValidityDays = refreshTokenValidityDays,
             authRealm = authRealm,
             adminAccountsList = adminList.admins,
-            authSettings = authSettings
+            authSettings = authSettings,
+            googleWebClientId = googleWebClientId
         )
     }
 }
