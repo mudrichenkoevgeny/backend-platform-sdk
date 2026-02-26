@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsManag
 import io.github.mudrichenkoevgeny.backend.core.settings.di.module.GlobalSettingsProviderModule
 import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsRepositoriesModule
 import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsServicesModule
+import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsWebSocketModule
 
 @Module(
     includes = [
@@ -13,7 +14,8 @@ import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsServi
         SettingsRepositoriesModule::class,
         SettingsManagersModule::class,
         SettingsServicesModule::class,
-        GlobalSettingsProviderModule::class
+        GlobalSettingsProviderModule::class,
+        SettingsWebSocketModule::class
     ]
 )
 interface SettingsModules

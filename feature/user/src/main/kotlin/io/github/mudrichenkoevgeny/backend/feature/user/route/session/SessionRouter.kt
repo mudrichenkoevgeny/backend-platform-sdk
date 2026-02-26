@@ -13,7 +13,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.session.DeleteAl
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.session.DeleteSessionUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.session.GetSessionsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.session.LogoutFromCurrentSessionUseCase
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.session.SessionRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
@@ -108,7 +108,7 @@ class SessionRouter @Inject constructor(
         operationId = DELETE_SESSION_ROUTE_OPERATION_ID
         tags = listOf(UserSwaggerTags.SESSION)
         request {
-            pathParameter<String>(CommonApiFields.ID) {
+            pathParameter<String>(UserApiPaths.SESSION_ID) {
                 description = DELETE_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION
             }
         }
@@ -120,7 +120,7 @@ class SessionRouter @Inject constructor(
     }
 
     private suspend fun RoutingContext.deleteSession() {
-        val sessionId = call.validatePathParameter(CommonApiFields.ID) { id ->
+        val sessionId = call.validatePathParameter(UserApiPaths.SESSION_ID) { id ->
             id.toUserSessionIdOrThrow()
         }
 

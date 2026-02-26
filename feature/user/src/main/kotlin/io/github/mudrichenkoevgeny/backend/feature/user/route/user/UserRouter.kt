@@ -13,7 +13,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequest
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.user.DeleteUserUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.user.GetUserUseCase
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.user.UserRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
@@ -81,7 +81,7 @@ class UserRouter @Inject constructor(
         operationId = DELETE_USER_ROUTE_OPERATION_ID
         tags = listOf(UserSwaggerTags.USER)
         request {
-            pathParameter<String>(CommonApiFields.ID) {
+            pathParameter<String>(UserApiPaths.USER_ID) {
                 description = DELETE_USER_ROUTE_PATH_PARAMETER_ID_DESCRIPTION
             }
         }
@@ -93,7 +93,7 @@ class UserRouter @Inject constructor(
     }
 
     private suspend fun RoutingContext.deleteUser() {
-        val userId = call.validatePathParameter(CommonApiFields.ID) { id ->
+        val userId = call.validatePathParameter(UserApiPaths.USER_ID) { id ->
             id.toUserIdOrThrow()
         }
 

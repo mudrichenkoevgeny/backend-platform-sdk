@@ -31,8 +31,11 @@ object UserSessionsTable : BaseTable("user_sessions") {
     ).nullable()
     val userAgent = varchar("user_agent", BaseDbConstraints.DEFAULT_MAX_LENGTH).nullable()
     val ipAddress = varchar("ip_address", BaseDbConstraints.IP_MAX_LENGTH).nullable()
+    val language = varchar("language", BaseDbConstraints.LANGUAGE_MAX_LENGTH).nullable()
     val deviceId = text("device_id").nullable()
     val deviceName = text("device_name").nullable()
+    val appVersion = varchar("app_version", BaseDbConstraints.VERSION_MAX_LENGTH).nullable()
+    val operationSystemVersion = varchar("operation_system_version", BaseDbConstraints.VERSION_MAX_LENGTH).nullable()
     val lastAccessedAt = timestamp("last_accessed_at")
     val lastReauthenticatedAt = timestamp("last_reauthenticated_at")
 }

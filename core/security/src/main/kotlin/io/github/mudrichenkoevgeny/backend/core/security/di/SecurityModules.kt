@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.di.module.RateLimierMod
 import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityConfigModule
 import dagger.Module
 import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecuritySettingsProviderModule
+import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityWebSocketModule
 
 @Module(
     includes = [
@@ -15,7 +16,8 @@ import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecuritySetti
         PasswordPolicyValidatorModule::class,
         AuthenticationPolicyCheckerModule::class,
         RateLimierModule::class,
-        SecuritySettingsProviderModule::class
+        SecuritySettingsProviderModule::class,
+        SecurityWebSocketModule::class
     ]
 )
 interface SecurityModules

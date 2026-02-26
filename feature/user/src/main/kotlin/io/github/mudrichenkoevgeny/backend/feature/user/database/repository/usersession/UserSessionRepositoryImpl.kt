@@ -42,8 +42,11 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
             userSessionRow[userClientType] = userSession.userClientType
             userSessionRow[userAgent] = userSession.userAgent
             userSessionRow[ipAddress] = userSession.ipAddress
+            userSessionRow[language] = userSession.language
             userSessionRow[deviceId] = userSession.userDeviceId?.value
             userSessionRow[deviceName] = userSession.userDeviceName
+            userSessionRow[appVersion] = userSession.appVersion
+            userSessionRow[operationSystemVersion] = userSession.operationSystemVersion
             userSessionRow[createdAt] = userSession.createdAt
             userSessionRow[updatedAt] = userSession.updatedAt
             userSessionRow[lastAccessedAt] = userSession.lastAccessedAt
@@ -201,8 +204,11 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         userClientType = this[UserSessionsTable.userClientType],
         userAgent = this[UserSessionsTable.userAgent],
         ipAddress = this[UserSessionsTable.ipAddress],
+        language = this[UserSessionsTable.language],
         userDeviceId = this[UserSessionsTable.deviceId]?.let { deviceId -> UserDeviceId(deviceId) },
         userDeviceName = this[UserSessionsTable.deviceName],
+        appVersion = this[UserSessionsTable.appVersion],
+        operationSystemVersion = this[UserSessionsTable.operationSystemVersion],
         createdAt = this[UserSessionsTable.createdAt],
         updatedAt = this[UserSessionsTable.updatedAt],
         lastAccessedAt = this[UserSessionsTable.lastAccessedAt],

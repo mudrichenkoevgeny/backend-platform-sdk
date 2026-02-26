@@ -14,7 +14,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.session.UserSessio
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserSessionId
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.UserClientType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import java.time.Instant
 import javax.inject.Inject
@@ -74,11 +73,14 @@ class SessionManagerImpl @Inject constructor(
             refreshTokenHash = refreshTokenHash,
             expiresAt = refreshExpiry,
             revoked = false,
-            userClientType = clientInfo.clientType?.let { clientType -> UserClientType.fromValue(clientType) },
+            userClientType = clientInfo.clientType,
             userAgent = clientInfo.userAgent,
             ipAddress = clientInfo.ipAddress,
+            language = clientInfo.language,
             userDeviceId = clientInfo.deviceId,
             userDeviceName = clientInfo.deviceName,
+            appVersion = clientInfo.appVersion,
+            operationSystemVersion = clientInfo.operationSystemVersion,
             createdAt = now,
             updatedAt = null,
             lastAccessedAt = now,

@@ -10,7 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.message
 import javax.inject.Singleton
 
 @Module
-interface WebSocketModule {
+interface CommonWebSocketModule {
 
     @Binds
     @Singleton

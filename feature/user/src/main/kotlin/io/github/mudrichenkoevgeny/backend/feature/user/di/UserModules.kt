@@ -9,6 +9,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserServicesMo
 import dagger.Module
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.AuthSettingsProviderModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserExternalAuthVerifierModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserWebSocketModule
 
 @Module(
     includes = [
@@ -19,7 +20,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserExternalAu
         UserManagersModule::class,
         UserServicesModule::class,
         UserAuditModule::class,
-        AuthSettingsProviderModule::class
+        AuthSettingsProviderModule::class,
+        UserWebSocketModule::class
     ]
 )
 interface UserModules

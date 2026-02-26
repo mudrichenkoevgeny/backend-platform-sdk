@@ -11,6 +11,9 @@ dependencies {
     api(project(":core:security"))
     api(project(":core:audit"))
 
+    // Shared Foundation
+    implementation(libs.shared.foundation.core.common) // Transitive for core:common
+
     // DI
     ksp(libs.dagger.compiler)
     api(libs.dagger)

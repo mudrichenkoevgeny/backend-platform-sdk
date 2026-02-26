@@ -17,6 +17,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserId
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiQueryParams
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserAuthSpec
+import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -38,6 +41,20 @@ class JwtAuthenticationProvider @Inject constructor(
                 realm = userConfig.authRealm
 
                 this.verifier(JWT.require(Algorithm.HMAC256(userConfig.jwtSecret)).build())
+
+                authHeader { call ->
+                    val authHeader = call.request.parseAuthorizationHeader()
+                    if (authHeader != null) {
+                        return@authHeader authHeader
+                    }
+
+                    val queryToken = call.request.queryParameters[UserApiQueryParams.TOKEN]
+                    if (queryToken != null) {
+                        return@authHeader HttpAuthHeader.Single(UserAuthSpec.TOKEN_TYPE_BEARER, queryToken)
+                    }
+
+                    null
+                }
 
                 validate { credential ->
                     try {

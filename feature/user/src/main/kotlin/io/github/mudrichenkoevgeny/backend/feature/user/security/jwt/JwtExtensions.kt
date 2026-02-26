@@ -27,14 +27,8 @@ fun JwtBuilder.withSessionIdSubject(sessionId: UserSessionId): JwtBuilder {
 
 /** JWTCredential **/
 fun JWTCredential.getUserId(): UserId {
-    val jwtDecodeException = JWTDecodeException("Invalid subject")
-
-    val subject = this.payload.subject
-    if (subject.isNullOrBlank()) {
-        throw jwtDecodeException
-    }
-
-    return subject.toUserIdOrNull() ?: throw jwtDecodeException
+    return payload.subject?.toUserIdOrNull()
+        ?: throw JWTDecodeException("Invalid or missing subject")
 }
 
 fun JWTCredential.getSessionId(): UserSessionId? {
@@ -81,4 +75,26 @@ fun getUserIdFromSubject(subject: String?): AppResult<UserId> {
     val userId = subject.toUserIdOrNull() ?: return invalidAccessTokenErrorResult
 
     return AppResult.Success(userId)
+}
+
+fun JWTPrincipal.getUserIdForWebSocket(isOptional: Boolean = false): AppResult<UserId?> {
+    val userId = this.getUserId()
+
+    return if (userId != null) {
+        AppResult.Success(userId)
+    } else {
+        if (isOptional) {
+            AppResult.Success(null)
+        } else {
+            AppResult.Error(UserError.InvalidAccessToken())
+        }
+    }
+}
+
+fun JWTPrincipal.getUserSessionId(): UserSessionId? {
+    return this.getSessionId()
+}
+
+fun JWTPrincipal.getExpiresAt(): Long? {
+    return this.payload.expiresAt?.time
 }

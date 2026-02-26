@@ -18,7 +18,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.useride
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers.GetUserIdentifiersUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers.SendAddEmailIdentifierConfirmationUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers.SendAddPhoneIdentifierConfirmationUseCase
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToPhoneRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.useridentifiers.AddUserIdentifierEmailRequest
@@ -119,6 +119,11 @@ class SecurityUserIdentifiersRouter @Inject constructor(
         description = DELETE_USER_IDENTIFIER_ROUTE_DESCRIPTION
         operationId = DELETE_USER_IDENTIFIER_ROUTE_OPERATION_ID
         tags = listOf(UserSwaggerTags.SECURITY)
+        request {
+            pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
+                description = DELETE_USER_IDENTIFIER_ROUTE_PATH_PARAMETER_ID_DESCRIPTION
+            }
+        }
         response {
             code(HttpStatusCode.OK) {
                 description = DELETE_USER_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION
@@ -127,7 +132,7 @@ class SecurityUserIdentifiersRouter @Inject constructor(
     }
 
     private suspend fun RoutingContext.deleteUserIdentifier() {
-        val userIdentifierId = call.validatePathParameter(CommonApiFields.ID) { id ->
+        val userIdentifierId = call.validatePathParameter(UserApiPaths.USER_IDENTIFIER_ID) { id ->
             id.toUserIdentifierIdOrThrow()
         }
 
@@ -284,6 +289,7 @@ class SecurityUserIdentifiersRouter @Inject constructor(
         const val DELETE_USER_IDENTIFIER_ROUTE_SUMMARY = "Delete user identifier"
         const val DELETE_USER_IDENTIFIER_ROUTE_DESCRIPTION = "Deletes a user authentication identifier."
         const val DELETE_USER_IDENTIFIER_ROUTE_OPERATION_ID = "deleteUserIdentifier"
+        const val DELETE_USER_IDENTIFIER_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "ID of the user identifier to delete"
         const val DELETE_USER_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION = "Deleted"
 
         const val ADD_EMAIL_SUMMARY = "Add email user identifier"

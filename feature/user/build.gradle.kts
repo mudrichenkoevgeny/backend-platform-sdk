@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.ktor.server.auth.jwt)
     implementation(libs.ktor.http) // Transitive for Ktor
     implementation(libs.ktor.utils) // Transitive for Ktor
+    implementation(libs.ktor.websockets) // Transitive for Ktor
     implementation(libs.java.jwt) // Transitive for ktor-server-auth-jwt
 
     // DI

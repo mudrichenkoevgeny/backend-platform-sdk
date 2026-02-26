@@ -15,7 +15,12 @@ class PublicWebSocketRouter @Inject constructor(
 
     override fun register(route: Route) {
         route.webSocket(WebSocketContract.WS_REALTIME_PATH) {
-            webSocketManager.register(this, null)
+            webSocketManager.register(
+                webSocketSession = this,
+                userId = null,
+                userSessionId = null,
+                userSessionExpiresAt = null
+            )
         }
     }
 }

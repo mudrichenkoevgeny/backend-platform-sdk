@@ -2,68 +2,172 @@ package io.github.mudrichenkoevgeny.backend.core.common.network.websocket.manage
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.messagehandler.CommonWebSocketMessageHandler
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserDeviceId
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserSessionId
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.extractClientInfo
 import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.messagehandler.WebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.messagehandler.WebSocketMessageHandlerResult
+import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.model.WebSocketSessionContext
 import io.github.mudrichenkoevgeny.backend.core.common.validation.ValidationException
 import io.github.mudrichenkoevgeny.backend.core.common.validation.validateDto
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.UserClientType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.SocketFrame
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonWebSocketCloseReasons
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonWebSocketEventTypes
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.ktor.server.websocket.DefaultWebSocketServerSession
+import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
+import io.ktor.websocket.close
 import io.ktor.websocket.readText
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
-import kotlinx.coroutines.isActive
 import kotlinx.serialization.SerializationException
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @Singleton
 class KtorWebSocketManager @Inject constructor(
     private val appLogger: AppLogger,
-    private val commonHandler: CommonWebSocketMessageHandler,
     private val webSocketMessageHandlers: Set<@JvmSuppressWildcards WebSocketMessageHandler>
 ) : WebSocketManager {
-    private val sessions = ConcurrentHashMap<DefaultWebSocketServerSession, String>()
 
-    override suspend fun register(session: DefaultWebSocketServerSession, userId: String?) {
-        sessions[session] = userId ?: ANONYMOUS_USER_ID
+    private val managerScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    private val webSocketSessionToContext = ConcurrentHashMap<DefaultWebSocketServerSession, WebSocketSessionContext>()
+    private val socketIdToWebSocketSession = ConcurrentHashMap<String, DefaultWebSocketServerSession>()
+    private val userIdToWebSocketSessions = ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()
+    private val userSessionIdToWebSocketSessions = ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()
+    private val expirationJobs = ConcurrentHashMap<String, Job>()
+
+    @OptIn(ExperimentalUuidApi::class)
+    override suspend fun register(
+        webSocketSession: DefaultWebSocketServerSession,
+        userId: UserId?,
+        userSessionId: UserSessionId?,
+        userSessionExpiresAt: Long?
+    ) {
+        val socketId = Uuid.random().toHexDashString()
+        val clientInfo = webSocketSession.call.extractClientInfo()
+
+        val context = WebSocketSessionContext(
+            socketSessionId = socketId,
+            userId = userId,
+            userSessionId = userSessionId,
+            clientInfo = clientInfo
+        )
+
+        webSocketSessionToContext[webSocketSession] = context
+        socketIdToWebSocketSession[socketId] = webSocketSession
+
+        userId?.let {
+            userIdToWebSocketSessions
+                .computeIfAbsent(it.asHexDashString()) { ConcurrentHashMap.newKeySet() }
+                .add(webSocketSession)
+        }
+        userSessionId?.let {
+            userSessionIdToWebSocketSessions
+                .computeIfAbsent(it.asHexDashString()) { ConcurrentHashMap.newKeySet() }
+                .add(webSocketSession)
+        }
+
+        scheduleTokenExpirationCheck(webSocketSession, context, userSessionExpiresAt)
+
         try {
-            session.handleIncoming(userId)
+            webSocketSession.handleIncoming(context)
         } finally {
-            sessions.remove(session)
+            cleanup(webSocketSession, context)
         }
     }
 
-    override suspend fun sendMessageToAllUsers(frame: SocketFrame) {
-        val json = FoundationJson.encodeToString(frame)
-        sessions.keys.forEach { it.sendMessage(json) }
+    override suspend fun sendMessageToAll(frame: SocketFrame) {
+        webSocketSessionToContext.keys.forEach { session ->
+            sendMessageToSession(session, frame)
+        }
     }
 
-    override suspend fun sendMessageToUser(userId: String, frame: SocketFrame) {
-        val json = FoundationJson.encodeToString(frame)
-        sessions.filterValues { it == userId }.keys.forEach { it.sendMessage(json) }
+    override suspend fun sendMessageToUser(userId: UserId, frame: SocketFrame) {
+        userIdToWebSocketSessions[userId.asHexDashString()]?.forEach { session ->
+            sendMessageToSession(session, frame)
+        }
     }
 
-    private suspend fun DefaultWebSocketServerSession.handleIncoming(userId: String?) {
+    override suspend fun sendMessageToUserSession(userSessionId: UserSessionId, frame: SocketFrame) {
+        userSessionIdToWebSocketSessions[userSessionId.asHexDashString()]?.forEach { session ->
+            sendMessageToSession(session, frame)
+        }
+    }
+
+    override suspend fun sendMessageToSocket(socketId: String, frame: SocketFrame) {
+        socketIdToWebSocketSession[socketId]?.let { session ->
+            sendMessageToSession(session, frame)
+        }
+    }
+
+    override suspend fun disconnectSocket(socketId: String) {
+        socketIdToWebSocketSession[socketId]?.close(
+            CloseReason(
+                code = CloseReason.Codes.NORMAL,
+                message = CommonWebSocketCloseReasons.NORMAL
+            )
+        )
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    private fun scheduleTokenExpirationCheck(
+        session: DefaultWebSocketServerSession,
+        context: WebSocketSessionContext,
+        expiresAt: Long?
+    ) {
+        if (expiresAt == null) return
+
+        val socketId = context.socketSessionId
+        val currentTime = System.currentTimeMillis()
+        val delayTime = (expiresAt - currentTime) - TOKEN_EXPIRATION_BUFFER_MS
+
+        expirationJobs[socketId] = managerScope.launch {
+            if (delayTime > 0) {
+                delay(delayTime)
+            }
+
+            sendMessageToSession(
+                session,
+                SocketFrame(
+                    id = Uuid.random().toHexDashString(),
+                    type = CommonWebSocketEventTypes.UNAUTHORIZED,
+                    timestamp = System.currentTimeMillis()
+                )
+            )
+
+            delay(NOTIFY_BEFORE_CLOSE_DELAY_MS)
+
+            session.close(
+                CloseReason(
+                    code = CloseReason.Codes.VIOLATED_POLICY,
+                    message = CommonWebSocketCloseReasons.SESSION_EXPIRED
+                )
+            )
+        }
+    }
+
+    private suspend fun DefaultWebSocketServerSession.handleIncoming(context: WebSocketSessionContext) {
         try {
             for (frame in incoming) {
                 if (frame is Frame.Text) {
                     val text = frame.readText()
-
                     val socketFrame = try {
-                        val decoded = FoundationJson.decodeFromString<SocketFrame>(text)
-                        decoded.validateDto()
-                        decoded
+                        FoundationJson.decodeFromString<SocketFrame>(text).apply { validateDto() }
                     } catch (e: Exception) {
                         handleSocketError(e)
                         continue
                     }
-
-                    handleSocketFrame(socketFrame, userId)
+                    processSocketFrame(this, socketFrame, context)
                 }
             }
         } catch (e: Exception) {
@@ -73,26 +177,79 @@ class KtorWebSocketManager @Inject constructor(
         }
     }
 
-    private suspend fun DefaultWebSocketServerSession.handleSocketFrame(socketFrame: SocketFrame, userId: String?) {
-        val commonResult = commonHandler.handle(socketFrame, userId)
-        if (commonResult is WebSocketMessageHandlerResult.Handled) {
-            sendMessage(FoundationJson.encodeToString(commonResult.socketFrame))
-            return
-        }
-
-        var isSocketFrameHandled = false
+    private suspend fun processSocketFrame(
+        session: DefaultWebSocketServerSession,
+        socketFrame: SocketFrame,
+        context: WebSocketSessionContext
+    ) {
+        var isHandled = false
         for (handler in webSocketMessageHandlers) {
-            val result = handler.handle(socketFrame, userId)
-            if (result is WebSocketMessageHandlerResult.Handled) {
-                sendMessage(FoundationJson.encodeToString(result.socketFrame))
-                isSocketFrameHandled = true
+            val result = handler.handle(socketFrame, context)
+            if (result !is WebSocketMessageHandlerResult.NotHandled) {
+                processResult(session, context, result)
+                isHandled = true
                 break
             }
         }
 
-        if (!isSocketFrameHandled) {
+        if (!isHandled) {
             appLogger.logError(CommonError.InvalidFieldValue(CommonApiFields.TYPE))
         }
+    }
+
+    private suspend fun processResult(
+        session: DefaultWebSocketServerSession,
+        context: WebSocketSessionContext,
+        result: WebSocketMessageHandlerResult
+    ) {
+        when (result) {
+            is WebSocketMessageHandlerResult.InitializeClient -> {
+                val payload = result.payload
+                val current = context.clientInfo
+
+                context.clientInfo = current?.copy(
+                    clientType = payload.clientType?.let { UserClientType.fromValue(it) } ?: current.clientType,
+                    language = payload.language ?: current.language,
+                    deviceId = UserDeviceId(payload.deviceId),
+                    deviceName = payload.deviceName ?: current.deviceName,
+                    appVersion = payload.appVersion ?: current.appVersion,
+                    operationSystemVersion = payload.operationSystemVersion ?: current.operationSystemVersion
+                )
+                sendMessageToSession(session, result.socketFrame)
+            }
+            is WebSocketMessageHandlerResult.SendSocketFrame -> sendMessageToSession(session, result.socketFrame)
+            is WebSocketMessageHandlerResult.Error -> appLogger.logError(result.appError)
+            else -> Unit
+        }
+    }
+
+    private fun cleanup(session: DefaultWebSocketServerSession, context: WebSocketSessionContext) {
+        expirationJobs.remove(context.socketSessionId)?.cancel()
+
+        webSocketSessionToContext.remove(session)
+        socketIdToWebSocketSession.remove(context.socketSessionId)
+
+        context.userId?.asHexDashString()?.let { uid ->
+            userIdToWebSocketSessions[uid]?.let { sessions ->
+                sessions.remove(session)
+                if (sessions.isEmpty()) userIdToWebSocketSessions.remove(uid)
+            }
+        }
+
+        context.userSessionId?.asHexDashString()?.let { sid ->
+            userSessionIdToWebSocketSessions[sid]?.let { sessions ->
+                sessions.remove(session)
+                if (sessions.isEmpty()) userSessionIdToWebSocketSessions.remove(sid)
+            }
+        }
+    }
+
+    private suspend fun sendMessageToSession(session: DefaultWebSocketServerSession, frame: SocketFrame) {
+        try {
+            if (session.isActive) {
+                session.send(Frame.Text(FoundationJson.encodeToString(frame)))
+            }
+        } catch (_: Exception) {}
     }
 
     private fun handleSocketError(e: Throwable) {
@@ -104,17 +261,8 @@ class KtorWebSocketManager @Inject constructor(
         appLogger.logError(appError)
     }
 
-    private suspend fun DefaultWebSocketServerSession.sendMessage(json: String) {
-        try {
-            if (isActive) {
-                send(Frame.Text(json))
-            }
-        } catch (_: Exception) {
-            sessions.remove(this)
-        }
-    }
-
     companion object {
-        private const val ANONYMOUS_USER_ID = "ANONYMOUS_USER_ID"
+        private const val TOKEN_EXPIRATION_BUFFER_MS = 5000L
+        private const val NOTIFY_BEFORE_CLOSE_DELAY_MS = 2000L
     }
 }

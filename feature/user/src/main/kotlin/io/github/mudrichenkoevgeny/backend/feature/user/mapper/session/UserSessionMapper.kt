@@ -11,7 +11,10 @@ fun UserSession.toUserSessionResponse(): UserSessionResponse = UserSessionRespon
     clientType = userClientType?.serialName,
     userAgent = userAgent,
     ipAddress = ipAddress,
+    language = language,
     deviceName = userDeviceName,
+    appVersion = appVersion,
+    operationSystemVersion = operationSystemVersion,
     createdAt = createdAt.toEpochMilli(),
     lastAccessedAt = lastAccessedAt.toEpochMilli()
 )
