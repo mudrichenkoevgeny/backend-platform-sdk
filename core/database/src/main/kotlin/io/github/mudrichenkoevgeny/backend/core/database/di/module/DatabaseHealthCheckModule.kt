@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.database.healthcheck.RedisHealth
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoSet
+import dagger.multibindings.Multibinds
 
 @Module
 interface DatabaseHealthCheckModule {
@@ -17,4 +18,7 @@ interface DatabaseHealthCheckModule {
     @Binds
     @IntoSet
     fun bindRedisHealthCheck(redisHealthCheck: RedisHealthCheck): HealthCheck
+
+    @Multibinds
+    fun bindHealthChecks(): Set<HealthCheck>
 }

@@ -43,7 +43,8 @@ class AuthenticatedWebSocketRouter @Inject constructor(
                     is AppResult.Error -> {
                         close(
                             CloseReason(
-                                CloseReason.Codes.CANNOT_ACCEPT, UserWebSocketCloseReasons.AUTH_FAILED
+                                code = CloseReason.Codes.CANNOT_ACCEPT,
+                                message = UserWebSocketCloseReasons.AUTH_FAILED
                             )
                         )
                         return@webSocket

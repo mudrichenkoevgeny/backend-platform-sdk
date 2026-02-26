@@ -9,12 +9,12 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ext
 import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.messagehandler.WebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.messagehandler.WebSocketMessageHandlerResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.model.WebSocketSessionContext
+import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.sessionlistener.WebSocketSessionListener
 import io.github.mudrichenkoevgeny.backend.core.common.validation.ValidationException
 import io.github.mudrichenkoevgeny.backend.core.common.validation.validateDto
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.UserClientType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonWebSocketCloseReasons
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonWebSocketEventTypes
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.ktor.server.websocket.DefaultWebSocketServerSession
@@ -35,16 +35,14 @@ import kotlin.uuid.Uuid
 @Singleton
 class KtorWebSocketManager @Inject constructor(
     private val appLogger: AppLogger,
-    private val webSocketMessageHandlers: Set<@JvmSuppressWildcards WebSocketMessageHandler>
+    private val webSocketMessageHandlers: Set<@JvmSuppressWildcards WebSocketMessageHandler>,
+    private val webSocketSessionListeners: Set<@JvmSuppressWildcards WebSocketSessionListener>
 ) : WebSocketManager {
-
-    private val managerScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private val webSocketSessionToContext = ConcurrentHashMap<DefaultWebSocketServerSession, WebSocketSessionContext>()
     private val socketIdToWebSocketSession = ConcurrentHashMap<String, DefaultWebSocketServerSession>()
     private val userIdToWebSocketSessions = ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()
     private val userSessionIdToWebSocketSessions = ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()
-    private val expirationJobs = ConcurrentHashMap<String, Job>()
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun register(
@@ -77,12 +75,17 @@ class KtorWebSocketManager @Inject constructor(
                 .add(webSocketSession)
         }
 
-        scheduleTokenExpirationCheck(webSocketSession, context, userSessionExpiresAt)
+        webSocketSessionListeners.forEach { webSocketSessionListener ->
+            webSocketSessionListener.onSessionRegistered(webSocketSession, context, userSessionExpiresAt)
+        }
 
         try {
             webSocketSession.handleIncoming(context)
         } finally {
             cleanup(webSocketSession, context)
+            webSocketSessionListeners.forEach { webSocketSessionListener ->
+                webSocketSessionListener.onSessionClosed(context)
+            }
         }
     }
 
@@ -117,43 +120,6 @@ class KtorWebSocketManager @Inject constructor(
                 message = CommonWebSocketCloseReasons.NORMAL
             )
         )
-    }
-
-    @OptIn(ExperimentalUuidApi::class)
-    private fun scheduleTokenExpirationCheck(
-        session: DefaultWebSocketServerSession,
-        context: WebSocketSessionContext,
-        expiresAt: Long?
-    ) {
-        if (expiresAt == null) return
-
-        val socketId = context.socketSessionId
-        val currentTime = System.currentTimeMillis()
-        val delayTime = (expiresAt - currentTime) - TOKEN_EXPIRATION_BUFFER_MS
-
-        expirationJobs[socketId] = managerScope.launch {
-            if (delayTime > 0) {
-                delay(delayTime)
-            }
-
-            sendMessageToSession(
-                session,
-                SocketFrame(
-                    id = Uuid.random().toHexDashString(),
-                    type = CommonWebSocketEventTypes.UNAUTHORIZED,
-                    timestamp = System.currentTimeMillis()
-                )
-            )
-
-            delay(NOTIFY_BEFORE_CLOSE_DELAY_MS)
-
-            session.close(
-                CloseReason(
-                    code = CloseReason.Codes.VIOLATED_POLICY,
-                    message = CommonWebSocketCloseReasons.SESSION_EXPIRED
-                )
-            )
-        }
     }
 
     private suspend fun DefaultWebSocketServerSession.handleIncoming(context: WebSocketSessionContext) {
@@ -224,8 +190,6 @@ class KtorWebSocketManager @Inject constructor(
     }
 
     private fun cleanup(session: DefaultWebSocketServerSession, context: WebSocketSessionContext) {
-        expirationJobs.remove(context.socketSessionId)?.cancel()
-
         webSocketSessionToContext.remove(session)
         socketIdToWebSocketSession.remove(context.socketSessionId)
 
@@ -259,10 +223,5 @@ class KtorWebSocketManager @Inject constructor(
             else -> CommonError.Unknown(e.message)
         }
         appLogger.logError(appError)
-    }
-
-    companion object {
-        private const val TOKEN_EXPIRATION_BUFFER_MS = 5000L
-        private const val NOTIFY_BEFORE_CLOSE_DELAY_MS = 2000L
     }
 }

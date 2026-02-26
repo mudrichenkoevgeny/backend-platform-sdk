@@ -3,10 +3,12 @@ package io.github.mudrichenkoevgeny.backend.core.common.di.module
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoSet
+import dagger.multibindings.Multibinds
 import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.manager.KtorWebSocketManager
 import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.messagehandler.CommonWebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.messagehandler.WebSocketMessageHandler
+import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.sessionlistener.WebSocketSessionListener
 import javax.inject.Singleton
 
 @Module
@@ -21,4 +23,10 @@ interface CommonWebSocketModule {
     fun bindCommonWebSocketMessageHandler(
         commonWebSocketMessageHandler: CommonWebSocketMessageHandler
     ): WebSocketMessageHandler
+
+    @Multibinds
+    fun bindWebSocketMessageHandlers(): Set<WebSocketMessageHandler>
+
+    @Multibinds
+    fun bindWebSocketSessionListeners(): Set<WebSocketSessionListener>
 }

@@ -4,6 +4,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.IntoSet
+import dagger.multibindings.Multibinds
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.GoogleAuthVerifier
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
@@ -17,6 +18,9 @@ interface UserExternalAuthVerifierModule {
     @IntoSet
     @Singleton
     fun bindGoogleVerifier(verifier: GoogleAuthVerifier): ExternalAuthVerifier
+
+    @Multibinds
+    fun bindExternalAuthVerifiers(): Set<ExternalAuthVerifier>
 
     companion object {
         @Provides
