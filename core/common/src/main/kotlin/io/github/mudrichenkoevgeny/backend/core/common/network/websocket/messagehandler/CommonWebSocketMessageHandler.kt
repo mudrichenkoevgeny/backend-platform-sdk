@@ -25,7 +25,6 @@ class CommonWebSocketMessageHandler @Inject constructor() : WebSocketMessageHand
             CommonWebSocketEventTypes.PONG -> WebSocketMessageHandlerResult.Handled
             CommonWebSocketEventTypes.INITIALIZE -> handleInitialize(frame)
             CommonWebSocketEventTypes.INITIALIZED_SUCCESS -> WebSocketMessageHandlerResult.Handled
-            CommonWebSocketEventTypes.UNAUTHORIZED -> WebSocketMessageHandlerResult.Handled
             else -> WebSocketMessageHandlerResult.NotHandled
         }
     }

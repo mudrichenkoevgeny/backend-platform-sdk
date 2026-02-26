@@ -15,6 +15,7 @@ class UserWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandle
         webSocketSessionContext: WebSocketSessionContext
     ): WebSocketMessageHandlerResult {
         return when (frame.type) {
+            UserWebSocketEventTypes.UNAUTHORIZED -> WebSocketMessageHandlerResult.Handled
             UserWebSocketEventTypes.SESSION_TERMINATED -> WebSocketMessageHandlerResult.Handled
             UserWebSocketEventTypes.AUTH_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
             UserWebSocketEventTypes.ACCOUNT_STATUS_CHANGED -> WebSocketMessageHandlerResult.Handled
