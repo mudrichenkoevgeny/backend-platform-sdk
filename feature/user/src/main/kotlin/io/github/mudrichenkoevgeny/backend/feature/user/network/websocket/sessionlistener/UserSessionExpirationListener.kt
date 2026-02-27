@@ -19,7 +19,6 @@ import kotlin.uuid.Uuid
 
 @Singleton
 class UserSessionExpirationListener @Inject constructor(
-    private val webSocketManager: WebSocketManager,
     @param:BackgroundScope private val scope: CoroutineScope
 ) : WebSocketSessionListener {
 
@@ -27,6 +26,7 @@ class UserSessionExpirationListener @Inject constructor(
 
     @OptIn(ExperimentalUuidApi::class)
     override fun onSessionRegistered(
+        webSocketManager: WebSocketManager,
         session: DefaultWebSocketServerSession,
         context: WebSocketSessionContext,
         expiresAt: Long?

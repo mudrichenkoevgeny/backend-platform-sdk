@@ -7,6 +7,7 @@ dependencies {
         api(project(":core:common"))
         api(project(":core:observability"))
         api(project(":core:database"))
+        api(project(":core:settings"))
         api(project(":core:security"))
         api(project(":core:audit"))
         api(project(":core:storage"))

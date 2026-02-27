@@ -98,6 +98,7 @@ ktor-http = { group = "io.ktor", name = "ktor-http", version.ref = "ktor" } # Tr
 ktor-serialization = { group = "io.ktor", name = "ktor-serialization", version.ref = "ktor" } # Transitive for Ktor
 ktor-utils = { group = "io.ktor", name = "ktor-utils", version.ref = "ktor" } # Transitive for Ktor
 ktor-websockets = { group = "io.ktor", name = "ktor-websockets", version.ref = "ktor" } # Transitive for Ktor
+ktor-events = { group = "io.ktor", name = "ktor-events", version.ref = "ktor" } # Transitive for Ktor
 
 # DI
 dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }

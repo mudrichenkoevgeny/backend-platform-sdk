@@ -76,7 +76,12 @@ class KtorWebSocketManager @Inject constructor(
         }
 
         webSocketSessionListeners.forEach { webSocketSessionListener ->
-            webSocketSessionListener.onSessionRegistered(webSocketSession, context, userSessionExpiresAt)
+            webSocketSessionListener.onSessionRegistered(
+                webSocketManager = this,
+                session = webSocketSession,
+                context = context,
+                expiresAt = userSessionExpiresAt
+            )
         }
 
         try {

@@ -42,3 +42,5 @@ val featureModules = listOf(
 registerModules("feature", featureModules)
 
 include(":bom")
+
+include(":sample")
