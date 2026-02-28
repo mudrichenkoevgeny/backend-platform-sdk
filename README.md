@@ -8,7 +8,7 @@ Add the library to your projects using one of the following methods:
 _1. In your gradle/libs.versions.toml file:_
 ```
 [versions]
-backend-sdk = "0.0.13"
+backend-sdk = "0.0.14"
 
 [libraries]
 backend-sdk-bom = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-bom", version.ref = "backend-sdk" }
@@ -65,7 +65,7 @@ dependencies {
 ```
 ### Option 2: Direct Dependency
 ```
-implementation(platform("io.github.mudrichenkoevgeny:backend-platform-sdk-bom:0.0.13"))
+implementation(platform("io.github.mudrichenkoevgeny:backend-platform-sdk-bom:0.0.14"))
 implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-common")
 implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-audit")
 implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-crosscutting")
@@ -78,16 +78,16 @@ implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-storage")
 implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-feature-user")
 
 // Or if you don't want to use BOM:
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-common:0.0.13")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-audit:0.0.13")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-crosscutting:0.0.13")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-database:0.0.13")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-events:0.0.13")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-observability:0.0.13")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-settings:0.0.13")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-security:0.0.13")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-storage:0.0.13")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-feature-user:0.0.13")
+implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-common:0.0.14")
+implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-audit:0.0.14")
+implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-crosscutting:0.0.14")
+implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-database:0.0.14")
+implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-events:0.0.14")
+implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-observability:0.0.14")
+implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-settings:0.0.14")
+implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-security:0.0.14")
+implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-storage:0.0.14")
+implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-feature-user:0.0.14")
 ```
 
 # Integration Steps
@@ -113,10 +113,3 @@ interface AppModule {
     fun bindAppInfo(impl: BuildConfigAppInfo): AppInfo
 }
 ```
-
-
-## Samples & Usage
-
-Check out these projects to see the library in action:
-
-* **[Backend Demo](https://github.com/mudrichenkoevgeny/backend-demo)** — A demo application demonstrating the core capabilities of the SDK and best practices for its configuration.

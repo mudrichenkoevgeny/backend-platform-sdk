@@ -21,8 +21,8 @@ class SystemSettingRepositoryImpl @Inject constructor() : SystemSettingRepositor
         return try {
             val now = Instant.now()
 
-            SystemSettingsTable.upsert { row ->
-                setting.id?.let { row[id] = it }
+            SystemSettingsTable.upsert(SystemSettingsTable.key) { row ->
+                row[id] = setting.id
                 row[key] = setting.key
                 row[value] = setting.value
                 row[type] = setting.type

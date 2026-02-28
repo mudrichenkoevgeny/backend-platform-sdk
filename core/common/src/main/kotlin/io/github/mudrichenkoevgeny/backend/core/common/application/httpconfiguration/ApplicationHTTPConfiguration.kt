@@ -4,9 +4,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironme
 import io.github.mudrichenkoevgeny.backend.core.common.network.contract.CommonNetworkHttpHeaderValues
 import io.github.mudrichenkoevgeny.backend.core.common.network.contract.CommonNetworkHttpHeaders
 import io.github.mudrichenkoevgeny.backend.core.common.network.cors.CorsConfig
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonHttpHeaders
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
+import io.ktor.http.Url
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
@@ -17,9 +17,13 @@ fun Application.configureHTTP(
     allowedOrigins: List<String>
 ) {
     install(CORS) {
-        allowedOrigins.forEach { origin ->
-            val host = origin.replace(Regex("https?://"), "")
-            allowHost(host, schemes = listOf("http", "https"))
+        if (environment == AppEnvironment.DEV) {
+            anyHost()
+        } else {
+            allowedOrigins.forEach { origin ->
+                val uri = Url(origin)
+                allowHost(uri.host, schemes = listOf(uri.protocol.name))
+            }
         }
 
         allowMethod(HttpMethod.Options)
@@ -31,11 +35,12 @@ fun Application.configureHTTP(
 
         allowHeader(HttpHeaders.Authorization)
         allowHeader(HttpHeaders.ContentType)
-        allowHeader(CommonHttpHeaders.TRACE_HEADER_NAME)
-        exposeHeader(CommonHttpHeaders.TRACE_HEADER_NAME)
+        allowHeader(HttpHeaders.Accept)
+        allowHeader(HttpHeaders.AcceptLanguage)
+        allowHeadersPrefixed(CommonNetworkHttpHeaders.X_PREFIX)
 
         allowCredentials = true
-
+        allowNonSimpleContentTypes = true
         maxAgeInSeconds = CorsConfig.CORS_MAX_AGE_SECONDS
     }
 
@@ -44,7 +49,12 @@ fun Application.configureHTTP(
         header(CommonNetworkHttpHeaders.X_CONTENT_TYPE_OPTIONS_HEADER_NAME, CommonNetworkHttpHeaderValues.NOSNIFF_HEADER_VALUE)
         header(CommonNetworkHttpHeaders.X_FRAME_OPTIONS_HEADER_NAME, CommonNetworkHttpHeaderValues.DENY_HEADER_VALUE)
         header(CommonNetworkHttpHeaders.X_XSS_PROTECTION_HEADER_NAME, CommonNetworkHttpHeaderValues.XSS_BLOCK_HEADER_VALUE)
-        header(CommonNetworkHttpHeaders.CONTENT_SECURITY_POLICY_HEADER_NAME, CommonNetworkHttpHeaderValues.CSP_API_HEADER_VALUE)
+        val csp = if (environment == AppEnvironment.DEV) {
+            CommonNetworkHttpHeaderValues.CSP_DEV_HEADER_VALUE
+        } else {
+            CommonNetworkHttpHeaderValues.CSP_API_HEADER_VALUE
+        }
+        header(CommonNetworkHttpHeaders.CONTENT_SECURITY_POLICY_HEADER_NAME, csp)
         header(CommonNetworkHttpHeaders.REFERRER_POLICY_HEADER_NAME, CommonNetworkHttpHeaderValues.NO_REFERRER_HEADER_VALUE)
         header(CommonNetworkHttpHeaders.PERMISSION_POLICY_HEADER_NAME, CommonNetworkHttpHeaderValues.PERMISSION_POLICY_HEADER_VALUE)
         if (environment != AppEnvironment.DEV) {

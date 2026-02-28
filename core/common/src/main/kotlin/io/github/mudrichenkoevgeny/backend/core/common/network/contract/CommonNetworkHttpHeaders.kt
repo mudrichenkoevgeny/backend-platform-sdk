@@ -1,6 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.common.network.contract
 
 object CommonNetworkHttpHeaders {
+    const val X_PREFIX = "x-"
+
     const val X_FORWARDED_FOR = "X-Forwarded-For"
     const val X_CONTENT_TYPE_OPTIONS_HEADER_NAME = "X-Content-Type-Options"
     const val X_FRAME_OPTIONS_HEADER_NAME = "X-Frame-Options"

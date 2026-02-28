@@ -1,0 +1,222 @@
+services:
+  app:
+    build:
+      context: ../../
+      dockerfile: sample/deploy/docker/app/Dockerfile
+      args:
+        APP_PORT: ${APP_PORT}
+        GRADLE_IMAGE: ${GRADLE_IMAGE}
+        JRE_IMAGE: ${JRE_IMAGE}
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    env_file:
+      - ./env/.versions.env
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_SERVICE_NAME: ${APP_NAME}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+      SECRETS_DIR: /app/sample/deploy/secrets
+    secrets:
+      - DB_USER
+      - DB_PASSWORD
+      - REDIS_URL
+      - JWT_SECRET
+      - ADMIN_ACCOUNTS_JSON
+      - S3_ACCESS_KEY
+      - S3_SECRET_KEY
+    volumes:
+      - ${LOG_PATH}:/app/logs
+      - ./secrets:/app/sample/deploy/secrets
+      - gradle_cache:/root/.gradle
+    networks:
+      - app-network
+
+  db:
+    image: postgres:18.0
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/DB_USER
+      POSTGRES_PASSWORD_FILE: /run/secrets/DB_PASSWORD
+    secrets:
+      - DB_USER
+      - DB_PASSWORD
+    volumes:
+      - db_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$(cat /run/secrets/DB_USER)"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  redis:
+    image: redis:8.4.0-alpine
+    secrets:
+      - REDIS_URL
+    networks:
+      - app-network
+
+  otel-collector:
+    image: otel/opentelemetry-collector:0.111.0
+    volumes:
+      - ./docker/observability/otel-collector/otel-collector-config.yml:/etc/otel-collector-config.yml:ro
+    command: [ "--config=/etc/otel-collector-config.yml" ]
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8888:8888"
+      - "8889:8889"
+    environment:
+      JAEGER_ENDPOINT: jaeger:4317
+    depends_on:
+      jaeger:
+        condition: service_started
+    networks:
+      - app-network
+
+  jaeger:
+    image: jaegertracing/jaeger:2.13.0
+    ports:
+      - "16686:16686"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    healthcheck:
+      test: ["CMD", "/jaeger", "status"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus:main
+    ports:
+      - "${KTOR_MANAGEMENT_PORT}:${KTOR_MANAGEMENT_PORT}"
+    volumes:
+      - ./docker/observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./docker/observability/prometheus/prometheus-entrypoint.sh:/usr/local/bin/prometheus-entrypoint.sh
+    environment:
+      - KTOR_MANAGEMENT_PORT=${KTOR_MANAGEMENT_PORT}
+    entrypoint: ["/bin/sh", "-c", "sh /usr/local/bin/prometheus-entrypoint.sh"]
+    networks:
+      - app-network
+
+  loki:
+    image: grafana/loki:3.6.3
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki_data:/loki
+      - ./docker/observability/loki/loki-config.base.yml:/etc/loki/local-config.yml:ro
+    user: root
+    networks:
+      - app-network
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - ${LOG_PATH}:/app/logs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./docker/observability/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+    command: -config.file=/etc/promtail/config.yml -config.expand-env=true
+    environment:
+      PROMTAIL_LOG_PATH: ${PROMTAIL_LOG_PATH:-/app/logs/*.log}
+      LOKI_URL: ${LOKI_URL:-http://loki:3100/loki/api/v1/push}
+      ENVIRONMENT: ${ENVIRONMENT:-dev}
+    depends_on:
+      - loki
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana:12.3.0
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - app-network
+
+  kafka:
+    image: apache/kafka:4.1.1
+    container_name: ${KAFKA_CONTAINER_NAME:-kafka}
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://${KAFKA_HOST:-localhost}:9092,EXTERNAL://kafka:9094'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'EXTERNAL'
+      KAFKA_CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    networks:
+      - app-network
+
+  kafka-console:
+    image: docker.redpanda.com/redpandadata/console:latest
+    container_name: ${KAFKA_UI_CONTAINER_NAME:-kafka-console}
+    environment:
+      - KAFKA_BROKERS=kafka:9094
+    depends_on:
+      - kafka
+    networks:
+      - app-network
+
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER_FILE: /run/secrets/S3_ACCESS_KEY
+      MINIO_ROOT_PASSWORD_FILE: /run/secrets/S3_SECRET_KEY
+    secrets:
+      - S3_ACCESS_KEY
+      - S3_SECRET_KEY
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+secrets:
+  DB_USER:
+    file: ./secrets/DB_USER
+  DB_PASSWORD:
+    file: ./secrets/DB_PASSWORD
+  REDIS_URL:
+    file: ./secrets/REDIS_URL
+  JWT_SECRET:
+    file: ./secrets/JWT_SECRET
+  ADMIN_ACCOUNTS_JSON:
+    file: ./secrets/ADMIN_ACCOUNTS_JSON
+  S3_ACCESS_KEY:
+    file: ./secrets/S3_ACCESS_KEY
+  S3_SECRET_KEY:
+    file: ./secrets/S3_SECRET_KEY
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:
+  grafana-data:
+  loki_data:
+  minio_data:
+  gradle_cache:

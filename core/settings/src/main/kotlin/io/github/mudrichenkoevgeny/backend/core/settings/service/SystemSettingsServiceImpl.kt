@@ -32,7 +32,9 @@ class SystemSettingsServiceImpl @Inject constructor(
     }
 
     override suspend fun registerDefault(key: String, value: String, type: SettingType): AppResult<Unit> {
-        if (cache.containsKey(key)) return AppResult.Success(Unit)
+        if (cache.containsKey(key)) {
+            return AppResult.Success(Unit)
+        }
 
         val newSetting = SystemSetting(key = key, value = value, type = type)
 
@@ -61,7 +63,7 @@ class SystemSettingsServiceImpl @Inject constructor(
         val rawValue = cache[key]?.value ?: return null
         return try {
             deserializer(rawValue)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }

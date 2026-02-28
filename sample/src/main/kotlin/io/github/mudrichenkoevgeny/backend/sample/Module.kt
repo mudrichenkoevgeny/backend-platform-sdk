@@ -23,6 +23,11 @@ fun Application.module(
     val telemetryProvider = appComponent.telemetryProvider()
     val appLogger = appComponent.appLogger()
 
+    configureHTTP(
+        environment = commonConfig.environment,
+        allowedOrigins = commonConfig.allowedOrigins
+    )
+
     this.monitor.subscribe(ApplicationStarted) {
         launch {
             appComponent.healthCheckerManager().checkNonCriticalHealth()
@@ -43,10 +48,6 @@ fun Application.module(
     configureStatusPages(
         appErrorParser = appComponent.appErrorParser(),
         appLogger = appLogger
-    )
-    configureHTTP(
-        environment = commonConfig.environment,
-        allowedOrigins = commonConfig.allowedOrigins
     )
     configureGlobalRateLimit(
         rateLimit = commonConfig.rateLimit,

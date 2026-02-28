@@ -44,3 +44,18 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.register("copyLibs", Copy::class) {
+    from(configurations.runtimeClasspath)
+    into(layout.buildDirectory.dir("libs/lib"))
+}
+
+tasks.jar {
+    archiveFileName.set("app.jar")
+    finalizedBy("copyLibs")
+    manifest {
+        attributes["Main-Class"] = "io.github.mudrichenkoevgeny.backend.sample.MainKt"
+        attributes["Class-Path"] = configurations.runtimeClasspath.get()
+            .joinToString(" ") { "lib/${it.name}" }
+    }
+}

@@ -1,0 +1,46 @@
+services:
+  app:
+    env_file:
+      - ./env/.env.config.dev
+    environment:
+      OTEL_TRACES_EXPORTER: otlp
+      JAVA_TOOL_OPTIONS: -javaagent:/app/opentelemetry-javaagent.jar
+      ENV_FILE: sample/deploy/env/.env.config.dev
+    volumes:
+      - ./env/.env.config.dev:/app/sample/deploy/env/.env.config.dev
+
+  db:
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$(cat /run/secrets/DB_USER) -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  otel-collector:
+    volumes:
+      - ./docker/observability/otel-collector/otel-collector-config.dev.yml:/etc/otel-collector-config.yml:ro
+
+  prometheus:
+    environment:
+      OTEL_TARGETS: otel-collector:8888
+
+  loki:
+    volumes:
+      - loki_data:/loki
+      - ./docker/observability/loki/loki-config.dev.yml:/etc/loki/local-config.yml:ro
+
+  promtail:
+    environment:
+      PROMTAIL_LOG_PATH: /app/logs/*.log
+      LOKI_URL: http://loki:3100/loki/api/v1/push
+      ENVIRONMENT: dev
+
+  kafka:
+    ports:
+      - "9092:9092"
+
+  kafka-console:
+    ports:
+      - "8085:8080"

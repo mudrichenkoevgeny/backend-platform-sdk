@@ -1,0 +1,30 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8888"
+  otlp/jaeger:
+    endpoint: jaeger:4317
+    timeout: 10s
+    tls:
+      insecure: true
+
+service:
+  telemetry:
+    metrics:
+      level: normal
+      address: "0.0.0.0:8889"
+
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [otlp/jaeger]
+    metrics:
+      receivers: [otlp]
+      exporters: [prometheus]

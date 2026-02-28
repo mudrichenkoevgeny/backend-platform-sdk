@@ -10,6 +10,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAu
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.ExternalAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 import javax.inject.Inject
@@ -20,6 +22,7 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,
     private val userAuditLogger: UserAuditLogger,
     private val externalAuthVerifiers: Set<@JvmSuppressWildcards ExternalAuthVerifier>,
+    private val authSettingsProvider: AuthSettingsProvider,
     private val authManager: AuthManager
 ) {
     suspend fun execute(
@@ -43,10 +46,19 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
         }
 
         val authProvider = UserAuthProvider.fromValue(authProviderKey)
-        val supportedExternalProviders: Set<UserAuthProvider> = emptySet()
         val externalAuthVerifier = externalAuthVerifiers.find { it.provider == authProvider }
 
-        if (authProvider == null || !supportedExternalProviders.contains(authProvider) || externalAuthVerifier == null) {
+        val authSettingsResult = authSettingsProvider.getSettings()
+        if (authSettingsResult is AppResult.Error) {
+            return AppResult.Error(authSettingsResult.error)
+        }
+
+        val supportedExternalProviders: Set<ExternalAuthProvider> = (authSettingsResult as AppResult.Success).data
+            .availableAuthProviders.supportedExternalProviders
+
+        val isSupportedAuthProvider = supportedExternalProviders.any { it.userAuthProvider == authProvider }
+
+        if (authProvider == null || !isSupportedAuthProvider || externalAuthVerifier == null) {
             logAuditFail(
                 requestContext = requestContext,
                 auditResourceId = auditResourceId,
