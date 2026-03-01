@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.validation.validateRequest
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.useridentifier.toUserIdentifierResponse
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.password.PasswordChangeUseCase
@@ -57,7 +58,9 @@ class PasswordRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
+            userIdentifier.toUserIdentifierResponse()
+        }
     }
 
     companion object {

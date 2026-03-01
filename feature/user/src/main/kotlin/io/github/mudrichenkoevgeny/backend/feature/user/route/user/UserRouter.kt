@@ -70,8 +70,8 @@ class UserRouter @Inject constructor(
             requestContext = requestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) {
-            userData -> userData.toCurrentUserResponse()
+        call.respondResult(result, appLogger, appErrorParser) { userData ->
+            userData.toCurrentUserResponse()
         }
     }
 

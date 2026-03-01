@@ -57,8 +57,8 @@ class RefreshTokenRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) {
-            sessionToken -> sessionToken.toSessionTokenResponse()
+        call.respondResult(result, appLogger, appErrorParser) { sessionToken ->
+            sessionToken.toSessionTokenResponse()
         }
     }
 

@@ -85,8 +85,8 @@ class LoginRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) {
-            authData -> authData.toAuthDataResponse()
+        call.respondResult(result, appLogger, appErrorParser) { authData ->
+            authData.toAuthDataResponse()
         }
     }
 
@@ -114,8 +114,8 @@ class LoginRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) {
-            authData -> authData.toAuthDataResponse()
+        call.respondResult(result, appLogger, appErrorParser) { authData ->
+            authData.toAuthDataResponse()
         }
     }
 
@@ -143,8 +143,8 @@ class LoginRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) {
-            authData -> authData.toAuthDataResponse()
+        call.respondResult(result, appLogger, appErrorParser) { authData ->
+            authData.toAuthDataResponse()
         }
     }
 
@@ -171,8 +171,8 @@ class LoginRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) {
-            sendConfirmation -> sendConfirmation.toSendConfirmationResponse()
+        call.respondResult(result, appLogger, appErrorParser) { sendConfirmation ->
+            sendConfirmation.toSendConfirmationResponse()
         }
     }
 

@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.validation.validateRequest
 import io.github.mudrichenkoevgeny.backend.feature.user.mapper.confirmation.toSendConfirmationResponse
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.model.toAuthDataResponse
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.register.RegisterByEmailUseCase
@@ -67,7 +68,9 @@ class RegisterRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(result, appLogger, appErrorParser) { authData ->
+            authData.toAuthDataResponse()
+        }
     }
 
     private fun RouteConfig.sendRegisterConfirmationToEmailDocs() {
@@ -93,8 +96,8 @@ class RegisterRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) {
-                sendConfirmation -> sendConfirmation.toSendConfirmationResponse()
+        call.respondResult(result, appLogger, appErrorParser) { sendConfirmation ->
+            sendConfirmation.toSendConfirmationResponse()
         }
     }
 

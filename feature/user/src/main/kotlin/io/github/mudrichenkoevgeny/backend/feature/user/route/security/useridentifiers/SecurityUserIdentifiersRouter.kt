@@ -109,8 +109,10 @@ class SecurityUserIdentifiersRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) {
-            identifiers -> identifiers.map { it.toUserIdentifierResponse() }
+        call.respondResult(result, appLogger, appErrorParser) { userIdentifiers ->
+            userIdentifiers.map { userIdentifier ->
+                userIdentifier.toUserIdentifierResponse()
+            }
         }
     }
 
@@ -169,8 +171,8 @@ class SecurityUserIdentifiersRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) {
-            it.toUserIdentifierResponse()
+        call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
+            userIdentifier.toUserIdentifierResponse()
         }
     }
 
@@ -198,8 +200,8 @@ class SecurityUserIdentifiersRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) {
-            it.toUserIdentifierResponse()
+        call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
+            userIdentifier.toUserIdentifierResponse()
         }
     }
 
@@ -227,8 +229,8 @@ class SecurityUserIdentifiersRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) {
-            it.toUserIdentifierResponse()
+        call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
+            userIdentifier.toUserIdentifierResponse()
         }
     }
 
@@ -251,8 +253,8 @@ class SecurityUserIdentifiersRouter @Inject constructor(
             email = request.email,
             requestContext = call.getRequestContext()
         )
-        call.respondResult(result, appLogger, appErrorParser) {
-            it.toSendConfirmationResponse()
+        call.respondResult(result, appLogger, appErrorParser) { sendConfirmation ->
+            sendConfirmation.toSendConfirmationResponse()
         }
     }
 
@@ -275,8 +277,8 @@ class SecurityUserIdentifiersRouter @Inject constructor(
             phoneNumber = request.phoneNumber,
             requestContext = call.getRequestContext()
         )
-        call.respondResult(result, appLogger, appErrorParser) {
-            it.toSendConfirmationResponse()
+        call.respondResult(result, appLogger, appErrorParser) { sendConfirmation ->
+            sendConfirmation.toSendConfirmationResponse()
         }
     }
 
