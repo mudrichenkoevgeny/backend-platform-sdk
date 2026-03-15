@@ -1,7 +1,14 @@
 {
   "UNKNOWN": "An unknown error has occurred.",
-  "DATABASE": "An unknown error has occurred.",
-  "SERVICE_UNAVAILABLE": "The service is currently unavailable.",
-  "TOO_MANY_REQUESTS": "Too many requests. Please try again later.",
-  "MISSING_REQUIRED_FIELD": "The required field '{fieldName}' is missing."
+  "INTERNAL": "An error has occurred.",
+  "SERVICE_UNAVAILABLE": "The service is temporarily unavailable.",
+  "TOO_MANY_REQUESTS": "Too many requests. Try again in {retryAfterSeconds} seconds.",
+  "MISSING_REQUIRED_PARAMETER": "The required parameter '{parameterName}' is missing.",
+  "INVALID_PARAMETER_VALUE": "The parameter '{parameterName}' has an invalid value.",
+  "MISSING_REQUIRED_FIELD": "The required field '{fieldName}' is missing.",
+  "BLANK_STRING_FIELD": "The field '{fieldName}' must not be blank.",
+  "EMPTY_COLLECTION_FIELD": "The field '{fieldName}' must not be empty.",
+  "INVALID_FIELD_VALUE": "The field '{fieldName}' has an invalid value.",
+  "BAD_REQUEST": "The request is invalid.",
+  "INVALID_JSON_BODY": "The request body is not valid JSON."
 }

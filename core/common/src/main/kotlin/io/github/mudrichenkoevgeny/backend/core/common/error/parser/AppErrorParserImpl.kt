@@ -8,6 +8,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.F
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [AppErrorParser] implementation: loads error message JSON from classpath
+ * (paths and locales from [AppErrorParserConfig]), caches them, and resolves messages by code and locale.
+ */
 @Singleton
 class AppErrorParserImpl @Inject constructor(
     appErrorParserConfig: AppErrorParserConfig
@@ -15,11 +19,6 @@ class AppErrorParserImpl @Inject constructor(
 
     private val json = FoundationJson
     private val cache: MutableMap<String, MutableMap<String, String>> = mutableMapOf()
-
-    companion object {
-        private const val DEFAULT_LOCALE = "en"
-        private const val UNKNOWN_ERROR_MESSAGE = "Unknown error"
-    }
 
     init {
         val classLoader = Thread.currentThread().contextClassLoader

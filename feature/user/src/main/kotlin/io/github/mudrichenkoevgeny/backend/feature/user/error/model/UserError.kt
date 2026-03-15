@@ -8,6 +8,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.U
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorCodes
 import io.ktor.http.HttpStatusCode
 
+/**
+ * User and authentication feature errors: tokens, sessions, credentials, and account state.
+ *
+ * Uses [publicArgs] for client-visible data; [secretArgs] (e.g. [UserId]) for logs only.
+ * Each variant has a stable [code] for i18n and a unique [errorId] for correlation.
+ */
 sealed class UserError(
     override val errorId: ErrorId,
     override val code: String,
@@ -17,6 +23,9 @@ sealed class UserError(
     override val appErrorSeverity: AppErrorSeverity
 ) : AppError {
 
+    /**
+     * Access token is missing, malformed, or signature invalid.
+     */
     class InvalidAccessToken() : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_ACCESS_TOKEN,
@@ -24,6 +33,9 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * Access token has expired; client should refresh or re-authenticate.
+     */
     class AccessTokenExpired() : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.ACCESS_TOKEN_EXPIRED,
@@ -31,6 +43,9 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * Refresh token is missing, invalid, or revoked.
+     */
     class InvalidRefreshToken() : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_REFRESH_TOKEN,
@@ -38,6 +53,9 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * Session is invalid or no longer exists (e.g. logged out elsewhere).
+     */
     class InvalidSession() : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_SESSION,
@@ -45,6 +63,11 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * User account has been blocked and cannot perform the action.
+     *
+     * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
+     */
     class UserBlocked(
         val userId: UserId? = null
     ) : UserError(
@@ -59,6 +82,11 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * User account is in read-only mode; write operations are forbidden.
+     *
+     * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
+     */
     class UserReadOnly(
         val userId: UserId? = null
     ) : UserError(
@@ -73,6 +101,11 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * User is not allowed to access this resource (insufficient rights or context).
+     *
+     * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
+     */
     class UserForbidden(
         val userId: UserId? = null
     ) : UserError(
@@ -87,6 +120,11 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 
+    /**
+     * No user exists for the given identifier or context.
+     *
+     * @param userId Optional user id that was looked up; stored in [secretArgs] for logging, not sent to the client.
+     */
     class UserNotFound(
         val userId: UserId? = null
     ) : UserError(
@@ -101,6 +139,9 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * Login failed: email or password incorrect (or account not found for email).
+     */
     class InvalidCredentials() : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_CREDENTIALS,
@@ -108,6 +149,9 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * Cannot remove this sign-in method (e.g. last identifier, or policy forbids it).
+     */
     class CannotDeleteUserIdentifier() : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.CAN_NOT_DELETE_USER_IDENTIFIER,
@@ -115,6 +159,9 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 
+    /**
+     * Cannot add this sign-in method (e.g. already linked elsewhere, or provider error).
+     */
     class CannotCreateUserIdentifier() : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.CAN_NOT_CREATE_USER_IDENTIFIER,
@@ -122,6 +169,9 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 
+    /**
+     * User already has a sign-in method of this type (e.g. email or same OAuth provider).
+     */
     class AlreadyHasUserIdentifierWithThatType() : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.ALREADY_HAS_USER_IDENTIFIER_WITH_THAT_TYPE,
@@ -129,6 +179,9 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 
+    /**
+     * Current password is incorrect (e.g. when changing password).
+     */
     class WrongPassword() : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.WRONG_PASSWORD,
@@ -136,6 +189,9 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 
+    /**
+     * Email/phone verification or reset code is wrong or expired.
+     */
     class WrongConfirmationCode() : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.WRONG_CONFIRMATION_CODE,
@@ -143,6 +199,11 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 
+    /**
+     * External provider id does not match or could not be linked (e.g. already linked to another account).
+     *
+     * @param throwable Optional cause; stored in [secretArgs] for logging, not sent to the client.
+     */
     class ExternalIdMismatch(
         val throwable: Throwable? = null
     ) : UserError(
@@ -152,6 +213,10 @@ sealed class UserError(
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 
+    /**
+     * External token is invalid, expired, or revoked.
+     *
+     */
     class ExternalTokenInvalid() : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.EXTERNAL_TOKEN_INVALID,

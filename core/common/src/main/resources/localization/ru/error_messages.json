@@ -1,7 +1,14 @@
 {
   "UNKNOWN": "Произошла неизвестная ошибка.",
-  "DATABASE": "Произошла неизвестная ошибка.",
+  "INTERNAL": "Произошла ошибка.",
   "SERVICE_UNAVAILABLE": "Сервис временно недоступен.",
-  "TOO_MANY_REQUESTS": "Слишком много запросов. Попробуйте позже.",
-  "MISSING_REQUIRED_FIELD": "Отсутствует обязательное поле '{fieldName}'."
+  "TOO_MANY_REQUESTS": "Слишком много запросов. Повторите через {retryAfterSeconds} сек.",
+  "MISSING_REQUIRED_PARAMETER": "Отсутствует обязательный параметр '{parameterName}'.",
+  "INVALID_PARAMETER_VALUE": "Параметр '{parameterName}' имеет недопустимое значение.",
+  "MISSING_REQUIRED_FIELD": "Отсутствует обязательное поле '{fieldName}'.",
+  "BLANK_STRING_FIELD": "Поле '{fieldName}' не должно быть пустым.",
+  "EMPTY_COLLECTION_FIELD": "Поле '{fieldName}' не должно быть пустым.",
+  "INVALID_FIELD_VALUE": "Поле '{fieldName}' имеет недопустимое значение.",
+  "BAD_REQUEST": "Некорректный запрос.",
+  "INVALID_JSON_BODY": "Тело запроса не является допустимым JSON."
 }

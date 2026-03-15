@@ -27,7 +27,6 @@ dependencies {
     implementation(libs.ktor.server.websockets)
     implementation(libs.ktor.server.rate.limit)
     implementation(libs.ktor.client.cio)
-//    implementation(libs.ktor.client.apache)
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.client.content.negotiation)
@@ -57,7 +56,9 @@ dependencies {
     // Testing
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.mockk)
+    testImplementation(libs.ktor.server.test.host)
 }
 
 tasks.test {

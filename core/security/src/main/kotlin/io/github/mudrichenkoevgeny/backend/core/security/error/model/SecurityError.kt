@@ -6,6 +6,13 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorCodes
 import io.ktor.http.HttpStatusCode
 
+/**
+ * Security-related errors: authentication requirements and password policy.
+ *
+ * Uses [publicArgs] for client-visible data (e.g. password rule details in [PasswordTooWeak])
+ * and [secretArgs] for internal-only data. Each variant has a stable [code] for i18n and
+ * a unique [errorId] for correlation.
+ */
 sealed class SecurityError(
     override val errorId: ErrorId,
     override val code: String,
@@ -15,6 +22,10 @@ sealed class SecurityError(
     override val appErrorSeverity: AppErrorSeverity
 ) : AppError {
 
+    /**
+     * User must complete an additional authentication step (e.g. 2FA, email confirmation).
+     *
+     */
     class AuthenticationConfirmationRequired() : SecurityError(
         errorId = ErrorId.generate(),
         code = SecurityErrorCodes.AUTHENTICATION_CONFIRMATION_REQUIRED,
@@ -22,6 +33,12 @@ sealed class SecurityError(
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 
+    /**
+     * Password does not satisfy security policy (length, complexity, etc.).
+     *
+     * @param publicArgs Map of rule names to boolean/string values (e.g. passwordTooShort, passwordMinLength);
+     * exposed to the client and used in localized message.
+     */
     class PasswordTooWeak(publicArgs: Map<String, Any>) : SecurityError(
         errorId = ErrorId.generate(),
         code = SecurityErrorCodes.PASSWORD_TOO_WEAK,

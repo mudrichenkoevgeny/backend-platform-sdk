@@ -5,6 +5,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.Co
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 
+/**
+ * Common application errors for request handling, validation, and infrastructure.
+ *
+ * Distinguishes [publicArgs] (exposed to the client and used in localized messages)
+ * from [secretArgs] (for logs only). Each variant has a stable [code] for i18n and
+ * a unique [errorId] for correlation.
+ */
 sealed class CommonError(
     override val errorId: ErrorId,
     override val code: String,
@@ -14,6 +21,11 @@ sealed class CommonError(
     override val appErrorSeverity: AppErrorSeverity
 ) : AppError {
 
+    /**
+     * Unclassified or unexpected error.
+     *
+     * @param message Optional internal description; stored in [secretArgs], not sent to the client.
+     */
     class Unknown(
         val message: String? = null
     ) : CommonError(
@@ -28,6 +40,12 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.HIGH
     )
 
+    /**
+     * Internal error caused by an unhandled exception.
+     *
+     * @param throwable The caught exception; its message is stored in [secretArgs].
+     * @param call Optional request context for logging; not exposed to the client.
+     */
     class Internal(
         val throwable: Throwable,
         val call: ApplicationCall? = null
@@ -40,6 +58,11 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.HIGH
     )
 
+    /**
+     * Database or persistence layer error.
+     *
+     * @param message Optional internal description; stored in [secretArgs], not sent to the client.
+     */
     class Database(
         val message: String? = null
     ) : CommonError(
@@ -54,6 +77,11 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.HIGH
     )
 
+    /**
+     * Service or dependency temporarily unavailable.
+     *
+     * @param message Optional internal description; stored in [secretArgs], not sent to the client.
+     */
     class ServiceUnavailable(
         val message: String? = null
     ) : CommonError(
@@ -68,6 +96,14 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.HIGH
     )
 
+    /**
+     * Rate limit exceeded for the given action.
+     *
+     * @param rateLimitActionCode Action that was rate-limited; in [secretArgs].
+     * @param limit Allowed limit; in [secretArgs].
+     * @param identifier Client or user identifier; in [secretArgs].
+     * @param retryAfterSeconds Seconds until the client may retry; in [publicArgs], used in localized message.
+     */
     class TooManyRequests(
         rateLimitActionCode: String,
         limit: Int,
@@ -88,6 +124,11 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * A required query/path parameter was omitted.
+     *
+     * @param parameterName Name of the missing parameter; in [publicArgs], used in localized message.
+     */
     class MissingRequiredParameter(
         val parameterName: String
     ) : CommonError(
@@ -100,6 +141,11 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * A query/path parameter has an invalid or unsupported value.
+     *
+     * @param parameterName Name of the invalid parameter; in [publicArgs], used in localized message.
+     */
     class InvalidParameterValue(
         val parameterName: String
     ) : CommonError(
@@ -112,6 +158,11 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * A required field is missing in the request body.
+     *
+     * @param fieldName Name of the missing field; in [publicArgs], used in localized message.
+     */
     class MissingRequiredField(
         val fieldName: String
     ) : CommonError(
@@ -124,6 +175,11 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * A string field is blank (null, empty, or only whitespace).
+     *
+     * @param fieldName Name of the field; in [publicArgs], used in localized message.
+     */
     class BlankStringField(
         val fieldName: String
     ) : CommonError(
@@ -136,6 +192,11 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * A collection or array field is empty when at least one element is required.
+     *
+     * @param fieldName Name of the field; in [publicArgs], used in localized message.
+     */
     class EmptyCollectionField(
         val fieldName: String
     ) : CommonError(
@@ -148,6 +209,11 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * A field value fails validation (format, range, or business rule).
+     *
+     * @param fieldName Name of the field; in [publicArgs], used in localized message.
+     */
     class InvalidFieldValue(
         val fieldName: String
     ) : CommonError(
@@ -160,6 +226,11 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * Generic bad request (malformed or invalid in an unspecified way).
+     *
+     * @param message Optional internal description; stored in [secretArgs], not sent to the client.
+     */
     class BadRequest(
         val message: String? = null
     ) : CommonError(
@@ -174,6 +245,11 @@ sealed class CommonError(
         appErrorSeverity = AppErrorSeverity.LOW
     )
 
+    /**
+     * Request body is not valid JSON or does not match the expected schema.
+     *
+     * @param message Optional parse/schema error details; stored in [secretArgs], not sent to the client.
+     */
     class InvalidJsonBody(
         val message: String? = null
     ) : CommonError(

@@ -9,6 +9,10 @@ import io.ktor.server.application.install
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [SwaggerInitializer]: installs the smiley4 OpenApi plugin with [SwaggerConfig] (title,
+ * version, description, server URL) and kotlinx schema generator; output format is JSON.
+ */
 @Singleton
 class SwaggerInitializerImpl @Inject constructor(
     private val config: SwaggerConfig

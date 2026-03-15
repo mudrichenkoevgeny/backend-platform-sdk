@@ -1,0 +1,18 @@
+{
+  "INVALID_ACCESS_TOKEN": "Недействительный токен доступа.",
+  "ACCESS_TOKEN_EXPIRED": "Срок действия токена доступа истёк.",
+  "INVALID_REFRESH_TOKEN": "Недействительный токен обновления.",
+  "INVALID_SESSION": "Недействительная сессия.",
+  "USER_BLOCKED": "Учётная запись заблокирована.",
+  "USER_READ_ONLY": "Учётная запись доступна только для чтения.",
+  "USER_FORBIDDEN": "Доступ к этому ресурсу запрещён.",
+  "USER_NOT_FOUND": "Пользователь не найден.",
+  "INVALID_CREDENTIALS": "Неверный email или пароль.",
+  "CAN_NOT_DELETE_USER_IDENTIFIER": "Этот способ входа нельзя удалить.",
+  "CAN_NOT_CREATE_USER_IDENTIFIER": "Не удалось добавить этот способ входа.",
+  "ALREADY_HAS_USER_IDENTIFIER_WITH_THAT_TYPE": "Этот способ входа уже привязан к вашей учётной записи.",
+  "WRONG_PASSWORD": "Текущий пароль указан неверно.",
+  "WRONG_CONFIRMATION_CODE": "Код подтверждения неверен или истёк.",
+  "EXTERNAL_ID_MISMATCH": "Не удалось привязать внешний аккаунт.",
+  "EXTERNAL_TOKEN_INVALID": "Токен внешней аутентификации недействителен."
+}
