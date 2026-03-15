@@ -25,3 +25,7 @@ captures/
 *.jar
 *.war
 *.zip
+
+# --- SECRETS ---
+sample/deploy/secrets/UNIONE_API_KEY
+sample/deploy/secrets/RESEND_API_KEY

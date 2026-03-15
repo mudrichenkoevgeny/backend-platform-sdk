@@ -30,6 +30,8 @@ services:
       - REDIS_URL
       - JWT_SECRET
       - ADMIN_ACCOUNTS_JSON
+      - UNIONE_API_KEY
+      - RESEND_API_KEY
       - S3_ACCESS_KEY
       - S3_SECRET_KEY
     volumes:
@@ -205,6 +207,10 @@ secrets:
     file: ./secrets/JWT_SECRET
   ADMIN_ACCOUNTS_JSON:
     file: ./secrets/ADMIN_ACCOUNTS_JSON
+  UNIONE_API_KEY:
+    file: ./secrets/UNIONE_API_KEY
+  RESEND_API_KEY:
+    file: ./secrets/RESEND_API_KEY
   S3_ACCESS_KEY:
     file: ./secrets/S3_ACCESS_KEY
   S3_SECRET_KEY:

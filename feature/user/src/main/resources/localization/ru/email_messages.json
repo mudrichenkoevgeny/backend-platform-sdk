@@ -1,0 +1,26 @@
+{
+  "verification_code": {
+    "subject": "Код подтверждения",
+    "body": "<div style=\"font-family: sans-serif;\"><h2>Ваш код: {code}</h2><p>Введите его для подтверждения почтового адреса.</p></div>"
+  },
+  "reset_password_code": {
+    "subject": "Восстановление доступа",
+    "body": "<div style=\"font-family: sans-serif;\"><h2>Код сброса пароля: {code}</h2><p>Если вы не запрашивали сброс, просто проигнорируйте это письмо.</p></div>"
+  },
+  "already_registered": {
+    "subject": "Попытка повторной регистрации",
+    "body": "<div style=\"font-family: sans-serif;\"><p>Вы уже зарегистрированы в нашей системе. Если это были не вы, обратитесь в поддержку.</p><p>IP: {ipAddress}, Устройство: {deviceName}</p></div>"
+  },
+  "successful_registration": {
+    "subject": "Добро пожаловать!",
+    "body": "<div style=\"font-family: sans-serif;\"><h2>Регистрация прошла успешно</h2><p>Спасибо, что присоединились к нам.</p></div>"
+  },
+  "successful_login": {
+    "subject": "Вход в аккаунт",
+    "body": "<div style=\"font-family: sans-serif;\"><p>Выполнен вход в ваш профиль.</p><p>IP: {ipAddress}, Устройство: {deviceName}</p></div>"
+  },
+  "password_changed": {
+    "subject": "Безопасность: пароль изменен",
+    "body": "<div style=\"font-family: sans-serif;\"><p>Ваш пароль был успешно изменен.</p><p>IP: {ipAddress}, Устройство: {deviceName}</p></div>"
+  }
+}

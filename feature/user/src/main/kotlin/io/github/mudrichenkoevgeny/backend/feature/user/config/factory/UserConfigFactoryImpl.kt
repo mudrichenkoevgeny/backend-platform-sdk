@@ -8,6 +8,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.config.envkeys.UserEnvKe
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthSettings
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AvailableAuthProviders
+import io.github.mudrichenkoevgeny.backend.feature.user.service.email.resend.model.ResendConfig
+import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.model.UniOneConfig
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -21,6 +23,7 @@ class UserConfigFactoryImpl @Inject constructor(
         // secret files
         val jwtSecretFile = envReader.getByKey(UserEnvKeys.JWT_SECRET_FILE)
         val adminAccountsJsonFile = envReader.getByKey(UserEnvKeys.ADMIN_ACCOUNTS_JSON_SECRET_FILE)
+        val uniOneApiKeyFile = envReader.getByKey(UserEnvKeys.UNIONE_API_KEY_FILE)
 
         // env
         val jwtSecret = envReader.readSecret(jwtSecretFile)
@@ -45,6 +48,35 @@ class UserConfigFactoryImpl @Inject constructor(
 
         val googleWebClientId = envReader.getByKey(UserEnvKeys.GOOGLE_WEB_CLIENT_ID)
 
+        val uniOneApiKey = envReader.readSecret(uniOneApiKeyFile)
+        val uniOneUrl = envReader.getByKey(UserEnvKeys.UNIONE_URL)
+        val uniOneFromEmail = envReader.getByKey(UserEnvKeys.UNIONE_FROM_EMAIL)
+        val uniOneFromName = envReader.getByKey(UserEnvKeys.UNIONE_FROM_NAME)
+        val uniOneTrackDomain = envReader.getByKey(UserEnvKeys.UNIONE_TRACK_DOMAIN)
+        val uniOneApiSend = envReader.getByKey(UserEnvKeys.UNIONE_API_SEND)
+
+        val uniOneConfig = UniOneConfig.createOrNull(
+            apiKey = uniOneApiKey,
+            url = uniOneUrl,
+            fromEmail = uniOneFromEmail,
+            fromName = uniOneFromName,
+            trackDomain = uniOneTrackDomain,
+            apiSend = uniOneApiSend
+        )
+
+        val resendApiKeyFile = envReader.getByKey(UserEnvKeys.RESEND_API_KEY_FILE)
+        val resendApiKey = envReader.readSecret(resendApiKeyFile)
+        val resendUrl = envReader.getByKey(UserEnvKeys.RESEND_URL)
+        val resendFromEmail = envReader.getByKey(UserEnvKeys.RESEND_FROM_EMAIL)
+        val resendFromName = envReader.getByKey(UserEnvKeys.RESEND_FROM_NAME)
+
+        val resendConfig = ResendConfig.createOrNull(
+            apiKey = resendApiKey,
+            url = resendUrl,
+            fromEmail = resendFromEmail,
+            fromName = resendFromName
+        )
+
         return UserConfig(
             jwtSecret = jwtSecret,
             accessTokenValidityHours = accessTokenValidityHours,
@@ -52,7 +84,9 @@ class UserConfigFactoryImpl @Inject constructor(
             authRealm = authRealm,
             adminAccountsList = adminList.admins,
             authSettings = authSettings,
-            googleWebClientId = googleWebClientId
+            googleWebClientId = googleWebClientId,
+            uniOneConfig = uniOneConfig,
+            resendConfig = resendConfig
         )
     }
 }

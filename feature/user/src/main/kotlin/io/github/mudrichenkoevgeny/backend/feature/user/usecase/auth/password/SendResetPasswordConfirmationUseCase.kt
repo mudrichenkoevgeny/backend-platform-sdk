@@ -70,7 +70,7 @@ class SendResetPasswordConfirmationUseCase @Inject constructor(
             is AppResult.Error -> return getOtpResult
         }
 
-        val sendEmailResult = emailService.sendResetPasswordVerificationCode(email, code)
+        val sendEmailResult = emailService.sendResetPasswordVerificationCode(email, code, requestContext.clientInfo.language)
 
         if (sendEmailResult is AppResult.Error) {
             return sendEmailResult

@@ -18,6 +18,8 @@ import io.ktor.http.isSuccess
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.io.IOException
 import org.slf4j.MDC
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * A factory for creating and configuring pre-configured Ktor [HttpClient] instances.
@@ -29,7 +31,8 @@ import org.slf4j.MDC
  * - **Resilience**: Built-in retry mechanisms and timeouts to prevent cascading failures.
  * - **Observability**: Integrated logging and distributed tracing via MDC.
  */
-class HttpClientProvider() {
+@Singleton
+class HttpClientProvider @Inject constructor() {
     /**
      * Creates a new [HttpClient] instance with the provided settings for external integration.
      *

@@ -1,0 +1,26 @@
+{
+  "verification_code": {
+    "subject": "Verification Code",
+    "body": "<div style=\"font-family: sans-serif;\"><h2>Your code: {code}</h2><p>Enter this code to verify your email address.</p></div>"
+  },
+  "reset_password_code": {
+    "subject": "Password Reset Request",
+    "body": "<div style=\"font-family: sans-serif;\"><h2>Reset code: {code}</h2><p>If you didn't request a password reset, please ignore this email.</p></div>"
+  },
+  "already_registered": {
+    "subject": "Registration Attempt",
+    "body": "<div style=\"font-family: sans-serif;\"><p>You already have an account. If this wasn't you, please contact support.</p><p>IP: {ipAddress}, Device: {deviceName}</p></div>"
+  },
+  "successful_registration": {
+    "subject": "Welcome aboard!",
+    "body": "<div style=\"font-family: sans-serif;\"><h2>Registration successful</h2><p>Thanks for joining us.</p></div>"
+  },
+  "successful_login": {
+    "subject": "Successful Login",
+    "body": "<div style=\"font-family: sans-serif;\"><p>A new login was detected on your account.</p><p>IP: {ipAddress}, Device: {deviceName}</p></div>"
+  },
+  "password_changed": {
+    "subject": "Security: Password Changed",
+    "body": "<div style=\"font-family: sans-serif;\"><p>Your password has been successfully updated.</p><p>IP: {ipAddress}, Device: {deviceName}</p></div>"
+  }
+}

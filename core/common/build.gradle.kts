@@ -27,6 +27,7 @@ dependencies {
     implementation(libs.ktor.server.websockets)
     implementation(libs.ktor.server.rate.limit)
     implementation(libs.ktor.client.cio)
+//    implementation(libs.ktor.client.apache)
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.client.content.negotiation)

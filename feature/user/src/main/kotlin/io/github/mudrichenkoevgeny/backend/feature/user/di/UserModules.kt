@@ -1,13 +1,14 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.di
 
+import dagger.Module
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserAuditModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserAuthInfrastructureModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserConfigModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserManagersModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserRepositoriesModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserServicesModule
-import dagger.Module
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.AuthSettingsProviderModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.EmailParserModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserExternalAuthVerifierModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserWebSocketModule
 
@@ -21,7 +22,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserWebSocketM
         UserServicesModule::class,
         UserAuditModule::class,
         AuthSettingsProviderModule::class,
-        UserWebSocketModule::class
+        UserWebSocketModule::class,
+        EmailParserModule::class
     ]
 )
 interface UserModules

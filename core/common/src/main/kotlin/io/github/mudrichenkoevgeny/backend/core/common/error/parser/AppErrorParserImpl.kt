@@ -5,7 +5,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorParse
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.model.ApiErrorResponse
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,6 +16,11 @@ class AppErrorParserImpl @Inject constructor(
     private val json = FoundationJson
     private val cache: MutableMap<String, MutableMap<String, String>> = mutableMapOf()
 
+    companion object {
+        private const val DEFAULT_LOCALE = "en"
+        private const val UNKNOWN_ERROR_MESSAGE = "Unknown error"
+    }
+
     init {
         val classLoader = Thread.currentThread().contextClassLoader
 
@@ -24,17 +28,28 @@ class AppErrorParserImpl @Inject constructor(
             val localeMessages = mutableMapOf<String, String>()
 
             for (path in appErrorParserConfig.resourcePaths) {
-                val resourceName = "$path/${appErrorParserConfig.resourceFileNamePrefix}$locale" +
+                val resourceName = "$path/$locale/${appErrorParserConfig.resourceFileName}" +
                         ".${appErrorParserConfig.resourceFileExtension}"
+
                 val resourceStream = classLoader.getResourceAsStream(resourceName) ?: continue
 
-                val text = resourceStream.bufferedReader().readText()
-                val parsed: Map<String, String> = json.decodeFromString(text)
+                resourceStream.use { stream ->
+                    val text = stream.bufferedReader().readText().trim()
 
-                localeMessages.putAll(parsed)
+                    if (text.isEmpty() || text == "{}" || text == "null") {
+                        return@use
+                    }
+
+                    try {
+                        val parsed: Map<String, String> = json.decodeFromString(text)
+                        localeMessages.putAll(parsed)
+                    } catch (_: Exception) { }
+                }
             }
 
-            cache[locale] = localeMessages
+            if (localeMessages.isNotEmpty()) {
+                cache[locale.lowercase()] = localeMessages
+            }
         }
     }
 
@@ -70,8 +85,11 @@ class AppErrorParserImpl @Inject constructor(
             return UNKNOWN_ERROR_MESSAGE
         }
 
-        val normalizedLocale = locale.lowercase(Locale.getDefault())
+        val normalizedLocale = locale.lowercase()
+        val languageOnly = normalizedLocale.split("-")[0].split("_")[0]
+
         val messagesForLocale = cache[normalizedLocale]
+            ?: cache[languageOnly]
             ?: cache[DEFAULT_LOCALE]
             ?: emptyMap()
 

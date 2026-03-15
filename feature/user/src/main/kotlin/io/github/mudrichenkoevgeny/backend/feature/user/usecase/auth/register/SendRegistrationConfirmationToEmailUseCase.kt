@@ -85,7 +85,8 @@ class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
         val sendEmailResult = emailService.sendAlreadyRegisteredEmail(
             email = email,
             ipAddress = requestContext.clientInfo.ipAddress,
-            deviceName = requestContext.clientInfo.deviceName
+            deviceName = requestContext.clientInfo.deviceName,
+            language = requestContext.clientInfo.language
         )
 
         if (sendEmailResult is AppResult.Error) {
@@ -132,7 +133,11 @@ class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
             }
         }
 
-        val sendEmailResult = emailService.sendVerificationCode(email, code)
+        val sendEmailResult = emailService.sendVerificationCode(
+            email = email,
+            code = code,
+            language = requestContext.clientInfo.language
+        )
 
         if (sendEmailResult is AppResult.Error) {
             logAuditInternalError(
