@@ -20,10 +20,8 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 @Singleton
 class AuditEventRepositoryImpl @Inject constructor() : AuditEventRepository {
 

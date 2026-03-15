@@ -8,10 +8,8 @@ import java.security.MessageDigest
 import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 @Singleton
 class RefreshTokenProviderImpl @Inject constructor(): RefreshTokenProvider {
     override fun getRefreshToken(): AppResult<RefreshToken> {

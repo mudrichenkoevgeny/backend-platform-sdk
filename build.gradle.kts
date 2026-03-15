@@ -34,6 +34,8 @@ subprojects {
         tasks.withType<KotlinCompile>().configureEach {
             compilerOptions {
                 jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmToolchain.get()))
+
+                freeCompilerArgs.add("-opt-in=kotlin.uuid.ExperimentalUuidApi")
             }
         }
     }

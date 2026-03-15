@@ -29,7 +29,6 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @Singleton
@@ -44,7 +43,6 @@ class KtorWebSocketManager @Inject constructor(
     private val userIdToWebSocketSessions = ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()
     private val userSessionIdToWebSocketSessions = ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()
 
-    @OptIn(ExperimentalUuidApi::class)
     override suspend fun register(
         webSocketSession: DefaultWebSocketServerSession,
         userId: UserId?,

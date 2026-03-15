@@ -10,7 +10,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.F
 import kotlinx.serialization.json.decodeFromJsonElement
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @Singleton
@@ -29,7 +28,6 @@ class CommonWebSocketMessageHandler @Inject constructor() : WebSocketMessageHand
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
     private fun handlePing(): WebSocketMessageHandlerResult {
         return WebSocketMessageHandlerResult.SendSocketFrame(
             SocketFrame(
@@ -40,7 +38,6 @@ class CommonWebSocketMessageHandler @Inject constructor() : WebSocketMessageHand
         )
     }
 
-    @OptIn(ExperimentalUuidApi::class)
     private fun handleInitialize(frame: SocketFrame): WebSocketMessageHandlerResult {
         val payloadElement = frame.payload ?: return WebSocketMessageHandlerResult.Error(
             CommonError.MissingRequiredField(CommonApiFields.PAYLOAD)

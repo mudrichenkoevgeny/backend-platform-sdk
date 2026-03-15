@@ -1,9 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.common.model
 
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 @JvmInline
 value class UserIdentifierId(val value: Uuid) {
     fun asHexDashString(): String = value.toHexDashString()
@@ -13,5 +11,4 @@ value class UserIdentifierId(val value: Uuid) {
     }
 }
 
-@OptIn(ExperimentalUuidApi::class)
 fun String.toUserIdentifierIdOrThrow(): UserIdentifierId = UserIdentifierId(Uuid.parse(this))

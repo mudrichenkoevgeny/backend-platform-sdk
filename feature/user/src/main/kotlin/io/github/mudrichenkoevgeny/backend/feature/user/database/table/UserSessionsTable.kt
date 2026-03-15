@@ -6,9 +6,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.Us
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import org.jetbrains.exposed.v1.core.ReferenceOption
 import org.jetbrains.exposed.v1.javatime.timestamp
-import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalUuidApi::class)
 object UserSessionsTable : BaseTable("user_sessions") {
     val userId = reference("user_id", UsersTable.id, onDelete = ReferenceOption.CASCADE)
     val userIdentifierId = reference(

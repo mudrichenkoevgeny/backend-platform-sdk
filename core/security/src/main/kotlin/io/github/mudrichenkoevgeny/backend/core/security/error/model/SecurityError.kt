@@ -5,9 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSever
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorCodes
 import io.ktor.http.HttpStatusCode
-import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalUuidApi::class)
 sealed class SecurityError(
     override val errorId: ErrorId,
     override val code: String,

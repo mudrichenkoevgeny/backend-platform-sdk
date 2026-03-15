@@ -6,9 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.settings.database.repository.Sys
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalUuidApi::class)
 @Singleton
 class SystemSettingsManagerImpl @Inject constructor(
     private val repository: SystemSettingRepository

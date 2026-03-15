@@ -9,9 +9,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import kotlinx.serialization.json.JsonElement
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalUuidApi::class)
 @Singleton
 class UserAuditLoggerImpl @Inject constructor(
     private val auditService: AuditService

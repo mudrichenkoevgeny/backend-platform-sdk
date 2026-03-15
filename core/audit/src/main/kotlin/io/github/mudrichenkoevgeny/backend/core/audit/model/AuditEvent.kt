@@ -1,11 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.model
 
-import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditStatus
 import kotlinx.serialization.json.JsonElement
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 data class AuditEvent(
     val id: AuditEventId = AuditEventId.generate(),
     val actorId: Uuid? = null,

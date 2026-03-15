@@ -7,9 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorCodes
 import io.ktor.http.HttpStatusCode
-import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalUuidApi::class)
 sealed class UserError(
     override val errorId: ErrorId,
     override val code: String,

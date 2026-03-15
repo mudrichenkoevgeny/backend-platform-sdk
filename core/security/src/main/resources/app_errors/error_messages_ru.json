@@ -1,0 +1,4 @@
+{
+  "AUTHENTICATION_CONFIRMATION_REQUIRED": "Требуется подтверждение аутентификации.",
+  "PASSWORD_TOO_WEAK": "Пароль слишком слабый. Слишком короткий: {passwordTooShort} (минимальная длина: {passwordMinLength}), Нет букв: {passwordNoLetter}, Нет заглавных букв: {passwordNoUpperCase}, Нет строчных букв: {passwordNoLowerCase}, Нет цифр: {passwordNoDigit}, Нет спецсимволов: {passwordNoSpecialChar}, Слишком распространённый пароль: {passwordTooCommon}."
+}

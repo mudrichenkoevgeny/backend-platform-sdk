@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @Singleton
@@ -24,7 +23,6 @@ class UserSessionExpirationListener @Inject constructor(
 
     private val expirationJobs = ConcurrentHashMap<String, Job>()
 
-    @OptIn(ExperimentalUuidApi::class)
     override fun onSessionRegistered(
         webSocketManager: WebSocketManager,
         session: DefaultWebSocketServerSession,

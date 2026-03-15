@@ -7,10 +7,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.
 import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PagedResponse
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import java.time.Instant
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 interface AuditEventRepository {
     suspend fun createEvent(event: AuditEvent): AppResult<AuditEvent>
 

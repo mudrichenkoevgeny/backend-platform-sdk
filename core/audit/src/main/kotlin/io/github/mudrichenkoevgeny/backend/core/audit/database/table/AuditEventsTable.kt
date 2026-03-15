@@ -7,9 +7,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.F
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.serializer
 import org.jetbrains.exposed.v1.json.jsonb
-import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalUuidApi::class)
 object AuditEventsTable : BaseTable("audit_events") {
     val actorId = uuid("actor_id").nullable()
     val action = varchar("action", BaseDbConstraints.DEFAULT_MAX_LENGTH)

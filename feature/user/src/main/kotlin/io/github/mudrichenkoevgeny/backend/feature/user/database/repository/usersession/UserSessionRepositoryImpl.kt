@@ -22,9 +22,7 @@ import org.jetbrains.exposed.v1.jdbc.update
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalUuidApi::class)
 @Singleton
 class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
 

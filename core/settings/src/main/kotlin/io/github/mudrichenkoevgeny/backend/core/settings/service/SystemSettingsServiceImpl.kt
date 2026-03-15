@@ -7,9 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalUuidApi::class)
 @Singleton
 class SystemSettingsServiceImpl @Inject constructor(
     private val manager: SystemSettingsManager

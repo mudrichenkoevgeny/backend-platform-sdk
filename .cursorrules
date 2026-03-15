@@ -1,0 +1,64 @@
+# Backend Platform SDK — Project Rules
+
+## Project identity
+- **Type:** Kotlin/Ktor backend **library (SDK)** — not a standalone app. Designed to be added as a dependency to real applications.
+- **Group:** `io.github.mudrichenkoevgeny`, **Artifact:** `backend-platform-sdk-*`, **Version:** managed in root `build.gradle.kts`.
+- **Publishing:** Maven Central via `com.vanniktech.maven.publish`; BOM at `:bom` for version alignment.
+
+## Tech stack
+- **Runtime:** JVM 21 (toolchain in `gradle/libs.versions.toml`: `jvmToolchain = "21"`).
+- **Language:** Kotlin 2.x, Kotlin Serialization, coroutines; opt-in: `kotlin.uuid.ExperimentalUuidApi`.
+- **Server:** Ktor 3.x (Netty), content negotiation, status pages, CORS, default headers, WebSockets, rate limit, auth, auth-jwt.
+- **DI:** Dagger 2, KSP for code generation, `javax.inject`; prefer `@Singleton` for app-scoped components.
+- **Database:** JetBrains Exposed (core, dao, jdbc, json, java-time), PostgreSQL, HikariCP, Flyway; Redis via Lettuce.
+- **Auth & security:** JJWT, Password4j, Java-JWT (Auth0), Google Auth (OAuth2); Ktor auth + auth-jwt.
+- **API docs:** smiley4 ktor-openapi + ktor-swagger-ui, schema-generator (serialization, swagger).
+- **Observability:** OpenTelemetry, Micrometer/Prometheus; Ktor metrics-micrometer.
+- **Infra:** Apache Kafka (events), AWS S3 (storage), Logback + logstash encoder.
+- **Testing:** JUnit 5, Kotlin Test, Mockk, kotlinx-coroutines-test; H2 for DB tests where needed.
+- **Shared foundation:** External libs `shared-foundation-core-common`, `-core-settings`, `-core-security`, `shared-foundation-feature-user` (contracts/domain for user feature).
+
+## Repository layout
+- **Root:** `build.gradle.kts` (plugins, allProjects/subprojects, Maven publish config), `settings.gradle.kts` (module registration), `gradle/libs.versions.toml` (versions + libs).
+- **Modules:** Only subprojects with `src/` (or `bom`) get Kotlin/Maven publish applied; `bom` is `java-platform` only.
+
+## Module structure
+
+### Core modules (`core/`)
+- **common** — Base for all: Ktor server setup, `BaseRouter`, `CommonConfig`, error handling (`AppErrorParser`, status pages), serialization, Swagger init, WebSockets (public), routing helpers (`onPort`, `respondResult`), env/config, logging. Depends on shared-foundation (common). Many other core/feature modules depend on this.
+- **database** — Exposed, PostgreSQL, Hikari, Flyway, Redis (Lettuce); observability (Micrometer). Used by settings, security, audit, feature/user, sample.
+- **observability** — OpenTelemetry, Micrometer/Prometheus, Ktor metrics; config and telemetry provider.
+- **security** — Password validation, security settings (use cases, routes); uses shared-foundation-core-security, password4j.
+- **settings** — Global/system settings, DB-backed; `GlobalSettingsRouter`, `SettingsFeatureRouter`.
+- **audit** — Audit events model and persistence (Exposed); used by crosscutting and feature/user.
+- **storage** — S3 (AWS SDK); file/blob storage abstraction.
+- **events** — Event publishing/subscribing (e.g. Kafka); `EventPublisher`, `EventSubscriber`.
+- **crosscutting** — Cross-cutting concerns (e.g. rate limiting); uses common, security, audit.
+
+### Feature modules (`feature/`)
+- **user** — **User and auth feature** for real apps: registration, login (email + external provider), JWT + refresh tokens, password reset, sessions, user CRUD, security (password change, user identifiers). Exposes Ktor auth (JWT) setup, routes (auth, user, session, security), use cases, managers (`AuthManager`, `UserManager`, `SessionManager`), email (e.g. Resend, UniOne). Depends on core: common, database, security, audit, settings, crosscutting; and shared-foundation feature-user. **Use this module when implementing auth and user management in a Ktor app.**
+
+### Other
+- **bom** — BOM project; constrains all publishable modules for consumers.
+- **sample** — Demo app showing how to wire the SDK: Dagger `AppComponent`, `Application.module(appComponent)`, `KtorServer.create(...)`, bootstrap (health, seed), route registration (`UserFeatureRouter`, `SettingsFeatureRouter`, `SecurityFeatureRouter`, WebSockets). Depends on all core modules + `feature:user`.
+
+## Architecture and patterns
+- **Routing:** All HTTP/WebSocket route entry points implement `BaseRouter` and expose `fun register(route: Route)`. Feature routers (e.g. `UserFeatureRouter`) compose sub-routers (auth, user, session, security). Sample app calls `appComponent.*FeatureRouter().register(this)` inside `routing { }`.
+- **Server bootstrap:** `KtorServer.create(commonConfig) { module(applicationModule) }` builds Netty server; application module is passed from the host app (e.g. sample’s `Application.module(appComponent)`).
+- **Configuration:** Env-based config (e.g. `*EnvKeys`), factories (e.g. `*ConfigFactory`), and Dagger modules; app must provide `AppInfo` (name, version) and optionally path resolver and error parser via holders.
+- **Layering:** Routes → use cases → managers/repositories; Dagger for wiring. Prefer use-case classes for business steps; managers for orchestration or shared logic.
+- **Errors:** Centralized via `AppErrorParser` and status pages; domain errors (e.g. `UserError`) mapped to HTTP and logs.
+- **Naming:** Package by layer/feature: `route`, `usecase`, `manager`, `database`/`repository`, `di/module`, `config`, `security`, etc.
+
+## Dependencies and boundaries
+- **core/common** has no dependency on other in-repo core/feature modules (only shared-foundation and external libs).
+- **feature/user** depends on several core modules; no other feature module in repo.
+- **sample** depends on core and feature:user; it is the reference host application.
+- Use **api** for types/contracts that consumers or other modules must see; **implementation** for internal details. BOM lists all publishable modules so apps can depend on a single BOM and pick modules.
+
+## Cursor / AI guidance
+- When adding routes: implement `BaseRouter`, register in the appropriate feature router (e.g. `UserFeatureRouter`), and in the host app’s `Application.module` routing block if applicable.
+- When adding core capabilities: prefer a new or existing core module; avoid putting app-specific logic in `core/common`.
+- When changing dependencies: use `gradle/libs.versions.toml` for versions and library aliases; keep BOM in sync with published modules.
+- This is a **library**: avoid hardcoded app assumptions; support configuration (env, DI) and optional features so real projects can integrate the SDK with minimal friction.
+- User and auth logic lives in **feature/user**; extend it (new use cases, routes, or auth providers) rather than duplicating in sample or other modules.

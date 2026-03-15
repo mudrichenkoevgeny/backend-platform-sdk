@@ -11,9 +11,7 @@ import org.jetbrains.exposed.v1.jdbc.upsert
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalUuidApi::class)
 @Singleton
 class SystemSettingRepositoryImpl @Inject constructor() : SystemSettingRepository {
 
