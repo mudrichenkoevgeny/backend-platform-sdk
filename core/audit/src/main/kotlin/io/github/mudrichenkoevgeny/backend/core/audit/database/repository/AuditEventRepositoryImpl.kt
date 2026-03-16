@@ -22,6 +22,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
+/**
+ * [AuditEventRepository] implementation using Exposed and [AuditEventsTable]: inserts events
+ * into the table, reads by id or with optional filters, and returns paginated lists ordered
+ * by [AuditEventsTable.createdAt] descending.
+ * [getEventsByActor] is a convenience for listing all events for a given actor.
+ */
 @Singleton
 class AuditEventRepositoryImpl @Inject constructor() : AuditEventRepository {
 

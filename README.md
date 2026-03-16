@@ -1,115 +1,50 @@
 # backend-platform-sdk
+
 A modular foundational SDK for building scalable Kotlin/Ktor microservices. Provides pre-configured core infrastructure for observability, database management, security, and shared business features.
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.mudrichenkoevgeny/backend-platform-sdk-bom)](https://central.sonatype.com/artifact/io.github.mudrichenkoevgeny/backend-platform-sdk-bom)
+
+## Modules
+
+| Module | Purpose |
+|--------|--------|
+| **core/common** | Base for all: Ktor server setup, `BaseRouter`, `CommonConfig`, error handling, serialization, Swagger, WebSockets, env/config, logging. Most other modules depend on it. |
+| **core/database** | Exposed, PostgreSQL, Hikari, Flyway, Redis (Lettuce). Used by settings, security, audit, feature/user. |
+| **core/observability** | OpenTelemetry, Micrometer/Prometheus, Ktor metrics. |
+| **core/security** | Password validation, security settings (use cases, routes). |
+| **core/settings** | Global/system settings, DB-backed. `GlobalSettingsRouter`, `SettingsFeatureRouter`. |
+| **core/audit** | Audit events model and persistence. |
+| **core/storage** | S3 (AWS SDK); file/blob storage abstraction. |
+| **core/events** | Event publishing/subscribing (e.g. Kafka). `EventPublisher`, `EventSubscriber`. |
+| **core/crosscutting** | Cross-cutting concerns (e.g. rate limiting). Uses common, security, audit. |
+| **feature/user** | User and auth: registration, login (email + external), JWT + refresh tokens, password reset, sessions, user CRUD. Exposes auth routes, `UserFeatureRouter`. Depends on core: common, database, security, audit, settings, crosscutting. |
+
+Depend only on what you need. Use the BOM for version alignment. Per-module details: [core/README.md](core/README.md), [core/common/README.md](core/common/README.md), [core/audit/README.md](core/audit/README.md).
+
 ## Installation
-Add the library to your projects using one of the following methods:
-### Option 1: Version Catalog
-_1. In your gradle/libs.versions.toml file:_
-```
-[versions]
-backend-sdk = "0.0.15"
 
-[libraries]
-backend-sdk-bom = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-bom", version.ref = "backend-sdk" }
-backend-sdk-core-common = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-common" }
-backend-sdk-core-audit = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-audit" }
-backend-sdk-core-crosscutting = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-crosscutting" }
-backend-sdk-core-database = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-database" }
-backend-sdk-core-events = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-events" }
-backend-sdk-core-observability = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-observability" }
-backend-sdk-core-settings = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-settings" }
-backend-sdk-core-security = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-security" }
-backend-sdk-core-storage = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-storage" }
-backend-sdk-feature-user = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-feature-user" }
+Use the BOM and add the modules you need:
 
-# Or if you don't want to use BOM:
-backend-sdk-core-common = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-common", version.ref = "backend-sdk" }
-backend-sdk-core-audit = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-audit", version.ref = "backend-sdk" }
-backend-sdk-core-crosscutting = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-crosscutting", version.ref = "backend-sdk" }
-backend-sdk-core-database = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-database", version.ref = "backend-sdk" }
-backend-sdk-core-events = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-events", version.ref = "backend-sdk" }
-backend-sdk-core-observability = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-observability", version.ref = "backend-sdk" }
-backend-sdk-core-settings = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-settings", version.ref = "backend-sdk" }
-backend-sdk-core-security = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-security", version.ref = "backend-sdk" }
-backend-sdk-core-storage = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-storage", version.ref = "backend-sdk" }
-backend-sdk-feature-user = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-feature-user", version.ref = "backend-sdk" }
-```
-In your build.gradle.kts:
-```
+```kotlin
+// build.gradle.kts
 dependencies {
-    implementation(platform(libs.backend.sdk.bom))
-    implementation(libs.backend.sdk.core.common)
-    implementation(libs.backend.sdk.core.audit)
-    implementation(libs.backend.sdk.core.crosscutting)
-    implementation(libs.backend.sdk.core.database)
-    implementation(libs.backend.sdk.core.events)
-    implementation(libs.backend.sdk.core.observability)
-    implementation(libs.backend.sdk.core.settings)
-    implementation(libs.backend.sdk.core.security)
-    implementation(libs.backend.sdk.core.storage)
-    implementation(libs.backend.sdk.feature.user)
-    
-    // Or if you don't want to use BOM:
-    implementation(libs.backend.sdk.core.common)
-    implementation(libs.backend.sdk.core.audit)
-    implementation(libs.backend.sdk.core.crosscutting)
-    implementation(libs.backend.sdk.core.database)
-    implementation(libs.backend.sdk.core.events)
-    implementation(libs.backend.sdk.core.observability)
-    implementation(libs.backend.sdk.core.settings)
-    implementation(libs.backend.sdk.core.security)
-    implementation(libs.backend.sdk.core.storage)
-    implementation(libs.backend.sdk.feature.user)
-}
-```
-### Option 2: Direct Dependency
-```
-implementation(platform("io.github.mudrichenkoevgeny:backend-platform-sdk-bom:0.0.15"))
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-common")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-audit")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-crosscutting")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-database")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-events")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-observability")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-settings")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-security")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-storage")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-feature-user")
-
-// Or if you don't want to use BOM:
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-common:0.0.15")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-audit:0.0.15")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-crosscutting:0.0.15")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-database:0.0.15")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-events:0.0.15")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-observability:0.0.15")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-settings:0.0.15")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-security:0.0.15")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-storage:0.0.15")
-implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-feature-user:0.0.15")
-```
-
-# Integration Steps
-To initialize the SDK, you must provide the application metadata (name and version). This is done by implementing the AppInfo interface and binding it in your dependency injection graph.
-
-### 1. Implement AppInfo: Create a class that implements AppInfo.
-
-```kotlin
-@Singleton
-class BuildConfigAppInfo @Inject constructor() : AppInfo {
-    override val version: String = BuildConfig.VERSION
-    override val appName: String = BuildConfig.APP_NAME
+    implementation(platform("io.github.mudrichenkoevgeny:backend-platform-sdk-bom:0.0.15"))
+    implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-common")
+    implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-database")
+    // ... other core modules and backend-platform-sdk-feature-user as required
 }
 ```
 
-### 2. Provide the Binding. Register the implementation in your Dagger module
+With a version catalog: declare the BOM and library aliases in `libs.versions.toml`, then `implementation(platform(libs.backend.sdk.bom))` and `implementation(libs.backend.sdk.core.common)` etc.
 
-```kotlin
-@Module
-interface AppModule {
-    @Binds
-    @Singleton
-    fun bindAppInfo(impl: BuildConfigAppInfo): AppInfo
-}
-```
+## Integration Steps
+
+1. **AppInfo** — Implement `AppInfo` (app name, version) and bind it in your Dagger graph. The SDK needs it for config and responses.
+
+2. **Common** — Install `CommonModules` in your app component. Provide `BackgroundScope` (e.g. from your app’s root scope) in the component; common does not create it. Bootstrap with `KtorServer.create(commonConfig) { module(applicationModule) }` and register your routes (including feature routers) inside the application module.
+
+3. **Database** — If you use **core/database**, provide DB config (url, user, password) and include your Flyway migration paths (e.g. from each core module that has migrations, such as **core/audit** — see [core/audit/README.md](core/audit/README.md)).
+
+4. **Feature/user** — If you use **feature/user**, install its Dagger modules, register `UserFeatureRouter` (and optionally `SettingsFeatureRouter`, `SecurityFeatureRouter`) in your `routing { }` block, and run the migrations for the user/settings tables.
+
+For a full wiring example, see the [sample](sample) application.

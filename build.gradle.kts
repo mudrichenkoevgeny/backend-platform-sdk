@@ -36,6 +36,7 @@ subprojects {
                 jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmToolchain.get()))
 
                 freeCompilerArgs.add("-opt-in=kotlin.uuid.ExperimentalUuidApi")
+                freeCompilerArgs.add("-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi")
             }
         }
     }

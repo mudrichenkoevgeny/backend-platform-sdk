@@ -16,7 +16,6 @@ import dagger.Module
  * Instead, it expects them (e.g. [BackgroundScope])
  * to be provided by the application component and wires library functionality on top of them.
  */
-
 @Module(
     includes = [
         EnvModule::class,

@@ -13,6 +13,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
+/**
+ * Default [AuditManager] implementation: delegates all operations to [AuditEventRepository]
+ * inside [dbQuery], so that
+ * persistence and listing run in a database transaction on the IO dispatcher.
+ */
 @Singleton
 class AuditManagerImpl @Inject constructor(
     private val auditRepository: AuditEventRepository

@@ -31,7 +31,12 @@ dependencies {
     implementation(libs.exposed.json)
 
     // Testing
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testRuntimeOnly(libs.junit.jupiter.engine)
     testRuntimeOnly(libs.kotlin.test.junit5)
+    testImplementation(libs.h2database)
 }
 
 tasks.test {

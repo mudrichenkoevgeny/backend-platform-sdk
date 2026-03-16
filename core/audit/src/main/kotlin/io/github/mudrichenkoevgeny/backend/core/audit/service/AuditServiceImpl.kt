@@ -12,6 +12,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [AuditService] implementation: [log] launches a coroutine on the injected
+ * [BackgroundScope]
+ * that calls [AuditManager.createEvent]; errors are logged via [AppLogger] and do not propagate.
+ * [awaitAll] joins all children of the scope's job so that tests or shutdown can wait for pending writes.
+ */
 @Singleton
 class AuditServiceImpl @Inject constructor(
     private val auditManager: AuditManager,

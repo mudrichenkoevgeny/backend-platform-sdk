@@ -9,6 +9,12 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import java.time.Instant
 import kotlin.uuid.Uuid
 
+/**
+ * Data access for audit events (persistence and querying).
+ *
+ * Implementations are responsible for storing events and returning paginated lists
+ * with optional filters.
+ */
 interface AuditEventRepository {
     suspend fun createEvent(event: AuditEvent): AppResult<AuditEvent>
 

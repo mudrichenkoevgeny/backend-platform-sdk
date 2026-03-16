@@ -6,6 +6,11 @@ import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
 
+/**
+ * Wires audit manager for application use.
+ *
+ * Binds [AuditManager] to [AuditManagerImpl].
+ */
 @Module
 interface AuditManagersModule {
 

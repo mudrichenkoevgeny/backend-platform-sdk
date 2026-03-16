@@ -58,7 +58,11 @@ dependencies {
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.mockk)
+    testImplementation(libs.ktor.client.mock)
     testImplementation(libs.ktor.server.test.host)
+
+    // H2 for createTestDataSource (test utility in main; consumers provide H2 at test runtime)
+    compileOnly(libs.h2database)
 }
 
 tasks.test {
