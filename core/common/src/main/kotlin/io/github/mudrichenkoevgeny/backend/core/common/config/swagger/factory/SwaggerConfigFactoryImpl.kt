@@ -8,6 +8,12 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.swagger.model.Swag
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [SwaggerConfigFactory] implementation that builds [SwaggerConfig] from environment variables.
+ *
+ * Values such as title, description and server metadata are read via [EnvReader] using
+ * [CommonEnvKeys] and [SwaggerEnvKeys], while the version is taken from [AppInfo].
+ */
 @Singleton
 class SwaggerConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader,

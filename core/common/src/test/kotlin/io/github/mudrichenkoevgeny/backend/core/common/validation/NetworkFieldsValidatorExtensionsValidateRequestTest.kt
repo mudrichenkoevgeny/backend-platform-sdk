@@ -1,7 +1,9 @@
-/*
 package io.github.mudrichenkoevgeny.backend.core.common.validation
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.validation.NotBlankStringField
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.validation.NotEmptyCollectionField
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.validation.RequiredField
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.receive
 import io.mockk.coEvery
@@ -9,10 +11,11 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
-class ValidateRequestTest {
+class NetworkFieldsValidatorExtensionsValidateRequestTest {
 
     @Serializable
     data class TestRequest(
@@ -24,57 +27,49 @@ class ValidateRequestTest {
     private val call = mockk<ApplicationCall>(relaxed = true)
 
     @Test
-    fun `should throw ValidationException if required field is null`() {
-        // GIVEN
+    fun `validateRequest throws ValidationException when required field is null`() {
         val request = TestRequest(null, "ok", listOf("item"))
         coEvery { call.receive<TestRequest>() } returns request
 
-        // WHEN + THEN
         val exception = assertThrows(ValidationException::class.java) {
             runBlocking { call.validateRequest<TestRequest>() }
         }
-        assertTrue(exception.error is CommonError.MissingRequiredField)
-        assertEquals("required_field", (exception.error as CommonError.MissingRequiredField).fieldName)
+        val error = exception.error as CommonError.MissingRequiredField
+        assertEquals("required_field", error.fieldName)
     }
 
     @Test
-    fun `should throw ValidationException if not blank string is blank`() {
-        // GIVEN
+    fun `validateRequest throws ValidationException when not blank string is blank`() {
         val request = TestRequest("present", "   ", listOf("item"))
         coEvery { call.receive<TestRequest>() } returns request
 
-        // WHEN + THEN
         val exception = assertThrows(ValidationException::class.java) {
             runBlocking { call.validateRequest<TestRequest>() }
         }
-        assertTrue(exception.error is CommonError.BlankStringField)
-        assertEquals("not_blank_field", (exception.error as CommonError.BlankStringField).fieldName)
+        val error = exception.error as CommonError.BlankStringField
+        assertEquals("not_blank_field", error.fieldName)
     }
 
     @Test
-    fun `should throw ValidationException if not empty collection is empty`() {
-        // GIVEN
+    fun `validateRequest throws ValidationException when not empty collection is empty`() {
         val request = TestRequest("present", "ok", emptyList())
         coEvery { call.receive<TestRequest>() } returns request
 
-        // WHEN + THEN
         val exception = assertThrows(ValidationException::class.java) {
             runBlocking { call.validateRequest<TestRequest>() }
         }
-        assertTrue(exception.error is CommonError.EmptyCollectionField)
-        assertEquals("not_empty_list", (exception.error as CommonError.EmptyCollectionField).fieldName)
+        val error = exception.error as CommonError.EmptyCollectionField
+        assertEquals("not_empty_list", error.fieldName)
     }
 
     @Test
-    fun `should return request when all fields are valid`() {
-        // GIVEN
+    fun `validateRequest returns request when all fields are valid`() {
         val request = TestRequest("present", "ok", listOf("item"))
         coEvery { call.receive<TestRequest>() } returns request
 
-        // WHEN
         val result = runBlocking { call.validateRequest<TestRequest>() }
 
-        // THEN
         assertEquals(request, result)
     }
-}*/
+}
+

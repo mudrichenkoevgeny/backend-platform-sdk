@@ -8,6 +8,12 @@ import io.ktor.server.websocket.webSocket
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Public WebSocket entry point for real-time updates.
+ *
+ * Registers an unauthenticated WebSocket endpoint at [WebSocketContract.WS_REALTIME_PATH]
+ * and delegates session handling to [WebSocketManager].
+ */
 @Singleton
 class PublicWebSocketRouter @Inject constructor(
     private val webSocketManager: WebSocketManager

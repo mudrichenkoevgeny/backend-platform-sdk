@@ -9,6 +9,11 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.env.getStringList
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [CommonConfigFactory] implementation that builds [CommonConfig] from environment variables.
+ *
+ * It combines metadata from [AppInfo] with values provided by [EnvReader] using keys from [CommonEnvKeys].
+ */
 @Singleton
 class CommonConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader,

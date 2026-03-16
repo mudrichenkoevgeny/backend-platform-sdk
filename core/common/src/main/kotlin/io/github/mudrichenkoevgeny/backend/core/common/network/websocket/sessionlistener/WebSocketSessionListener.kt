@@ -4,7 +4,16 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.manager
 import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.model.WebSocketSessionContext
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 
+/**
+ * Hook for reacting to WebSocket lifecycle events.
+ */
 interface WebSocketSessionListener {
+
+    /**
+     * Called when a new WebSocket [session] is registered with the given [context].
+     *
+     * @param expiresAt optional timestamp when the associated session should expire.
+     */
     fun onSessionRegistered(
         webSocketManager: WebSocketManager,
         session: DefaultWebSocketServerSession,
@@ -12,6 +21,9 @@ interface WebSocketSessionListener {
         expiresAt: Long?
     )
 
+    /**
+     * Called after a WebSocket session has been closed and cleaned up.
+     */
     fun onSessionClosed(
         context: WebSocketSessionContext
     )

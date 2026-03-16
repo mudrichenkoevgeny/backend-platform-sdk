@@ -5,10 +5,14 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.Us
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonHttpHeaders
 import io.ktor.http.HttpHeaders
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.plugins.origin
 import io.ktor.server.request.host
 import io.ktor.server.request.userAgent
 
+/**
+ * Structured information about the calling client inferred from HTTP headers and connection data.
+ *
+ * Used for logging, analytics and feature flags without leaking raw header access across the codebase.
+ */
 data class ClientInfo(
     val clientType: UserClientType?,
     val userAgent: String?,
@@ -22,11 +26,14 @@ data class ClientInfo(
     val operationSystemVersion: String?
 )
 
+/**
+ * Extracts a [ClientInfo] from this [ApplicationCall] using standard and shared headers.
+ */
 fun ApplicationCall.extractClientInfo(): ClientInfo {
     return ClientInfo(
         clientType = request.headers[CommonHttpHeaders.CLIENT_TYPE_HEADER_NAME]?.let { UserClientType.fromValue(it) },
         userAgent = request.userAgent(),
-        ipAddress = request.origin.remoteAddress,
+        ipAddress = request.local.remoteHost,
         language = request.headers[HttpHeaders.AcceptLanguage],
         host = request.host(),
         origin = request.headers[HttpHeaders.Origin],

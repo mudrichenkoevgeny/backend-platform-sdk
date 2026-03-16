@@ -12,6 +12,17 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 
+/**
+ * Configures HTTP-level concerns such as CORS and default security headers.
+ *
+ * - CORS:
+ *   - In [AppEnvironment.DEV]: allows any host.
+ *   - Otherwise: allows only [allowedOrigins].
+ *   - Enables standard HTTP methods and common headers, including project-specific `X-*` headers.
+ * - Default headers:
+ *   - Masks server identity and sets security-related headers (CSP, HSTS, XSS, etc.)
+ *     with values appropriate for the current [environment].
+ */
 fun Application.configureHTTP(
     environment: AppEnvironment,
     allowedOrigins: List<String>

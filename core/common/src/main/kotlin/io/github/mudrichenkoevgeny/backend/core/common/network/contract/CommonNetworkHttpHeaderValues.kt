@@ -1,5 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.common.network.contract
 
+/**
+ * Common header values used for security-related HTTP response headers.
+ */
 object CommonNetworkHttpHeaderValues {
     const val SERVER_MASK_HEADER_VALUE = "Server"
     const val NOSNIFF_HEADER_VALUE = "nosniff"

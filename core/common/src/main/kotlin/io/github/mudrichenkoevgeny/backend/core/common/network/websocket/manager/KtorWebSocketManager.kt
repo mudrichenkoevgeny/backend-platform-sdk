@@ -31,6 +31,12 @@ import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.uuid.Uuid
 
+/**
+ * Default [WebSocketManager] implementation backed by Ktor's WebSocket server APIs.
+ *
+ * Manages registration, routing of incoming frames to [WebSocketMessageHandler]s,
+ * lifecycle notifications for [WebSocketSessionListener]s and error logging.
+ */
 @Singleton
 class KtorWebSocketManager @Inject constructor(
     private val appLogger: AppLogger,

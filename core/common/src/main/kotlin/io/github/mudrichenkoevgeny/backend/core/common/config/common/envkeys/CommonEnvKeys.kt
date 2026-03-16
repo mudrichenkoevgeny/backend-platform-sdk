@@ -1,5 +1,14 @@
 package io.github.mudrichenkoevgeny.backend.core.common.config.common.envkeys
 
+import io.github.mudrichenkoevgeny.backend.core.common.config.common.factory.CommonConfigFactoryImpl
+import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
+
+/**
+ * Environment variable keys used to configure core application behavior.
+ *
+ * These keys are read by [EnvReader] consumers such as [CommonConfigFactoryImpl]
+ * to build strongly typed configuration objects.
+ */
 object CommonEnvKeys {
     const val ENV_FILE = "ENV_FILE"
     const val SECRETS_DIR = "SECRETS_DIR"

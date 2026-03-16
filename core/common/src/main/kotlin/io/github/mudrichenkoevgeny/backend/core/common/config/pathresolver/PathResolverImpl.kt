@@ -7,6 +7,13 @@ import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [PathResolver] implementation that validates and resolves config-related filesystem paths.
+ *
+ * It uses [PathResolverConfig] together with the current working directory to locate the env file
+ * and secrets directory, logs configuration problems via [AppLogger] as [CommonError] and fails
+ * fast when required paths or environment variables are missing.
+ */
 @Singleton
 class PathResolverImpl @Inject constructor(
     pathResolverConfig: PathResolverConfig,

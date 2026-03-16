@@ -12,6 +12,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
+/**
+ * Default [WebSocketMessageHandler] implementation for common control frames
+ * such as ping–pong and client initialization.
+ */
 @Singleton
 class CommonWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
 

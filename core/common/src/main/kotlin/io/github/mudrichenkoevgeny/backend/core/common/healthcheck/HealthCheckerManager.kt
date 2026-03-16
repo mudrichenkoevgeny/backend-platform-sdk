@@ -11,11 +11,26 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
 
+/**
+ * Coordinates execution of registered [HealthCheck]s and reports failures.
+ *
+ * Critical checks are executed during startup via [verifyCriticalHealth]; if any of them fails,
+ * the corresponding [CommonError.Internal] is logged and its underlying throwable is rethrown
+ * to prevent the service from running in a degraded state. Non‑critical checks are executed
+ * by [checkNonCriticalHealth] and only logged.
+ */
 @Singleton
 class HealthCheckerManager @Inject constructor(
     private val healthChecks: Set<@JvmSuppressWildcards HealthCheck>,
     private val appLogger: AppLogger
 ) {
+
+    /**
+     * Runs all [HealthCheck]s with [HealthCheckSeverity.CRITICAL].
+     *
+     * If any critical check returns [AppSystemResult.Error], logs it and throws the underlying
+     * exception, causing startup to fail fast.
+     */
     fun verifyCriticalHealth() {
         runBlocking {
             val criticalResult = runCriticalChecks()
@@ -27,6 +42,9 @@ class HealthCheckerManager @Inject constructor(
         }
     }
 
+    /**
+     * Runs all [HealthCheck]s with [HealthCheckSeverity.NON_CRITICAL] and logs any failures.
+     */
     suspend fun checkNonCriticalHealth() {
         val nonCriticalErrors = runNonCriticalChecks()
         nonCriticalErrors.forEach { systemError ->
@@ -34,6 +52,9 @@ class HealthCheckerManager @Inject constructor(
         }
     }
 
+    /**
+     * Executes all critical checks concurrently and short‑circuits on the first failure.
+     */
     private suspend fun runCriticalChecks(): AppSystemResult<Unit> = coroutineScope {
         val criticalChecks = healthChecks.filter { it.severity == HealthCheckSeverity.CRITICAL }
         val deferredList = criticalChecks.map { check ->
@@ -50,11 +71,15 @@ class HealthCheckerManager @Inject constructor(
                     return@coroutineScope result
                 }
             }
-        } catch (_: CancellationException) { }
+        } catch (_: CancellationException) {
+        }
 
         AppSystemResult.Success(Unit)
     }
 
+    /**
+     * Executes non‑critical checks concurrently and collects internal errors.
+     */
     private suspend fun runNonCriticalChecks(): List<CommonError.Internal> {
         val internalErrors = mutableListOf<CommonError.Internal>()
         coroutineScope {

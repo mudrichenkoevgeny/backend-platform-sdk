@@ -15,6 +15,17 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathR
 import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathResolverConfigHolder
 import javax.inject.Singleton
 
+/**
+ * Wires configuration factories and their products used by the common layer.
+ *
+ * This module binds factory implementations and exposes:
+ * - [PathResolverConfig] (via [PathResolverConfigHolder]) and [PathResolver];
+ * - [CommonConfig] created by [CommonConfigFactory];
+ * - [SwaggerConfig] created by [SwaggerConfigFactory].
+ *
+ * Applications may override these bindings or configuration holders if they need
+ * different sources of configuration.
+ */
 @Module
 interface CommonConfigModule {
 

@@ -7,6 +7,19 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.response.respond
 
+/**
+ * Sends an HTTP response based on the given [AppResult].
+ *
+ * Behaviour:
+ * - For [AppResult.Success]:
+ *   - If `T` is `Unit`, responds with `204 No Content`.
+ *   - Otherwise responds with `200 OK` and the body produced by [mapper].
+ * - For [AppResult.Error]:
+ *   - Logs the error via [appLogger].
+ *   - Responds with the error's `httpStatusCode` and serialized API error body from [appErrorParser].
+ *
+ * The [mapper] can be used to convert domain models into DTOs.
+ */
 suspend inline fun <reified T : Any> ApplicationCall.respondResult(
     result: AppResult<T>,
     appLogger: AppLogger,

@@ -5,12 +5,22 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorPars
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.validation.ValidationException
 import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
 import io.ktor.server.plugins.BadRequestException
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.ContentTransformationException
 import io.ktor.server.response.respond
 
+/**
+ * Configures Ktor [StatusPages] to translate exceptions into structured API error responses.
+ *
+ * Mappings:
+ * - [ValidationException] → logs the wrapped [CommonError] and responds with its HTTP status.
+ * - [ContentTransformationException] → wraps into [CommonError.InvalidJsonBody] and responds accordingly.
+ * - [BadRequestException] → wraps into [CommonError.BadRequest].
+ * - Any other [Throwable] → wraps into [CommonError.Internal] including the [ApplicationCall] context.
+ */
 fun Application.configureStatusPages(
     appErrorParser: AppErrorParser,
     appLogger: AppLogger

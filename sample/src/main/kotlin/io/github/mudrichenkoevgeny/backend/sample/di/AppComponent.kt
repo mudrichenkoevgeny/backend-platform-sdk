@@ -1,9 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.sample.di
 
+import dagger.BindsInstance
 import dagger.Component
 import io.github.mudrichenkoevgeny.backend.core.audit.di.AuditModules
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.CommonConfig
 import io.github.mudrichenkoevgeny.backend.core.common.di.CommonModules
+import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.initializer.SwaggerInitializer
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheckerManager
@@ -28,6 +30,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.settings.Se
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.SeedAdminAccountsUseCase
 import io.github.mudrichenkoevgeny.backend.sample.appbootstrap.AppBootstrap
 import io.github.mudrichenkoevgeny.backend.sample.lifecycle.AppShutdownHook
+import kotlinx.coroutines.CoroutineScope
 import javax.inject.Singleton
 
 @Singleton
@@ -47,6 +50,22 @@ import javax.inject.Singleton
     ]
 )
 interface AppComponent {
+
+    /**
+     * Creates the application component.
+     *
+     * @param backgroundScope application-wide background CoroutineScope
+     * that will be used by core/feature modules (audit, websockets, etc.).
+     */
+    @Component.Factory
+    interface Factory {
+        fun create(
+            @BindsInstance
+            @BackgroundScope
+            backgroundScope: CoroutineScope
+        ): AppComponent
+    }
+
     // common
     fun commonConfig(): CommonConfig
     fun appLogger(): AppLogger

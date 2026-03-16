@@ -7,6 +7,12 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
+/**
+ * Wires Swagger/OpenAPI initialization for Ktor applications.
+ *
+ * Uses [SwaggerConfig] and exposes a singleton [SwaggerInitializer] that
+ * can be used to register OpenAPI documentation endpoints.
+ */
 @Module
 class SwaggerModule {
 

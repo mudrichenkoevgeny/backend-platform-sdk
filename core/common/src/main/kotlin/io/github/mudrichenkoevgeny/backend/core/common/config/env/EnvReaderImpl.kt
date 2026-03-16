@@ -6,6 +6,13 @@ import java.util.Properties
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [EnvReader] implementation that combines process env variables, `.env` file and secret files.
+ *
+ * - Environment variables come from [System.getenv].
+ * - Optional key/value overrides are loaded lazily from [ResolvedPaths.envFile].
+ * - Secrets are read as plain text files under [ResolvedPaths.secretsDir].
+ */
 @Singleton
 class EnvReaderImpl @Inject constructor(
     private val paths: ResolvedPaths

@@ -6,6 +6,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorParse
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorParserConfigHolder
 import io.github.mudrichenkoevgeny.backend.core.common.server.KtorServer
 import io.github.mudrichenkoevgeny.backend.sample.di.DaggerAppComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import java.util.TimeZone
 
 fun main() {
@@ -14,7 +17,11 @@ fun main() {
     PathResolverConfigHolder.set(PathResolverConfig())
     AppErrorParserConfigHolder.set(AppErrorParserConfig())
 
-    val appComponent = DaggerAppComponent.create()
+    val backgroundScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    val appComponent = DaggerAppComponent.factory().create(
+        backgroundScope = backgroundScope
+    )
 
     appComponent.appBootstrap().initialize()
 

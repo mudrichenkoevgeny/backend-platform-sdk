@@ -1,5 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.common.network.contract
 
+/**
+ * Common HTTP header names used for security and proxy-related configuration.
+ */
 object CommonNetworkHttpHeaders {
     const val X_PREFIX = "x-"
 

@@ -10,6 +10,15 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Singleton
 
+/**
+ * Provides logging infrastructure used across the common layer.
+ *
+ * Exposes:
+ * - qualified [Logger] instances for system and business logging;
+ * - high-level [AppLogger] that wraps both.
+ *
+ * Applications may override these bindings if they need custom logging backends.
+ */
 @Module
 class AppLoggerModule {
 

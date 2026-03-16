@@ -11,6 +11,10 @@ import io.ktor.server.request.path
 import org.slf4j.Logger
 import javax.inject.Singleton
 
+/**
+ * Default [AppLogger] implementation that writes errors to two SLF4J loggers:
+ * one for low-level system failures and one for business-level problems.
+ */
 @Singleton
 class AppLoggerImpl(
     @param:SystemLogger private val systemLogger: Logger,

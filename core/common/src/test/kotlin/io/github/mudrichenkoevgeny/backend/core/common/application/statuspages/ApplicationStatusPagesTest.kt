@@ -1,12 +1,10 @@
-/*
 package io.github.mudrichenkoevgeny.backend.core.common.application.statuspages
 
-import io.github.mudrichenkoevgeny.backend.core.common.error.constants.CommonErrorCodes
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.ApiError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.validation.ValidationException
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.model.ApiErrorResponse
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -35,7 +33,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class ConfigureStatusPagesTest {
+class ApplicationStatusPagesTest {
 
     private lateinit var appErrorParser: AppErrorParser
     private lateinit var appLogger: AppLogger
@@ -47,16 +45,15 @@ class ConfigureStatusPagesTest {
     }
 
     @Test
-    fun `should respond with proper error for ValidationException`() = testApplication {
-        // GIVEN
+    fun `validation exception mapped to corresponding CommonError`() = testApplication {
         val expectedError = CommonError.MissingRequiredField("test_field")
-        val apiError = ApiError(
+        val apiError = ApiErrorResponse(
             id = "",
             code = expectedError.code,
-            message = "Field is missing"
+            message = "Field is missing",
         )
-        coEvery { appErrorParser.getApiError(expectedError) } returns apiError
-        every { appLogger.logBusinessError(expectedError) } just runs
+        every { appLogger.logError(expectedError) } just runs
+        coEvery { appErrorParser.getApiErrorResponse(expectedError) } returns apiError
 
         application {
             install(ContentNegotiation) { json() }
@@ -66,25 +63,22 @@ class ConfigureStatusPagesTest {
             }
         }
 
-        // WHEN
         val response = client.get("/test")
 
-        // THEN
         assertEquals(HttpStatusCode.BadRequest, response.status)
-        coVerify { appErrorParser.getApiError(expectedError) }
-        verify { appLogger.logBusinessError(expectedError) }
+        coVerify { appErrorParser.getApiErrorResponse(expectedError) }
+        verify { appLogger.logError(expectedError) }
     }
 
     @Test
-    fun `should respond with InvalidJsonBody for ContentTransformationException`() = testApplication {
-        // GIVEN
-        val apiError = ApiError(
+    fun `invalid json body mapped to InvalidJsonBody`() = testApplication {
+        val apiError = ApiErrorResponse(
             id = "",
-            code = CommonErrorCodes.INVALID_JSON_BODY,
-            message = "Invalid JSON"
+            code = CommonError.InvalidJsonBody(null).code,
+            message = "Invalid JSON",
         )
-        coEvery { appErrorParser.getApiError(any<CommonError.InvalidJsonBody>()) } returns apiError
-        every { appLogger.logBusinessError(any()) } just Runs
+        every { appLogger.logError(any<CommonError.InvalidJsonBody>()) } just Runs
+        coEvery { appErrorParser.getApiErrorResponse(any<CommonError.InvalidJsonBody>()) } returns apiError
 
         application {
             install(ContentNegotiation) { json() }
@@ -97,72 +91,63 @@ class ConfigureStatusPagesTest {
             }
         }
 
-        // WHEN
         val response = client.post("/test") {
             contentType(ContentType.Application.Json)
             setBody("{invalid json}")
         }
 
-        // THEN
         assertEquals(HttpStatusCode.BadRequest, response.status)
-        coVerify { appErrorParser.getApiError(any<CommonError.InvalidJsonBody>()) }
-        verify { appLogger.logBusinessError(any<CommonError.InvalidJsonBody>()) }
+        coVerify { appErrorParser.getApiErrorResponse(any<CommonError.InvalidJsonBody>()) }
+        verify { appLogger.logError(any<CommonError.InvalidJsonBody>()) }
     }
 
     @Test
-    fun `should respond with BadRequest for BadRequestException`() = testApplication {
-        // GIVEN
-        val apiError = ApiError(
+    fun `bad request exception mapped to BadRequest error`() = testApplication {
+        val apiError = ApiErrorResponse(
             id = "",
-            code = CommonErrorCodes.BAD_REQUEST,
-            message = "Bad request"
+            code = CommonError.BadRequest(null).code,
+            message = "Bad request",
         )
-        coEvery { appErrorParser.getApiError(any<CommonError.BadRequest>()) } returns apiError
-        every { appLogger.logBusinessError(any()) } just runs
+        every { appLogger.logError(any<CommonError.BadRequest>()) } just runs
+        coEvery { appErrorParser.getApiErrorResponse(any<CommonError.BadRequest>()) } returns apiError
 
         application {
             install(ContentNegotiation) { json() }
             configureStatusPages(appErrorParser, appLogger)
             routing {
-                get("/test") { throw BadRequestException("bad request") }
+                get("/bad-request") { throw BadRequestException("bad request") }
             }
         }
 
-        // WHEN
-        val response = client.get("/test")
+        val response = client.get("/bad-request")
 
-        // THEN
         assertEquals(HttpStatusCode.BadRequest, response.status)
-        coVerify { appErrorParser.getApiError(any<CommonError.BadRequest>()) }
-        verify { appLogger.logBusinessError(any()) }
+        coVerify { appErrorParser.getApiErrorResponse(any<CommonError.BadRequest>()) }
+        verify { appLogger.logError(any<CommonError.BadRequest>()) }
     }
 
-
     @Test
-    fun `should log and respond for generic Throwable`() = testApplication {
-        // GIVEN
-        val apiError = ApiError(
+    fun `generic throwable mapped to Internal error`() = testApplication {
+        val apiError = ApiErrorResponse(
             id = "",
-            code = CommonErrorCodes.THROWABLE,
-            message = "Internal error"
+            code = CommonError.Internal(RuntimeException("boom")).code,
+            message = "Internal error",
         )
-        coEvery { appErrorParser.getApiError(any<CommonError.Throwable>()) } returns apiError
-        every { appLogger.logSystemError(any(), any(), any()) } just runs
+        every { appLogger.logError(any<CommonError.Internal>()) } just runs
+        coEvery { appErrorParser.getApiErrorResponse(any<CommonError.Internal>()) } returns apiError
 
         application {
             install(ContentNegotiation) { json() }
             configureStatusPages(appErrorParser, appLogger)
             routing {
-                get("/test") { throw RuntimeException("boom") }
+                get("/throw") { throw RuntimeException("boom") }
             }
         }
 
-        // WHEN
-        val response = client.get("/test")
+        val response = client.get("/throw")
 
-        // THEN
         assertEquals(HttpStatusCode.InternalServerError, response.status)
-        coVerify { appErrorParser.getApiError(any<CommonError.Throwable>()) }
-        verify { appLogger.logSystemError(any(), any(), any()) }
+        coVerify { appErrorParser.getApiErrorResponse(any<CommonError.Internal>()) }
+        verify { appLogger.logError(any<CommonError.Internal>()) }
     }
-}*/
+}
