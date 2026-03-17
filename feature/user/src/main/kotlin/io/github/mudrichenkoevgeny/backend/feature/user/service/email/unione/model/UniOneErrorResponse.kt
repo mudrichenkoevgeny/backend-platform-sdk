@@ -2,6 +2,9 @@ package io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.mo
 
 import kotlinx.serialization.Serializable
 
+/**
+ * UniOne API error payload returned for non-2xx responses.
+ */
 @Serializable
 internal data class UniOneErrorResponse(
     val status: String,

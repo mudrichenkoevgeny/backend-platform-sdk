@@ -17,6 +17,14 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: authenticate a user by email and password.
+ *
+ * Applies rate limiting, resolves the email identifier, validates password via [PasswordHasher],
+ * then provides auth data (tokens, user) via [AuthManager]. Audit is logged for success, wrong password, or unregistered email.
+ * [execute] takes email, password, and request context;
+ * returns [AppResult.Success] with [AuthData] or [AppResult.Error] (e.g. [UserError.InvalidCredentials], rate limit).
+ */
 @Singleton
 class LoginByEmailUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

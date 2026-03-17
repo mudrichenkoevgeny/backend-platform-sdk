@@ -8,6 +8,7 @@ alwaysApply: true
 ## Mandatory
 - Project rules are mandatory; apply relevant rules for every task.
 - **Do not run tests** and do not suggest running them (Gradle or otherwise).
+- **No FQN in Kotlin code:** before finishing any change that touches Kotlin files, do a quick self-check on the edited files and remove fully qualified names (e.g. `java.time.*`, `kotlin.*`, `io.github.*`) in expressions, type annotations, constructors, and generics by adding imports (or typealiases when appropriate).
 
 ## Routes
 - When adding routes: implement `BaseRouter`, register inside the appropriate feature router, and register in the host app’s `Application.module` routing block if applicable.
@@ -19,3 +20,4 @@ alwaysApply: true
 ## Dependencies
 - When changing dependencies: use `gradle/libs.versions.toml` for versions and library aliases where applicable.
 - Keep BOM (`:bom`) aligned with published modules when changing published dependency surfaces.
+- When writing tests, treat **test dependencies** as real dependencies: verify required test classpath entries exist **before** introducing imports/usages, and add missing ones in the same change. Do not rely on transitive or runtime-only artifacts for compilation.

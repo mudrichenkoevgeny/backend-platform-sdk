@@ -12,6 +12,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+/**
+ * [ExternalAuthVerifier] implementation for Google Sign-In tokens.
+ *
+ * Uses [TokenVerifier] configured with an optional web client id from [GoogleWebClientId]. If the
+ * verifier cannot be built (missing client id) or the token is invalid, returns [UserError.ExternalIdMismatch].
+ */
 class GoogleAuthVerifier @Inject constructor(
     @param:GoogleWebClientId private val webClientId: String?
 ) : ExternalAuthVerifier {

@@ -1,12 +1,17 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.service.email.parser.model
 
 /**
- * @param resourceFileName Name of the resource file, e.g., "email_messages".
- * The full file name will be constructed as: {path}/{locale}/{resourceFileName}.{resourceFileExtension}.
- * @param resourceFileExtension Extension of the resource files, e.g., "json". Defaults to "json".
- * @param resourcePaths List of classpath directories to search for resource files.
- * Files from later paths in the list can override earlier ones.
- * @param supportedLocales Set of locale strings supported by the application, e.g., {"en", "ru"}.
+ * Configuration for classpath-based email template loading.
+ *
+ * For each [supportedLocales] entry and each [resourcePaths] entry, the parser attempts to read:
+ * `"{path}/{locale}/{resourceFileName}.{resourceFileExtension}"`.
+ *
+ * Files from later paths in [resourcePaths] may override keys loaded from earlier paths.
+ *
+ * @property resourceFileName Base name of the resource file (e.g. `email_messages`).
+ * @property resourceFileExtension Resource file extension (e.g. `json`).
+ * @property resourcePaths Classpath directories to scan.
+ * @property supportedLocales Locales to preload into the in-memory cache.
  */
 data class EmailParserConfig(
     val resourceFileName: String = "email_messages",

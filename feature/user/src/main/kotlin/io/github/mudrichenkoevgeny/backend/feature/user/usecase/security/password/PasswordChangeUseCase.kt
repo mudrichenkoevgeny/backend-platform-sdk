@@ -16,6 +16,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: change the current user's password (authenticated, email identifier).
+ *
+ * Applies rate limiting, validates new password policy, verifies old password via [PasswordHasher], then updates the identifier password via [UserIdentifierManager].
+ * [execute] takes email, newPassword, oldPassword, and request context;
+ * returns [AppResult.Success] with updated [UserIdentifier] or [AppResult.Error] (e.g. [UserError.WrongPassword], [UserError.UserNotFound]).
+ */
 @Singleton
 class PasswordChangeUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

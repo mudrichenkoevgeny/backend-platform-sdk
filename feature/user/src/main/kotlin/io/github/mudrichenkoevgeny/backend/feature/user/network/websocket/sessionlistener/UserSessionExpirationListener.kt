@@ -16,6 +16,17 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
+/**
+ * Schedules WebSocket disconnect when the authenticated user session expires.
+ *
+ * When a session is registered with a non-null expiration timestamp, this listener:
+ * - waits until shortly before the expiration time (buffered),
+ * - sends a [UserWebSocketEventTypes.UNAUTHORIZED] frame to the socket,
+ * - waits a short grace period to let the client react,
+ * - disconnects the socket via [WebSocketManager].
+ *
+ * The scheduled job is cancelled when the socket closes to avoid leaking coroutines.
+ */
 @Singleton
 class UserSessionExpirationListener @Inject constructor(
     @param:BackgroundScope private val scope: CoroutineScope

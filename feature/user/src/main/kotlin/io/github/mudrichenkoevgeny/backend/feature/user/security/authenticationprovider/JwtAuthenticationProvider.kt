@@ -27,6 +27,16 @@ import io.ktor.server.response.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Ktor JWT authentication integration for the user feature.
+ *
+ * Responsibilities:
+ * - configures Ktor JWT auth with HMAC verification using [UserConfig.jwtSecret];
+ * - extracts the token from the `Authorization` header (Bearer) or from a query parameter;
+ * - validates that the referenced user exists and updates session last access time (when present);
+ * - maps validation failures to [UserError] through [AppErrorParser] in the auth challenge;
+ * - provides [requireUser] to enforce role/account-status checks for protected endpoints.
+ */
 @Singleton
 class JwtAuthenticationProvider @Inject constructor(
     private val userConfig: UserConfig,

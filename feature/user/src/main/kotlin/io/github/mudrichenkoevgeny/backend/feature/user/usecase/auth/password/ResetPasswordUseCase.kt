@@ -17,6 +17,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: reset a user's password by email using a verification code.
+ *
+ * Applies rate limiting, validates new password policy, verifies OTP, then updates the email identifier's password via [UserIdentifierManager].
+ * [execute] takes email, newPassword, confirmationCode, and request context;
+ * returns [AppResult.Success] with updated [UserIdentifier] or [AppResult.Error] (e.g. [UserError.WrongConfirmationCode], [UserError.UserNotFound]).
+ */
 @Singleton
 class ResetPasswordUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

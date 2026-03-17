@@ -7,6 +7,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import org.jetbrains.exposed.v1.core.ReferenceOption
 import org.jetbrains.exposed.v1.javatime.timestamp
 
+/**
+ * User sessions table storing refresh sessions and client metadata.
+ *
+ * Schema is created by a Flyway migration in `db/migration/feature/user/`.
+ * The app must include this path in its Flyway migration locations.
+ */
 object UserSessionsTable : BaseTable("user_sessions") {
     val userId = reference("user_id", UsersTable.id, onDelete = ReferenceOption.CASCADE)
     val userIdentifierId = reference(

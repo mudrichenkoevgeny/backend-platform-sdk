@@ -26,6 +26,13 @@ import javax.inject.Singleton
 import kotlin.random.Random
 
 @Singleton
+/**
+ * [EmailService] implementation backed by the UniOne API.
+ *
+ * Templates are resolved via [EmailParser], rendered with arguments and sent as HTML emails.
+ *
+ * This service also exposes [fakeSendEmail] which simulates network latency without sending real emails.
+ */
 class UniOneEmailService @Inject constructor(
     private val config: UniOneConfig,
     private val httpClient: HttpClient,

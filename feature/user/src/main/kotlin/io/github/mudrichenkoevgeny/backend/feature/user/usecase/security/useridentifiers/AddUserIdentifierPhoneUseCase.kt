@@ -21,6 +21,14 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: add a phone number as a new authentication identifier for the current user.
+ *
+ * Requires recent authentication confirmation. Ensures the user does not already have a phone identifier and that the phone is not used by another account.
+ * Verifies OTP, then creates the identifier via [AuthManager.getOrCreateUserIdentifier].
+ * [execute] takes phoneNumber, confirmationCode, and request context;
+ * returns [AppResult.Success] with new [UserIdentifier] or [AppResult.Error] (e.g. [UserError.CannotCreateUserIdentifier], [UserError.WrongConfirmationCode]).
+ */
 @Singleton
 class AddUserIdentifierPhoneUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

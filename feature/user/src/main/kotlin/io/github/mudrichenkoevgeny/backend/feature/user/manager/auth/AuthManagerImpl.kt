@@ -19,6 +19,16 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+/**
+ * Default [AuthManager] implementation.
+ *
+ * Executes auth flows inside [dbQuery] and coordinates:
+ * - user resolution via [UserManager]
+ * - identifier resolution/creation via [UserIdentifierManager]
+ * - session creation via [SessionManager]
+ *
+ * Enforces role checks and account status restrictions and returns [UserError] when access is denied.
+ */
 class AuthManagerImpl @Inject constructor(
     private val userManager: UserManager,
     private val userIdentifierManager: UserIdentifierManager,

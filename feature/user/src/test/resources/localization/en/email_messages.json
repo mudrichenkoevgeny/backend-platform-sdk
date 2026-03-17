@@ -1,0 +1,11 @@
+{
+  "verification_code": {
+    "subject": "Your code: {code}",
+    "body": "<p>Code: {code}</p><p>IP: {ipAddress}</p>"
+  },
+  "successful_login": {
+    "subject": "Login from {deviceName}",
+    "body": "IP {ipAddress}"
+  }
+}
+

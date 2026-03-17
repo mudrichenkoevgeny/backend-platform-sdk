@@ -9,6 +9,15 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.F
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [AuthSettingsProvider] implementation backed by [SystemSettingsService].
+ *
+ * The enabled auth providers are stored as a JSON system setting (type [SettingType.JSON]).
+ * On reads, missing/invalid values are treated as "no providers enabled" to keep the API stable.
+ *
+ * @param settingsService storage and in-memory cache for system settings
+ * @param authSettings default settings used to seed the storage on startup
+ */
 @Singleton
 class AuthSettingsProviderImpl @Inject constructor(
     private val settingsService: SystemSettingsService,

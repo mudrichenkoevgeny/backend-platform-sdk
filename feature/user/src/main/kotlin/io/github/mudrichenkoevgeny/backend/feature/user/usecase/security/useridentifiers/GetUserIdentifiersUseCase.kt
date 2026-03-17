@@ -9,6 +9,13 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.Use
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: list all authentication identifiers for the current user.
+ *
+ * Requires userId in request context. Delegates to [UserIdentifierManager.getUserIdentifierListByUserId] and logs audit on success.
+ * [execute] takes request context;
+ * returns [AppResult.Success] with list of [UserIdentifier] or [AppResult.Error] (e.g. [UserError.InvalidAccessToken]).
+ */
 @Singleton
 class GetUserIdentifiersUseCase @Inject constructor(
     private val userAuditLogger: UserAuditLogger,

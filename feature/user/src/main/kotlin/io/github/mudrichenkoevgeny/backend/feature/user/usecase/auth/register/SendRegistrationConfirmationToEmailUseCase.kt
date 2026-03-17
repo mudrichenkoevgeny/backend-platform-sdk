@@ -16,6 +16,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: send a registration verification code to an email.
+ *
+ * If the email is already registered, sends an "already registered" response and logs accordingly; otherwise generates OTP and sends verification email.
+ * Applies rate limiting and audit. [execute] takes email and request context;
+ * returns [AppResult.Success] with [SendConfirmation] or [AppResult.Error] (e.g. rate limit, send failure).
+ */
 @Singleton
 class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

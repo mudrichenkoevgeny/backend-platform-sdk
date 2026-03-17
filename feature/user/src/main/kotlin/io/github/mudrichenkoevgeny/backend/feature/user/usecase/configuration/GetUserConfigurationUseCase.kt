@@ -8,6 +8,12 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.configuration.User
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: fetch combined user-feature configuration for clients.
+ *
+ * Aggregates global, security, and auth settings from the respective providers.
+ * Returns the first [AppResult.Error] if any provider fails; otherwise [AppResult.Success] with [UserConfiguration].
+ */
 @Singleton
 class GetUserConfigurationUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider,

@@ -5,6 +5,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.Au
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: initialize auth settings (e.g. seed or reload from storage).
+ *
+ * Delegates to [AuthSettingsProvider.initialize]. Returns [AppResult.Success] when initialization succeeds or [AppResult.Error] from the provider.
+ */
 @Singleton
 class SeedAuthSettingsUseCase @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider

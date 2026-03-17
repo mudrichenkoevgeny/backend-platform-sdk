@@ -16,6 +16,11 @@ import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Public auth settings endpoint.
+ *
+ * Exposes authentication-related configuration required by clients (e.g., enabled providers).
+ */
 @Singleton
 class AuthSettingsRouter @Inject constructor(
     private val appLogger: AppLogger,

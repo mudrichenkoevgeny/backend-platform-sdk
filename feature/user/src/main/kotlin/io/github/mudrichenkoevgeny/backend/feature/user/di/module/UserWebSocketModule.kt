@@ -9,6 +9,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messag
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener.UserSessionExpirationListener
 
 @Module
+/**
+ * Registers WebSocket message handlers and session listeners contributed by the user feature.
+ *
+ * Uses Dagger set multibindings for [WebSocketMessageHandler] and [WebSocketSessionListener].
+ */
 interface UserWebSocketModule {
     @Binds
     @IntoSet

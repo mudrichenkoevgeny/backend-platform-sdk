@@ -19,6 +19,11 @@ import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Password management routes for authenticated users.
+ *
+ * Allows changing the current user's password.
+ */
 @Singleton
 class PasswordRouter @Inject constructor(
     private val appLogger: AppLogger,

@@ -11,6 +11,14 @@ import dagger.Module
 import javax.inject.Singleton
 
 @Module
+/**
+ * Binds core auth/security infrastructure for the user feature.
+ *
+ * Provides default implementations for:
+ * - [AuthenticationProvider] via [JwtAuthenticationProvider]
+ * - [RefreshTokenProvider] via [RefreshTokenProviderImpl]
+ * - [TokenProvider] via [JwtTokenProvider]
+ */
 interface UserAuthInfrastructureModule {
 
     @Binds

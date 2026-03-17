@@ -20,6 +20,11 @@ import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Public refresh-token endpoint.
+ *
+ * Exchanges a refresh token for a new session token.
+ */
 @Singleton
 class RefreshTokenRouter @Inject constructor(
     private val appLogger: AppLogger,

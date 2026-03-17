@@ -20,6 +20,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: send a verification code to a phone number when adding it as a new identifier for the current user.
+ *
+ * Requires recent authentication confirmation. If the phone is already registered to another account, sends "already registered" response; otherwise sends the OTP.
+ * [execute] takes phoneNumber and request context;
+ * returns [AppResult.Success] with [SendConfirmation] or [AppResult.Error] (e.g. [UserError.CannotCreateUserIdentifier], rate limit).
+ */
 @Singleton
 class SendAddPhoneIdentifierConfirmationUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

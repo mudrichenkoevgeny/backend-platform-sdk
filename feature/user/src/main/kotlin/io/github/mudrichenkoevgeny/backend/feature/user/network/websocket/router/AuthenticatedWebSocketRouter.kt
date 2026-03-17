@@ -19,6 +19,19 @@ import io.ktor.websocket.close
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Registers a WebSocket endpoint protected by JWT authentication (optionally).
+ *
+ * The endpoint is mounted at [WebSocketContract.WS_REALTIME_PATH].
+ *
+ * Authentication is configured as optional to allow anonymous sockets when a host
+ * app chooses to support non-authenticated real-time interactions. When a JWT is
+ * provided but invalid, the socket is closed with [UserWebSocketCloseReasons.AUTH_FAILED].
+ *
+ * When authentication succeeds, the socket is registered in [WebSocketManager] with:
+ * - user id (if available)
+ * - user session id and expiration timestamp (if available)
+ */
 @Singleton
 class AuthenticatedWebSocketRouter @Inject constructor(
     private val webSocketManager: WebSocketManager

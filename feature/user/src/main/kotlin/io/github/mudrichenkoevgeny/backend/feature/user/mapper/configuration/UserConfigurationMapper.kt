@@ -6,6 +6,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.mapper.auth.toAuthSettin
 import io.github.mudrichenkoevgeny.backend.feature.user.model.configuration.UserConfiguration
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.response.configuration.UserConfigurationResponse
 
+/**
+ * Maps internal [UserConfiguration] to the shared network response contract.
+ */
 fun UserConfiguration.toUserConfigurationResponse() = UserConfigurationResponse(
     globalSettings = globalSettings.toGlobalSettingsResponse(),
     securitySettings = securitySettings.toSecuritySettingsResponse(),

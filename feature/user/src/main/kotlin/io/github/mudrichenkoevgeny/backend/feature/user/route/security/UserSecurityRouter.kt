@@ -7,6 +7,11 @@ import io.ktor.server.routing.Route
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Aggregates user security routes that require an authenticated user context.
+ *
+ * Concrete route sets are delegated to [PasswordRouter] and [SecurityUserIdentifiersRouter].
+ */
 @Singleton
 class UserSecurityRouter @Inject constructor(
     private val passwordRouter: PasswordRouter,

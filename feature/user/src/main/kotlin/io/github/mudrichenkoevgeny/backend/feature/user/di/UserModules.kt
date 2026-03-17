@@ -12,6 +12,12 @@ import io.github.mudrichenkoevgeny.backend.feature.user.di.module.EmailParserMod
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserExternalAuthVerifierModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserWebSocketModule
 
+/**
+ * Aggregates all Dagger modules required by the user feature.
+ *
+ * Host applications should include this module (or its submodules) in their application component
+ * to install configuration, repositories, managers, services, audit logging, and WebSocket wiring.
+ */
 @Module(
     includes = [
         UserConfigModule::class,

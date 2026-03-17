@@ -6,6 +6,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 import org.jetbrains.exposed.v1.javatime.timestamp
 
+/**
+ * Users table.
+ *
+ * Schema is created by a Flyway migration in `db/migration/feature/user/`.
+ * The app must include this path in its Flyway migration locations.
+ */
 object UsersTable : BaseTable("users") {
     val role = enumerationByName("role", BaseDbConstraints.ENUM_MAX_LENGTH, UserRole::class)
     val accountStatus = enumerationByName("account_status", BaseDbConstraints.ENUM_MAX_LENGTH, UserAccountStatus::class)

@@ -1,6 +1,18 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.audit
 
+/**
+ * Constants used to build audit metadata for the user/auth feature.
+ *
+ * The keys in [Keys] are written into audit event metadata maps. Values in [Types] are used to
+ * categorize outcomes and denial/failure reasons for user-facing flows (registration, login,
+ * external auth, identifier management, etc.).
+ */
 object UserAuditMetadata {
+    /**
+     * Audit metadata keys written into the event metadata map.
+     *
+     * Keep these keys stable, because downstream log processing and alerting may rely on them.
+     */
     object Keys {
         const val IP_ADDRESS = "ip_address"
         const val DEVICE_ID = "device_id"
@@ -21,10 +33,18 @@ object UserAuditMetadata {
         const val TYPE = "type"
     }
 
+    /**
+     * Optional free-form reasons that further explain an audit record.
+     *
+     * Prefer [Types] for stable classification; use reasons only when you need additional context.
+     */
     object Reasons {
 
     }
 
+    /**
+     * Stable "type" values written under [Keys.TYPE] to classify audit events.
+     */
     object Types {
         const val INTERNAL_ERROR = "internal_error"
 

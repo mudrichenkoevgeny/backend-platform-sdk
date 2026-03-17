@@ -24,6 +24,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+/**
+ * Default [UserIdentifierRepository] implementation backed by Exposed and [UserIdentifiersTable].
+ *
+ * Performs synchronous Exposed DSL operations and maps [ResultRow] values into [UserIdentifier] models.
+ * Returns [CommonError.Database] when an operation reports no affected rows.
+ */
 class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierRepository {
 
     override suspend fun createUserIdentifier(

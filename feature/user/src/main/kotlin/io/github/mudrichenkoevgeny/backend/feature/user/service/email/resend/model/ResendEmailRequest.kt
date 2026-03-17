@@ -2,6 +2,9 @@ package io.github.mudrichenkoevgeny.backend.feature.user.service.email.resend.mo
 
 import kotlinx.serialization.Serializable
 
+/**
+ * Resend API request payload for sending an email.
+ */
 @Serializable
 data class ResendEmailRequest(
     val from: String,

@@ -7,6 +7,17 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+/**
+ * Redis-backed [OtpService] implementation.
+ *
+ * OTPs are stored as plain strings under a deterministic key derived from verification [type]
+ * and the user-facing [identifier]. Values are stored with TTL and optionally deleted after
+ * a successful verification.
+ *
+ * This implementation:
+ * - returns an existing OTP if one is already stored (to prevent spamming new codes),
+ * - generates a 6-digit numeric code when missing.
+ */
 class OtpServiceImpl @Inject constructor(
     private val redisManager: RedisManager
 ) : OtpService {

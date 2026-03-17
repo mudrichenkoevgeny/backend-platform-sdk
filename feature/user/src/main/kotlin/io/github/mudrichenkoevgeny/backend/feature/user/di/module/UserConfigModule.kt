@@ -10,6 +10,14 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthSettings
 import javax.inject.Singleton
 
 @Module
+/**
+ * Provides user feature configuration bindings.
+ *
+ * Binds:
+ * - [UserConfigFactory] to [UserConfigFactoryImpl]
+ * - [UserConfig] created at startup via the factory
+ * - [AuthSettings] extracted from [UserConfig]
+ */
 class UserConfigModule {
 
     @Provides

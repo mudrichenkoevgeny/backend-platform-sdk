@@ -24,6 +24,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+/**
+ * [EmailService] implementation backed by the Resend API.
+ *
+ * Templates are resolved via [EmailParser], rendered with arguments and sent as HTML emails.
+ *
+ * This service also exposes [fakeSendEmail] which simulates network latency without sending real emails.
+ */
 class ResendEmailService @Inject constructor(
     private val config: ResendConfig,
     private val httpClient: HttpClient,

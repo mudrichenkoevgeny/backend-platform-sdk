@@ -20,6 +20,14 @@ import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * JWT-based [TokenProvider] implementation.
+ *
+ * Access tokens are generated and verified using JJWT with an HMAC key derived from
+ * [UserConfig.jwtSecret]. The token subject contains the user id and a claim contains the session id.
+ *
+ * Refresh tokens are delegated to [RefreshTokenProvider].
+ */
 @Singleton
 class JwtTokenProvider @Inject constructor(
     userConfig: UserConfig,

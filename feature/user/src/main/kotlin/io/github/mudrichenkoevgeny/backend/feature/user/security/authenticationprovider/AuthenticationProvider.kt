@@ -6,6 +6,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 
+/**
+ * Configures request authentication and exposes authorization helpers for the user feature.
+ *
+ * Implementations are expected to integrate with Ktor authentication and to provide
+ * a single place to enforce role/account-status rules when accessing protected resources.
+ */
 interface AuthenticationProvider {
     fun configureAuthentication(application: Application)
 
@@ -13,9 +19,6 @@ interface AuthenticationProvider {
      * Authorizes a user based on their JWT token.
      *
      * @param call The current application call.
-     * @param checkToken If true, manually verifies the access token from the request headers.
-     *                   Should be used only if there is no prior authentication
-     *                   (e.g., no `authenticate("jwt")` applied). Default is false.
      * @param allowedRoles Roles that are allowed to access the resource. Default is all roles.
      * @param allowReadOnlyAccounts Whether users with READ_ONLY status are allowed. Default is true.
      * @param allowBannedAccounts Whether users with BANNED status are allowed. Default is false.

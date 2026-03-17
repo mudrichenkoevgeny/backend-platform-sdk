@@ -11,6 +11,11 @@ import dagger.Module
 import javax.inject.Singleton
 
 @Module
+/**
+ * Binds database repositories used by the user feature.
+ *
+ * Maps repository interfaces to their default Exposed-based implementations.
+ */
 interface UserRepositoriesModule {
 
     @Binds

@@ -10,6 +10,12 @@ import io.ktor.server.routing.Route
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Aggregates all public authentication-related routes for the user feature.
+ *
+ * This router intentionally does not apply JWT authentication, because it contains
+ * login/registration/password-reset flows and public auth settings.
+ */
 @Singleton
 class AuthRouter @Inject constructor(
     private val refreshTokenRouter: RefreshTokenRouter,

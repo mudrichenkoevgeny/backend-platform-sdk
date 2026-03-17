@@ -14,6 +14,13 @@ import io.github.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUti
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: send an OTP to a phone number for login/registration flow.
+ *
+ * Applies rate limiting, generates OTP via [OtpService], sends it via [PhoneService], and logs audit on success or error.
+ * [execute] takes phoneNumber and request context;
+ * returns [AppResult.Success] with [SendConfirmation] (e.g. retry-after) or [AppResult.Error] (e.g. rate limit, send failure).
+ */
 @Singleton
 class SendLoginConfirmationToPhoneUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

@@ -25,6 +25,12 @@ import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Session management routes for the currently authenticated user.
+ *
+ * Provides endpoints to list sessions and revoke sessions (current or by ID).
+ * This router is expected to be registered under an authenticated routing scope.
+ */
 @Singleton
 class SessionRouter @Inject constructor(
     private val appLogger: AppLogger,

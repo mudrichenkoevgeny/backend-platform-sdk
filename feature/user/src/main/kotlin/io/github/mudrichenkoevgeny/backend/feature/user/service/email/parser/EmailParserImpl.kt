@@ -7,6 +7,18 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+/**
+ * Classpath-resource-based [EmailParser] implementation.
+ *
+ * At construction time it scans configured resource locations for locale-specific JSON maps:
+ * `"{path}/{locale}/{fileName}.{extension}"`, and keeps an in-memory cache:
+ * `locale -> (templateKey -> EmailTemplate)`.
+ *
+ * Lookup fallbacks:
+ * - exact normalized locale (lowercased)
+ * - language-only (e.g. `en` for `en-US`)
+ * - default locale (`en`)
+ */
 class EmailParserImpl @Inject constructor(
     config: EmailParserConfig
 ) : EmailParser {

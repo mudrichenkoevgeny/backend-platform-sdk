@@ -13,6 +13,14 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.SessionToken
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: exchange a refresh token for a new session token.
+ *
+ * Applies rate limiting, then delegates to [SessionManager.refreshSession].
+ * Audit is logged for success, invalid refresh token, or internal error.
+ * [execute] takes refresh token and request context;
+ * returns [AppResult.Success] with [SessionToken] or [AppResult.Error] (e.g. [UserError.InvalidRefreshToken], rate limit).
+ */
 @Singleton
 class RefreshTokenUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

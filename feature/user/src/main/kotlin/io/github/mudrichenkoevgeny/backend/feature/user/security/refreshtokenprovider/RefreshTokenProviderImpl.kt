@@ -11,7 +11,16 @@ import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
 @Singleton
-class RefreshTokenProviderImpl @Inject constructor(): RefreshTokenProvider {
+/**
+ * Default [RefreshTokenProvider] implementation.
+ *
+ * Token format:
+ * - two random UUIDs separated by a dot (`.`) to keep it opaque and hard to guess.
+ *
+ * Hashing:
+ * - SHA-256 digest encoded as Base64 to make storage and transmission safe.
+ */
+class RefreshTokenProviderImpl @Inject constructor() : RefreshTokenProvider {
     override fun getRefreshToken(): AppResult<RefreshToken> {
         return AppResult.Success(
             RefreshToken("${Uuid.random()}.${Uuid.random()}")

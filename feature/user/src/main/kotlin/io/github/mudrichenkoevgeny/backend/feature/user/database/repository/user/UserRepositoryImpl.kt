@@ -23,6 +23,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+/**
+ * Default [UserRepository] implementation backed by Exposed and [UsersTable].
+ *
+ * Performs synchronous Exposed DSL operations and maps [ResultRow] values into [User] models.
+ * Returns [CommonError.Database] when inserts/updates report no affected rows.
+ */
 class UserRepositoryImpl @Inject constructor() : UserRepository {
 
     override suspend fun createUser(

@@ -11,6 +11,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+/**
+ * Default [UserAuditLogger] implementation that delegates persistence to [AuditService].
+ *
+ * The implementation:
+ * - maps feature-level outcomes to [AuditStatus]
+ * - builds [AuditEvent.metadata] from [RequestContext] client information and extra metadata
+ * - serializes metadata values to [JsonElement] via [toJsonElementMap]
+ */
 class UserAuditLoggerImpl @Inject constructor(
     private val auditService: AuditService
 ) : UserAuditLogger {

@@ -17,6 +17,14 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: authenticate a user via an external provider token (e.g. Google).
+ *
+ * Resolves the provider from the given key, checks it is supported via [AuthSettingsProvider],
+ * verifies the token with the matching [ExternalAuthVerifier], then gets or creates the identifier and provides auth data via [AuthManager].
+ * [execute] takes authProviderKey, token, and request context;
+ * returns [AppResult.Success] with [AuthData] or [AppResult.Error] (e.g. [UserError.ExternalIdMismatch], unsupported provider).
+ */
 @Singleton
 class LoginByExternalAuthProviderUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

@@ -26,6 +26,15 @@ import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Public login routes for the user feature.
+ *
+ * Supports multiple login methods:
+ * - Email + password
+ * - Phone + confirmation code
+ * - External auth provider token
+ * - Sending confirmation code to phone for login/registration flows
+ */
 @Singleton
 class LoginRouter @Inject constructor(
     private val appLogger: AppLogger,

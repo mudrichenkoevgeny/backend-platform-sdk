@@ -12,6 +12,14 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: load the current user profile.
+ *
+ * Ensures the requester can only read their own user (userId must match the authenticated user from request context).
+ * Delegates to [UserManager] and records audit events on success or failure.
+ * [execute] takes userId and request context;
+ * returns [AppResult.Success] with [User] or [AppResult.Error] (e.g. [UserError.InvalidAccessToken], [UserError.UserNotFound]).
+ */
 @Singleton
 class GetUserUseCase @Inject constructor(
     private val userAuditLogger: UserAuditLogger,

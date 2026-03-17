@@ -20,6 +20,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+/**
+ * Default [SessionManager] implementation.
+ *
+ * Generates access tokens via [TokenProvider] and refresh tokens via [RefreshTokenProvider], persists session
+ * records through [UserSessionRepository], and performs refresh/revocation operations inside [dbQuery].
+ *
+ * Uses [UserConfig] token validity settings to compute token expiration timestamps.
+ */
 class SessionManagerImpl @Inject constructor(
     private val userConfig: UserConfig,
     private val jwtTokenProvider: TokenProvider,

@@ -18,6 +18,14 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneServi
 import javax.inject.Singleton
 
 @Module
+/**
+ * Binds feature services (OTP, phone, email).
+ *
+ * Email service binding is selected at runtime based on [UserConfig]:
+ * - [ResendEmailService] when [UserConfig.resendConfig] is configured
+ * - [UniOneEmailService] when [UserConfig.uniOneConfig] is configured
+ * - otherwise [UnconfiguredEmailService]
+ */
 interface UserServicesModule {
 
     @Binds

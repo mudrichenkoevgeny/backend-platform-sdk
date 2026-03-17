@@ -8,6 +8,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contra
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Handles user-feature WebSocket events that do not require server-side actions.
+ *
+ * The messages listed in [UserWebSocketEventTypes] are considered "terminal" or
+ * informational for the server; they are marked as handled to avoid propagating
+ * them to generic handlers.
+ */
 @Singleton
 class UserWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
     override suspend fun handle(

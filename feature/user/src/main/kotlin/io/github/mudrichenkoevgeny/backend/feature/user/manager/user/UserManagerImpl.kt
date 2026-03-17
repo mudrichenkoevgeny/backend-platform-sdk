@@ -14,6 +14,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+/**
+ * Default [UserManager] implementation.
+ *
+ * Delegates persistence to [UserRepository] and wraps calls in [dbQuery].
+ * When a specific user id is requested but not found, returns [UserError.UserNotFound].
+ */
 class UserManagerImpl @Inject constructor(
     private val userRepository: UserRepository
 ): UserManager {

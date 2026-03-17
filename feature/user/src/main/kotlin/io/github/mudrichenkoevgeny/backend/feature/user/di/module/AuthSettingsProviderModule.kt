@@ -7,6 +7,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.Au
 import javax.inject.Singleton
 
 @Module
+/**
+ * Binds the auth settings provider used by routes/use cases to resolve runtime auth configuration.
+ */
 interface AuthSettingsProviderModule {
 
     @Binds

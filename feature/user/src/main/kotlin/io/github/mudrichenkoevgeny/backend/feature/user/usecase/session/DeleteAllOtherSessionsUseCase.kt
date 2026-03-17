@@ -11,6 +11,13 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: revoke all sessions for the current user except the current one.
+ *
+ * Requires userId and sessionId in request context. Applies rate limiting, then [SessionManager.revokeAllUserSessionsExceptOne].
+ * [execute] takes request context;
+ * returns [AppResult.Success] or [AppResult.Error] (e.g. [UserError.InvalidAccessToken], rate limit).
+ */
 @Singleton
 class DeleteAllOtherSessionsUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

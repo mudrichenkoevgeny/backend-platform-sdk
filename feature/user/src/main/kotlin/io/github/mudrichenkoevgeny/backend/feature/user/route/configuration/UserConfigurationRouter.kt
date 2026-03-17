@@ -16,6 +16,12 @@ import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Public configuration endpoint for the user feature.
+ *
+ * Exposes combined configuration needed by clients (e.g., auth settings, security policies).
+ * This endpoint is intentionally public to allow clients to bootstrap their auth flows.
+ */
 @Singleton
 class UserConfigurationRouter @Inject constructor(
     private val appLogger: AppLogger,

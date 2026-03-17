@@ -18,6 +18,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: register a new user by email with password and email verification code.
+ *
+ * Applies rate limiting, validates password policy, verifies OTP, then creates the email identifier and provides auth data via [AuthManager].
+ * [execute] takes email, password, confirmationCode, and request context;
+ * returns [AppResult.Success] with [AuthData] or [AppResult.Error] (e.g. [UserError.WrongConfirmationCode], weak password, rate limit).
+ */
 @Singleton
 class RegisterByEmailUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

@@ -3,6 +3,9 @@ package io.github.mudrichenkoevgeny.backend.feature.user.mapper.session
 import io.github.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.response.session.UserSessionResponse
 
+/**
+ * Maps internal [UserSession] to the shared network response contract.
+ */
 fun UserSession.toUserSessionResponse(): UserSessionResponse = UserSessionResponse(
     id = id.asHexDashString(),
     identifierId = userIdentifierId.asHexDashString(),

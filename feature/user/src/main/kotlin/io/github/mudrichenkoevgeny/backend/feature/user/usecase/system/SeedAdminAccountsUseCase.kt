@@ -12,6 +12,14 @@ import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: ensure admin accounts from configuration exist (e.g. at startup).
+ *
+ * Runs [AuthManager.getOrCreateUserIdentifier] for each [AdminAccount] in parallel (coroutineScope + async/awaitAll).
+ * If any call fails, returns the first [AppResult.Error]; otherwise [AppResult.Success].
+ * [execute] takes an optional list of admin accounts (defaults to config);
+ * returns [AppResult.Success] when all are created or already exist, or [AppResult.Error] from the first failure.
+ */
 @Singleton
 class SeedAdminAccountsUseCase @Inject constructor(
     private val userConfig: UserConfig,

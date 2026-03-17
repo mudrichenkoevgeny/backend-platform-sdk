@@ -13,6 +13,11 @@ import dagger.Module
 import javax.inject.Singleton
 
 @Module
+/**
+ * Binds feature managers that orchestrate user/auth/session operations.
+ *
+ * Managers are used by use cases and routes to coordinate repositories and services.
+ */
 interface UserManagersModule {
 
     @Binds

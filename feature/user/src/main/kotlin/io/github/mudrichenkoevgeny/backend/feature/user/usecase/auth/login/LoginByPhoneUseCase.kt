@@ -17,6 +17,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: authenticate a user by phone number and OTP confirmation code.
+ *
+ * Applies rate limiting, verifies OTP via [OtpService], then gets or creates the phone identifier and provides auth data via [AuthManager].
+ * [execute] takes phoneNumber, confirmationCode, and request context;
+ * returns [AppResult.Success] with [AuthData] or [AppResult.Error] (e.g. [UserError.WrongConfirmationCode], rate limit).
+ */
 @Singleton
 class LoginByPhoneUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

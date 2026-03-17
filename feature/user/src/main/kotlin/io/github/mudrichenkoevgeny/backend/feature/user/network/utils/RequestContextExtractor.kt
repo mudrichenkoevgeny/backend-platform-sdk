@@ -10,6 +10,15 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contrac
 import io.ktor.server.routing.RoutingCall
 import org.slf4j.MDC
 
+/**
+ * Builds a [RequestContext] for the current call.
+ *
+ * The trace id is resolved in the following order:
+ * - request header ([CommonHttpHeaders.TRACE_HEADER_NAME])
+ * - logging MDC ([TracingKeys.TRACE_ID_KEY])
+ *
+ * Auth-related fields are populated from the JWT principal when present.
+ */
 fun RoutingCall.getRequestContext(): RequestContext {
     val traceId = request.headers[CommonHttpHeaders.TRACE_HEADER_NAME]
         ?: MDC.get(TracingKeys.TRACE_ID_KEY)

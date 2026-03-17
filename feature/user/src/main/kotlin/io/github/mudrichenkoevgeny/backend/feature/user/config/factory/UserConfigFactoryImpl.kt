@@ -15,6 +15,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+/**
+ * Default [UserConfigFactory] implementation that reads configuration from environment variables
+ * and secret files via [EnvReader].
+ *
+ * The factory:
+ * - loads secrets (JWT secret, admin list JSON, provider API keys) from paths specified in env
+ * - parses available auth providers from string lists into [UserAuthProvider] values
+ * - builds email provider configs ([UniOneConfig], [ResendConfig]) when required values are present
+ */
 class UserConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader
 ): UserConfigFactory {

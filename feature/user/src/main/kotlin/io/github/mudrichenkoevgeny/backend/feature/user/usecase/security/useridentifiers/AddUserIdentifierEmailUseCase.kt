@@ -22,6 +22,14 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: add an email as a new authentication identifier for the current user.
+ *
+ * Requires recent authentication confirmation. Ensures the user does not already have an email identifier and that the email is not used by another account.
+ * Validates password policy, verifies OTP, then creates the identifier via [AuthManager.getOrCreateUserIdentifier].
+ * [execute] takes email, password, confirmationCode, and request context;
+ * returns [AppResult.Success] with new [UserIdentifier] or [AppResult.Error] (e.g. [UserError.CannotCreateUserIdentifier], [UserError.WrongConfirmationCode]).
+ */
 @Singleton
 class AddUserIdentifierEmailUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

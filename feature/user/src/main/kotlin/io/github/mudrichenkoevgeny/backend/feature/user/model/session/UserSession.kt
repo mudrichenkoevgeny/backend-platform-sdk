@@ -10,6 +10,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.Us
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import java.time.Instant
 
+/**
+ * Persisted authenticated session.
+ *
+ * Stores session metadata (client/device info, expiry, revocation flag) and provides
+ * a small validity check used by auth flows.
+ */
 data class UserSession(
     val id: UserSessionId,
     val userId: UserId,
@@ -32,6 +38,12 @@ data class UserSession(
     val lastReauthenticatedAt: Instant
 ) {
 
+    /**
+     * Returns `true` when the session is not revoked, not expired and matches the caller device.
+     *
+     * Device matching is permissive: if either the session or the client does not provide a device id,
+     * the session is considered valid for device checks.
+     */
     fun isValid(clientInfo: ClientInfo, now: Instant): Boolean {
         return !revoked
                 && !isExpired(now)

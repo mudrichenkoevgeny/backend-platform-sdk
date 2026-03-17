@@ -6,6 +6,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.Au
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: fetch authentication settings for clients (e.g. available auth providers).
+ *
+ * Delegates to [AuthSettingsProvider.getSettings]. Returns [AppResult.Success] with [AuthSettings] or [AppResult.Error] from the provider.
+ */
 @Singleton
 class GetAuthSettingsUseCase @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider

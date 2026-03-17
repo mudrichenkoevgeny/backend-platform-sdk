@@ -7,6 +7,11 @@ import dagger.Module
 import javax.inject.Singleton
 
 @Module
+/**
+ * Binds audit logging abstractions for the user feature.
+ *
+ * Maps [UserAuditLogger] to [UserAuditLoggerImpl].
+ */
 interface UserAuditModule {
 
     @Binds

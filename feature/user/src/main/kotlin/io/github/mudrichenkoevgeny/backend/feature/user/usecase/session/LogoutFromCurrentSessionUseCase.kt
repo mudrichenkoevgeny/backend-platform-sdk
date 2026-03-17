@@ -11,6 +11,13 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: logout from the current session (revoke the session identified by request context).
+ *
+ * Applies rate limiting, then [SessionManager.revokeSessionById]. Audit is logged on success or error.
+ * [execute] takes request context (with sessionId);
+ * returns [AppResult.Success] or [AppResult.Error] (e.g. [UserError.InvalidSession], rate limit).
+ */
 @Singleton
 class LogoutFromCurrentSessionUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

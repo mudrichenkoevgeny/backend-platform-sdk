@@ -17,6 +17,14 @@ import io.github.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUti
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: add an external auth provider (e.g. Google) as a new authentication identifier for the current user.
+ *
+ * Requires recent authentication confirmation. Verifies the provider token and links the external account.
+ * Currently not fully implemented; returns [UserError.ExternalIdMismatch].
+ * [execute] takes authProviderKey, token, and request context;
+ * returns [AppResult.Success] with new [UserIdentifier] or [AppResult.Error] (e.g. [UserError.ExternalIdMismatch], [SecurityError.AuthenticationConfirmationRequired]).
+ */
 @Singleton
 class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

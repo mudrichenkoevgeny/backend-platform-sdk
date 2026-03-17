@@ -35,6 +35,16 @@ import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * User identifier (identity) management routes for authenticated users.
+ *
+ * Allows listing linked identifiers and managing additional identifiers such as:
+ * - Email
+ * - Phone number
+ * - External auth provider accounts
+ *
+ * Also provides endpoints for sending confirmation codes required to link identifiers.
+ */
 @Singleton
 class SecurityUserIdentifiersRouter @Inject constructor(
     private val appLogger: AppLogger,

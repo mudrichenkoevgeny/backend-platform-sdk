@@ -12,6 +12,15 @@ import io.ktor.server.routing.Route
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Entry-point router for the user feature.
+ *
+ * Registers all user feature sub-routers and applies authentication requirements:
+ * - Public endpoints (no JWT): auth flows and public configuration endpoints.
+ * - Protected endpoints (JWT required): user profile, sessions, and security endpoints.
+ *
+ * Authentication is enforced via [JwtAuthSpecs].
+ */
 @Singleton
 class UserFeatureRouter @Inject constructor(
     private val authRouter: AuthRouter,

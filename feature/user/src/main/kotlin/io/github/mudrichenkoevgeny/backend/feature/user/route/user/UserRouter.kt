@@ -24,6 +24,12 @@ import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * User profile routes.
+ *
+ * These endpoints operate on the currently authenticated user and therefore are expected
+ * to be registered under an authenticated routing scope (see `UserFeatureRouter`).
+ */
 @Singleton
 class UserRouter @Inject constructor(
     private val appLogger: AppLogger,

@@ -11,6 +11,14 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: revoke a session by ID.
+ *
+ * Applies rate limiting, then delegates to [SessionManager.revokeSessionById].
+ * Audit is logged on success or internal error.
+ * [execute] takes sessionId and request context;
+ * returns [AppResult.Success] or [AppResult.Error] (e.g. rate limit, session not found).
+ */
 @Singleton
 class DeleteSessionUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

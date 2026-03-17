@@ -62,8 +62,12 @@ dependencies {
 
     // Testing
     testRuntimeOnly(libs.kotlin.test.junit5)
+    testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.h2database)
+    testImplementation(libs.ktor.server.test.host)
 }
 
 tasks.test {

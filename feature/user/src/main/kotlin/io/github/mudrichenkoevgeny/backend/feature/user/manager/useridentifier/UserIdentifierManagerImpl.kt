@@ -13,6 +13,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+/**
+ * Default [UserIdentifierManager] implementation.
+ *
+ * Wraps repository operations in [dbQuery] and uses [PasswordHasher] to hash passwords for password-based
+ * providers before persisting identifier records via [UserIdentifierRepository].
+ */
 class UserIdentifierManagerImpl @Inject constructor(
     private val passwordHasher: PasswordHasher,
     private val userIdentifierRepository: UserIdentifierRepository

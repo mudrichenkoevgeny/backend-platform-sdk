@@ -15,6 +15,14 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.U
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: delete one of the current user's authentication identifiers.
+ *
+ * The identifier must not be the one used by the current session; the user must have at least two identifiers.
+ * Requires recent authentication confirmation. Applies rate limiting, then delegates to [UserIdentifierManager.deleteUserIdentifier].
+ * [execute] takes userIdentifierId and request context;
+ * returns [AppResult.Success] or [AppResult.Error] (e.g. [UserError.CannotDeleteUserIdentifier], [SecurityError.AuthenticationConfirmationRequired]).
+ */
 @Singleton
 class DeleteUserIdentifierUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

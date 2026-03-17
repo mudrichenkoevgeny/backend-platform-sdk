@@ -22,6 +22,11 @@ import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Public registration routes for the user feature.
+ *
+ * Provides account creation and sending registration confirmation codes.
+ */
 @Singleton
 class RegisterRouter @Inject constructor(
     private val appLogger: AppLogger,

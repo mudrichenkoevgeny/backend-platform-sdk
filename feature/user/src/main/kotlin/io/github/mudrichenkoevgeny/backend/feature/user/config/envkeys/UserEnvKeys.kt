@@ -1,5 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.config.envkeys
 
+/**
+ * Environment variable names used to configure the user feature.
+ *
+ * Values are read by the default configuration factory (`UserConfigFactoryImpl`) using an env reader
+ * and secret files where applicable.
+ */
 object UserEnvKeys {
     const val JWT_SECRET_FILE = "JWT_SECRET_FILE"
     const val ACCESS_TOKEN_VALIDITY_HOURS = "ACCESS_TOKEN_VALIDITY_HOURS"

@@ -3,6 +3,9 @@ package io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.mo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * UniOne email message payload.
+ */
 @Serializable
 data class UniOneMessage(
     val recipients: List<UniOneRecipient>,

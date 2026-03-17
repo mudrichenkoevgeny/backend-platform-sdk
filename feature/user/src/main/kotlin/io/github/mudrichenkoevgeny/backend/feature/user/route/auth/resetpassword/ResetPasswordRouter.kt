@@ -22,6 +22,11 @@ import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Public password reset routes.
+ *
+ * Supports requesting a reset confirmation code and performing the reset with a confirmation code.
+ */
 @Singleton
 class ResetPasswordRouter @Inject constructor(
     private val appLogger: AppLogger,

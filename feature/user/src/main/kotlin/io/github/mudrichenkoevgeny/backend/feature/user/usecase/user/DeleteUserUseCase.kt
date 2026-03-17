@@ -15,6 +15,14 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case: delete the current user account.
+ *
+ * Requires a valid session and recent authentication confirmation (e.g. re-auth for sensitive actions).
+ * Enforces rate limiting, then revokes the user and all related data via [UserManager] and [SessionManager].
+ * [execute] takes userId and request context (with userId and sessionId);
+ * returns [AppResult.Success] or [AppResult.Error] (e.g. invalid token, rate limit, [SecurityError.AuthenticationConfirmationRequired]).
+ */
 @Singleton
 class DeleteUserUseCase @Inject constructor(
     private val rateLimiterEnforcer: RateLimitEnforcer,

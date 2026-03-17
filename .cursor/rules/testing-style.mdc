@@ -9,6 +9,8 @@ alwaysApply: false
 ## Dependencies (Gradle)
 - Ensure the module’s `build.gradle.kts` declares **all** test dependencies used by tests (JUnit Jupiter, MockK, coroutines-test, H2, etc.).
 - Prefer aliases from `gradle/libs.versions.toml` when available.
+- **Hard requirement (universal):** do not introduce a test import / symbol usage that is not backed by an explicit test dependency of the current module. Never assume a library is available via transitive dependencies or runtime-only artifacts.
+- Before adding or editing tests, **verify** the module’s `testImplementation` / `testRuntimeOnly` / `testCompileOnly` configuration and update `build.gradle.kts` in the same change if needed.
 
 ## Framework
 - Use **JUnit 5 (Jupiter)**.
@@ -25,7 +27,8 @@ alwaysApply: false
 - Use descriptive backticked Kotlin test names, e.g. ``fun `returns fallback when locale missing`()``.
 - Keep tests focused on one observable behavior; keep bodies small.
 - Avoid narration comments; ensure no unused imports.
-- When a literal is reused, extract it into a local constant/companion value.
+- **Test constants (mandatory):** if a non-trivial literal (string/number/UUID/path/key/action name) appears **more than once** in the same test class, extract it into a `private const val` (or a `private companion object` value) and reuse it. This applies to literals used in both setup and assertions.
+- **No FQN in tests (mandatory):** do not use fully qualified names in test code. Add imports instead (and prefer simple names in KDoc links as well).
 - Do not leave TODO placeholders; tests must be complete and runnable.
 
 ## Test placement
