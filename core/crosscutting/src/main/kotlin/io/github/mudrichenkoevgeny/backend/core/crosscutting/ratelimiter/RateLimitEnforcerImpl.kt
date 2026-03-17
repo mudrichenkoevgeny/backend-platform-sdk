@@ -12,6 +12,13 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [RateLimitEnforcer] implementation.
+ *
+ * Delegates the actual limiting decision to [RateLimiter]. When the limit is exceeded, writes an
+ * audit event via [AuditService] with [AuditStatus.DENIED] and enriches it using client data from
+ * [RequestContext] ([RateLimitAuditMetadata]).
+ */
 @Singleton
 class RateLimitEnforcerImpl @Inject constructor(
     private val rateLimiter: RateLimiter,
@@ -42,7 +49,7 @@ class RateLimitEnforcerImpl @Inject constructor(
                                 status = AuditStatus.DENIED,
                                 metadata = mapOf(
                                     RateLimitAuditMetadata.Keys.IP_ADDRESS to requestContext.clientInfo.ipAddress,
-                                    RateLimitAuditMetadata.Keys.DEVICE_ID to requestContext.clientInfo.deviceId,
+                                    RateLimitAuditMetadata.Keys.DEVICE_ID to requestContext.clientInfo.deviceId?.value,
                                     RateLimitAuditMetadata.Keys.CLIENT_TYPE to requestContext.clientInfo.clientType,
                                     RateLimitAuditMetadata.Keys.USER_AGENT to requestContext.clientInfo.userAgent,
                                     RateLimitAuditMetadata.Keys.REASON to RateLimitAuditMetadata.Reasons.RATE_LIMIT

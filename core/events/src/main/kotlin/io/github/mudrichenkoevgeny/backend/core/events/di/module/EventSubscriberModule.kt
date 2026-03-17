@@ -6,6 +6,9 @@ import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
 
+/**
+ * Dagger module that binds [EventSubscriber] to [EventSubscriberImpl].
+ */
 @Module
 interface EventSubscriberModule {
 

@@ -6,6 +6,11 @@ import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseCo
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [DatabaseConfigFactory] implementation that builds [DatabaseConfig] from environment
+ * variables and secret files using [EnvReader] and keys from [DatabaseEnvKeys].
+ * Reads DB user/password and Redis URL from files whose paths are given by env keys.
+ */
 @Singleton
 class DatabaseConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader

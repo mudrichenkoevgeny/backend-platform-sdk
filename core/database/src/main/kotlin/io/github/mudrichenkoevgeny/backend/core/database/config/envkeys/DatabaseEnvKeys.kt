@@ -1,5 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.core.database.config.envkeys
 
+import io.github.mudrichenkoevgeny.backend.core.database.config.factory.DatabaseConfigFactory
+import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
+
+/**
+ * Environment variable names used to build [DatabaseConfig].
+ * Consumed by [DatabaseConfigFactory] implementations.
+ */
 object DatabaseEnvKeys {
     const val DB_URL = "DB_URL"
     const val DB_USER_SECRET_FILE = "DB_USER_SECRET_FILE"

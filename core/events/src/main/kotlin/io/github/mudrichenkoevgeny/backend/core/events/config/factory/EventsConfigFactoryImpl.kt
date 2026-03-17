@@ -7,6 +7,10 @@ import io.github.mudrichenkoevgeny.backend.core.events.model.EventsType
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * [EventsConfigFactory] implementation that reads [EventsConfig] from environment variables via [EnvReader],
+ * using [EventsEnvKeys] for key names. [EventsType.fromString] is used to parse the transport type.
+ */
 @Singleton
 class EventsConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader

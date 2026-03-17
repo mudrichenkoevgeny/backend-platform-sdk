@@ -10,11 +10,22 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolic
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Validates a raw password against the currently effective password policy.
+ *
+ * On failure, maps validation reasons into [SecurityError.PasswordTooWeak] `publicArgs` so the
+ * client can render a localized error message and show which rules were violated.
+ */
 @Singleton
 class ValidatePasswordUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val passwordPolicyValidator: PasswordPolicyValidator
 ) {
+    /**
+     * Validates [password] and returns:
+     * - [AppResult.Success] if it satisfies policy
+     * - [AppResult.Error] with [SecurityError.PasswordTooWeak] otherwise
+     */
     operator fun invoke(password: String): AppResult<Unit> {
         val passwordPolicy = securitySettingsProvider.requirePasswordPolicy()
         val validationResult = passwordPolicyValidator.validate(passwordPolicy, password)

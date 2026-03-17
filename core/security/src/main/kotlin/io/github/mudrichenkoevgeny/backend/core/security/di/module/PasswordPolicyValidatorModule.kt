@@ -8,6 +8,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolic
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicy.validator.PasswordPolicyValidatorImpl
 import javax.inject.Singleton
 
+/**
+ * Dagger module that provides password policy and its validator.
+ *
+ * - Exposes the default [PasswordPolicy] from [SecurityConfig] as a dependency.
+ * - Provides [PasswordPolicyValidator] as [PasswordPolicyValidatorImpl].
+ */
 @Module
 class PasswordPolicyValidatorModule {
 

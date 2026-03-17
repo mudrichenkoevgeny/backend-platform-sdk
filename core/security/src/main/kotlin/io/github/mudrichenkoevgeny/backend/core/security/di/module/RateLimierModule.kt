@@ -8,6 +8,12 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
+/**
+ * Dagger module that provides a Redis-backed [RateLimiter].
+ *
+ * Uses [RedisManager] to store per-action counters with expiration and [AppLogger] to log failures
+ * when auxiliary operations (e.g. TTL retrieval) fail.
+ */
 @Module
 class RateLimierModule {
 

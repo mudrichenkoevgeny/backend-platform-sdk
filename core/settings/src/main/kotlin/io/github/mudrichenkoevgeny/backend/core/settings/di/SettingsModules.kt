@@ -8,6 +8,12 @@ import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsRepos
 import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsServicesModule
 import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsWebSocketModule
 
+/**
+ * Dagger module aggregator for the settings feature.
+ *
+ * Includes configuration parsing, repositories/managers/services, global settings provider and
+ * WebSocket message handlers related to settings.
+ */
 @Module(
     includes = [
         SettingsConfigModule::class,

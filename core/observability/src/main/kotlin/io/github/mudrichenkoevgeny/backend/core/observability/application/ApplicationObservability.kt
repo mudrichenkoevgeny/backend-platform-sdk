@@ -25,10 +25,27 @@ import io.opentelemetry.extension.kotlin.asContextElement
 import kotlinx.coroutines.withContext
 import org.slf4j.MDC
 
+/** [AttributeKey] name used to obtain [Routing] from the call attributes when resolving the route path for metrics. */
 const val ROUTING_ATTRIBUTE_KEY = "Routing"
+
+/** Fallback path value for metrics and spans when the route cannot be determined from attributes or request URI. */
 const val DEFAULT_ROUTE_PATH = "unknown_route"
+
+/** Default span status message when a recorded exception has no message. */
 const val UNKNOWN_ERROR_MESSAGE = "Unknown error"
 
+/**
+ * Configures observability for the Ktor [Application]: metrics and distributed tracing.
+ *
+ * - Installs [MicrometerMetrics] with the [TelemetryProvider]'s Prometheus registry.
+ * - Intercepts the [ApplicationCallPipeline.Monitoring] phase to create a server span per request,
+ *   record request count, latency and error count with [MetricSpecs] attributes (endpoint, method, status),
+ *   put trace id into [TracingKeys.TRACE_ID_KEY] MDC and into response header [CommonHttpHeaders.TRACE_HEADER_NAME],
+ *   and on exception logs via [AppLogger] and sets span status to error.
+ *
+ * @param telemetryProvider supplies tracer, meter and Prometheus registry for metrics and tracing.
+ * @param appLogger used to log unhandled exceptions before rethrowing.
+ */
 fun Application.configureObservability(
     telemetryProvider: TelemetryProvider,
     appLogger: AppLogger

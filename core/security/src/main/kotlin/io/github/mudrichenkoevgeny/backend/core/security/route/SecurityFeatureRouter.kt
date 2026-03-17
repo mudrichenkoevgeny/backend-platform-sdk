@@ -6,6 +6,12 @@ import io.ktor.server.routing.Route
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Aggregates and registers all HTTP routes provided by the `core/security` module.
+ *
+ * The router composes feature-specific routers (e.g. [SecuritySettingsRouter]) and delegates route
+ * registration to them.
+ */
 @Singleton
 class SecurityFeatureRouter @Inject constructor(
     private val securitySettingsRouter: SecuritySettingsRouter

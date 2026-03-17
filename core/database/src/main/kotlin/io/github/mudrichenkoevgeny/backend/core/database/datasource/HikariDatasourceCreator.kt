@@ -11,6 +11,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import javax.sql.DataSource
 
+/**
+ * Default [DataSourceCreator] implementation using HikariCP.
+ *
+ * Builds a [HikariDataSource] with fixed pool size, repeatable-read isolation, auto-commit off,
+ * and Micrometer metrics via [PrometheusMeterRegistry]. On creation failure logs via [AppLogger]
+ * and rethrows.
+ */
 @Singleton
 class HikariDatasourceCreator @Inject constructor(
     @param:DriverClassName private val hikariDriverClassName: String,

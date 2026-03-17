@@ -6,6 +6,11 @@ import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
 
+/**
+ * Dagger bindings for rate limit enforcement.
+ *
+ * Binds [RateLimitEnforcer] to [RateLimitEnforcerImpl].
+ */
 @Module
 interface RateLimitEnforcerModule {
 

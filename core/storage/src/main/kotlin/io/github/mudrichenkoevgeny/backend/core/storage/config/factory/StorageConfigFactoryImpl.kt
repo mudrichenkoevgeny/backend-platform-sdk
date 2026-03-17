@@ -7,6 +7,12 @@ import io.github.mudrichenkoevgeny.backend.core.storage.model.StorageType
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [StorageConfigFactory] implementation that builds [StorageConfig] from environment variables and secret files.
+ *
+ * Reads S3 access/secret keys from files whose paths are provided via [StorageEnvKeys.S3_ACCESS_KEY_FILE] and
+ * [StorageEnvKeys.S3_SECRET_KEY_FILE], using [EnvReader]. The backend type is parsed via [StorageType.fromString].
+ */
 @Singleton
 class StorageConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader

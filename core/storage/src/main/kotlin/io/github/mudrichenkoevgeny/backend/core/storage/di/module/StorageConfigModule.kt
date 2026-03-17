@@ -8,6 +8,9 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
+/**
+ * Dagger module that provides [StorageConfigFactory] (backed by [StorageConfigFactoryImpl]) and [StorageConfig] (created by the factory).
+ */
 @Module
 class StorageConfigModule {
 

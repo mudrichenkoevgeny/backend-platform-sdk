@@ -6,6 +6,10 @@ import io.github.mudrichenkoevgeny.backend.core.observability.config.model.Obser
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [ObservabilityConfigFactory] implementation that builds [ObservabilityConfig]
+ * from environment variables using [EnvReader] and keys from [ObservabilityEnvKeys].
+ */
 @Singleton
 class ObservabilityConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader

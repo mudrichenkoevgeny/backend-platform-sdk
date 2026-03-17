@@ -1,0 +1,24 @@
+---
+description: Mandatory KDoc rules (language, links, scope)
+globs: **/*.kt
+alwaysApply: false
+---
+
+# Documentation (KDoc / comments) — mandatory
+
+## Language
+- **English only** for KDoc/README/public API comments. Never write documentation in other languages.
+
+## KDoc links
+- **Forbidden:** fully qualified names in link targets (no `[Foo][full.package.Foo]`).
+- **Required:** use only simple names that resolve via imports: `[Foo]`, `[SomeType.member]`.
+- Every referenced type/member in KDoc links **must be importable and imported in the same file**.
+- If a target is in another module and cannot be imported, use **plain text** (no link).
+
+## Scope rules
+- In `object` / class-level KDoc, do **not** link to function parameters by name (out of scope). Use plain text and move parameter links to function-level KDoc.
+- When documentation is requested for a **package**, the scope includes **all subpackages** (e.g. `audit.di`, `audit.database`, `audit.manager`, ...).
+
+## Comments
+- Use inline comments sparingly; do not narrate obvious behavior.
+- Prefer clear naming and KDoc for public surface; comment only when intent/constraints are non-obvious.

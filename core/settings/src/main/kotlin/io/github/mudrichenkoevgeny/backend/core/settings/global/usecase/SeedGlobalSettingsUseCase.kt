@@ -5,10 +5,18 @@ import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalS
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case for seeding global settings defaults into persistent storage.
+ *
+ * Delegates to [GlobalSettingsProvider.initialize].
+ */
 @Singleton
 class SeedGlobalSettingsUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider
 ) {
+    /**
+     * Seeds default values (if any) and returns the result.
+     */
     suspend fun execute(): AppResult<Unit> {
         return globalSettingsProvider.initialize()
     }

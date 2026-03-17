@@ -35,6 +35,9 @@ dependencies {
     implementation(libs.password4j)
 
     // Testing
+    testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
     testRuntimeOnly(libs.kotlin.test.junit5)
 }
 

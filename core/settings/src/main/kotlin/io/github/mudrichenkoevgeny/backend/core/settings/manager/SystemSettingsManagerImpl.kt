@@ -7,6 +7,10 @@ import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [SystemSettingsManager] implementation that delegates to [SystemSettingRepository]
+ * and wraps calls into [dbQuery].
+ */
 @Singleton
 class SystemSettingsManagerImpl @Inject constructor(
     private val repository: SystemSettingRepository

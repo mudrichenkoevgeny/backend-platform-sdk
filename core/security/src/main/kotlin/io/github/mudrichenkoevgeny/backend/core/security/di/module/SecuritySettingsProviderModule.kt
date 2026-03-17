@@ -6,6 +6,11 @@ import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.Secur
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProviderImpl
 import javax.inject.Singleton
 
+/**
+ * Dagger bindings for security settings access.
+ *
+ * Binds [SecuritySettingsProvider] to [SecuritySettingsProviderImpl].
+ */
 @Module
 interface SecuritySettingsProviderModule {
 

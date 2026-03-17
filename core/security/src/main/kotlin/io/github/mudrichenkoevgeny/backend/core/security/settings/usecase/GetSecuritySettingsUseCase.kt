@@ -6,10 +6,16 @@ import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.Secur
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Loads effective [SecuritySettings] for API/UI consumption.
+ */
 @Singleton
 class GetSecuritySettingsUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider
 ) {
+    /**
+     * Returns effective security settings snapshot.
+     */
     fun execute(): AppResult<SecuritySettings> {
         return securitySettingsProvider.getSettings()
     }

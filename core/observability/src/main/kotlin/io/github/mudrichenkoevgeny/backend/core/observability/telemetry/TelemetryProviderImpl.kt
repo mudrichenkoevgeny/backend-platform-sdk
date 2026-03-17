@@ -15,6 +15,13 @@ import io.opentelemetry.api.trace.Tracer
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [TelemetryProvider] implementation.
+ *
+ * Uses [GlobalOpenTelemetry.get] for [OpenTelemetry], tracer and meter with [ObservabilityConfig.telemetryServiceName].
+ * Builds a [PrometheusMeterRegistry] and binds JVM metrics (memory, GC, threads, processor, classloader) to it.
+ * [warmup] starts and ends a short span to ensure the tracer is ready.
+ */
 @Singleton
 class TelemetryProviderImpl @Inject constructor(
     observabilityConfig: ObservabilityConfig
@@ -40,6 +47,7 @@ class TelemetryProviderImpl @Inject constructor(
     }
 
     companion object {
+        /** Span name used in [warmup] to initialize the tracer. */
         const val SPAN_WARMUP = "warmup"
     }
 }

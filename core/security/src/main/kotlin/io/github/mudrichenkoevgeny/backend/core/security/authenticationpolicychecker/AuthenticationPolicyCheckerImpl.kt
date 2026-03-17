@@ -6,6 +6,12 @@ import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [AuthenticationPolicyChecker] implementation based on [SecurityConfig].
+ *
+ * Treats authentication as confirmed if:
+ * `lastReauthenticatedAt + authenticationConfirmationValidityMinutes` is after the current time.
+ */
 @Singleton
 class AuthenticationPolicyCheckerImpl @Inject constructor(
     private val securityConfig: SecurityConfig

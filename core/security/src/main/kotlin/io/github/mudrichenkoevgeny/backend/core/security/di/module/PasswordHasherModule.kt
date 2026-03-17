@@ -6,6 +6,11 @@ import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
 
+/**
+ * Dagger bindings for password hashing.
+ *
+ * Binds [PasswordHasher] to [PasswordHasherImpl].
+ */
 @Module
 interface PasswordHasherModule {
 

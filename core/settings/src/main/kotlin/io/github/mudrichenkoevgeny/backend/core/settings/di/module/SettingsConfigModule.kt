@@ -8,6 +8,13 @@ import io.github.mudrichenkoevgeny.backend.core.settings.config.factory.Settings
 import io.github.mudrichenkoevgeny.backend.core.settings.config.model.SettingsConfig
 import javax.inject.Singleton
 
+/**
+ * Dagger module that wires settings configuration.
+ *
+ * Provides:
+ * - [SettingsConfigFactory] backed by [SettingsConfigFactoryImpl]
+ * - [SettingsConfig] created from the factory at injection time
+ */
 @Module
 class SettingsConfigModule {
 

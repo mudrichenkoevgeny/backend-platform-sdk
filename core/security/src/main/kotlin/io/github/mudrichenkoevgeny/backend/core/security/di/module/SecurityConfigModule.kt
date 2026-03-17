@@ -8,6 +8,13 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
+/**
+ * Dagger module that wires security configuration.
+ *
+ * Provides:
+ * - [SecurityConfigFactory] as [SecurityConfigFactoryImpl]
+ * - [SecurityConfig] produced by the factory
+ */
 @Module
 class SecurityConfigModule {
 

@@ -15,6 +15,12 @@ import java.net.URI
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * S3-backed implementation of [StorageService] using AWS SDK v2 async client.
+ *
+ * Uses [StorageConfig] for endpoint, region, credentials, bucket name, public URL, and path-style addressing.
+ * Upload and delete operations are executed asynchronously via [S3AsyncClient] and awaited with coroutines.
+ */
 @Singleton
 class S3StorageService @Inject constructor(
     private val config: StorageConfig

@@ -6,6 +6,11 @@ import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalS
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProviderImpl
 import javax.inject.Singleton
 
+/**
+ * Dagger bindings for global settings provider.
+ *
+ * Binds [GlobalSettingsProvider] to [GlobalSettingsProviderImpl].
+ */
 @Module
 interface GlobalSettingsProviderModule {
 

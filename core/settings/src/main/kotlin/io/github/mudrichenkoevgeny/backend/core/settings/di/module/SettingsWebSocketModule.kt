@@ -6,6 +6,12 @@ import dagger.multibindings.IntoSet
 import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.messagehandler.WebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.core.settings.network.websockets.messagehandler.SettingsWebSocketMessageHandler
 
+/**
+ * Dagger multibindings for settings-related WebSocket message handlers.
+ *
+ * Contributes [SettingsWebSocketMessageHandler] into the application-wide set of
+ * [WebSocketMessageHandler] implementations.
+ */
 @Module
 interface SettingsWebSocketModule {
     @Binds

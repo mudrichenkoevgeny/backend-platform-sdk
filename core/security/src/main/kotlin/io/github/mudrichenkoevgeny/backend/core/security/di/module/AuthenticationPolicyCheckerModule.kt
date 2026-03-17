@@ -6,6 +6,11 @@ import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
 
+/**
+ * Dagger bindings for authentication policy checks.
+ *
+ * Binds [AuthenticationPolicyChecker] to [AuthenticationPolicyCheckerImpl].
+ */
 @Module
 interface AuthenticationPolicyCheckerModule {
 

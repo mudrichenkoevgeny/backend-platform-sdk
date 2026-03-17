@@ -8,6 +8,16 @@ import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsS
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [GlobalSettingsProvider] implementation backed by [SystemSettingsService].
+ *
+ * Startup behavior:
+ * - Reads optional values from [SettingsConfig]
+ * - Seeds them into DB-backed settings via [SystemSettingsService.registerDefault]
+ *
+ * Read behavior:
+ * - Builds a [GlobalSettings] snapshot from the in-memory cache of [SystemSettingsService]
+ */
 @Singleton
 class GlobalSettingsProviderImpl @Inject constructor(
     private val settingsService: SystemSettingsService,

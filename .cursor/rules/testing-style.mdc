@@ -1,0 +1,40 @@
+---
+description: JUnit5/MockK testing conventions and constraints
+globs: **/src/test/kotlin/**/*.kt
+alwaysApply: false
+---
+
+# Testing style
+
+## Dependencies (Gradle)
+- Ensure the module’s `build.gradle.kts` declares **all** test dependencies used by tests (JUnit Jupiter, MockK, coroutines-test, H2, etc.).
+- Prefer aliases from `gradle/libs.versions.toml` when available.
+
+## Framework
+- Use **JUnit 5 (Jupiter)**.
+- Import `org.junit.jupiter.api.Test` and `org.junit.jupiter.api.Assertions.*` (or specific static assertion imports).
+- Do not use `kotlin.test.Test`; avoid `kotlin.test.assert*` for consistency.
+
+## Parameterized tests
+- Prefer `@ParameterizedTest` + Jupiter sources (`@EnumSource`, etc.) instead of loops inside one test.
+
+## Mocking
+- Use **MockK**; relaxed mocks for logs/void interactions; explicit expectations for behavior that matters.
+
+## Structure and naming
+- Use descriptive backticked Kotlin test names, e.g. ``fun `returns fallback when locale missing`()``.
+- Keep tests focused on one observable behavior; keep bodies small.
+- Avoid narration comments; ensure no unused imports.
+- When a literal is reused, extract it into a local constant/companion value.
+- Do not leave TODO placeholders; tests must be complete and runnable.
+
+## Test placement
+- Mirror packages: `src/test/kotlin` structure should mirror `src/main/kotlin`.
+
+## Scope when tests are requested
+- Cover all non-trivial classes that contribute to observable behavior (public APIs, default implementations, config with logic).
+- Trivial DTOs/constant-only objects/trivial enums can be skipped.
+
+## Running tests — forbidden
+- Do not run test commands (Gradle or otherwise).
+- Do not suggest or invite the user to run tests.

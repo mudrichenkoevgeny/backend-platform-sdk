@@ -1,5 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model
 
+/**
+ * Predefined rate limit policies for security-sensitive actions.
+ *
+ * Each entry defines:
+ * - [id]: logical action identifier (used in storage keys and error details)
+ * - [limit]: maximum allowed count during the time window
+ * - [windowSeconds]: sliding window size in seconds (implemented as a key TTL)
+ */
 enum class RateLimitAction(
     val id: String,
     val limit: Int,
@@ -23,5 +31,8 @@ enum class RateLimitAction(
 
     USER_DELETE("user_delete", limit = 3, windowSeconds = 60);
 
+    /**
+     * Builds a Redis key for the action and identifier.
+     */
     fun createKey(identifier: String): String = "rl:$id:$identifier"
 }

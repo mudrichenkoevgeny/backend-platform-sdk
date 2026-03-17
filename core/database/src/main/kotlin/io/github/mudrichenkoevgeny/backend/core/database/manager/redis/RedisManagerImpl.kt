@@ -12,6 +12,13 @@ import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [RedisManager] implementation backed by a Lettuce [RedisClient].
+ *
+ * Lazily obtains a single [StatefulRedisConnection] (thread-safe via mutex), runs commands asynchronously with [await],
+ * and wraps failures in [AppResult.Error] or [AppSystemResult.Error] with [CommonError.Internal].
+ * [shutdown] closes the connection and the client.
+ */
 @Singleton
 class RedisManagerImpl @Inject constructor(
     private val redisClient: RedisClient

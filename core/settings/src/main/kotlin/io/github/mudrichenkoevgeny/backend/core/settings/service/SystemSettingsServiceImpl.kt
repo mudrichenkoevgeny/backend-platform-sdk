@@ -8,6 +8,17 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [SystemSettingsService] implementation backed by [SystemSettingsManager] and an in-memory
+ * cache.
+ *
+ * The cache is a best-effort view of the database:
+ * - [initialize] loads all rows and populates the cache.
+ * - [registerDefault] persists a key only if it is missing from the cache (after initialization).
+ * - [updateSetting] persists the change and updates the cache entry.
+ *
+ * Typed getters read from the in-memory cache and perform parsing locally.
+ */
 @Singleton
 class SystemSettingsServiceImpl @Inject constructor(
     private val manager: SystemSettingsManager

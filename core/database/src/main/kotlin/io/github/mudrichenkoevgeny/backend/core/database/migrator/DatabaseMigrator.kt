@@ -2,6 +2,10 @@ package io.github.mudrichenkoevgeny.backend.core.database.migrator
 
 import javax.sql.DataSource
 
+/**
+ * Applies database schema migrations from classpath or other resources.
+ * Implementations (e.g. Flyway) interpret [migrate]'s resource list according to their own conventions.
+ */
 interface DatabaseMigrator {
     /**
      * Applies database schema migrations using provided migration resources.

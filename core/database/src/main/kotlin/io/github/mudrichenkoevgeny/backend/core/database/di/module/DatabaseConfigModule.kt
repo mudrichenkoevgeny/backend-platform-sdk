@@ -8,6 +8,12 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
+/**
+ * Dagger module for database configuration.
+ *
+ * Provides [DatabaseConfigFactory] (bound to [DatabaseConfigFactoryImpl] with [EnvReader])
+ * and [DatabaseConfig] from the factory.
+ */
 @Module
 class DatabaseConfigModule {
 

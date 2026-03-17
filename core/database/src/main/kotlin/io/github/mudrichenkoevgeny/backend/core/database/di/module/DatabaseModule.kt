@@ -18,6 +18,13 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import javax.inject.Singleton
 import javax.sql.DataSource
 
+/**
+ * Dagger module for PostgreSQL DataSource, Exposed Database, and [DatabaseManager].
+ *
+ * Binds [DatabaseMigrator] to [FlywayDatabaseMigrator] (qualified with [DatabaseMigratorFlyway]).
+ * Provides [DriverClassName] (PostgreSQL driver), [DataSourceCreator] (→ [HikariDatasourceCreator]),
+ * [DataSource] from config, [DatabaseManager] (→ [DatabaseManagerImpl]), and Exposed [Database] from the manager.
+ */
 @Module
 interface DatabaseModule {
 

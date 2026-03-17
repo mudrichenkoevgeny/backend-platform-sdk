@@ -33,6 +33,12 @@ import io.github.mudrichenkoevgeny.backend.sample.lifecycle.AppShutdownHook
 import kotlinx.coroutines.CoroutineScope
 import javax.inject.Singleton
 
+/**
+ * Dagger application component for the sample host app.
+ *
+ * This component aggregates all SDK modules and exposes entry points (routers, providers, use
+ * cases) needed by the sample application to start the server and register routes.
+ */
 @Singleton
 @Component(
     modules = [
@@ -51,14 +57,14 @@ import javax.inject.Singleton
 )
 interface AppComponent {
 
-    /**
-     * Creates the application component.
-     *
-     * @param backgroundScope application-wide background CoroutineScope
-     * that will be used by core/feature modules (audit, websockets, etc.).
-     */
     @Component.Factory
     interface Factory {
+        /**
+         * Creates the application component.
+         *
+         * @param backgroundScope application-wide background CoroutineScope
+         * that will be used by core/feature modules (audit, websockets, etc.).
+         */
         fun create(
             @BindsInstance
             @BackgroundScope

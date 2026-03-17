@@ -12,6 +12,14 @@ import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Exposed-based implementation of [SystemSettingRepository] operating on [SystemSettingsTable].
+ *
+ * Notes:
+ * - Uses `upsert` by [SystemSettingsTable.key] to make [saveSetting] idempotent per key.
+ * - Does not wrap queries into a transaction itself; callers are expected to execute it within
+ *   their DB context (e.g. via `dbQuery`).
+ */
 @Singleton
 class SystemSettingRepositoryImpl @Inject constructor() : SystemSettingRepository {
 

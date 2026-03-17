@@ -8,6 +8,12 @@ import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisMana
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * [HealthCheck] implementation that verifies Redis is available via [RedisManager.isAvailable].
+ *
+ * Returns [AppSystemResult.Success] when Redis responds, [AppSystemResult.Error] on failure.
+ * Severity is [HealthCheckSeverity.CRITICAL].
+ */
 @Singleton
 class RedisHealthCheck @Inject constructor(
     private val redisManager: RedisManager

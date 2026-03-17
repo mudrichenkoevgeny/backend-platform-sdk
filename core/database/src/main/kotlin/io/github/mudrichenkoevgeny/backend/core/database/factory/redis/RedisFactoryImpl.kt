@@ -8,6 +8,10 @@ import io.lettuce.core.RedisClient
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [RedisFactory] implementation that delegates to [RedisClientCreator] with [DatabaseConfig.redisUrl]
+ * and [DatabaseConfig.redisTimeoutSeconds]. On failure logs via [AppLogger] and rethrows.
+ */
 @Singleton
 class RedisFactoryImpl @Inject constructor(
     private val redisClientCreator: RedisClientCreator,

@@ -10,6 +10,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import javax.sql.DataSource
 
+/**
+ * [HealthCheck] implementation that verifies the JDBC [DataSource] connection is valid.
+ *
+ * Runs [DataSource.getConnection] and [java.sql.Connection.isValid] on [Dispatchers.IO];
+ * returns [AppSystemResult.Success] if valid, [AppSystemResult.Error] on failure. Severity is [HealthCheckSeverity.CRITICAL].
+ */
 @Singleton
 class DatabaseHealthCheck @Inject constructor(
     private val dataSource: DataSource

@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorPars
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
+import io.github.mudrichenkoevgeny.backend.core.security.route.SecurityFeatureRouter
 import io.github.mudrichenkoevgeny.backend.core.security.route.SecuritySwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.security.settings.mapper.toSecuritySettingsResponse
 import io.github.mudrichenkoevgeny.backend.core.security.settings.usecase.GetSecuritySettingsUseCase
@@ -16,6 +17,12 @@ import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * HTTP routes for reading security settings.
+ *
+ * This router is part of [SecurityFeatureRouter] and exposes endpoints defined in
+ * [SecuritySettingsRoutes].
+ */
 @Singleton
 class SecuritySettingsRouter @Inject constructor(
     private val appLogger: AppLogger,

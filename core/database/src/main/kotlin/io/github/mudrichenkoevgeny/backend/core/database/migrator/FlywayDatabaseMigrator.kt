@@ -8,6 +8,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import javax.sql.DataSource
 
+/**
+ * Default [DatabaseMigrator] implementation using Flyway.
+ *
+ * Configures Flyway with the given [DataSource] and location list (plus a fixed `classpath:db/migration` for SDK migrations),
+ * baselineOnMigrate and outOfOrder enabled, failOnMissingLocations false. On failure logs via [AppLogger] and rethrows.
+ */
 @Singleton
 @DatabaseMigratorFlyway
 class FlywayDatabaseMigrator @Inject constructor(

@@ -1,5 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.observability.metrics.naming
 
+/**
+ * OpenTelemetry metric names and descriptions for HTTP request metrics (total requests, latency, errors).
+ */
 object MetricSpecs {
     const val HTTP_REQUESTS_TOTAL = "http_requests_total"
     const val HTTP_REQUESTS_TOTAL_DESCRIPTION = "Total HTTP requests"

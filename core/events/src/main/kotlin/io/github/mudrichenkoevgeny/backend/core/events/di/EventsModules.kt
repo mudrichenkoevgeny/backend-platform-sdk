@@ -5,6 +5,9 @@ import io.github.mudrichenkoevgeny.backend.core.events.di.module.EventSubscriber
 import io.github.mudrichenkoevgeny.backend.core.events.di.module.EventsConfigModule
 import dagger.Module
 
+/**
+ * Aggregate Dagger module for the events feature. Includes [EventsConfigModule], [EventPublisherModule], and [EventSubscriberModule].
+ */
 @Module(
     includes = [
         EventsConfigModule::class,

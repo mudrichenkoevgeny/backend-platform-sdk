@@ -16,6 +16,11 @@ import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * HTTP routes for exposing global settings to clients.
+ *
+ * Currently, provides a read-only endpoint returning the GlobalSettingsResponse contract.
+ */
 @Singleton
 class GlobalSettingsRouter @Inject constructor(
     private val appLogger: AppLogger,

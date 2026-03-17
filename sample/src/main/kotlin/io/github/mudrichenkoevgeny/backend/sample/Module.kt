@@ -16,6 +16,21 @@ import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.routing.routing
 import kotlinx.coroutines.launch
 
+/**
+ * Ktor application module for the sample application.
+ *
+ * Wires SDK capabilities into a single Ktor [Application]:
+ * - HTTP defaults (CORS, headers, etc.) via [configureHTTP]
+ * - JSON serialization via [configureSerialization]
+ * - observability (OpenTelemetry + metrics) via [configureObservability] and [installMetricsEndpoint]
+ * - status pages (error mapping) via [configureStatusPages]
+ * - global rate limiting via [configureGlobalRateLimit]
+ * - WebSockets via [configureWebSockets]
+ * - Swagger setup via [setupSwaggerEndpoints] for non-PROD environments
+ *
+ * On [ApplicationStarted], runs health checks and seeds default data/settings via the corresponding
+ * injected use cases.
+ */
 fun Application.module(
     appComponent: AppComponent
 ) {

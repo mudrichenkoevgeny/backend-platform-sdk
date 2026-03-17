@@ -8,6 +8,11 @@ import dagger.Module
 import dagger.multibindings.IntoSet
 import dagger.multibindings.Multibinds
 
+/**
+ * Dagger module that contributes database-related [HealthCheck] implementations to the app's health set.
+ *
+ * Binds [DatabaseHealthCheck] and [RedisHealthCheck] into a [Set][kotlin.collections.Set] of [HealthCheck].
+ */
 @Module
 interface DatabaseHealthCheckModule {
 

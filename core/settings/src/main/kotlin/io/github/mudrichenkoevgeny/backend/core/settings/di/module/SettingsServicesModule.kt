@@ -6,6 +6,11 @@ import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsS
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsServiceImpl
 import javax.inject.Singleton
 
+/**
+ * Dagger bindings for settings services.
+ *
+ * Binds [SystemSettingsService] to [SystemSettingsServiceImpl].
+ */
 @Module
 interface SettingsServicesModule {
 

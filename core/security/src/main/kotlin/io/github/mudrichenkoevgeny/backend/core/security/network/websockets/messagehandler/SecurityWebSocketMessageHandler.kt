@@ -8,6 +8,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.contr
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Security module WebSocket handler.
+ *
+ * Currently, it only acknowledges [SecurityWebSocketEventTypes.SECURITY_SETTINGS_UPDATED] frames and
+ * marks them as handled. All other frames are ignored so they can be processed by other handlers.
+ */
 @Singleton
 class SecurityWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
     override suspend fun handle(

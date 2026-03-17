@@ -10,6 +10,11 @@ import dagger.Provides
 import javax.inject.Provider
 import javax.inject.Singleton
 
+/**
+ * Dagger module that provides a single [StorageService] implementation based on [StorageConfig.storageType].
+ *
+ * Uses providers to avoid constructing both implementations eagerly.
+ */
 @Module
 class StorageServicesModule {
 

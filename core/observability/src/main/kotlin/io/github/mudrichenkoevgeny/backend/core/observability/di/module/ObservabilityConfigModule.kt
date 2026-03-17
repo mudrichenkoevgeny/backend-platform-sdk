@@ -8,6 +8,12 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
+/**
+ * Dagger module for observability configuration.
+ *
+ * Provides [ObservabilityConfigFactory] (bound to [ObservabilityConfigFactoryImpl] with [EnvReader])
+ * and [ObservabilityConfig] from the factory.
+ */
 @Module
 class ObservabilityConfigModule {
 

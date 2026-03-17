@@ -8,6 +8,18 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateL
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Redis-backed [RateLimiter] implementation.
+ *
+ * The algorithm:
+ * - increments a counter for a key derived from [RateLimitAction] and the provided identifier
+ * - sets key expiration to the action window
+ * - when the counter exceeds the limit, tries to read TTL and returns [RateLimitResult.Exceeded]
+ *   with a [CommonError.TooManyRequests] that includes `retryAfterSeconds`
+ *
+ * If TTL lookup fails, the error is logged and the window duration is used as a fallback for
+ * `retryAfterSeconds`.
+ */
 @Singleton
 class RateLimiterImpl @Inject constructor(
     private val redisManager: RedisManager,

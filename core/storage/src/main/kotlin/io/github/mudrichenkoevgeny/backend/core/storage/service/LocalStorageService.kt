@@ -8,6 +8,15 @@ import java.nio.file.Paths
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Local filesystem implementation of [StorageService].
+ *
+ * Stores files under [StorageConfig.localStoragePath]. The optional bucket parameter is modeled as a subdirectory under the
+ * root path. The constructor ensures that the root directory exists (creates it if missing).
+ *
+ * The public URL is built using [StorageConfig.s3PublicUrl] as a base, which allows using the same URL strategy across
+ * local and S3 backends (e.g. through a reverse proxy).
+ */
 @Singleton
 class LocalStorageService @Inject constructor(
     private val config: StorageConfig

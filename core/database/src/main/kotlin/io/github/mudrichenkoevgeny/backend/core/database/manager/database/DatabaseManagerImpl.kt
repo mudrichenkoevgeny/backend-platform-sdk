@@ -9,6 +9,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import javax.sql.DataSource
 
+/**
+ * Default [DatabaseManager] implementation.
+ *
+ * Connects via [Database.connect] on the injected [DataSource], runs [DatabaseMigrator.migrate] with
+ * [DatabaseConfig.migrationPaths], then returns the Exposed [Database]. On failure logs via [AppLogger] and rethrows.
+ * [shutdown] closes the DataSource if it is [AutoCloseable].
+ */
 @Singleton
 class DatabaseManagerImpl @Inject constructor(
     private val dataSource: DataSource,

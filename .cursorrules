@@ -1,107 +1,20 @@
-# Backend Platform SDK — Project Rules
+# Backend Platform SDK — Project Rules (Index)
 
-## Project identity
-- **Type:** Kotlin/Ktor backend **library (SDK)** — not a standalone app. Designed to be added as a dependency to real applications.
-- **Group:** `io.github.mudrichenkoevgeny`, **Artifact:** `backend-platform-sdk-*`, **Version:** managed in root `build.gradle.kts`.
-- **Publishing:** Maven Central via `com.vanniktech.maven.publish`; BOM at `:bom` for version alignment.
+This repository uses **Cursor rules** under `.cursor/rules/*.mdc` for maintainable, scoped guidance.
 
-## Tech stack
-- **Runtime:** JVM 21 (toolchain in `gradle/libs.versions.toml`: `jvmToolchain = "21"`).
-- **Language:** Kotlin 2.x, Kotlin Serialization, coroutines; opt-in: `kotlin.uuid.ExperimentalUuidApi`.
-- **Server:** Ktor 3.x (Netty), content negotiation, status pages, CORS, default headers, WebSockets, rate limit, auth, auth-jwt.
-- **DI:** Dagger 2, KSP for code generation, `javax.inject`; prefer `@Singleton` for app-scoped components.
-- **Database:** JetBrains Exposed (core, dao, jdbc, json, java-time), PostgreSQL, HikariCP, Flyway; Redis via Lettuce.
-- **Auth & security:** JJWT, Password4j, Java-JWT (Auth0), Google Auth (OAuth2); Ktor auth + auth-jwt.
-- **API docs:** smiley4 ktor-openapi + ktor-swagger-ui, schema-generator (serialization, swagger).
-- **Observability:** OpenTelemetry, Micrometer/Prometheus; Ktor metrics-micrometer.
-- **Infra:** Apache Kafka (events), AWS S3 (storage), Logback + logstash encoder.
-- **Testing:** JUnit 5, Kotlin Test, Mockk, kotlinx-coroutines-test; H2 for DB tests where needed.
-- **Shared foundation:** External libs `shared-foundation-core-common`, `-core-settings`, `-core-security`, `shared-foundation-feature-user` (contracts/domain for user feature).
+Keep this file short; add new/updated rules as separate `.mdc` files.
 
-## Repository layout
-- **Root:** `build.gradle.kts` (plugins, allProjects/subprojects, Maven publish config), `settings.gradle.kts` (module registration), `gradle/libs.versions.toml` (versions + libs).
-- **Modules:** Only subprojects with `src/` (or `bom`) get Kotlin/Maven publish applied; `bom` is `java-platform` only.
+## Core principles (always on)
 
-## Module structure
+- This is a **Kotlin/Ktor backend library (SDK)** — not a standalone app. Avoid hardcoded app assumptions; prefer configuration (env + DI) and optional features.
+- **FQN in Kotlin code is forbidden**: do not write fully qualified names in expressions/type annotations/generics; use imports (or typealias). Only keep minimal FQN when imports are impossible/ambiguous, and explain the reason in PR/commit message.
+- **Do not run tests** after writing/editing tests, and do not suggest running them. Write correct, runnable test code; execution is up to the user.
 
-### Core modules (`core/`)
-- **common** — Base for all: Ktor server setup, `BaseRouter`, `CommonConfig`, error handling (`AppErrorParser`, status pages), serialization, Swagger init, WebSockets (public), routing helpers (`onPort`, `respondResult`), env/config, logging. Depends on shared-foundation (common). Many other core/feature modules depend on this.
-- **database** — Exposed, PostgreSQL, Hikari, Flyway, Redis (Lettuce); observability (Micrometer). Used by settings, security, audit, feature/user, sample.
-- **observability** — OpenTelemetry, Micrometer/Prometheus, Ktor metrics; config and telemetry provider.
-- **security** — Password validation, security settings (use cases, routes); uses shared-foundation-core-security, password4j.
-- **settings** — Global/system settings, DB-backed; `GlobalSettingsRouter`, `SettingsFeatureRouter`.
-- **audit** — Audit events model and persistence (Exposed); used by crosscutting and feature/user.
-- **storage** — S3 (AWS SDK); file/blob storage abstraction.
-- **events** — Event publishing/subscribing (e.g. Kafka); `EventPublisher`, `EventSubscriber`.
-- **crosscutting** — Cross-cutting concerns (e.g. rate limiting); uses common, security, audit.
+## Detailed rules live in `.cursor/rules/`
 
-### Feature modules (`feature/`)
-- **user** — **User and auth feature** for real apps: registration, login (email + external provider), JWT + refresh tokens, password reset, sessions, user CRUD, security (password change, user identifiers). Exposes Ktor auth (JWT) setup, routes (auth, user, session, security), use cases, managers (`AuthManager`, `UserManager`, `SessionManager`), email (e.g. Resend, UniOne). Depends on core: common, database, security, audit, settings, crosscutting; and shared-foundation feature-user. **Use this module when implementing auth and user management in a Ktor app.**
-
-### Other
-- **bom** — BOM project; constrains all publishable modules for consumers.
-- **sample** — Demo app showing how to wire the SDK: Dagger `AppComponent`, `Application.module(appComponent)`, `KtorServer.create(...)`, bootstrap (health, seed), route registration (`UserFeatureRouter`, `SettingsFeatureRouter`, `SecurityFeatureRouter`, WebSockets). Depends on all core modules + `feature:user`.
-
-## Architecture and patterns
-- **Routing:** All HTTP/WebSocket route entry points implement `BaseRouter` and expose `fun register(route: Route)`. Feature routers (e.g. `UserFeatureRouter`) compose sub-routers (auth, user, session, security). Sample app calls `appComponent.*FeatureRouter().register(this)` inside `routing { }`.
-- **Server bootstrap:** `KtorServer.create(commonConfig) { module(applicationModule) }` builds Netty server; application module is passed from the host app (e.g. sample’s `Application.module(appComponent)`).
-- **Configuration:** Env-based config (e.g. `*EnvKeys`), factories (e.g. `*ConfigFactory`), and Dagger modules; app must provide `AppInfo` (name, version) and optionally path resolver and error parser via holders.
-- **Layering:** Routes → use cases → managers/repositories; Dagger for wiring. Prefer use-case classes for business steps; managers for orchestration or shared logic.
-- **Errors:** Centralized via `AppErrorParser` and status pages; domain errors (e.g. `UserError`) mapped to HTTP and logs.
-- **Naming:** Package by layer/feature: `route`, `usecase`, `manager`, `database`/`repository`, `di/module`, `config`, `security`, etc.
-
-## Dependencies and boundaries
-- **core/common** has no dependency on other in-repo core/feature modules (only shared-foundation and external libs).
-- **feature/user** depends on several core modules; no other feature module in repo.
-- **sample** depends on core and feature:user; it is the reference host application.
-- Use **api** for types/contracts that consumers or other modules must see; **implementation** for internal details. BOM lists all publishable modules so apps can depend on a single BOM and pick modules.
-
-## Localization
-- **Localization resources** must live under `src/main/resources/localization/{language-code}/`, e.g. `localization/en/error_messages.json`, `localization/ru/error_messages.json`. Use ISO language code as the folder name (en, ru, etc.). Do not use `app_errors` or locale suffixes in filenames; use one file per locale in the corresponding folder.
-
-## Documentation (KDoc / comments)
-
-**MANDATORY: All rules in this section MUST be applied. Before writing or editing any KDoc, read this section and comply with every bullet. Do not skip or relax any rule.**
-
-- **Links in KDoc — FORBIDDEN and REQUIRED:**
-  - **FORBIDDEN:** Fully qualified names (FQN) in link targets. Never write `[text][io.github.mudrichenkoevgeny.backend….FooBar]` or `[FooBar][full.package.ClassName]`. No package paths inside `[]` link targets.
-  - **REQUIRED:** In link tags use only simple names that resolve via imports: `[FooBar]`, `[SomeTable.someColumn]` (type or type.member that is imported in the file). Add the corresponding `import` in the file so the reference resolves. If a target is in another module and cannot be imported, use plain text instead of a link.
-- **KDoc scope:** When writing KDoc for an `object` or class, do **not** reference function parameters by name in link tags, because they are out of scope there. Parameter references are only valid inside the KDoc of that specific function or constructor. Use plain text in the object‑level KDoc and move parameter links to the function‑level KDoc.
-- **Package scope (documentation or tests):** When documentation or tests are requested for a **package** (e.g. `io.github….backend.core.audit`), the scope includes **all subpackages**: e.g. `audit.di`, `audit.di.module`, `audit.database`, `audit.manager`, `audit.service`. Do **not** limit work to one subpackage; cover every public type and implementation in the package tree.
-- **Public API (interfaces):** Add a class-level KDoc describing the type’s role. For each method document purpose, parameters (`@param`), and return (`@return`). Where behavior is non-obvious (e.g. how fields map to the result), use a short bullet list or paragraph instead of a single vague sentence.
-- **Implementation classes (concrete classes implementing interfaces):** **Mandatory.** For **every** class that implements an interface (regardless of its name e.g. `*RepositoryImpl`, or any other naming), you **must** add **class-level** KDoc that explains what this implementation does (e.g. "delegates to the repository inside dbQuery", "launches persistence in the injected background scope and logs errors"). Readers must see both the interface contract and the concrete behavior. (e.g. “loads from classpath, caches by locale”) so that readers of the package see both interfaces and concrete behavior. Do **not** duplicate the interface’s method docs on overrides; the interface is the contract. No KDoc on private methods unless the logic is non-obvious. When adding documentation (or tests) for a package, **never skip implementation classes**—every concrete implementation of an interface is part of the documented surface and must be documented.
-- **DI modules (Dagger @Module):** Every Dagger module (aggregate and binding modules) must have **class-level** KDoc: what the module provides (e.g. which interfaces are bound to which implementations) and, for aggregate modules, which submodules are included. When documenting a package, **do not skip `di` and `di.module`**—they are part of the package.
-- **Error models (sealed classes like CommonError, SecurityError, UserError):** Class-level doc: purpose and that [publicArgs] are for the client/localization, [secretArgs] for logs. For each variant: one KDoc with a short description and `@param` for constructor parameters; state whether each param ends up in [publicArgs] or [secretArgs] and if it is used in localized messages.
-- **Value classes, enums, data classes:** Class/enum-level KDoc (purpose and usage). For value classes: `@param` for the primary value; KDoc for public methods and companion functions (e.g. `generate()`, `asHexDashString()`). For enums: one line per entry describing when to use it (e.g. LOW = minor/expected, HIGH = critical/alert).
-- **Value class API (mandatory):** For every `@JvmInline value class` that wraps an identifier or parseable type, provide: (1) **asHexDashString()** — instance method returning the value as canonical hex-with-dashes string; (2) **generate()** — companion function that creates a new instance; (3) **two extension functions** on `String` in the same file: **toXxxOrNull()** (parse, return null if invalid) and **toXxxOrThrow()** (parse, throw if invalid).
-- **Holders / config objects (e.g. AppErrorParserConfigHolder):** Object-level KDoc must explain **why** the holder exists: e.g. decoupled from DI, allows setting or replacing config after startup so that behavior can be reconfigured at runtime without process restart. Brief `@param`/behavior for `set` and `get` (e.g. “returns default if never set”).
-- **Constants:** Prefer a single definition (e.g. next to the interface or type that uses them). Add a short KDoc only if the name is not self-explanatory or the value is magic.
-- **Inline comments:** Use sparingly. Avoid comments that restate what the code does or that narrate design choices (e.g. why a test omits a check or what step “succeeds”). Prefer clear names and KDoc for the public surface; comment only when the reasoning or constraint is not obvious from the code itself.
-- **Localized / user-facing strings:** Keep messages concise; no generic filler (e.g. avoid “Please try again later” unless it is the only message). Use only [publicArgs] as placeholders in templates; do not expose technical or [secretArgs] content to the client.
-
-## Testing style
-- **Test framework:** Use JUnit 5 (Jupiter). Always import `org.junit.jupiter.api.Test` for test methods and `org.junit.jupiter.api.Assertions.*` (or specific static imports like `assertEquals`) for assertions in JVM tests. Do not use `kotlin.test.Test`; avoid `kotlin.test.assert*` in the `core/common` module for consistency.
-- **Parameterized tests:** Use JUnit Jupiter parameterized support (`@ParameterizedTest`, `@EnumSource`, etc.) instead of custom loops inside a single test when one logical scenario needs to be checked across multiple inputs.
-- **Mocking:** Use MockK for doubles and verifications in unit tests; prefer relaxed mocks for logs/void interactions and explicit expectations for behavior that matters.
-- **Structure and naming:** Use descriptive backticked test names in Kotlin (e.g. ``fun `returns fallback when locale missing`()``) that describe observable behavior. Keep test bodies small and focused on one behavior; favor arranging data inline over heavy fixture objects when possible.
-- **Imports and comments:** Keep test files free of unused imports; if a helper or type is no longer used after refactoring a test, remove the import in the same change. Avoid inline comments that just narrate obvious behavior; tests should be self-explanatory through names and assertions.
-- **No TODO-style placeholders in tests:** When writing or updating test code, always pass fully constructed objects and real values. Do **not** leave placeholder comments instead of filling required constructor arguments or wiring dependencies—the test code must be complete and directly runnable.
- - **Test constants:** When the same literal is used more than once in a test class, extract it into a local constant (or a companion object value) instead of duplicating the string/number inline.
-
-### Test file placement
-- **Package mirroring:** Place test classes in the same Kotlin package as the code under test. The directory structure under `src/test/kotlin` should mirror `src/main/kotlin` so that navigation and imports stay consistent.
-
-### Test scope when requested
-- **Package-level coverage:** When tests are requested for a specific package, aim to cover all non-trivial classes in that package that contribute to observable behavior (public APIs, default implementations, configuration objects with logic), not just a few representative examples. Simple data holders (plain DTOs), constant-only objects, and trivial enums (no methods, no custom serialization logic) can be skipped; any class that encapsulates behavior or coordination logic MUST have focused tests. Do not add tests solely for coverage of trivial types.
-
-### Running tests — FORBIDDEN
-- **Do not run test commands.** After writing or changing tests, do **not** run `gradlew test`, `gradlew :module:test`, or any other test command. Do **not** suggest or invite the user to run tests (e.g. “run `./gradlew test` to verify”). The user runs tests themselves when they choose. Your job is to write correct, runnable test code; leave execution to the user.
-
-## Cursor / AI guidance
-- **Rules are mandatory:** This file (`.cursorrules`) is the source of truth. You MUST read and apply the relevant sections for every task (e.g. Documentation, Testing, Architecture). Do not ignore or skip rules; when in doubt, re-read the matching section before writing code.
-- **Do not run tests:** Never run Gradle (or other) test commands after writing or editing tests; never suggest that the user run tests. Writing tests is enough; the user runs them when they want.
-- When adding routes: implement `BaseRouter`, register in the appropriate feature router (e.g. `UserFeatureRouter`), and in the host app’s `Application.module` routing block if applicable.
-- When adding core capabilities: prefer a new or existing core module; avoid putting app-specific logic in `core/common`.
-- When changing dependencies: use `gradle/libs.versions.toml` for versions and library aliases; keep BOM in sync with published modules.
-- This is a **library**: avoid hardcoded app assumptions; support configuration (env, DI) and optional features so real projects can integrate the SDK with minimal friction.
-- User and auth logic lives in **feature/user**; extend it (new use cases, routes, or auth providers) rather than duplicating in sample or other modules.
+- `project-overview.mdc` — project identity, stack, repo/module layout, boundaries.
+- `architecture-patterns.mdc` — routing/bootstrap/config/layering conventions.
+- `docs-kdoc-basics.mdc` + `docs-kdoc-type-requirements.mdc` — **mandatory** KDoc and documentation rules.
+- `localization.mdc` — localization resource layout and naming.
+- `testing-style.mdc` — JUnit/MockK conventions, placement, scope, and Gradle test deps.
+- `ai-workflow.mdc` — dependency changes, routing guidance, and SDK vs sample boundaries.

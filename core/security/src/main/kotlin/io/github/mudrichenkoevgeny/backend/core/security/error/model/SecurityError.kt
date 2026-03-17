@@ -9,9 +9,9 @@ import io.ktor.http.HttpStatusCode
 /**
  * Security-related errors: authentication requirements and password policy.
  *
- * Uses [publicArgs] for client-visible data (e.g. password rule details in [PasswordTooWeak])
- * and [secretArgs] for internal-only data. Each variant has a stable [code] for i18n and
- * a unique [errorId] for correlation.
+ * Uses `publicArgs` for client-visible data (e.g. password rule details in [PasswordTooWeak]) and
+ * `secretArgs` for internal-only data. Each variant has a stable `code` for i18n and a unique
+ * `errorId` for correlation.
  */
 sealed class SecurityError(
     override val errorId: ErrorId,
@@ -24,9 +24,8 @@ sealed class SecurityError(
 
     /**
      * User must complete an additional authentication step (e.g. 2FA, email confirmation).
-     *
      */
-    class AuthenticationConfirmationRequired() : SecurityError(
+    class AuthenticationConfirmationRequired : SecurityError(
         errorId = ErrorId.generate(),
         code = SecurityErrorCodes.AUTHENTICATION_CONFIRMATION_REQUIRED,
         httpStatusCode = HttpStatusCode.Forbidden,
@@ -36,8 +35,9 @@ sealed class SecurityError(
     /**
      * Password does not satisfy security policy (length, complexity, etc.).
      *
-     * @param publicArgs Map of rule names to boolean/string values (e.g. passwordTooShort, passwordMinLength);
-     * exposed to the client and used in localized message.
+     * @param publicArgs Map of rule names to boolean/string values (e.g. passwordTooShort,
+     * passwordMinLength). The map is stored in `publicArgs`, exposed to the client, and used by
+     * localized error messages.
      */
     class PasswordTooWeak(publicArgs: Map<String, Any>) : SecurityError(
         errorId = ErrorId.generate(),

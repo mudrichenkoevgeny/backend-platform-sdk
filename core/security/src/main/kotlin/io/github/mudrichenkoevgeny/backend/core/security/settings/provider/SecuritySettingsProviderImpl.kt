@@ -10,6 +10,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolic
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * [SecuritySettingsProvider] implementation backed by [SystemSettingsService].
+ *
+ * Stores password policy as JSON under a single settings key. When the key is missing, falls back
+ * to the default policy from [SecurityConfig].
+ */
 @Singleton
 class SecuritySettingsProviderImpl @Inject constructor(
     private val settingsService: SystemSettingsService,

@@ -9,15 +9,27 @@ import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default sample implementation of [AppShutdownHook].
+ *
+ * Stops the Ktor server, waits (best-effort) for pending audit persistence, and then shuts down
+ * database and Redis resources.
+ */
 @Singleton
 class AppShutdownHookImpl @Inject constructor(
     private val databaseManager: DatabaseManager,
     private val redisManager: RedisManager,
-    private val auditService: AuditService
+    private val auditService: AuditService,
+    private val shutdownHookRegistrar: ShutdownHookRegistrar
 ) : AppShutdownHook {
 
+    /**
+     * Registers a JVM shutdown hook that attempts a graceful stop.
+     *
+     * The shutdown sequence is best-effort and bounded by [TIMEOUT_MS].
+     */
     override fun register(server: EmbeddedServer<*, *>) {
-        Runtime.getRuntime().addShutdownHook(Thread {
+        shutdownHookRegistrar.addShutdownHook(Thread {
             runBlocking {
                 try {
                     server.stop(GRACE_PERIOD_MS, TIMEOUT_MS)

@@ -6,6 +6,11 @@ import io.github.mudrichenkoevgeny.backend.core.settings.database.repository.Sys
 import io.github.mudrichenkoevgeny.backend.core.settings.database.repository.SystemSettingRepositoryImpl
 import javax.inject.Singleton
 
+/**
+ * Dagger bindings for settings repositories.
+ *
+ * Binds [SystemSettingRepository] to [SystemSettingRepositoryImpl].
+ */
 @Module
 interface SettingsRepositoriesModule {
 

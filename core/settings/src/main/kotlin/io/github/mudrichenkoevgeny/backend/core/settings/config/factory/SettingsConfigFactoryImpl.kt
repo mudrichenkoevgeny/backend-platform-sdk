@@ -6,11 +6,19 @@ import io.github.mudrichenkoevgeny.backend.core.settings.config.model.SettingsCo
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [SettingsConfigFactory] implementation backed by [EnvReader].
+ *
+ * All keys are defined in [SettingsEnvKeys]. Missing variables are treated as `null`.
+ */
 @Singleton
 class SettingsConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader
 ): SettingsConfigFactory {
 
+    /**
+     * Reads optional values from the environment and maps them into [SettingsConfig].
+     */
     override fun create(): SettingsConfig {
         val privacyPolicyUrl = envReader.getByKeyOrNull(SettingsEnvKeys.PRIVACY_POLICY_URL)
         val termsOfServiceUrl = envReader.getByKeyOrNull(SettingsEnvKeys.TERMS_OF_SERVICE_URL)

@@ -1,0 +1,13 @@
+---
+description: Localization resource layout and naming
+globs: **/src/main/resources/**/*
+alwaysApply: false
+---
+
+# Localization
+
+- Localization resources must live under `src/main/resources/localization/{language-code}/`.
+  - Example: `localization/en/error_messages.json`, `localization/ru/error_messages.json`.
+- Use ISO language code as the folder name (`en`, `ru`, ...).
+- Use one file per locale in its locale folder.
+- Do not use `app_errors` or locale suffixes in filenames.

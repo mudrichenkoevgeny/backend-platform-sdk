@@ -1,5 +1,14 @@
 package io.github.mudrichenkoevgeny.backend.core.security.config.envkeys
 
+import io.github.mudrichenkoevgeny.backend.core.security.config.factory.SecurityConfigFactoryImpl
+import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
+
+/**
+ * Environment variable keys used to build [SecurityConfig].
+ *
+ * These keys are read by [SecurityConfigFactoryImpl]. Consumers typically provide these variables
+ * in the host application's deployment configuration.
+ */
 object SecurityEnvKeys {
     const val AUTHENTICATION_CONFIRMATION_VALIDITY_MINUTES = "AUTHENTICATION_CONFIRMATION_VALIDITY_MINUTES"
     const val PASSWORD_POLICY_MIN_LENGTH = "PASSWORD_POLICY_MIN_LENGTH"

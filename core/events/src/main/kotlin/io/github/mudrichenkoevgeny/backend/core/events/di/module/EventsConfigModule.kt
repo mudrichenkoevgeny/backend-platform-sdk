@@ -8,6 +8,9 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
+/**
+ * Dagger module that provides [EventsConfigFactory] (bound to [EventsConfigFactoryImpl]) and [EventsConfig] (from the factory).
+ */
 @Module
 class EventsConfigModule {
 

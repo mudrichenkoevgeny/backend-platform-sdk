@@ -6,6 +6,11 @@ import io.github.mudrichenkoevgeny.backend.core.settings.manager.SystemSettingsM
 import io.github.mudrichenkoevgeny.backend.core.settings.manager.SystemSettingsManagerImpl
 import javax.inject.Singleton
 
+/**
+ * Dagger bindings for settings managers.
+ *
+ * Binds [SystemSettingsManager] to [SystemSettingsManagerImpl].
+ */
 @Module
 interface SettingsManagersModule {
 

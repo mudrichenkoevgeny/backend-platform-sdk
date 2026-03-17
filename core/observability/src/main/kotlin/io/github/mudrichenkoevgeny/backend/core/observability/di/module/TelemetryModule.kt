@@ -7,6 +7,11 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
+/**
+ * Dagger module that provides [TelemetryProvider].
+ *
+ * Binds [TelemetryProvider] to [TelemetryProviderImpl]; requires [ObservabilityConfig].
+ */
 @Module
 class TelemetryModule {
 

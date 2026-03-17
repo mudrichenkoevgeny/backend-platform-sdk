@@ -8,6 +8,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.contr
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * WebSocket frame handler for settings-related event types.
+ *
+ * The handler currently acknowledges events published by the settings feature and marks them as
+ * handled to prevent "unknown event" processing in the common WebSocket pipeline.
+ */
 @Singleton
 class SettingsWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
     override suspend fun handle(

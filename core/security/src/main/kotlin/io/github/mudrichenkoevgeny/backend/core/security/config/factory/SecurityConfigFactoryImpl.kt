@@ -7,6 +7,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolic
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Default [SecurityConfigFactory] implementation that reads configuration from the environment.
+ *
+ * Expected variables are declared in [SecurityEnvKeys]. If a password policy-related variable is
+ * missing, the implementation falls back to [PasswordPolicy] defaults.
+ */
 @Singleton
 class SecurityConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader

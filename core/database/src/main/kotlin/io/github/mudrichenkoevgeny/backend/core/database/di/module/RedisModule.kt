@@ -13,6 +13,12 @@ import dagger.Module
 import dagger.Provides
 import javax.inject.Singleton
 
+/**
+ * Dagger module for Redis.
+ *
+ * Binds [RedisClientCreator] to [LettuceRedisClientCreator]. Provides [RedisFactory] (→ [RedisFactoryImpl])
+ * and [RedisManager] (→ [RedisManagerImpl] with a client from the factory).
+ */
 @Module
 interface RedisModule {
 

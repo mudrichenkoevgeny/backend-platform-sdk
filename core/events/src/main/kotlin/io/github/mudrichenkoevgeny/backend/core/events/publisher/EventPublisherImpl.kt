@@ -16,6 +16,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resumeWithException
 
+/**
+ * [EventPublisher] implementation backed by Apache Kafka.
+ *
+ * Serializes events to JSON via [FoundationJson] and the provided [KSerializer], sends the record to Kafka with optional
+ * metadata in headers. Serialization and send errors are logged via [AppLogger] and rethrown to the caller. Sending is done
+ * in a suspend function via [suspendCancellableCoroutine] with cancellation support.
+ */
 @Singleton
 class EventPublisherImpl @Inject constructor(
     private val eventsConfig: EventsConfig,
