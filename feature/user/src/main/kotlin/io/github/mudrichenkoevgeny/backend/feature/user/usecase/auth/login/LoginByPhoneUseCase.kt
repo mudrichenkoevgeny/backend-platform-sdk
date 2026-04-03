@@ -11,9 +11,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
-import io.github.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUtil
+import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.resource.UserAuditResourceType
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,7 +40,7 @@ class LoginByPhoneUseCase @Inject constructor(
     ): AppResult<AuthData> {
         val auditResourceId = requestContext.userId?.asHexDashString()
         val auditMetadata = mapOf(
-            UserAuditMetadata.Keys.PHONE_NUMBER_MASK to IdentifierMaskerUtil.maskPhone(phoneNumber)
+            UserAuditMetadata.Keys.PHONE_NUMBER_MASK to DataMasker.maskPhone(phoneNumber)
         )
 
         val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
@@ -145,7 +147,7 @@ class LoginByPhoneUseCase @Inject constructor(
     }
 
     companion object {
-        const val AUDIT_ACTION = "login_by_phone"
-        const val AUDIT_RESOURCE = "user"
+        const val AUDIT_ACTION = UserAuditActionType.ACTION_LOGIN_BY_PHONE
+        const val AUDIT_RESOURCE = UserAuditResourceType.RESOURCE_USER
     }
 }

@@ -1,16 +1,17 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 
-import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PageParams
-import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PagedResponse
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserListSort
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 import java.time.Instant
 
 /**
- * User persistence API backed by the user feature database schema.
+ * Persistence API for users backed by the user-feature database schema.
  */
 interface UserRepository {
     /**
@@ -44,7 +45,7 @@ interface UserRepository {
         user: User,
         status: UserAccountStatus? = null,
         lastLoginAt: Instant? = null,
-        lastActiveAt: Instant? = null
+        lastActiveAt: Instant? = null,
     ): AppResult<User>
 
     /**
@@ -56,16 +57,18 @@ interface UserRepository {
     suspend fun getUserById(userId: UserId): AppResult<User?>
 
     /**
-     * Returns a paginated list of users with optional filters.
+     * Returns a paginated list of users with optional filters and [sort] order.
      *
      * @param params pagination parameters
      * @param role optional role filter
      * @param accountStatus optional account status filter
-     * @return paged response or an error
+     * @param sort primary sort column and direction (see [UserListSort])
+     * @return paged result or an error
      */
     suspend fun getUsersList(
         params: PageParams,
         role: UserRole? = null,
         accountStatus: UserAccountStatus? = null,
-    ): AppResult<PagedResponse<User>>
+        sort: UserListSort = UserListSort.DEFAULT,
+    ): AppResult<PagedResult<User>>
 }

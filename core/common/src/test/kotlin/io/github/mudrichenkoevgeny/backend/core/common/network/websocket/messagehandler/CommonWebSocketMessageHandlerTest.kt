@@ -6,7 +6,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.Us
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonWebSocketEventTypes
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.payload.WebSocketInitializePayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.WebSocketInitializePayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -87,6 +87,7 @@ class CommonWebSocketMessageHandlerTest {
             deviceName = "Pixel",
             appVersion = "1.2.3",
             operationSystemVersion = "Android 15",
+            apiVersion = "1"
         )
         val payloadElement = FoundationJson.encodeToJsonElement(WebSocketInitializePayload.serializer(), payload)
 

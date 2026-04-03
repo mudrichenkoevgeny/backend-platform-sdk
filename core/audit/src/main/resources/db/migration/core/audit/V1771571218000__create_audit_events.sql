@@ -1,11 +1,13 @@
 CREATE TABLE IF NOT EXISTS audit_events (
     id UUID PRIMARY KEY,
-    actor_id UUID,
+    actor_id VARCHAR(255),
+    actor_type VARCHAR(32) NOT NULL,
+    actor_user_role VARCHAR(255),
     action VARCHAR(255) NOT NULL,
     resource VARCHAR(255) NOT NULL,
     resource_id VARCHAR(255),
     status VARCHAR(32) NOT NULL,
-    metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
+    metadata JSONB NOT NULL DEFAULT '[]'::jsonb,
     message TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ

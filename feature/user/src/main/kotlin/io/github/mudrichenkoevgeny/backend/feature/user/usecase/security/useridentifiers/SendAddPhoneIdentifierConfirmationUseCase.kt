@@ -15,7 +15,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.U
 import io.github.mudrichenkoevgeny.backend.feature.user.model.confirmation.SendConfirmation
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneService
-import io.github.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUtil
+import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -50,7 +50,7 @@ class SendAddPhoneIdentifierConfirmationUseCase @Inject constructor(
         val auditResourceId = userId.asHexDashString()
 
         val auditMetadata = mutableMapOf(
-            UserAuditMetadata.Keys.PHONE_NUMBER_MASK to IdentifierMaskerUtil.maskPhone(phoneNumber),
+            UserAuditMetadata.Keys.PHONE_NUMBER_MASK to DataMasker.maskPhone(phoneNumber),
             UserAuditMetadata.Keys.SESSION_ID to currentSessionId.asHexDashString()
         )
 

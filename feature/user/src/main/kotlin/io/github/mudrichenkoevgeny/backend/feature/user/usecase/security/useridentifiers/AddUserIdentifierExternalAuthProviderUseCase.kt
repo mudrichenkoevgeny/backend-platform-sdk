@@ -13,7 +13,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
-import io.github.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUtil
+import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -48,7 +48,7 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
         val auditResourceId = userId.asHexDashString()
 
         val auditMetadata = mutableMapOf(
-            UserAuditMetadata.Keys.EXTERNAL_AUTH_PROVIDER_TOKEN_MASK to IdentifierMaskerUtil.maskExternal(token),
+            UserAuditMetadata.Keys.EXTERNAL_AUTH_PROVIDER_TOKEN_MASK to DataMasker.maskId(token),
             UserAuditMetadata.Keys.SESSION_ID to currentSessionId.asHexDashString()
         )
 

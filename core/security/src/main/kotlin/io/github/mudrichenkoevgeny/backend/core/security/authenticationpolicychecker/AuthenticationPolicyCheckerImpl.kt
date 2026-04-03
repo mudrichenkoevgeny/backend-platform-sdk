@@ -18,7 +18,7 @@ class AuthenticationPolicyCheckerImpl @Inject constructor(
 ): AuthenticationPolicyChecker {
     override fun isAuthenticationConfirmedRecently(lastReauthenticatedAt: Instant): Boolean {
         return lastReauthenticatedAt
-            .plus(Duration.ofMinutes(securityConfig.authenticationConfirmationValidityMinutes))
+            .plus(Duration.ofMinutes(securityConfig.recentAuthenticationValidityInMinutes))
             .isAfter(Instant.now())
     }
 }

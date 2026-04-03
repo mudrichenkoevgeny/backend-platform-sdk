@@ -12,6 +12,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.confirmation.SendC
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.resource.UserAuditResourceType
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -134,7 +136,7 @@ class SendResetPasswordConfirmationUseCase @Inject constructor(
     companion object {
         const val RETRY_AFTER_SECONDS = 60
 
-        const val AUDIT_ACTION = "send_password_reset_confirmation"
-        const val AUDIT_RESOURCE = "user_email"
+        const val AUDIT_ACTION = UserAuditActionType.ACTION_SEND_RESET_PASSWORD_CONFIRMATION
+        const val AUDIT_RESOURCE = UserAuditResourceType.RESOURCE_USER_EMAIL
     }
 }

@@ -10,12 +10,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolic
  * injected where security-related decisions are made (e.g. authentication confirmation freshness,
  * default password policy).
  *
- * @property authenticationConfirmationValidityMinutes A time window in minutes during which a recent
- * re-authentication is considered valid.
+ * @property recentAuthenticationValidityInMinutes How long (in minutes) a recent re-auth remains acceptable for sensitive actions.
  * @property passwordPolicy Default password policy used as a fallback when no system setting
  * overrides it.
  */
 data class SecurityConfig(
-    val authenticationConfirmationValidityMinutes : Long,
+    val recentAuthenticationValidityInMinutes : Long,
     val passwordPolicy: PasswordPolicy
 )

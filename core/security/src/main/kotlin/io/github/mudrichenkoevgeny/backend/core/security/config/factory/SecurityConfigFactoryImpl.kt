@@ -58,7 +58,7 @@ class SecurityConfigFactoryImpl @Inject constructor(
         )
 
         return SecurityConfig(
-            authenticationConfirmationValidityMinutes = authenticationConfirmationValidityMinutes,
+            recentAuthenticationValidityInMinutes = authenticationConfirmationValidityMinutes,
             passwordPolicy = passwordPolicy
         )
     }

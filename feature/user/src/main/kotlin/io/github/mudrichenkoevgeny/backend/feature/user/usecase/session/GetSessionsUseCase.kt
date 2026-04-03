@@ -2,7 +2,9 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.session
 
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.PlatformUserAuditActionTypeExtension
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
@@ -42,7 +44,7 @@ class GetSessionsUseCase @Inject constructor(
     }
 
     companion object {
-        const val AUDIT_ACTION = "get_sessions"
-        const val AUDIT_RESOURCE = "user"
+        const val AUDIT_ACTION = PlatformUserAuditActionTypeExtension.SERIAL_GET_SESSIONS
+        const val AUDIT_RESOURCE = UserAuditResourceType.RESOURCE_USER
     }
 }

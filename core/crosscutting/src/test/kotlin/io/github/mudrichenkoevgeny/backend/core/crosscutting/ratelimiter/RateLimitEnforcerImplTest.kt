@@ -1,27 +1,27 @@
 package io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter
 
-import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditStatus
 import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserDeviceId
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.JsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.uuid.Uuid
 
 class RateLimitEnforcerImplTest {
 
@@ -61,7 +61,7 @@ class RateLimitEnforcerImplTest {
         coEvery { rateLimiter.isRateLimited(RateLimitAction.LOGIN_ATTEMPT, "ip:2") } returns
             AppResult.Success(RateLimitResult.Exceeded(error))
 
-        val auditEventSlot = slot<io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent>()
+        val auditEventSlot = slot<AuditEvent>()
         every { auditService.log(capture(auditEventSlot)) } returns Unit
 
         val result = enforcer.enforce(
@@ -77,18 +77,21 @@ class RateLimitEnforcerImplTest {
         assertSame(error, appError)
 
         val auditEvent = auditEventSlot.captured
-        assertEquals(requestContext.userId!!.value, auditEvent.actorId)
-        assertEquals("login", auditEvent.action)
-        assertEquals("session", auditEvent.resource)
+        assertEquals(requestContext.userId!!, auditEvent.actorId)
+        assertEquals("login", auditEvent.action.serialName)
+        assertEquals("session", auditEvent.resource.serialName)
         assertEquals("unknown", auditEvent.resourceId)
         assertEquals(AuditStatus.DENIED, auditEvent.status)
 
         val metadata = auditEvent.metadata
-        assertEquals(JsonPrimitive("127.0.0.1"), metadata[RateLimitAuditMetadata.Keys.IP_ADDRESS])
-        assertEquals(JsonPrimitive("device-1"), metadata[RateLimitAuditMetadata.Keys.DEVICE_ID])
-        assertEquals(JsonPrimitive("ua"), metadata[RateLimitAuditMetadata.Keys.USER_AGENT])
-        assertEquals(JsonPrimitive(RateLimitAuditMetadata.Reasons.RATE_LIMIT), metadata[RateLimitAuditMetadata.Keys.REASON])
-        assertTrue(metadata.containsKey(RateLimitAuditMetadata.Keys.CLIENT_TYPE).not(), "client_type should be absent when null")
+        assertEquals("127.0.0.1", metadata.single { it.key == RateLimitAuditMetadata.Keys.IP_ADDRESS }.value)
+        assertEquals("device-1", metadata.single { it.key == RateLimitAuditMetadata.Keys.DEVICE_ID }.value)
+        assertEquals("ua", metadata.single { it.key == RateLimitAuditMetadata.Keys.USER_AGENT }.value)
+        assertEquals(
+            RateLimitAuditMetadata.Reasons.RATE_LIMIT,
+            metadata.single { it.key == RateLimitAuditMetadata.Keys.REASON }.value
+        )
+        assertTrue(metadata.none { it.key == RateLimitAuditMetadata.Keys.CLIENT_TYPE }, "client_type should be absent when null")
     }
 
     @Test
@@ -116,7 +119,7 @@ class RateLimitEnforcerImplTest {
     private fun testRequestContext(): RequestContext {
         return RequestContext(
             traceId = "trace",
-            userId = UserId.generate(),
+            userId = Uuid.random().toString(),
             sessionId = null,
             clientInfo = ClientInfo(
                 clientType = null,

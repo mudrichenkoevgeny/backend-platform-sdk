@@ -44,6 +44,8 @@ fun Application.module(
     )
 
     this.monitor.subscribe(ApplicationStarted) {
+        appComponent.userScheduledJobs().start()
+
         launch {
             appComponent.healthCheckerManager().checkNonCriticalHealth()
         }

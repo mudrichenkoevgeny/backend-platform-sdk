@@ -1,11 +1,14 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.service
 
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.wire.AuditWireAction
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.wire.AuditWireResource
 import io.github.mudrichenkoevgeny.backend.core.audit.manager.AuditManager
-import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent
-import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditStatus
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -15,6 +18,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
 class AuditServiceImplTest {
 
@@ -25,12 +29,12 @@ class AuditServiceImplTest {
     fun `log schedules createEvent in background and returns immediately`() = runTest(testDispatcher) {
         val auditManager = mockk<AuditManager>(relaxed = true)
         coEvery { auditManager.createEvent(any()) } returns AppResult.Success(
-            AuditEvent(action = "test", resource = "r", status = AuditStatus.SUCCESS)
+            sampleAuditEvent(action = "test", resource = "r")
         )
         val appLogger = mockk<AppLogger>(relaxed = true)
         val service = AuditServiceImpl(auditManager, scope, appLogger)
 
-        val event = AuditEvent(action = "login", resource = "session", status = AuditStatus.SUCCESS)
+        val event = sampleAuditEvent(action = "login", resource = "session")
         service.log(event)
 
         advanceUntilIdle()
@@ -45,7 +49,11 @@ class AuditServiceImplTest {
         val appLogger = mockk<AppLogger>(relaxed = true)
         val service = AuditServiceImpl(auditManager, scope, appLogger)
 
-        val event = AuditEvent(action = "action", resource = "resource", status = AuditStatus.FAILED)
+        val event = sampleAuditEvent(
+            action = "action",
+            resource = "resource",
+            status = AuditStatus.FAILED
+        )
         service.log(event)
 
         advanceUntilIdle()
@@ -67,14 +75,26 @@ class AuditServiceImplTest {
         val auditManager = mockk<AuditManager>(relaxed = true)
         coEvery { auditManager.createEvent(any()) } coAnswers {
             kotlinx.coroutines.delay(50)
-            AppResult.Success(AuditEvent(action = "a", resource = "r", status = AuditStatus.SUCCESS))
+            AppResult.Success(sampleAuditEvent(action = "a", resource = "r"))
         }
         val appLogger = mockk<AppLogger>(relaxed = true)
         val service = AuditServiceImpl(auditManager, scope, appLogger)
 
-        service.log(AuditEvent(action = "a", resource = "r", status = AuditStatus.SUCCESS))
+        service.log(sampleAuditEvent(action = "a", resource = "r"))
         service.awaitAll()
 
         coVerify(exactly = 1) { auditManager.createEvent(any()) }
     }
+
+    private fun sampleAuditEvent(
+        action: String,
+        resource: String,
+        status: AuditStatus = AuditStatus.SUCCESS,
+    ): AuditEvent = AuditEvent(
+        actorType = AuditActorType.SYSTEM,
+        action = AuditWireAction(action),
+        resource = AuditWireResource(resource),
+        status = status,
+        createdAt = Clock.System.now()
+    )
 }

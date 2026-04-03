@@ -11,7 +11,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.Password
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
-import io.github.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUtil
+import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 import javax.inject.Inject
@@ -39,7 +39,7 @@ class LoginByEmailUseCase @Inject constructor(
         requestContext: RequestContext
     ): AppResult<AuthData> {
         val auditResourceId = requestContext.userId?.asHexDashString()
-        val auditMetadata = mapOf(UserAuditMetadata.Keys.EMAIL_MASK to IdentifierMaskerUtil.maskEmail(email))
+        val auditMetadata = mapOf(UserAuditMetadata.Keys.EMAIL_MASK to DataMasker.maskEmail(email))
 
         val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
             requestContext = requestContext,

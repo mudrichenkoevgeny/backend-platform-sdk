@@ -1,10 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 
-import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PageParams
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
+import io.github.mudrichenkoevgeny.backend.core.common.listing.sorting.SortDirection
 import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
+import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserListSort
+import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserListSortBy
 import io.github.mudrichenkoevgeny.backend.feature.user.testutil.ExposedTestDb
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
@@ -161,6 +164,46 @@ class UserRepositoryImplTest {
         val paged = (result as AppResult.Success).data
         assertEquals(2L, paged.totalCount)
         assertEquals(2, paged.items.size)
+    }
+
+    @Test
+    fun `getUsersList sorts by createdAt ascending with stable id tie-breaker`() = runBlocking {
+        val early = Instant.parse("2026-01-01T10:00:00Z")
+        val late = Instant.parse("2026-01-02T10:00:00Z")
+        val userEarly = User(
+            id = UserId.generate(),
+            role = UserRole.USER,
+            accountStatus = UserAccountStatus.ACTIVE,
+            lastLoginAt = null,
+            lastActiveAt = null,
+            createdAt = early,
+            updatedAt = null
+        )
+        val userLate = User(
+            id = UserId.generate(),
+            role = UserRole.USER,
+            accountStatus = UserAccountStatus.ACTIVE,
+            lastLoginAt = null,
+            lastActiveAt = null,
+            createdAt = late,
+            updatedAt = null
+        )
+        ExposedTestDb.tx { repository.createUser(userLate) }
+        ExposedTestDb.tx { repository.createUser(userEarly) }
+
+        val result = ExposedTestDb.tx {
+            repository.getUsersList(
+                params = PageParams(page = 1, size = 10),
+                role = null,
+                accountStatus = null,
+                sort = UserListSort(UserListSortBy.CREATED_AT, SortDirection.ASC),
+            )
+        }
+
+        assertTrue(result is AppResult.Success)
+        val items = (result as AppResult.Success).data.items
+        assertEquals(userEarly.id, items[0].id)
+        assertEquals(userLate.id, items[1].id)
     }
 
     private companion object {

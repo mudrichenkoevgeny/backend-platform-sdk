@@ -1,11 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.service
 
 import io.github.mudrichenkoevgeny.backend.core.audit.manager.AuditManager
-import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent
 import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch

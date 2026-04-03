@@ -10,7 +10,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.otp.OtpVerificatio
 import io.github.mudrichenkoevgeny.backend.feature.user.model.confirmation.SendConfirmation
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneService
-import io.github.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUtil
+import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.resource.UserAuditResourceType
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -32,7 +34,7 @@ class SendLoginConfirmationToPhoneUseCase @Inject constructor(
         phoneNumber: String,
         requestContext: RequestContext
     ): AppResult<SendConfirmation> {
-        val auditResourceId = IdentifierMaskerUtil.maskPhone(phoneNumber)
+        val auditResourceId = DataMasker.maskPhone(phoneNumber)
 
         val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
             requestContext = requestContext,
@@ -102,7 +104,7 @@ class SendLoginConfirmationToPhoneUseCase @Inject constructor(
     companion object {
         const val RETRY_AFTER_SECONDS = 60
 
-        const val AUDIT_ACTION = "send_phone_confirmation"
-        const val AUDIT_RESOURCE = "user_phone"
+        const val AUDIT_ACTION = UserAuditActionType.ACTION_SEND_LOGIN_CONFIRMATION_TO_PHONE
+        const val AUDIT_RESOURCE = UserAuditResourceType.RESOURCE_USER_PHONE
     }
 }

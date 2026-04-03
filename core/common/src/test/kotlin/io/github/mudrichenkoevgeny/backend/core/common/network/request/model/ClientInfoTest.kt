@@ -34,6 +34,7 @@ class ClientInfoTest {
                         info.deviceName ?: "null",
                         info.appVersion ?: "null",
                         info.operationSystemVersion ?: "null",
+                        info.apiVersion ?: "null",
                     )
                     call.respondText(parts.joinToString("|"))
                 }
@@ -64,6 +65,7 @@ class ClientInfoTest {
         assertEquals("Pixel", parts[7])
         assertEquals("1.2.3", parts[8])
         assertEquals("Android 15", parts[9])
+        assertEquals("null", parts[10])
     }
 
     @Test
@@ -81,6 +83,7 @@ class ClientInfoTest {
                         info.deviceName ?: "null",
                         info.appVersion ?: "null",
                         info.operationSystemVersion ?: "null",
+                        info.apiVersion ?: "null",
                     )
                     call.respondText(parts.joinToString("|"))
                 }
@@ -100,5 +103,6 @@ class ClientInfoTest {
         assertEquals("null", parts[5])
         assertEquals("null", parts[6])
         assertEquals("null", parts[7])
+        assertEquals("null", parts[8])
     }
 }

@@ -1,6 +1,7 @@
 {
   "UNKNOWN": "Произошла неизвестная ошибка.",
   "INTERNAL": "Произошла ошибка.",
+  "NOT_FOUND": "Ресурс '{resource}' не найден.",
   "SERVICE_UNAVAILABLE": "Сервис временно недоступен.",
   "TOO_MANY_REQUESTS": "Слишком много запросов. Повторите через {retryAfterSeconds} сек.",
   "MISSING_REQUIRED_PARAMETER": "Отсутствует обязательный параметр '{parameterName}'.",

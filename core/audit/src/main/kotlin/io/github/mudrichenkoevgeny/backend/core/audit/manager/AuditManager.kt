@@ -1,13 +1,18 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.manager
 
-import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditStatus
-import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent
-import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEventId
-import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PageParams
-import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PagedResponse
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import java.time.Instant
-import kotlin.uuid.Uuid
+import io.github.mudrichenkoevgeny.backend.core.security.masking.PayloadMaskingType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingParamNames
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 
 /**
  * Application-level API for creating and querying audit events.
@@ -24,30 +29,47 @@ interface AuditManager {
 
     /**
      * Returns the audit event with the given [eventId], or `null` if not found.
+     *
+     * @param payloadMaskingType When [PayloadMaskingType.MASKED], a non-null event is redacted like
+     * [getEventsList] (metadata by sensitivity, selected `resourceId` kinds).
      */
-    suspend fun getEventById(eventId: AuditEventId): AppResult<AuditEvent?>
+    suspend fun getEventById(
+        payloadMaskingType: PayloadMaskingType,
+        eventId: AuditEventId,
+    ): AppResult<AuditEvent?>
 
     /**
      * Returns a paginated list of audit events matching the given filters.
-     * All filter parameters are optional; null means "no filter".
      *
-     * @param params Pagination (page, size).
-     * @param actorId Filter by actor UUID.
-     * @param action Filter by action name.
-     * @param resource Filter by resource type.
-     * @param resourceId Filter by resource id.
-     * @param status Filter by [AuditStatus].
-     * @param fromTimestamp Events from this time (inclusive).
-     * @param toTimestamp Events up to this time (inclusive).
+     * Pagination and sort follow [ListingParamNames]; filters match the management list API axes
+     * (non-null parameters AND-combined; OR for repeated keys is handled outside this layer).
+     *
+     * @param pageParams One-based page and size ([ListingParamNames.Pagination]).
+     * @param sortBy List `sort_by` ([ListingParamNames.Sort.SORT_BY]).
+     * @param sortOrder List `sort_order` ([ListingParamNames.Sort.SORT_ORDER]).
+     * @param actorId Actor id filter.
+     * @param actorType Actor type filter.
+     * @param actorUserRole Actor user role filter (equality).
+     * @param action Action filter (persisted wire name).
+     * @param resource Resource type filter (persisted wire name).
+     * @param resourceId Resource id filter.
+     * @param status Status filter.
+     * @param message Case-insensitive substring on message when non-blank.
+     * @param payloadMaskingType When [PayloadMaskingType.MASKED], list item metadata and sensitive
+     * `resourceId` values (user email/phone resources) are redacted before return.
      */
     suspend fun getEventsList(
-        params: PageParams,
-        actorId: Uuid?,
-        action: String?,
-        resource: String?,
-        resourceId: String?,
-        status: AuditStatus?,
-        fromTimestamp: Instant?,
-        toTimestamp: Instant?
-    ): AppResult<PagedResponse<AuditEvent>>
+        payloadMaskingType: PayloadMaskingType,
+        pageParams: PageParams,
+        sortBy: AuditSortValues.AuditEventSortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
+        sortOrder: SortOrder = SortOrder.DESC,
+        actorId: String? = null,
+        actorType: AuditActorType? = null,
+        actorUserRole: String? = null,
+        action: AuditActionType? = null,
+        resource: AuditResourceType? = null,
+        resourceId: String? = null,
+        status: AuditStatus? = null,
+        message: String? = null
+    ): AppResult<PagedResult<AuditEvent>>
 }

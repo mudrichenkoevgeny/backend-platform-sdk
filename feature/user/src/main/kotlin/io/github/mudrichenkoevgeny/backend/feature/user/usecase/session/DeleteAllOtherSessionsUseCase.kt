@@ -76,7 +76,7 @@ class DeleteAllOtherSessionsUseCase @Inject constructor(
     }
 
     companion object {
-        const val AUDIT_ACTION = "delete_all_other_sessions"
-        const val AUDIT_RESOURCE = "user"
+        const val AUDIT_ACTION = UserAuditActionType.ACTION_SELF_REVOKE_OTHER_SESSIONS
+        const val AUDIT_RESOURCE = UserAuditResourceType.RESOURCE_USER
     }
 }

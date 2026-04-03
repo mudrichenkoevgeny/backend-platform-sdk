@@ -1,16 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.audit.logger
 
-import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditStatus
 import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import kotlinx.serialization.json.JsonPrimitive
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -27,7 +26,7 @@ class UserAuditLoggerImplTest {
             deviceName = DEVICE_NAME_PIXEL
         )
 
-        val eventSlot = slot<io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent>()
+        val eventSlot = slot<AuditEvent>()
 
         logger.logInternalError(
             requestContext = requestContext,
@@ -44,22 +43,25 @@ class UserAuditLoggerImplTest {
 
         val event = eventSlot.captured
         assertNull(event.actorId)
-        assertEquals(ACTION_LOGIN, event.action)
-        assertEquals(RESOURCE_SESSION, event.resource)
+        assertEquals(ACTION_LOGIN, event.action.serialName)
+        assertEquals(RESOURCE_SESSION, event.resource.serialName)
         assertEquals(RESOURCE_ID_SESSION_1, event.resourceId)
         assertEquals(AuditStatus.FAILED, event.status)
 
-        assertEquals(JsonPrimitive(IP_ADDRESS), event.metadata[UserAuditMetadata.Keys.IP_ADDRESS])
-        assertEquals(JsonPrimitive(DEVICE_NAME_PIXEL), event.metadata[UserAuditMetadata.Keys.DEVICE_NAME])
-        assertEquals(JsonPrimitive(UserAuditMetadata.Types.INTERNAL_ERROR), event.metadata[UserAuditMetadata.Keys.TYPE])
-        assertEquals(JsonPrimitive("value"), event.metadata["custom"])
-        assertFalse(event.metadata.containsKey("dropped"))
+        assertEquals(IP_ADDRESS, event.metadata.single { it.key == UserAuditMetadata.Keys.IP_ADDRESS }.value)
+        assertEquals(DEVICE_NAME_PIXEL, event.metadata.single { it.key == UserAuditMetadata.Keys.DEVICE_NAME }.value)
+        assertEquals(
+            UserAuditMetadata.Types.INTERNAL_ERROR,
+            event.metadata.single { it.key == UserAuditMetadata.Keys.TYPE }.value
+        )
+        assertEquals("value", event.metadata.single { it.key == "custom" }.value)
+        assertTrue(event.metadata.none { it.key == "dropped" })
     }
 
     @Test
     fun `logFail without type does not include type key`() {
         val requestContext = requestContext(ipAddress = IP_ADDRESS, deviceName = null)
-        val eventSlot = slot<io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent>()
+        val eventSlot = slot<AuditEvent>()
 
         logger.logFail(
             requestContext = requestContext,
@@ -74,14 +76,14 @@ class UserAuditLoggerImplTest {
 
         val event = eventSlot.captured
         assertEquals(AuditStatus.FAILED, event.status)
-        assertTrue(event.metadata.containsKey(UserAuditMetadata.Keys.IP_ADDRESS))
-        assertFalse(event.metadata.containsKey(UserAuditMetadata.Keys.TYPE))
+        assertTrue(event.metadata.any { it.key == UserAuditMetadata.Keys.IP_ADDRESS })
+        assertTrue(event.metadata.none { it.key == UserAuditMetadata.Keys.TYPE })
     }
 
     @Test
     fun `logSuccess logs success event`() {
         val requestContext = requestContext(ipAddress = IP_ADDRESS, deviceName = DEVICE_NAME_IPHONE)
-        val eventSlot = slot<io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent>()
+        val eventSlot = slot<AuditEvent>()
 
         logger.logSuccess(
             requestContext = requestContext,
@@ -97,8 +99,8 @@ class UserAuditLoggerImplTest {
         val event = eventSlot.captured
         assertEquals(AuditStatus.SUCCESS, event.status)
         assertEquals(
-            JsonPrimitive(UserAuditMetadata.Types.VERIFICATION_CODE_SENT),
-            event.metadata[UserAuditMetadata.Keys.TYPE]
+            UserAuditMetadata.Types.VERIFICATION_CODE_SENT,
+            event.metadata.single { it.key == UserAuditMetadata.Keys.TYPE }.value
         )
     }
 

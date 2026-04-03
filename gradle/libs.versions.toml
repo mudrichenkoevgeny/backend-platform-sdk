@@ -10,7 +10,7 @@ maven-publish-plugin = "0.36.0"
 dependency-analysis = "3.3.0"
 
 # Shared Foundation
-shared-foundation = "0.0.20"
+shared-foundation = "0.0.28"
 
 # Kotlin
 kotlinx-serialization = "1.9.0"
@@ -67,6 +67,7 @@ h2database = "2.4.240"
 shared-foundation-core-common = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-common", version.ref = "shared-foundation" }
 shared-foundation-core-settings = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-settings", version.ref = "shared-foundation" }
 shared-foundation-core-security = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-security", version.ref = "shared-foundation" }
+shared-foundation-core-audit = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-audit", version.ref = "shared-foundation" }
 shared-foundation-feature-user = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-feature-user", version.ref = "shared-foundation" }
 
 # Kotlin

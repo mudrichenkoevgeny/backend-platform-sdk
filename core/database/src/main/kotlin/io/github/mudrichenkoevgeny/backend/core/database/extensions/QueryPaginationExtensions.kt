@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.database.extensions
 
-import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PageParams
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import org.jetbrains.exposed.v1.jdbc.Query
 
 /**

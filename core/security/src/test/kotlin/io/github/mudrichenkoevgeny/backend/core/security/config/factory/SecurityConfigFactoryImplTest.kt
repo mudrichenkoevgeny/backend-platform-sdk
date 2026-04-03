@@ -29,7 +29,7 @@ class SecurityConfigFactoryImplTest {
 
         val config = factory.create()
 
-        assertEquals(15L, config.authenticationConfirmationValidityMinutes)
+        assertEquals(15L, config.recentAuthenticationValidityInMinutes)
         assertEquals(PasswordPolicy.DEFAULT_MIN_LENGTH, config.passwordPolicy.minLength)
         assertTrue(config.passwordPolicy.requireLetter)
         assertFalse(config.passwordPolicy.requireUpperCase)
@@ -56,7 +56,7 @@ class SecurityConfigFactoryImplTest {
 
         val config = factory.create()
 
-        assertEquals(60L, config.authenticationConfirmationValidityMinutes)
+        assertEquals(60L, config.recentAuthenticationValidityInMinutes)
         assertEquals(12, config.passwordPolicy.minLength)
         assertFalse(config.passwordPolicy.requireLetter)
         assertTrue(config.passwordPolicy.requireUpperCase)

@@ -14,6 +14,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.U
 import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.resource.UserAuditResourceType
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -135,7 +137,7 @@ class ResetPasswordUseCase @Inject constructor(
     }
 
     companion object {
-        const val AUDIT_ACTION = "password_reset"
-        const val AUDIT_RESOURCE = "user"
+        const val AUDIT_ACTION = UserAuditActionType.ACTION_RESET_PASSWORD
+        const val AUDIT_RESOURCE = UserAuditResourceType.RESOURCE_USER
     }
 }

@@ -20,7 +20,7 @@ class SecuritySettingsProviderImplTest {
     private val settingsService = mockk<SystemSettingsService>()
     private val defaultPolicy = PasswordPolicy(minLength = 10, requireDigit = true)
     private val config = SecurityConfig(
-        authenticationConfirmationValidityMinutes = 30,
+        recentAuthenticationValidityInMinutes = 30,
         passwordPolicy = defaultPolicy
     )
     private val provider = SecuritySettingsProviderImpl(settingsService, config)

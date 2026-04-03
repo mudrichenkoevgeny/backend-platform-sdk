@@ -11,6 +11,7 @@ dependencies {
 
     // Shared Foundation
     api(libs.shared.foundation.core.common)
+    api(libs.shared.foundation.core.audit)
 
     // Kotlin
     api(libs.kotlinx.serialization.json)

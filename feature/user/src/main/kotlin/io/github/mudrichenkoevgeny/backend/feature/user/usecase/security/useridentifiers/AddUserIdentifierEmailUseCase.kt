@@ -16,9 +16,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
-import io.github.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUtil
+import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.resource.UserAuditResourceType
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -56,7 +58,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
         val auditResourceId = userId.asHexDashString()
 
         val auditMetadata = mutableMapOf(
-            UserAuditMetadata.Keys.EMAIL_MASK to IdentifierMaskerUtil.maskEmail(email),
+            UserAuditMetadata.Keys.EMAIL_MASK to DataMasker.maskEmail(email),
             UserAuditMetadata.Keys.SESSION_ID to currentSessionId.asHexDashString()
         )
 
@@ -259,7 +261,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
     }
 
     companion object {
-        const val AUDIT_ACTION = "add_user_identifier_email"
-        const val AUDIT_RESOURCE = "user"
+        const val AUDIT_ACTION = UserAuditActionType.ACTION_ADD_IDENTIFIER_EMAIL
+        const val AUDIT_RESOURCE = UserAuditResourceType.RESOURCE_USER
     }
 }

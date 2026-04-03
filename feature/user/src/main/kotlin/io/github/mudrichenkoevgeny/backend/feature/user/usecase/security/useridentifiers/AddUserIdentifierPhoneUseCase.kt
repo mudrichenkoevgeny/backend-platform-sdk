@@ -15,9 +15,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
-import io.github.mudrichenkoevgeny.backend.feature.user.util.IdentifierMaskerUtil
+import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.resource.UserAuditResourceType
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -53,7 +55,7 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
         val auditResourceId = userId.asHexDashString()
 
         val auditMetadata = mutableMapOf(
-            UserAuditMetadata.Keys.PHONE_NUMBER_MASK to IdentifierMaskerUtil.maskPhone(phoneNumber),
+            UserAuditMetadata.Keys.PHONE_NUMBER_MASK to DataMasker.maskPhone(phoneNumber),
             UserAuditMetadata.Keys.SESSION_ID to currentSessionId.asHexDashString()
         )
 
@@ -241,7 +243,7 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
     }
 
     companion object {
-        const val AUDIT_ACTION = "add_user_identifier_phone"
-        const val AUDIT_RESOURCE = "user"
+        const val AUDIT_ACTION = UserAuditActionType.ACTION_ADD_IDENTIFIER_PHONE
+        const val AUDIT_RESOURCE = UserAuditResourceType.RESOURCE_USER
     }
 }

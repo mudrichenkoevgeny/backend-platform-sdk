@@ -97,6 +97,32 @@ sealed class CommonError(
     )
 
     /**
+     * Generic "not found" error for domain objects (resource/entity missing).
+     *
+     * Useful when a specific feature-level error is not needed.
+     *
+     * @param resource Logical resource name.
+     * @param identifier Optional identifier value used for lookup.
+     */
+    class NotFound(
+        val resource: String,
+        val identifier: String? = null
+    ) : CommonError(
+        errorId = ErrorId.generate(),
+        code = CommonErrorCodes.NOT_FOUND,
+        publicArgs = buildMap {
+            put(CommonErrorArgs.RESOURCE, resource)
+        },
+        secretArgs = buildMap {
+            if (identifier != null) {
+                put(CommonErrorArgs.IDENTIFIER, identifier)
+            }
+        }.takeIf { it.isNotEmpty() },
+        httpStatusCode = HttpStatusCode.NotFound,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
      * Rate limit exceeded for the given action.
      *
      * @param rateLimitActionCode Action that was rate-limited; in [secretArgs].

@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.database.extensions
 
-import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PageParams
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
 import io.github.mudrichenkoevgeny.backend.core.database.table.TestTable
 import kotlinx.coroutines.runBlocking

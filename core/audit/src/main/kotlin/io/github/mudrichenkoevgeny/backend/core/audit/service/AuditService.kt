@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.service
 
-import io.github.mudrichenkoevgeny.backend.core.audit.model.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 
 /**
  * Fire-and-forget audit logging API.

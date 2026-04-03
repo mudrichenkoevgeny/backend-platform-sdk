@@ -13,7 +13,7 @@ class AuthenticationPolicyCheckerImplTest {
     fun `isAuthenticationConfirmedRecently returns true when within configured validity window`() {
         val checker = AuthenticationPolicyCheckerImpl(
             securityConfig = SecurityConfig(
-                authenticationConfirmationValidityMinutes = 60,
+                recentAuthenticationValidityInMinutes = 60,
                 passwordPolicy = PasswordPolicy()
             )
         )
@@ -27,7 +27,7 @@ class AuthenticationPolicyCheckerImplTest {
     fun `isAuthenticationConfirmedRecently returns false when outside configured validity window`() {
         val checker = AuthenticationPolicyCheckerImpl(
             securityConfig = SecurityConfig(
-                authenticationConfirmationValidityMinutes = 1,
+                recentAuthenticationValidityInMinutes = 1,
                 passwordPolicy = PasswordPolicy()
             )
         )

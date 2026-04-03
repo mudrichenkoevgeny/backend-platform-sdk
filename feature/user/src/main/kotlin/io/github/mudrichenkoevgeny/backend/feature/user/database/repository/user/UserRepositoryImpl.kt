@@ -1,17 +1,22 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
-import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PageParams
-import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PagedResponse
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.getNumOfTotalPages
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.listing.sorting.SortDirection
 import io.github.mudrichenkoevgeny.backend.core.common.util.CollectionUtils.isAllArgsNull
 import io.github.mudrichenkoevgeny.backend.core.database.extensions.applyPagination
 import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
+import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserListSort
+import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserListSortBy
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
 import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
@@ -119,27 +124,46 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
     override suspend fun getUsersList(
         params: PageParams,
         role: UserRole?,
-        accountStatus: UserAccountStatus?
-    ): AppResult<PagedResponse<User>> {
-        val query = UsersTable.selectAll()
+        accountStatus: UserAccountStatus?,
+        sort: UserListSort = UserListSort.DEFAULT,
+    ): AppResult<PagedResult<User>> {
+        var query = UsersTable.selectAll()
 
-        role?.let { r -> query.andWhere { UsersTable.role eq r } }
-        accountStatus?.let { status -> query.andWhere { UsersTable.accountStatus eq status } }
+        role?.let { r -> query = query.andWhere { UsersTable.role eq r } }
+        accountStatus?.let { status -> query = query.andWhere { UsersTable.accountStatus eq status } }
 
-        val totalCount = query.count()
+        val totalCount = query.count().toLong()
+
+        val (sortColumn, sortOrder) = sort.toExposedOrder()
 
         val users = query
+            .orderBy(sortColumn to sortOrder, UsersTable.id to SortOrder.ASC)
             .applyPagination(params)
             .map { it.toUser() }
 
         return AppResult.Success(
-            PagedResponse(
+            PagedResult(
                 items = users,
                 totalCount = totalCount,
-                page = params.page,
-                size = params.size
+                pageNumber = params.page,
+                pageSize = params.size,
+                totalPages = getNumOfTotalPages(totalCount, params.size),
             )
         )
+    }
+
+    private fun UserListSort.toExposedOrder(): Pair<Column<*>, SortOrder> {
+        val order = when (this.order) {
+            SortDirection.ASC -> SortOrder.ASC
+            SortDirection.DESC -> SortOrder.DESC
+        }
+        val column: Column<*> = when (this.sortBy) {
+            UserListSortBy.LAST_LOGIN_AT -> UsersTable.lastLoginAt
+            UserListSortBy.LAST_ACTIVE_AT -> UsersTable.lastActiveAt
+            UserListSortBy.CREATED_AT -> UsersTable.createdAt
+            UserListSortBy.UPDATED_AT -> UsersTable.updatedAt
+        }
+        return column to order
     }
 
     private fun ResultRow.toUser(): User = User(

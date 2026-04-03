@@ -25,6 +25,7 @@ import io.github.mudrichenkoevgeny.backend.core.storage.di.StorageModules
 import io.github.mudrichenkoevgeny.backend.feature.user.di.UserModules
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.AuthenticatedWebSocketRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserFeatureRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.scheduled.UserScheduledJobs
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.settings.SeedAuthSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.SeedAdminAccountsUseCase
@@ -52,6 +53,7 @@ import javax.inject.Singleton
         StorageModules::class,
         CrosscuttingModules::class,
         UserModules::class,
+        AuditParsersModule::class,
         AppModule::class
     ]
 )
@@ -96,6 +98,7 @@ interface AppComponent {
     fun seedAuthSettingsUseCase(): SeedAuthSettingsUseCase
     fun userFeatureRouter(): UserFeatureRouter
     fun authenticatedWebSocketRouter(): AuthenticatedWebSocketRouter
+    fun userScheduledJobs(): UserScheduledJobs
 
     // app
     fun appBootstrap(): AppBootstrap

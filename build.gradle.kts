@@ -18,7 +18,8 @@ allprojects {
 
 subprojects {
     val isBom = project.name == "bom"
-    val isModule = file("src").exists() || isBom
+    val isModule = project.projectDir.resolve("src").exists() || isBom
+
     if (!isModule) {
         return@subprojects
     }

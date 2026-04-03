@@ -1,6 +1,7 @@
 {
   "UNKNOWN": "An unknown error has occurred.",
   "INTERNAL": "An error has occurred.",
+  "NOT_FOUND": "Resource '{resource}' was not found.",
   "SERVICE_UNAVAILABLE": "The service is temporarily unavailable.",
   "TOO_MANY_REQUESTS": "Too many requests. Try again in {retryAfterSeconds} seconds.",
   "MISSING_REQUIRED_PARAMETER": "The required parameter '{parameterName}' is missing.",
