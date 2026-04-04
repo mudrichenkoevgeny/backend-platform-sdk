@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.domain.wire.AuditWireResou
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
-import io.github.mudrichenkoevgeny.backend.core.security.masking.PayloadMaskingType
+import io.github.mudrichenkoevgeny.backend.core.common.mask.PayloadMaskingType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId

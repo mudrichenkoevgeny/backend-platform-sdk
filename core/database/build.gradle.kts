@@ -11,6 +11,7 @@ dependencies {
 
     // Kotlin
     api(libs.kotlinx.coroutines.core) // Transitive for Project Modules
+    implementation(libs.kotlinx.serialization.json)
 
     // Ktor
     implementation(libs.ktor.server.core) // Transitive for Project Modules

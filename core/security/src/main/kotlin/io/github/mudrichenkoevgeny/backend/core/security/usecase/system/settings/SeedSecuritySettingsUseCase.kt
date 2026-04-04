@@ -1,4 +1,4 @@
-package io.github.mudrichenkoevgeny.backend.core.security.settings.usecase
+package io.github.mudrichenkoevgeny.backend.core.security.usecase.system.settings
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider

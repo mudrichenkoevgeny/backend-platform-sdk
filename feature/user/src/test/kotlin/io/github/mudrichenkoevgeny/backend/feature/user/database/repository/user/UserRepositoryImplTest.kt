@@ -9,8 +9,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
 import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserListSort
 import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserListSortBy
 import io.github.mudrichenkoevgeny.backend.feature.user.testutil.ExposedTestDb
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull

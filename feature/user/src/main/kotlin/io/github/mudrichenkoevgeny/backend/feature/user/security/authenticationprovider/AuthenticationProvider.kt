@@ -1,33 +1,49 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 
 /**
  * Configures request authentication and exposes authorization helpers for the user feature.
  *
- * Implementations are expected to integrate with Ktor authentication and to provide
- * a single place to enforce role/account-status rules when accessing protected resources.
+ * Implementations integrate with Ktor (e.g. JWT), resolve the current principal from the call, load
+ * [UserDetails] from persistence, and apply a consistent policy stack: **role**, **permissions** (when
+ * requested), and **account status** (banned / read-only), mapping failures to [UserError] via
+ * [AppResult].
  */
 interface AuthenticationProvider {
     fun configureAuthentication(application: Application)
 
     /**
-     * Authorizes a user based on their JWT token.
+     * Resolves the authenticated user for [call] and enforces access rules before returning
+     * [UserDetails].
      *
-     * @param call The current application call.
-     * @param allowedRoles Roles that are allowed to access the resource. Default is all roles.
-     * @param allowReadOnlyAccounts Whether users with READ_ONLY status are allowed. Default is true.
-     * @param allowBannedAccounts Whether users with BANNED status are allowed. Default is false.
-     * @return Result containing the authorized User or an error if authorization fails.
+     * Typical order of checks (after a valid token / principal is present): load user by id from
+     * storage; verify [allowedRoles]; verify [requiredPermissions] when non-empty; then apply
+     * [allowBannedAccounts] / [allowReadOnlyAccounts] for [UserAccountStatus].
+     *
+     * @param call Current HTTP/WebSocket call (must carry credentials the implementation understands).
+     * @param allowedRoles User must have one of these roles. Default: every [UserRole] value.
+     * @param requiredPermissions When **empty** (default), permission codes are not checked. When
+     * **non-empty**, the user must hold **every** listed [UserPermissionCode] in
+     * [UserDetails.permissions] (**AND** semantics). Missing any required code yields the same
+     * outcome as an insufficient role (e.g. forbidden).
+     * @param allowReadOnlyAccounts If `false`, users with [UserAccountStatus.READ_ONLY] are rejected.
+     * @param allowBannedAccounts If `false`, users with [UserAccountStatus.BANNED] are rejected.
+     * @return [AppResult.Success] with the loaded user, or [AppResult.Error] (token, not found,
+     * forbidden, blocked, read-only, etc.).
      */
     suspend fun requireUser(
         call: ApplicationCall,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
+        requiredPermissions: Set<UserPermissionCode> = setOf(),
         allowReadOnlyAccounts: Boolean = true,
         allowBannedAccounts: Boolean = false
-    ): AppResult<User>
+    ): AppResult<UserDetails>
 }

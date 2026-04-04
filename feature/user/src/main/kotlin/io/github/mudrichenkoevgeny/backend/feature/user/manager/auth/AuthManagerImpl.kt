@@ -1,6 +1,5 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.auth
 
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
@@ -11,9 +10,10 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton

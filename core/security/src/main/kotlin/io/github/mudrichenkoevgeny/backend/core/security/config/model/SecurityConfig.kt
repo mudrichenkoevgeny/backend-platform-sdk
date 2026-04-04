@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.security.config.model
 
 import io.github.mudrichenkoevgeny.backend.core.security.config.factory.SecurityConfigFactory
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicy.model.PasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicy
 
 /**
  * Runtime security configuration resolved at application startup.

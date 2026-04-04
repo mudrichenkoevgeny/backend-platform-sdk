@@ -11,12 +11,13 @@ import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionId
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserId
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserAuthSpec
 import io.ktor.http.auth.HttpAuthHeader
@@ -35,7 +36,8 @@ import javax.inject.Singleton
  * - extracts the token from the `Authorization` header (Bearer) or from a query parameter;
  * - validates that the referenced user exists and updates session last access time (when present);
  * - maps validation failures to [UserError] through [AppErrorParser] in the auth challenge;
- * - provides [requireUser] to enforce role/account-status checks for protected endpoints.
+ * - [requireUser] loads [UserDetails] and enforces role, optional permission set (AND over
+ *   [UserPermissionCode]), and account-status flags consistent with [AuthenticationProvider].
  */
 @Singleton
 class JwtAuthenticationProvider @Inject constructor(
@@ -58,7 +60,7 @@ class JwtAuthenticationProvider @Inject constructor(
                         return@authHeader authHeader
                     }
 
-                    val queryToken = call.request.queryParameters[UserApiQueryParams.TOKEN]
+                    val queryToken = call.request.queryParameters[UserApiQueryParams.ACCESS_TOKEN]
                     if (queryToken != null) {
                         return@authHeader HttpAuthHeader.Single(UserAuthSpec.TOKEN_TYPE_BEARER, queryToken)
                     }
@@ -101,9 +103,10 @@ class JwtAuthenticationProvider @Inject constructor(
     override suspend fun requireUser(
         call: ApplicationCall,
         allowedRoles: Set<UserRole>,
+        requiredPermissions: Set<UserPermissionCode>,
         allowReadOnlyAccounts: Boolean,
         allowBannedAccounts: Boolean
-    ): AppResult<User> {
+    ): AppResult<UserDetails> {
         val userId = when (val userIdResult = call.getUserIdFromPayload()) {
             is AppResult.Success -> {
                 userIdResult.data
@@ -123,6 +126,12 @@ class JwtAuthenticationProvider @Inject constructor(
         }
 
         if (user.role !in allowedRoles) {
+            return AppResult.Error(UserError.UserForbidden(userId))
+        }
+
+        if (requiredPermissions.isNotEmpty() &&
+            !requiredPermissions.all { required -> required in user.permissions }
+        ) {
             return AppResult.Error(UserError.UserForbidden(userId))
         }
 

@@ -2,10 +2,10 @@ package io.github.mudrichenkoevgeny.backend.core.audit.manager
 
 import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepository
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
+import io.github.mudrichenkoevgeny.backend.core.common.mask.PayloadMaskingType
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
-import io.github.mudrichenkoevgeny.backend.core.security.masking.PayloadMaskingType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
@@ -16,7 +16,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.res
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.resource.UserAuditResourceType
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -34,7 +33,7 @@ class AuditManagerImpl @Inject constructor(
 
     override suspend fun getEventById(
         payloadMaskingType: PayloadMaskingType,
-        eventId: AuditEventId,
+        eventId: AuditEventId
     ): AppResult<AuditEvent?> = dbQuery {
         val getEventResult = auditRepository.getEventById(eventId)
         when (getEventResult) {
@@ -97,12 +96,17 @@ class AuditManagerImpl @Inject constructor(
     }
 
     private fun AuditEvent.maskSensitiveData(): AuditEvent {
+        // todo wait shared update
         val resourceId = when (resource) {
-            UserAuditResourceType.USER_EMAIL -> resourceId?.let { email -> DataMasker.maskEmail(email) }
-            UserAuditResourceType.USER_PHONE -> resourceId?.let { phone -> DataMasker.maskPhone(phone) }
-            UserAuditResourceType.USER_IDENTIFIER -> resourceId?.let { id -> DataMasker.maskId(id) }
+//            UserAuditResourceType.USER_EMAIL -> resourceId?.let { email -> DataMasker.maskEmail(email) }
+//            UserAuditResourceType.USER_PHONE -> resourceId?.let { phone -> DataMasker.maskPhone(phone) }
+//            UserAuditResourceType.USER_IDENTIFIER -> resourceId?.let { id -> DataMasker.maskId(id) }
             else -> resourceId
         }
+
+        /*val resourceId = when (resourceValueSensitivity) {
+
+        }*/
 
         val maskedMetadata = metadata.map { auditEventMetadata ->
             val auditEventMetadataValue = when (auditEventMetadata.valueSensitivity) {

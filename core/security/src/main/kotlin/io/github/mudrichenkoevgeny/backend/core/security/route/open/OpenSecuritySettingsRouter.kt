@@ -1,14 +1,14 @@
-package io.github.mudrichenkoevgeny.backend.core.security.settings.route
+package io.github.mudrichenkoevgeny.backend.core.security.route.open
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.security.route.SecurityFeatureRouter
 import io.github.mudrichenkoevgeny.backend.core.security.route.SecuritySwaggerTags
-import io.github.mudrichenkoevgeny.backend.core.security.settings.mapper.toSecuritySettingsResponse
-import io.github.mudrichenkoevgeny.backend.core.security.settings.usecase.GetSecuritySettingsUseCase
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.route.settings.SecuritySettingsRoutes
+import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.settings.GetSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toSecuritySettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.route.open.security.settings.OpenSecuritySettingsRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
 import io.ktor.http.HttpStatusCode
@@ -19,12 +19,9 @@ import javax.inject.Singleton
 
 /**
  * HTTP routes for reading security settings.
- *
- * This router is part of [SecurityFeatureRouter] and exposes endpoints defined in
- * [SecuritySettingsRoutes].
  */
 @Singleton
-class SecuritySettingsRouter @Inject constructor(
+class OpenSecuritySettingsRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val getSecuritySettingsUseCase: GetSecuritySettingsUseCase
@@ -32,7 +29,7 @@ class SecuritySettingsRouter @Inject constructor(
 
     override fun register(route: Route) {
         route.get(
-            path = SecuritySettingsRoutes.GET_SECURITY_SETTINGS,
+            path = OpenSecuritySettingsRoutes.GET_SECURITY_SETTINGS,
             builder = { getSecuritySettingsDocs() },
             body = { getSecuritySettings() }
         )
@@ -42,7 +39,7 @@ class SecuritySettingsRouter @Inject constructor(
         summary = GET_SECURITY_SETTINGS_ROUTE_SUMMARY
         description = GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION
         operationId = GET_SECURITY_SETTINGS_ROUTE_OPERATION_ID
-        tags = listOf(SecuritySwaggerTags.SECURITY_SETTINGS)
+        tags = listOf(CommonSwaggerTags.OPEN, SecuritySwaggerTags.SECURITY_SETTINGS)
         response {
             code(HttpStatusCode.OK) {
                 description = GET_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
@@ -54,7 +51,7 @@ class SecuritySettingsRouter @Inject constructor(
         val result = getSecuritySettingsUseCase.execute()
 
         call.respondResult(result, appLogger, appErrorParser) { securitySettings ->
-            securitySettings.toSecuritySettingsResponse()
+            securitySettings.toSecuritySettingsPayload()
         }
     }
 

@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.security.settings.usecase
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
+import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicy.model.PasswordPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicy.validator.PasswordPolicyValidatorImpl
@@ -18,7 +19,7 @@ class ValidatePasswordUseCaseTest {
     fun `invoke returns success when password satisfies policy`() {
         val provider = mockk<SecuritySettingsProvider>()
         val policy = PasswordPolicy(minLength = 8, requireDigit = true)
-        every { provider.requirePasswordPolicy() } returns policy
+        every { provider.getPasswordPolicy() } returns policy
 
         val useCase = ValidatePasswordUseCase(
             securitySettingsProvider = provider,
@@ -34,7 +35,7 @@ class ValidatePasswordUseCaseTest {
     fun `invoke returns PasswordTooWeak with detailed publicArgs when password violates policy`() {
         val provider = mockk<SecuritySettingsProvider>()
         val policy = PasswordPolicy(minLength = 12, requireDigit = true, requireUpperCase = true)
-        every { provider.requirePasswordPolicy() } returns policy
+        every { provider.getPasswordPolicy() } returns policy
 
         val useCase = ValidatePasswordUseCase(
             securitySettingsProvider = provider,

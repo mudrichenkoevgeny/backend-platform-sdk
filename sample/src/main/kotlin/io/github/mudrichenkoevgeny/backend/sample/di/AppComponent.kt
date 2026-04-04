@@ -17,7 +17,7 @@ import io.github.mudrichenkoevgeny.backend.core.observability.di.ObservabilityMo
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
 import io.github.mudrichenkoevgeny.backend.core.security.di.SecurityModules
 import io.github.mudrichenkoevgeny.backend.core.security.route.SecurityFeatureRouter
-import io.github.mudrichenkoevgeny.backend.core.security.settings.usecase.SeedSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.core.security.usecase.system.settings.SeedSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.core.settings.di.SettingsModules
 import io.github.mudrichenkoevgeny.backend.core.settings.global.usecase.SeedGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.core.settings.route.SettingsFeatureRouter

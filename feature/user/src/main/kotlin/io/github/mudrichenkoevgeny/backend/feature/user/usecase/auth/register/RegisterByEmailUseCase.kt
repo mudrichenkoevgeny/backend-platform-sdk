@@ -4,7 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.Req
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
-import io.github.mudrichenkoevgeny.backend.core.security.settings.usecase.ValidatePasswordUseCase
+import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
 import io.github.mudrichenkoevgeny.backend.feature.user.model.otp.OtpVerificationType
@@ -14,7 +14,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 

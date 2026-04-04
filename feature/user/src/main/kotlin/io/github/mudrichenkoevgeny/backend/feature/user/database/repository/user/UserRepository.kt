@@ -1,74 +1,90 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserListSort
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingParamNames
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
-import java.time.Instant
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
+import kotlin.time.Instant
 
 /**
- * Persistence API for users backed by the user-feature database schema.
+ * Data access for users (persistence and querying).
+ *
+ * Implementations are responsible for storing user rows and returning paginated lists
+ * with optional filters.
  */
 interface UserRepository {
-    /**
-     * Persists a new [user].
-     *
-     * @param user user to create
-     * @return created user or an error when persistence fails
-     */
-    suspend fun createUser(user: User): AppResult<User>
+    suspend fun createUser(user: UserDetails): AppResult<UserDetails>
 
-    /**
-     * Deletes a user by id.
-     *
-     * @param userId user id to delete
-     * @return success or an error when deletion fails
-     */
     suspend fun deleteUser(userId: UserId): AppResult<Unit>
 
-    /**
-     * Updates selected fields of the provided [user].
-     *
-     * When all optional update fields are `null`, returns the original [user] without touching storage.
-     *
-     * @param user current user snapshot
-     * @param status optional account status override
-     * @param lastLoginAt optional last login timestamp
-     * @param lastActiveAt optional last active timestamp
-     * @return updated user snapshot or an error when update fails
-     */
     suspend fun updateUser(
-        user: User,
+        user: UserDetails,
         status: UserAccountStatus? = null,
+        statusBeforeDeletion: UserAccountStatus? = null,
+        permissions: Set<UserPermissionCode> = setOf(),
         lastLoginAt: Instant? = null,
         lastActiveAt: Instant? = null,
-    ): AppResult<User>
+        scheduledPermanentDeletionAt: Instant? = null,
+    ): AppResult<UserDetails>
+
+    suspend fun getUserById(userId: UserId): AppResult<UserDetails?>
 
     /**
-     * Loads a user by id.
+     * Returns a page of [UserDetails] rows matching optional filters, ordered by [sortBy] and [sortOrder].
      *
-     * @param userId user id to look up
-     * @return user when found, `null` when missing, or an error
-     */
-    suspend fun getUserById(userId: UserId): AppResult<User?>
-
-    /**
-     * Returns a paginated list of users with optional filters and [sort] order.
+     * **Pagination** (same semantics as [ListingParamNames.Pagination]): [PageParams.page] is the one-based
+     * page index ([ListingParamNames.Pagination.PAGE_NUMBER]); [PageParams.size] is
+     * [ListingParamNames.Pagination.PAGE_SIZE].
      *
-     * @param params pagination parameters
-     * @param role optional role filter
-     * @param accountStatus optional account status filter
-     * @param sort primary sort column and direction (see [UserListSort])
-     * @return paged result or an error
+     * **Sort** (same semantics as [ListingParamNames.Sort]): [sortBy] is the list `sort_by`
+     * ([UserSortValues.UserSortBy] wire); [sortOrder] is `sort_order` ([SortOrder] wire).
+     *
+     * **Filters** align with the management user list API (user filter axis names / payload fields):
+     * absent parameter means no filter on that axis. Non-null parameters combine as **AND**. Repeating the same
+     * filter key as **OR** is not expressed here; compose that at a higher layer (e.g. HTTP handler) if needed.
+     *
+     * - [role] — [UserDetails.role].
+     * - [accountStatus] — [UserDetails.accountStatus].
+     * - [accountStatusBeforeDeletion] — [UserDetails.accountStatusBeforeDeletion].
+     * - [userPermissionCode] — user has this code in [UserDetails.permissions] (implementation matches stored
+     *   representation to [UserPermissionCode.value]); `null` means no permission filter.
+     *
+     * @param pageParams One-based page and page size.
+     * @param sortBy Sort field for the listing.
+     * @param sortOrder Sort direction.
+     * @param role Filter by role.
+     * @param accountStatus Filter by current account status.
+     * @param accountStatusBeforeDeletion Filter by stored pre-deletion account status.
+     * @param userPermissionCode Filter by presence of this permission in the user's permission set.
+     * @return [PagedResult] of matching users or an error.
      */
     suspend fun getUsersList(
-        params: PageParams,
+        pageParams: PageParams,
+        sortBy: UserSortValues.UserSortBy = UserSortValues.UserSortBy.CREATED_AT,
+        sortOrder: SortOrder = SortOrder.DESC,
         role: UserRole? = null,
         accountStatus: UserAccountStatus? = null,
-        sort: UserListSort = UserListSort.DEFAULT,
-    ): AppResult<PagedResult<User>>
+        accountStatusBeforeDeletion: UserAccountStatus? = null,
+        userPermissionCode: UserPermissionCode? = null
+    ): AppResult<PagedResult<UserDetails>>
+
+    /**
+     * Deletes users whose scheduled permanent deletion time has passed relative to [asOf].
+     *
+     * A row matches when [UserDetails.scheduledPermanentDeletionAt] is non-null and
+     * `scheduledPermanentDeletionAt <= asOf` (same instant semantics as on the wire / domain model).
+     *
+     * Callers typically pass `Clock.System.now()` from a scheduled job; a fixed [asOf] keeps tests deterministic.
+     *
+     * @param asOf Upper bound instant for eligibility (inclusive).
+     * @return Count of deleted rows, or an error when persistence fails.
+     */
+    suspend fun deleteUsersDueForPermanentDeletion(asOf: Instant): AppResult<Int>
 }

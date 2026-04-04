@@ -21,6 +21,7 @@ dependencies {
     // Ktor
     api(libs.ktor.server.core) // Transitive for Project Modules
     api(libs.ktor.http) // Transitive for Ktor
+    implementation(libs.ktor.server.auth)
     implementation(libs.ktor.utils) // Transitive for Ktor
 
     // DI

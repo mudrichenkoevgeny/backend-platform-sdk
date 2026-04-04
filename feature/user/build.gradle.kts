@@ -46,6 +46,7 @@ dependencies {
     runtimeOnly(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
     implementation(libs.exposed.java.time)
+    implementation(libs.exposed.json)
 
     // Swagger
     implementation(libs.smiley4.ktor.openapi)

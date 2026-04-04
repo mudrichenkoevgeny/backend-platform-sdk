@@ -10,7 +10,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.U
 import io.github.mudrichenkoevgeny.backend.feature.user.model.otp.OtpVerificationType
 import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
-import io.github.mudrichenkoevgeny.backend.core.security.settings.usecase.ValidatePasswordUseCase
+import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
 import io.mockk.coEvery
 import io.mockk.every

@@ -4,49 +4,58 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.getNumOfTotalPages
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.common.listing.sorting.SortDirection
-import io.github.mudrichenkoevgeny.backend.core.common.util.CollectionUtils.isAllArgsNull
+import io.github.mudrichenkoevgeny.backend.core.common.util.toJavaInstant
+import io.github.mudrichenkoevgeny.backend.core.common.util.toKotlinInstant
 import io.github.mudrichenkoevgeny.backend.core.database.extensions.applyPagination
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserListSort
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserListSortBy
+import io.github.mudrichenkoevgeny.backend.core.database.extensions.jsonbContainsSingleString
+import io.github.mudrichenkoevgeny.backend.core.database.mapper.toExposedSortOrder
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import org.jetbrains.exposed.v1.core.ResultRow
-import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNotNull
+import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
-import java.time.Instant
+import java.time.Instant as JavaInstant
 import javax.inject.Inject
+import kotlin.time.Instant as KotlinInstant
 import javax.inject.Singleton
 
 @Singleton
 /**
  * Default [UserRepository] implementation backed by Exposed and [UsersTable].
  *
- * Performs synchronous Exposed DSL operations and maps [ResultRow] values into [User] models.
+ * Performs synchronous Exposed DSL operations and maps [ResultRow] values into [UserDetails].
  * Returns [CommonError.Database] when inserts/updates report no affected rows.
  */
 class UserRepositoryImpl @Inject constructor() : UserRepository {
 
-    override suspend fun createUser(
-        user: User
-    ): AppResult<User> {
-        val inserted = UsersTable.insert { userRow ->
-            userRow[id] = user.id.value
-            userRow[role] = user.role
-            userRow[accountStatus] = user.accountStatus
-            userRow[lastLoginAt] = user.lastLoginAt
-            userRow[lastActiveAt] = user.lastActiveAt
-            userRow[createdAt] = user.createdAt
-            userRow[updatedAt] = user.updatedAt
+    override suspend fun createUser(user: UserDetails): AppResult<UserDetails> {
+        val inserted = UsersTable.insert { row ->
+            row[UsersTable.id] = user.id.value
+            row[UsersTable.role] = user.role
+            row[UsersTable.accountStatus] = user.accountStatus
+            row[UsersTable.accountStatusBeforeDeletion] = user.accountStatusBeforeDeletion
+            row[UsersTable.permissions] = user.permissions.map { userPermissionCode ->
+                userPermissionCode.value
+            }.toSet()
+            row[UsersTable.lastLoginAt] = user.lastLoginAt?.toJavaInstant()
+            row[UsersTable.lastActiveAt] = user.lastActiveAt?.toJavaInstant()
+            row[UsersTable.createdAt] = user.createdAt.toJavaInstant()
+            row[UsersTable.updatedAt] = user.updatedAt?.toJavaInstant()
+            row[UsersTable.scheduledPermanentDeletionAt] = user.scheduledPermanentDeletionAt?.toJavaInstant()
         }
 
         if (inserted.insertedCount == 0) {
@@ -58,40 +67,54 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         return AppResult.Success(user)
     }
 
-    override suspend fun deleteUser(
-        userId: UserId
-    ): AppResult<Unit> {
+    override suspend fun deleteUser(userId: UserId): AppResult<Unit> {
         UsersTable.deleteWhere { UsersTable.id eq userId.value }
-
         return AppResult.Success(Unit)
     }
 
     override suspend fun updateUser(
-        user: User,
+        user: UserDetails,
         status: UserAccountStatus?,
-        lastLoginAt: Instant?,
-        lastActiveAt: Instant?
-    ): AppResult<User> {
-        if (isAllArgsNull(status, lastLoginAt, lastActiveAt)) {
+        statusBeforeDeletion: UserAccountStatus?,
+        permissions: Set<UserPermissionCode>,
+        lastLoginAt: KotlinInstant?,
+        lastActiveAt: KotlinInstant?,
+        scheduledPermanentDeletionAt: KotlinInstant?,
+    ): AppResult<UserDetails> {
+        val permissionsUpdated = permissions.isNotEmpty()
+        if (
+            status == null &&
+            statusBeforeDeletion == null &&
+            !permissionsUpdated &&
+            lastLoginAt == null &&
+            lastActiveAt == null &&
+            scheduledPermanentDeletionAt == null
+        ) {
             return AppResult.Success(user)
         }
 
-        val updatedAt = Instant.now()
+        val updatedAtJavaInstant = JavaInstant.now()
 
-        val updatedRows = UsersTable.update({ UsersTable.id eq user.id.value }) {
+        val updatedRows = UsersTable.update({ UsersTable.id eq user.id.value }) { stmt ->
             if (status != null) {
-                it[UsersTable.accountStatus] = status
+                stmt[UsersTable.accountStatus] = status
             }
-
+            if (statusBeforeDeletion != null) {
+                stmt[UsersTable.accountStatusBeforeDeletion] = statusBeforeDeletion
+            }
+            if (permissionsUpdated) {
+                stmt[UsersTable.permissions] = permissions.map { it.value }.toSet()
+            }
             if (lastLoginAt != null) {
-                it[UsersTable.lastLoginAt] = lastLoginAt
+                stmt[UsersTable.lastLoginAt] = lastLoginAt.toJavaInstant()
             }
-
             if (lastActiveAt != null) {
-                it[UsersTable.lastActiveAt] = lastActiveAt
+                stmt[UsersTable.lastActiveAt] = lastActiveAt.toJavaInstant()
             }
-
-            it[UsersTable.updatedAt] = updatedAt
+            if (scheduledPermanentDeletionAt != null) {
+                stmt[UsersTable.scheduledPermanentDeletionAt] = scheduledPermanentDeletionAt.toJavaInstant()
+            }
+            stmt[UsersTable.updatedAt] = updatedAtJavaInstant
         }
 
         if (updatedRows == 0) {
@@ -103,16 +126,17 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         return AppResult.Success(
             user.copy(
                 accountStatus = status ?: user.accountStatus,
+                accountStatusBeforeDeletion = statusBeforeDeletion ?: user.accountStatusBeforeDeletion,
+                permissions = if (permissionsUpdated) permissions else user.permissions,
                 lastLoginAt = lastLoginAt ?: user.lastLoginAt,
                 lastActiveAt = lastActiveAt ?: user.lastActiveAt,
-                updatedAt = updatedAt
+                scheduledPermanentDeletionAt = scheduledPermanentDeletionAt ?: user.scheduledPermanentDeletionAt,
+                updatedAt = updatedAtJavaInstant.toKotlinInstant(),
             )
         )
     }
 
-    override suspend fun getUserById(
-        userId: UserId
-    ): AppResult<User?> {
+    override suspend fun getUserById(userId: UserId): AppResult<UserDetails?> {
         val resultRow = UsersTable
             .selectAll()
             .where { UsersTable.id eq userId.value }
@@ -122,57 +146,77 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
     }
 
     override suspend fun getUsersList(
-        params: PageParams,
+        pageParams: PageParams,
+        sortBy: UserSortValues.UserSortBy,
+        sortOrder: SortOrder,
         role: UserRole?,
         accountStatus: UserAccountStatus?,
-        sort: UserListSort = UserListSort.DEFAULT,
-    ): AppResult<PagedResult<User>> {
+        accountStatusBeforeDeletion: UserAccountStatus?,
+        userPermissionCode: UserPermissionCode?
+    ): AppResult<PagedResult<UserDetails>> {
         var query = UsersTable.selectAll()
 
         role?.let { r -> query = query.andWhere { UsersTable.role eq r } }
         accountStatus?.let { status -> query = query.andWhere { UsersTable.accountStatus eq status } }
+        accountStatusBeforeDeletion?.let { status ->
+            query = query.andWhere { UsersTable.accountStatusBeforeDeletion eq status }
+        }
+        userPermissionCode?.let { code ->
+            query = query.andWhere { UsersTable.permissions jsonbContainsSingleString code.value }
+        }
 
-        val totalCount = query.count().toLong()
+        val totalCount = query.count()
 
-        val (sortColumn, sortOrder) = sort.toExposedOrder()
+        val sortColumn = when (sortBy) {
+            UserSortValues.UserSortBy.LAST_LOGIN_AT -> UsersTable.lastLoginAt
+            UserSortValues.UserSortBy.LAST_ACTIVE_AT -> UsersTable.lastActiveAt
+            UserSortValues.UserSortBy.SCHEDULED_PERMANENT_DELETION_AT -> UsersTable.scheduledPermanentDeletionAt
+            UserSortValues.UserSortBy.CREATED_AT -> UsersTable.createdAt
+            UserSortValues.UserSortBy.UPDATED_AT -> UsersTable.updatedAt
+        }
+        val exposedSortOrder = sortOrder.toExposedSortOrder()
 
         val users = query
-            .orderBy(sortColumn to sortOrder, UsersTable.id to SortOrder.ASC)
-            .applyPagination(params)
+            .orderBy(sortColumn to exposedSortOrder)
+            .applyPagination(pageParams)
             .map { it.toUser() }
+
+        val totalPages = getNumOfTotalPages(totalCount, pageParams.size)
 
         return AppResult.Success(
             PagedResult(
                 items = users,
                 totalCount = totalCount,
-                pageNumber = params.page,
-                pageSize = params.size,
-                totalPages = getNumOfTotalPages(totalCount, params.size),
+                pageNumber = pageParams.page,
+                pageSize = pageParams.size,
+                totalPages = totalPages,
             )
         )
     }
 
-    private fun UserListSort.toExposedOrder(): Pair<Column<*>, SortOrder> {
-        val order = when (this.order) {
-            SortDirection.ASC -> SortOrder.ASC
-            SortDirection.DESC -> SortOrder.DESC
+    override suspend fun deleteUsersDueForPermanentDeletion(asOf: KotlinInstant): AppResult<Int> {
+        val asOfJavaInstant = asOf.toJavaInstant()
+        val deletedCount = UsersTable.deleteWhere {
+            (UsersTable.scheduledPermanentDeletionAt.isNotNull()) and
+                (UsersTable.scheduledPermanentDeletionAt lessEq asOfJavaInstant)
         }
-        val column: Column<*> = when (this.sortBy) {
-            UserListSortBy.LAST_LOGIN_AT -> UsersTable.lastLoginAt
-            UserListSortBy.LAST_ACTIVE_AT -> UsersTable.lastActiveAt
-            UserListSortBy.CREATED_AT -> UsersTable.createdAt
-            UserListSortBy.UPDATED_AT -> UsersTable.updatedAt
-        }
-        return column to order
+        return AppResult.Success(deletedCount)
     }
 
-    private fun ResultRow.toUser(): User = User(
-        id = UserId(this[UsersTable.id].value),
-        role = this[UsersTable.role],
-        accountStatus = this[UsersTable.accountStatus],
-        lastLoginAt = this[UsersTable.lastLoginAt],
-        lastActiveAt = this[UsersTable.lastActiveAt],
-        createdAt = this[UsersTable.createdAt],
-        updatedAt = this[UsersTable.updatedAt]
-    )
+    private fun ResultRow.toUser(): UserDetails {
+        return UserDetails(
+            id = UserId(this[UsersTable.id].value),
+            role = this[UsersTable.role],
+            accountStatus = this[UsersTable.accountStatus],
+            accountStatusBeforeDeletion = this[UsersTable.accountStatusBeforeDeletion],
+            permissions = this[UsersTable.permissions].mapNotNull { permissionString ->
+                permissionString.takeIf { it.isNotBlank() }?.let { UserPermissionCode(it) }
+            }.toSet(),
+            lastLoginAt = this[UsersTable.lastLoginAt]?.toKotlinInstant(),
+            lastActiveAt = this[UsersTable.lastActiveAt]?.toKotlinInstant(),
+            createdAt = this[UsersTable.createdAt].toKotlinInstant(),
+            updatedAt = this[UsersTable.updatedAt]?.toKotlinInstant(),
+            scheduledPermanentDeletionAt = this[UsersTable.scheduledPermanentDeletionAt]?.toKotlinInstant(),
+        )
+    }
 }

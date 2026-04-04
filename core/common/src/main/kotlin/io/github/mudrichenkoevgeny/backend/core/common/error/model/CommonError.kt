@@ -134,7 +134,7 @@ sealed class CommonError(
         rateLimitActionCode: String,
         limit: Int,
         identifier: String,
-        retryAfterSeconds: Int,
+        retryAfterSeconds: Int
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.TOO_MANY_REQUESTS,

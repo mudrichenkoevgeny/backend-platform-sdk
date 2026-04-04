@@ -72,7 +72,7 @@ class SecuritySettingsProviderImplTest {
         val storedPolicy = PasswordPolicy(minLength = 8, requireUpperCase = true)
         every { settingsService.getJson<PasswordPolicy>("security.password_policy", any()) } returns storedPolicy
 
-        val policy = provider.requirePasswordPolicy()
+        val policy = provider.getPasswordPolicy()
 
         assertEquals(storedPolicy, policy)
     }
@@ -81,7 +81,7 @@ class SecuritySettingsProviderImplTest {
     fun `requirePasswordPolicy falls back to config policy when setting is missing`() {
         every { settingsService.getJson<PasswordPolicy>("security.password_policy", any()) } returns null
 
-        val policy = provider.requirePasswordPolicy()
+        val policy = provider.getPasswordPolicy()
 
         assertEquals(defaultPolicy, policy)
     }

@@ -13,7 +13,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLo
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 

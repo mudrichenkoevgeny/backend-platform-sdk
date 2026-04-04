@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.audit.manager
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.security.masking.PayloadMaskingType
+import io.github.mudrichenkoevgeny.backend.core.common.mask.PayloadMaskingType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
@@ -35,7 +35,7 @@ interface AuditManager {
      */
     suspend fun getEventById(
         payloadMaskingType: PayloadMaskingType,
-        eventId: AuditEventId,
+        eventId: AuditEventId
     ): AppResult<AuditEvent?>
 
     /**

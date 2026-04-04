@@ -7,7 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.Req
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
-import io.github.mudrichenkoevgeny.backend.core.security.settings.usecase.ValidatePasswordUseCase
+import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager

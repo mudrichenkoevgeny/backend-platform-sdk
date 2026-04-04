@@ -1,10 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 
 /**
  * Manages user entities for the user feature.
@@ -20,7 +21,7 @@ interface UserManager {
      */
     suspend fun getUserById(
         userId: UserId
-    ): AppResult<User?>
+    ): AppResult<UserDetails?>
 
     /**
      * Creates a new user.
@@ -30,9 +31,10 @@ interface UserManager {
      * @return created user or an error
      */
     suspend fun createUser(
-        role: UserRole = UserRole.USER,
-        accountStatus: UserAccountStatus = UserAccountStatus.ACTIVE
-    ): AppResult<User>
+        role: UserRole,
+        accountStatus: UserAccountStatus,
+        permissions: Set<UserPermissionCode>
+    ): AppResult<UserDetails>
 
     /**
      * Loads an existing user by [userId] or creates a new user when [userId] is `null`.
@@ -46,7 +48,7 @@ interface UserManager {
         userId: UserId? = null,
         role: UserRole = UserRole.USER,
         accountStatus: UserAccountStatus = UserAccountStatus.ACTIVE
-    ): AppResult<User>
+    ): AppResult<UserDetails>
 
     /**
      * Deletes a user by id.
@@ -57,4 +59,6 @@ interface UserManager {
     suspend fun deleteUserById(
         userId: UserId
     ): AppResult<Unit>
+
+    suspend fun deleteUsersDueForPermanentDeletion(): AppResult<Int>
 }
