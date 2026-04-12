@@ -1,10 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.system
 
-import io.github.mudrichenkoevgeny.backend.core.common.config.seed.AdminAccount
+import io.github.mudrichenkoevgeny.backend.feature.user.config.seed.AdminAccount
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll

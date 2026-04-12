@@ -2,16 +2,15 @@ package io.github.mudrichenkoevgeny.backend.sample.di
 
 import dagger.Module
 import dagger.Provides
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CommonAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CommonAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CompositeAuditResourceTypeParser
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.audit.action.SecurityAuditActionType
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.audit.resource.SecurityAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.audit.action.SettingsAuditActionType
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.audit.resource.SettingsAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.action.UserAuditActionType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.audit.api.domain.audit.resource.CommonAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.security.api.domain.audit.action.SecurityAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.security.api.domain.audit.resource.SecurityAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.settings.api.domain.audit.action.SettingsAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.settings.api.domain.audit.resource.SettingsAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import javax.inject.Singleton
 
 /**
@@ -41,7 +40,6 @@ class AuditParsersModule {
     fun provideCompositeAuditActionTypeParser(): CompositeAuditActionTypeParser =
         CompositeAuditActionTypeParser(
             setOf(
-                CommonAuditActionType.entries.first(),
                 SettingsAuditActionType.entries.first(),
                 SecurityAuditActionType.entries.first(),
                 UserAuditActionType.entries.first()

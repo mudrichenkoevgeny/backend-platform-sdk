@@ -1,8 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshToken
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
 
 /**
  * Generates opaque refresh tokens and computes their secure hash representation.

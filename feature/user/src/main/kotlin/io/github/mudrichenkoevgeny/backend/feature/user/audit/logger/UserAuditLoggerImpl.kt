@@ -1,15 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.audit.logger
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.wire.AuditWireAction
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.wire.AuditWireResource
 import io.github.mudrichenkoevgeny.backend.core.audit.metadata.toAuditEventMetadataSet
 import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventMetadataValueSensitivity
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -40,8 +40,8 @@ class UserAuditLoggerImpl @Inject constructor(
                 actorId = requestContext.userId,
                 actorType = if (requestContext.userId != null) AuditActorType.USER else AuditActorType.SYSTEM,
                 actorUserRole = null,
-                action = AuditWireAction(action),
-                resource = AuditWireResource(resource),
+                action = StringBackedAuditAction(action),
+                resource = StringBackedAuditResource(resource),
                 resourceId = resourceId,
                 status = AuditStatus.FAILED,
                 metadata = buildMetadata(
@@ -67,8 +67,8 @@ class UserAuditLoggerImpl @Inject constructor(
                 actorId = requestContext.userId,
                 actorType = if (requestContext.userId != null) AuditActorType.USER else AuditActorType.SYSTEM,
                 actorUserRole = null,
-                action = AuditWireAction(action),
-                resource = AuditWireResource(resource),
+                action = StringBackedAuditAction(action),
+                resource = StringBackedAuditResource(resource),
                 resourceId = resourceId,
                 status = AuditStatus.FAILED,
                 metadata = buildMetadata(requestContext = requestContext, type = type, extra = metadata),
@@ -90,8 +90,8 @@ class UserAuditLoggerImpl @Inject constructor(
                 actorId = requestContext.userId,
                 actorType = if (requestContext.userId != null) AuditActorType.USER else AuditActorType.SYSTEM,
                 actorUserRole = null,
-                action = AuditWireAction(action),
-                resource = AuditWireResource(resource),
+                action = StringBackedAuditAction(action),
+                resource = StringBackedAuditResource(resource),
                 resourceId = resourceId,
                 status = AuditStatus.SUCCESS,
                 metadata = buildMetadata(requestContext = requestContext, type = type, extra = metadata),
@@ -148,3 +148,19 @@ class UserAuditLoggerImpl @Inject constructor(
             else -> AuditEventMetadataValueSensitivity.NON_SENSITIVE
         }
 }
+
+/** Temporary: this class will be replaced; do not move into `core/audit`. */
+private data class StringBackedAuditAction(
+    override val serialName: String,
+) : AuditActionType {
+    override fun parseOrNull(value: String): AuditActionType? = StringBackedAuditAction(value)
+    override fun parseOrThrow(value: String): AuditActionType = StringBackedAuditAction(value)
+}
+
+private data class StringBackedAuditResource(
+    override val serialName: String,
+) : AuditResourceType {
+    override fun parseOrNull(value: String): AuditResourceType? = StringBackedAuditResource(value)
+    override fun parseOrThrow(value: String): AuditResourceType = StringBackedAuditResource(value)
+}
+

@@ -11,4 +11,6 @@ object UserTokenClaims {
      * Identifier of the authenticated user session.
      */
     const val SESSION_ID = "sessionId"
+
+    const val USER_ROLE = "userRole"
 }

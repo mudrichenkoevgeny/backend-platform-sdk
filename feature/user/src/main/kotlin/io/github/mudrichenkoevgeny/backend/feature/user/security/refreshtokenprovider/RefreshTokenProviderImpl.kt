@@ -2,8 +2,8 @@ package io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenpr
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshToken
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
 import java.security.MessageDigest
 import java.util.Base64
 import javax.inject.Inject

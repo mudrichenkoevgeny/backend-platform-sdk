@@ -1,38 +1,17 @@
 package io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model
 
 /**
- * Predefined rate limit policies for security-sensitive actions.
+ * Contract for a rate-limited logical action.
  *
- * Each entry defines:
- * - [id]: logical action identifier (used in storage keys and error details)
- * - [limit]: maximum allowed count during the time window
- * - [windowSeconds]: sliding window size in seconds (implemented as a key TTL)
+ * Feature modules define concrete implementations (typically enums) with stable [id] values used
+ * in storage keys and error payloads, plus [limit] and [windowSeconds] for the sliding window.
+ *
+ * Default [createKey] follows `rl:{id}:{identifier}`; override when a different key shape is required.
  */
-enum class RateLimitAction(
-    val id: String,
-    val limit: Int,
+interface RateLimitAction {
+    val id: String
+    val limit: Int
     val windowSeconds: Int
-) {
-    SEND_OTP_EMAIL("send_otp", limit = 3, windowSeconds = 200),
 
-    SEND_OTP_PHONE("send_otp", limit = 3, windowSeconds = 300),
-
-    LOGIN_ATTEMPT("login", limit = 5, windowSeconds = 60),
-
-    LOGOUT_ATTEMPT("logout", limit = 10, windowSeconds = 60),
-
-    REGISTRATION_ATTEMPT("registration", limit = 5, windowSeconds = 60),
-
-    PASSWORD_CHANGE("password_change", limit = 3, windowSeconds = 300),
-
-    USER_IDENTIFIER_CHANGE("user_identifier_change", limit = 5, windowSeconds = 60),
-
-    REFRESH_TOKEN("refresh", limit = 10, windowSeconds = 60),
-
-    USER_DELETE("user_delete", limit = 3, windowSeconds = 60);
-
-    /**
-     * Builds a Redis key for the action and identifier.
-     */
     fun createKey(identifier: String): String = "rl:$id:$identifier"
 }

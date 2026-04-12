@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.database.repository
 
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditAccessFilter
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
@@ -47,6 +48,8 @@ interface AuditEventRepository {
      * - [status] — [AuditEvent.status].
      * - [message] — case-insensitive substring on [AuditEvent.message]; blank is treated as no filter.
      *
+     * @param accessFilter defines the security boundaries by restricting the database query to specific
+     * actor types and user roles.
      * @param pageParams One-based page and page size.
      * @param sortBy Sort field for the listing.
      * @param sortOrder Sort direction.
@@ -61,6 +64,7 @@ interface AuditEventRepository {
      * @return [PagedResult] of matching events or an error.
      */
     suspend fun getEventsList(
+        accessFilter: AuditAccessFilter,
         pageParams: PageParams,
         sortBy: AuditSortValues.AuditEventSortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
         sortOrder: SortOrder = SortOrder.DESC,

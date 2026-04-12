@@ -1,14 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router
 
-import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.manager.WebSocketManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getExpiresAt
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getJWTPrincipal
+import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionId
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdForWebSocket
-import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserSessionId
+import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.WebSocketContract
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketCloseReasons
 import io.ktor.server.auth.authenticate
@@ -64,12 +65,14 @@ class AuthenticatedWebSocketRouter @Inject constructor(
                     }
                 }
 
-                val userSessionId = principal?.getUserSessionId()
+                val userRole = principal?.getUserRole()
+                val userSessionId = principal?.getSessionId()
                 val userSessionExpiresAt = principal?.getExpiresAt()
 
                 webSocketManager.register(
                     webSocketSession = this,
                     userId = userId,
+                    userRole = userRole,
                     userSessionId = userSessionId,
                     userSessionExpiresAt = userSessionExpiresAt
                 )

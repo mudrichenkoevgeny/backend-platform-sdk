@@ -37,7 +37,10 @@ val coreModules = listOf(
 registerModules("core", coreModules)
 
 val featureModules = listOf(
-    "user"
+    "user",
+    "security-api",
+    "settings-api",
+    "audit-api"
 )
 registerModules("feature", featureModules)
 

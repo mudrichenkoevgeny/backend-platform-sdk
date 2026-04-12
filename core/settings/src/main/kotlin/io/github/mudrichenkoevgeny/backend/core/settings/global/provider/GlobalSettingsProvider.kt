@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.settings.global.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.settings.global.model.GlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.GlobalSettings
 
 /**
  * Provides access to global settings that are safe to expose to clients.
@@ -22,10 +22,8 @@ interface GlobalSettingsProvider {
      */
     fun getSettings(): AppResult<GlobalSettings>
 
-    /** Updates the stored privacy policy URL value. */
-    suspend fun updatePrivacyPolicyUrl(url: String): AppResult<Unit>
-    /** Updates the stored terms of service URL value. */
-    suspend fun updateTermsOfServiceUrl(url: String): AppResult<Unit>
-    /** Updates the stored support email value. */
-    suspend fun updateContactSupportEmail(email: String): AppResult<Unit>
+    /**
+     * Persists all global settings fields (nullable values are stored as empty strings).
+     */
+    suspend fun updateGlobalSettings(globalSettings: GlobalSettings): AppResult<Unit>
 }

@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS audit_events (
     action VARCHAR(255) NOT NULL,
     resource VARCHAR(255) NOT NULL,
     resource_id VARCHAR(255),
+    resource_value_sensitivity VARCHAR(32) NOT NULL DEFAULT 'NON_SENSITIVE',
     status VARCHAR(32) NOT NULL,
     metadata JSONB NOT NULL DEFAULT '[]'::jsonb,
     message TEXT,

@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.config.model
 
-import io.github.mudrichenkoevgeny.backend.core.common.config.seed.AdminAccount
+import io.github.mudrichenkoevgeny.backend.feature.user.config.seed.AdminAccount
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthSettings
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.resend.model.ResendConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.model.UniOneConfig

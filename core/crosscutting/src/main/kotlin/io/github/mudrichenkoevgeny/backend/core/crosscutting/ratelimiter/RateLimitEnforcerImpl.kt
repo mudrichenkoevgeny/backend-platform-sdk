@@ -1,7 +1,5 @@
 package io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.wire.AuditWireAction
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.wire.AuditWireResource
 import io.github.mudrichenkoevgeny.backend.core.audit.metadata.toAuditEventMetadataSet
 import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
@@ -9,9 +7,11 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimitResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventMetadataValueSensitivity
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,7 +23,7 @@ import kotlin.time.Clock
  *
  * Delegates the actual limiting decision to [RateLimiter]. When the limit is exceeded, writes an
  * audit event via [AuditService] with [AuditStatus.DENIED] and enriches it using client data from
- * [RequestContext] ([RateLimitAuditMetadata]).
+ * [io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext] ([RateLimitAuditMetadata]).
  */
 @Singleton
 class RateLimitEnforcerImpl @Inject constructor(
@@ -51,8 +51,8 @@ class RateLimitEnforcerImpl @Inject constructor(
                                 actorId = requestContext.userId,
                                 actorType = AuditActorType.USER,
                                 actorUserRole = null,
-                                action = AuditWireAction(auditAction),
-                                resource = AuditWireResource(auditResource),
+                                action = StringBackedAuditAction(auditAction),
+                                resource = StringBackedAuditResource(auditResource),
                                 resourceId = auditResourceId ?: "unknown",
                                 status = AuditStatus.DENIED,
                                 metadata = mapOf(
@@ -79,3 +79,19 @@ class RateLimitEnforcerImpl @Inject constructor(
         }
     }
 }
+
+/** Temporary: this file is slated for removal/refactor; do not move into `core/audit`. */
+private data class StringBackedAuditAction(
+    override val serialName: String,
+) : AuditActionType {
+    override fun parseOrNull(value: String): AuditActionType? = StringBackedAuditAction(value)
+    override fun parseOrThrow(value: String): AuditActionType = StringBackedAuditAction(value)
+}
+
+private data class StringBackedAuditResource(
+    override val serialName: String,
+) : AuditResourceType {
+    override fun parseOrNull(value: String): AuditResourceType? = StringBackedAuditResource(value)
+    override fun parseOrThrow(value: String): AuditResourceType = StringBackedAuditResource(value)
+}
+

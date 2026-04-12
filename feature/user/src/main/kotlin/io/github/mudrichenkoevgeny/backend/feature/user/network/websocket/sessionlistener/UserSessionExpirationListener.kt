@@ -1,9 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener
 
 import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
-import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.manager.WebSocketManager
-import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.model.WebSocketSessionContext
-import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.sessionlistener.WebSocketSessionListener
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import io.ktor.server.websocket.DefaultWebSocketServerSession

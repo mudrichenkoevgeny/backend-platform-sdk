@@ -58,6 +58,7 @@ class AuthManagerImpl @Inject constructor(
 
         val sessionTokenResult = sessionManager.createSession(
             userId = user.id,
+            userRole = user.role,
             userIdentifierId = userIdentifier.id,
             userIdentifierAuthProvider = userIdentifier.userAuthProvider,
             clientInfo = clientInfo,

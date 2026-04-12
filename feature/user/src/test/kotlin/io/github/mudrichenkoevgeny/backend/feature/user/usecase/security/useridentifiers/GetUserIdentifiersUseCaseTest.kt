@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.userid
 
 import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError

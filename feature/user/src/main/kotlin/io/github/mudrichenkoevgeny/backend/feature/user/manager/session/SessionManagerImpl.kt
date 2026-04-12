@@ -1,20 +1,21 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.session
 
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshToken
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.SessionToken
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
-import io.github.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserSessionId
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.SessionToken
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,6 +38,7 @@ class SessionManagerImpl @Inject constructor(
 
     override suspend fun createSession(
         userId: UserId,
+        userRole: UserRole,
         userIdentifierId: UserIdentifierId,
         userIdentifierAuthProvider: UserAuthProvider,
         clientInfo: ClientInfo,
@@ -50,6 +52,7 @@ class SessionManagerImpl @Inject constructor(
 
         val accessTokenResult = jwtTokenProvider.generateAccessToken(
             userId = userId,
+            userRole = userRole,
             sessionId = userSessionId,
             issuedAt = now,
             expiration = accessExpiry
@@ -136,6 +139,7 @@ class SessionManagerImpl @Inject constructor(
 
         createSession(
             userId = currentUserSession.userId,
+            userRole = currentUserSession.userRole,
             userIdentifierId = currentUserSession.userIdentifierId,
             userIdentifierAuthProvider = currentUserSession.userIdentifierAuthProvider,
             clientInfo = clientInfo,

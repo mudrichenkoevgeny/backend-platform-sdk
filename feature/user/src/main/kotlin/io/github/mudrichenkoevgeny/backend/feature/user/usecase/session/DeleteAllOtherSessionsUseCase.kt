@@ -1,9 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.session
 
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
-import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
+import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
@@ -39,7 +39,7 @@ class DeleteAllOtherSessionsUseCase @Inject constructor(
 
         val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
             requestContext = requestContext,
-            rateLimitAction = RateLimitAction.LOGOUT_ATTEMPT,
+            rateLimitAction = UserRateLimitAction.LOGOUT_ATTEMPT,
             rateLimitIdentifier = sessionId.asHexDashString(),
             auditAction = AUDIT_ACTION,
             auditResource = AUDIT_RESOURCE,

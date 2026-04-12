@@ -4,8 +4,9 @@ import io.github.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
 import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import kotlinx.serialization.serializer
 import org.jetbrains.exposed.v1.json.jsonb
@@ -24,6 +25,11 @@ object AuditEventsTable : BaseTable("audit_events") {
     val action = varchar("action", BaseDbConstraints.DEFAULT_MAX_LENGTH)
     val resource = varchar("resource", BaseDbConstraints.DEFAULT_MAX_LENGTH)
     val resourceId = varchar("resource_id", BaseDbConstraints.DEFAULT_MAX_LENGTH).nullable()
+    val resourceValueSensitivity = enumerationByName(
+        "resource_value_sensitivity",
+        BaseDbConstraints.ENUM_MAX_LENGTH,
+        AuditValueSensitivity::class
+    )
     val status = enumerationByName("status", BaseDbConstraints.ENUM_MAX_LENGTH, AuditStatus::class)
     val metadata = jsonb<Set<AuditEventMetadata>>(
         "metadata",

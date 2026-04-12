@@ -1,11 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AccessToken
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshToken
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import java.time.Instant
 
 /**
@@ -22,6 +23,7 @@ interface TokenProvider {
      * Creates a signed access token for the given user and session.
      *
      * @param userId authenticated user id
+     * @param userRole [UserRole] to embed in the token claims for downstream authorization.
      * @param sessionId authenticated user session id
      * @param issuedAt token issuance time
      * @param expiration token expiration time
@@ -29,6 +31,7 @@ interface TokenProvider {
      */
     fun generateAccessToken(
         userId: UserId,
+        userRole: UserRole,
         sessionId: UserSessionId,
         issuedAt: Instant,
         expiration: Instant

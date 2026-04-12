@@ -10,7 +10,7 @@ maven-publish-plugin = "0.36.0"
 dependency-analysis = "3.3.0"
 
 # Shared Foundation
-shared-foundation = "0.0.28"
+shared-foundation = "0.0.30"
 
 # Kotlin
 kotlinx-serialization = "1.9.0"
@@ -69,6 +69,9 @@ shared-foundation-core-settings = { group = "io.github.mudrichenkoevgeny", name 
 shared-foundation-core-security = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-security", version.ref = "shared-foundation" }
 shared-foundation-core-audit = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-audit", version.ref = "shared-foundation" }
 shared-foundation-feature-user = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-feature-user", version.ref = "shared-foundation" }
+shared-foundation-feature-security-api = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-feature-security-api", version.ref = "shared-foundation" }
+shared-foundation-feature-settings-api = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-feature-settings-api", version.ref = "shared-foundation" }
+shared-foundation-feature-audit-api = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-feature-audit-api", version.ref = "shared-foundation" }
 
 # Kotlin
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }

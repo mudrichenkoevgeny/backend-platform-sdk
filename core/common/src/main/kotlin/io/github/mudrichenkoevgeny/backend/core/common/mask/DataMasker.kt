@@ -124,7 +124,6 @@ object DataMasker {
         return when (inet) {
             is Inet4Address -> maskIpv4(inet)
             is Inet6Address -> maskIpv6(inet)
-            else -> LARGE_MASK
         }
     }
 

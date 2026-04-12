@@ -11,13 +11,13 @@ import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionId
-import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserId
+import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionIdFromCredential
+import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromCredential
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserAuthSpec
 import io.ktor.http.auth.HttpAuthHeader
@@ -29,15 +29,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Ktor JWT authentication integration for the user feature.
+ * JWT-based implementation of [AuthenticationProvider] for Ktor.
  *
- * Responsibilities:
- * - configures Ktor JWT auth with HMAC verification using [UserConfig.jwtSecret];
- * - extracts the token from the `Authorization` header (Bearer) or from a query parameter;
- * - validates that the referenced user exists and updates session last access time (when present);
- * - maps validation failures to [UserError] through [AppErrorParser] in the auth challenge;
- * - [requireUser] loads [UserDetails] and enforces role, optional permission set (AND over
- *   [UserPermissionCode]), and account-status flags consistent with [AuthenticationProvider].
+ * Configures JWT auth, resolves user identity from token payload, and returns API errors in the auth
+ * challenge through [AppErrorParser]. Authorization checks are applied in [requireUser].
  */
 @Singleton
 class JwtAuthenticationProvider @Inject constructor(
@@ -70,11 +65,11 @@ class JwtAuthenticationProvider @Inject constructor(
 
                 validate { credential ->
                     try {
-                        val userId = credential.getUserId()
+                        val userId = credential.getUserIdFromCredential()
                         val userResult = userRepository.getUserById(userId)
                         return@validate when (userResult) {
                             is AppResult.Success -> {
-                                val sessionId = credential.getSessionId()
+                                val sessionId = credential.getSessionIdFromCredential()
                                 if (sessionId != null) {
                                     userSessionRepository.updateLastAccessed(sessionId)
                                 }
@@ -103,9 +98,8 @@ class JwtAuthenticationProvider @Inject constructor(
     override suspend fun requireUser(
         call: ApplicationCall,
         allowedRoles: Set<UserRole>,
-        requiredPermissions: Set<UserPermissionCode>,
-        allowReadOnlyAccounts: Boolean,
-        allowBannedAccounts: Boolean
+        requiredAccountStatus: Set<UserAccountStatus>,
+        requiredPermissions: Set<PermissionCode>
     ): AppResult<UserDetails> {
         val userId = when (val userIdResult = call.getUserIdFromPayload()) {
             is AppResult.Success -> {
@@ -125,22 +119,25 @@ class JwtAuthenticationProvider @Inject constructor(
             is AppResult.Error -> return AppResult.Error(UserError.UserNotFound(userId))
         }
 
-        if (user.role !in allowedRoles) {
-            return AppResult.Error(UserError.UserForbidden(userId))
+        if (allowedRoles.isNotEmpty() && user.role !in allowedRoles) {
+            return AppResult.Error(UserError.UserRoleNotAllowed(userId))
         }
 
-        if (requiredPermissions.isNotEmpty() &&
-            !requiredPermissions.all { required -> required in user.permissions }
-        ) {
-            return AppResult.Error(UserError.UserForbidden(userId))
+        if (requiredAccountStatus.isNotEmpty() && user.accountStatus !in requiredAccountStatus) {
+            return AppResult.Error(
+                when (user.accountStatus) {
+                    UserAccountStatus.ACTIVE -> UserError.UserForbidden(userId)
+                    UserAccountStatus.READ_ONLY -> UserError.UserReadOnly(userId)
+                    UserAccountStatus.BANNED -> UserError.UserBlocked(userId)
+                    UserAccountStatus.SECURITY_HOLD -> UserError.UserSecurityHold(userId)
+                    UserAccountStatus.PENDING_DELETION -> UserError.UserPendingDeletion(userId)
+                }
+            )
         }
 
-        if (user.accountStatus == UserAccountStatus.BANNED && !allowBannedAccounts) {
-            return AppResult.Error(UserError.UserBlocked(userId))
-        }
-
-        if (user.accountStatus == UserAccountStatus.READ_ONLY && !allowReadOnlyAccounts) {
-            return AppResult.Error(UserError.UserReadOnly(userId))
+        val missingPermissions = requiredPermissions - user.permissions
+        if (missingPermissions.isNotEmpty()) {
+            return AppResult.Error(UserError.UserMissingPermissions(userId))
         }
 
         return AppResult.Success(user)

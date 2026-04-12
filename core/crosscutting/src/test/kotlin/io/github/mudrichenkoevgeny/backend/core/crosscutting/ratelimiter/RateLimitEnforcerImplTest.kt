@@ -32,12 +32,12 @@ class RateLimitEnforcerImplTest {
     @Test
     fun `enforce returns success when allowed and does not write audit`() = runTest {
         val requestContext = testRequestContext()
-        coEvery { rateLimiter.isRateLimited(RateLimitAction.LOGIN_ATTEMPT, "ip:1") } returns
+        coEvery { rateLimiter.isRateLimited(TestRateLimitAction.LOGIN_ATTEMPT, "ip:1") } returns
             AppResult.Success(RateLimitResult.Allowed)
 
         val result = enforcer.enforce(
             requestContext = requestContext,
-            rateLimitAction = RateLimitAction.LOGIN_ATTEMPT,
+            rateLimitAction = TestRateLimitAction.LOGIN_ATTEMPT,
             rateLimitIdentifier = "ip:1",
             auditAction = "login",
             auditResource = "session",
@@ -52,13 +52,13 @@ class RateLimitEnforcerImplTest {
     fun `enforce writes denied audit and returns too many requests error when exceeded`() = runTest {
         val requestContext = testRequestContext()
         val error = CommonError.TooManyRequests(
-            rateLimitActionCode = RateLimitAction.LOGIN_ATTEMPT.id,
-            limit = RateLimitAction.LOGIN_ATTEMPT.limit,
-            identifier = RateLimitAction.LOGIN_ATTEMPT.createKey("ip:2"),
+            rateLimitActionCode = TestRateLimitAction.LOGIN_ATTEMPT.id,
+            limit = TestRateLimitAction.LOGIN_ATTEMPT.limit,
+            identifier = TestRateLimitAction.LOGIN_ATTEMPT.createKey("ip:2"),
             retryAfterSeconds = 10
         )
 
-        coEvery { rateLimiter.isRateLimited(RateLimitAction.LOGIN_ATTEMPT, "ip:2") } returns
+        coEvery { rateLimiter.isRateLimited(TestRateLimitAction.LOGIN_ATTEMPT, "ip:2") } returns
             AppResult.Success(RateLimitResult.Exceeded(error))
 
         val auditEventSlot = slot<AuditEvent>()
@@ -66,7 +66,7 @@ class RateLimitEnforcerImplTest {
 
         val result = enforcer.enforce(
             requestContext = requestContext,
-            rateLimitAction = RateLimitAction.LOGIN_ATTEMPT,
+            rateLimitAction = TestRateLimitAction.LOGIN_ATTEMPT,
             rateLimitIdentifier = "ip:2",
             auditAction = "login",
             auditResource = "session",
@@ -99,12 +99,12 @@ class RateLimitEnforcerImplTest {
         val requestContext = testRequestContext()
         val dependencyError = CommonError.Internal(Throwable("redis down"))
 
-        coEvery { rateLimiter.isRateLimited(RateLimitAction.LOGIN_ATTEMPT, "ip:3") } returns
+        coEvery { rateLimiter.isRateLimited(TestRateLimitAction.LOGIN_ATTEMPT, "ip:3") } returns
             AppResult.Error(dependencyError)
 
         val result = enforcer.enforce(
             requestContext = requestContext,
-            rateLimitAction = RateLimitAction.LOGIN_ATTEMPT,
+            rateLimitAction = TestRateLimitAction.LOGIN_ATTEMPT,
             rateLimitIdentifier = "ip:3",
             auditAction = "login",
             auditResource = "session",
@@ -114,6 +114,14 @@ class RateLimitEnforcerImplTest {
         val appError = (result as AppResult.Error).error
         assertSame(dependencyError, appError)
         verify(exactly = 0) { auditService.log(any()) }
+    }
+
+    private enum class TestRateLimitAction(
+        override val id: String,
+        override val limit: Int,
+        override val windowSeconds: Int
+    ) : RateLimitAction {
+        LOGIN_ATTEMPT("login", limit = 5, windowSeconds = 60)
     }
 
     private fun testRequestContext(): RequestContext {

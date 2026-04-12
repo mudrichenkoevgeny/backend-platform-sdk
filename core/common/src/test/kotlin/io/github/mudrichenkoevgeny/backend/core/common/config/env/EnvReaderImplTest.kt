@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.Resol
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.io.path.createTempDirectory
@@ -43,9 +44,8 @@ class EnvReaderImplTest {
         val paths = ResolvedPaths(envFile = envFile, secretsDir = secretsDir)
         val reader = EnvReaderImpl(paths)
 
-        val value = reader.readSecret("token.txt")
-
-        assertEquals("super-secret", value)
+        assertTrue(secretFile.isFile)
+        assertEquals("super-secret", reader.readSecret(secretFile.name))
     }
 
     @Test

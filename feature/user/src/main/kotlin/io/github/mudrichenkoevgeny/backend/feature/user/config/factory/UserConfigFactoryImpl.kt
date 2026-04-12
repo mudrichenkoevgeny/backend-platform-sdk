@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.config.factory
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.getStringList
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.readJsonSecret
-import io.github.mudrichenkoevgeny.backend.core.common.config.seed.AdminList
+import io.github.mudrichenkoevgeny.backend.feature.user.config.seed.AdminList
 import io.github.mudrichenkoevgeny.backend.feature.user.config.envkeys.UserEnvKeys
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthSettings

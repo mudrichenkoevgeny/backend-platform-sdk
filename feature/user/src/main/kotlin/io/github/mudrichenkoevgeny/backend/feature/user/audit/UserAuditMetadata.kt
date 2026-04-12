@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.audit
 
+// todo delete
 /**
  * Constants used to build audit metadata for the user/auth feature.
  *

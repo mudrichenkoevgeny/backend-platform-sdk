@@ -3,10 +3,14 @@ package io.github.mudrichenkoevgeny.backend.feature.user.di.module
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoSet
-import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.messagehandler.WebSocketMessageHandler
-import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.sessionlistener.WebSocketSessionListener
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.KtorWebSocketManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.CommonWebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.UserWebSocketMessageHandler
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener.UserSessionExpirationListener
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener.WebSocketSessionListener
+import javax.inject.Singleton
 
 @Module
 /**
@@ -15,6 +19,16 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessio
  * Uses Dagger set multibindings for [WebSocketMessageHandler] and [WebSocketSessionListener].
  */
 interface UserWebSocketModule {
+    @Binds
+    @Singleton
+    fun bindWebSocketManager(impl: KtorWebSocketManager): WebSocketManager
+
+    @Binds
+    @IntoSet
+    fun bindCommonWebSocketMessageHandler(
+        commonWebSocketMessageHandler: CommonWebSocketMessageHandler
+    ): WebSocketMessageHandler
+
     @Binds
     @IntoSet
     fun bindUserWebSocketMessageHandler(

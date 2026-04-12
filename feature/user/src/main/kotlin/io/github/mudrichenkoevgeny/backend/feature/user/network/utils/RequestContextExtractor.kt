@@ -1,11 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.utils
 
 import io.github.mudrichenkoevgeny.backend.core.common.logs.naming.TracingKeys
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.extractClientInfo
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getJWTPrincipal
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionId
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserId
+import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonHttpHeaders
 import io.ktor.server.routing.RoutingCall
 import org.slf4j.MDC
@@ -28,6 +29,7 @@ fun RoutingCall.getRequestContext(): RequestContext {
     return RequestContext(
         traceId = traceId,
         userId = principal?.getUserId(),
+        userRole = principal?.getUserRole(),
         sessionId = principal?.getSessionId(),
         clientInfo = this.extractClientInfo()
     )

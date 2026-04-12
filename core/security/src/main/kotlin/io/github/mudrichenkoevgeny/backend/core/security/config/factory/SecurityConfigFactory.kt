@@ -1,7 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.security.config.factory
 
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
-import io.github.mudrichenkoevgeny.backend.core.security.config.factory.SecurityConfigFactoryImpl
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 
 /**

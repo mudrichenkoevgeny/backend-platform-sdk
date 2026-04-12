@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.security.authenticationpolicychecker
 
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicy.model.PasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicy
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

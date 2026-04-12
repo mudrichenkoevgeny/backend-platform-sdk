@@ -17,6 +17,9 @@ dependencies {
     api(project(":core:storage"))
     api(project(":core:crosscutting"))
     api(project(":feature:user"))
+    api(project(":feature:settings-api"))
+    api(project(":feature:security-api"))
+    api(project(":feature:audit-api"))
 
     // Shared foundation
     implementation(libs.shared.foundation.core.security) // Transitive

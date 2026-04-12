@@ -6,6 +6,22 @@ import org.junit.jupiter.api.Test
 class DataMaskerTest {
 
     @Test
+    fun `maskPartialValue trims and masks by length`() {
+        assertEquals("", DataMasker.maskPartialValue("   "))
+        assertEquals(DataMasker.SMALL_MASK, DataMasker.maskPartialValue("x"))
+        assertEquals("x${DataMasker.SMALL_MASK}", DataMasker.maskPartialValue("xy"))
+        assertEquals("a${DataMasker.LARGE_MASK}z", DataMasker.maskPartialValue("abcz"))
+    }
+
+    @Test
+    fun `maskFullValue blanks pass through trimmed blank non-blank becomes large mask`() {
+        assertEquals("", DataMasker.maskFullValue(""))
+        assertEquals("", DataMasker.maskFullValue("   "))
+        assertEquals(DataMasker.LARGE_MASK, DataMasker.maskFullValue("secret"))
+        assertEquals(DataMasker.LARGE_MASK, DataMasker.maskFullValue("  peek  "))
+    }
+
+    @Test
     fun `maskEmail returns fallback for malformed input`() {
         assertEquals(DataMasker.LARGE_MASK, DataMasker.maskEmail("not-an-email"))
         assertEquals(DataMasker.LARGE_MASK, DataMasker.maskEmail("a@b@c"))

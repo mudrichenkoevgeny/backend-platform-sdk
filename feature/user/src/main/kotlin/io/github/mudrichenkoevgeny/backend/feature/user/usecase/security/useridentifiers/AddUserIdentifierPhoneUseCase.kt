@@ -1,11 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.security.useridentifiers
 
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
 import io.github.mudrichenkoevgeny.backend.core.security.authenticationpolicychecker.AuthenticationPolicyChecker
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
-import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
+import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
 import io.github.mudrichenkoevgeny.backend.feature.user.model.otp.OtpVerificationType
@@ -61,7 +61,7 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
 
         val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
             requestContext = requestContext,
-            rateLimitAction = RateLimitAction.USER_IDENTIFIER_CHANGE,
+            rateLimitAction = UserRateLimitAction.USER_IDENTIFIER_CHANGE,
             rateLimitIdentifier = phoneNumber,
             auditAction = AUDIT_ACTION,
             auditResource = AUDIT_RESOURCE,

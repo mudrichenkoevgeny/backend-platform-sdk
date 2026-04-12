@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.database.repository
 
 import io.github.mudrichenkoevgeny.backend.core.audit.database.table.AuditEventsTable
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditAccessFilter
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.getNumOfTotalPages
@@ -22,9 +23,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.core.lowerCase
+import org.jetbrains.exposed.v1.core.Op
+import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -54,6 +59,7 @@ class AuditEventRepositoryImpl @Inject constructor(
             auditEventRow[action] = event.action.serialName
             auditEventRow[resource] = event.resource.serialName
             auditEventRow[resourceId] = event.resourceId
+            auditEventRow[resourceValueSensitivity] = event.resourceValueSensitivity
             auditEventRow[status] = event.status
             auditEventRow[metadata] = event.metadata
             auditEventRow[message] = event.message
@@ -79,6 +85,7 @@ class AuditEventRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getEventsList(
+        accessFilter: AuditAccessFilter,
         pageParams: PageParams,
         sortBy: AuditSortValues.AuditEventSortBy,
         sortOrder: SortOrder,
@@ -92,6 +99,27 @@ class AuditEventRepositoryImpl @Inject constructor(
         message: String?
     ): AppResult<PagedResult<AuditEvent>> {
         var query = AuditEventsTable.selectAll()
+
+        query = query.andWhere {
+            val conditions = mutableListOf<Op<Boolean>>()
+
+            val simpleTypes = accessFilter.allowedActorTypes.filter { it != AuditActorType.USER }
+            if (simpleTypes.isNotEmpty()) {
+                conditions.add(AuditEventsTable.actorType inList simpleTypes)
+            }
+
+            if (accessFilter.allowedActorTypes.contains(AuditActorType.USER)) {
+                val roles = accessFilter.allowedUserRoles
+                if (roles.isNotEmpty()) {
+                    conditions.add(
+                        (AuditEventsTable.actorType eq AuditActorType.USER) and
+                                (AuditEventsTable.actorUserRole inList roles)
+                    )
+                }
+            }
+
+            conditions.reduceOrNull { acc, op -> acc or op } ?: Op.FALSE
+        }
 
         actorId?.let { id -> query = query.andWhere { AuditEventsTable.actorId eq id } }
         actorType?.let { type -> query = query.andWhere { AuditEventsTable.actorType eq type } }
@@ -138,6 +166,7 @@ class AuditEventRepositoryImpl @Inject constructor(
         action = compositeAuditActionTypeParser.fromValueOrThrow(this[AuditEventsTable.action]),
         resource = compositeAuditResourceTypeParser.fromValueOrThrow(this[AuditEventsTable.resource]),
         resourceId = this[AuditEventsTable.resourceId],
+        resourceValueSensitivity = this[AuditEventsTable.resourceValueSensitivity],
         status = this[AuditEventsTable.status],
         metadata = this[AuditEventsTable.metadata],
         message = this[AuditEventsTable.message],

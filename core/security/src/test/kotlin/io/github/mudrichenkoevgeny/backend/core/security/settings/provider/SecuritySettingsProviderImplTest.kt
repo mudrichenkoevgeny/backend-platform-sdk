@@ -6,13 +6,17 @@ import io.github.mudrichenkoevgeny.backend.core.settings.model.SettingType
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicy.model.PasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.SecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.passwordpolicy.toPasswordPolicyPayload
+import io.mockk.clearMocks
 import io.mockk.coEvery
-import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SecuritySettingsProviderImplTest {
@@ -25,8 +29,13 @@ class SecuritySettingsProviderImplTest {
     )
     private val provider = SecuritySettingsProviderImpl(settingsService, config)
 
+    @BeforeEach
+    fun resetSettingsServiceMocks() {
+        clearMocks(settingsService, answers = true, recordedCalls = true, childMocks = false)
+    }
+
     @Test
-    fun `initialize registers default password policy json`() = runTest {
+    fun `initialize registers recent auth validity then password policy json`() = runTest {
         coEvery {
             settingsService.registerDefault(
                 key = any(),
@@ -38,39 +47,48 @@ class SecuritySettingsProviderImplTest {
         val result = provider.initialize()
 
         assertEquals(AppResult.Success(Unit), result)
-        val expectedJson = FoundationJson.encodeToString(defaultPolicy)
-        coVerify {
+        val expectedPolicyJson = FoundationJson.encodeToString(config.passwordPolicy.toPasswordPolicyPayload())
+        coVerifyOrder {
+            settingsService.registerDefault(
+                key = "security.recent_authentication_validity_in_minutes",
+                value = "30",
+                type = SettingType.LONG
+            )
             settingsService.registerDefault(
                 key = "security.password_policy",
-                value = expectedJson,
+                value = expectedPolicyJson,
                 type = SettingType.JSON
             )
         }
     }
 
     @Test
-    fun `getSettings returns stored policy when present`() {
+    fun `getSettings returns stored values when present`() {
         val storedPolicy = PasswordPolicy(minLength = 20, requireSpecialChar = true)
-        every { settingsService.getJson<PasswordPolicy>("security.password_policy", any()) } returns storedPolicy
+        every { settingsService.getLong("security.recent_authentication_validity_in_minutes") } returns 99L
+        stubGetJsonPasswordPolicyDeserializesTo(storedPolicy)
 
         val result = provider.getSettings() as AppResult.Success
 
+        assertEquals(99L, result.data.recentAuthenticationValidityInMinutes)
         assertEquals(storedPolicy, result.data.passwordPolicy)
     }
 
     @Test
-    fun `getSettings falls back to config policy when setting is missing`() {
-        every { settingsService.getJson<PasswordPolicy>("security.password_policy", any()) } returns null
+    fun `getSettings falls back to config when keys missing`() {
+        every { settingsService.getLong("security.recent_authentication_validity_in_minutes") } returns null
+        stubGetJsonPasswordPolicyReturnsNull()
 
         val result = provider.getSettings() as AppResult.Success
 
+        assertEquals(30L, result.data.recentAuthenticationValidityInMinutes)
         assertEquals(defaultPolicy, result.data.passwordPolicy)
     }
 
     @Test
-    fun `requirePasswordPolicy returns stored policy when present`() {
+    fun `getPasswordPolicy returns stored policy when present`() {
         val storedPolicy = PasswordPolicy(minLength = 8, requireUpperCase = true)
-        every { settingsService.getJson<PasswordPolicy>("security.password_policy", any()) } returns storedPolicy
+        stubGetJsonPasswordPolicyDeserializesTo(storedPolicy)
 
         val policy = provider.getPasswordPolicy()
 
@@ -78,8 +96,8 @@ class SecuritySettingsProviderImplTest {
     }
 
     @Test
-    fun `requirePasswordPolicy falls back to config policy when setting is missing`() {
-        every { settingsService.getJson<PasswordPolicy>("security.password_policy", any()) } returns null
+    fun `getPasswordPolicy falls back to config policy when setting is missing`() {
+        stubGetJsonPasswordPolicyReturnsNull()
 
         val policy = provider.getPasswordPolicy()
 
@@ -87,16 +105,64 @@ class SecuritySettingsProviderImplTest {
     }
 
     @Test
-    fun `updatePasswordPolicy returns success when system setting update succeeds`() = runTest {
-        val newPolicy = PasswordPolicy(minLength = 25)
-        val jsonValue = FoundationJson.encodeToString(newPolicy)
+    fun `updateSecuritySettings returns success when both updates succeed`() = runTest {
+        val newSettings = SecuritySettings(
+            recentAuthenticationValidityInMinutes = 45L,
+            passwordPolicy = PasswordPolicy(minLength = 25)
+        )
+        val policyJson = FoundationJson.encodeToString(newSettings.passwordPolicy)
 
-        coEvery { settingsService.updateSetting("security.password_policy", jsonValue, SettingType.JSON) } returns
-            AppResult.Success(SystemSetting(key = "security.password_policy", value = jsonValue, type = SettingType.JSON))
+        coEvery {
+            settingsService.updateSetting(
+                "security.recent_authentication_validity_in_minutes",
+                "45",
+                SettingType.LONG
+            )
+        } returns AppResult.Success(
+            SystemSetting(
+                key = "security.recent_authentication_validity_in_minutes",
+                value = "45",
+                type = SettingType.LONG
+            )
+        )
+        coEvery {
+            settingsService.updateSetting("security.password_policy", policyJson, SettingType.JSON)
+        } returns AppResult.Success(
+            SystemSetting(key = "security.password_policy", value = policyJson, type = SettingType.JSON)
+        )
 
-        val result = provider.updatePasswordPolicy(newPolicy)
+        val result = provider.updateSecuritySettings(newSettings)
 
         assertEquals(AppResult.Success(Unit), result)
+        coVerifyOrder {
+            settingsService.updateSetting(
+                "security.recent_authentication_validity_in_minutes",
+                "45",
+                SettingType.LONG
+            )
+            settingsService.updateSetting("security.password_policy", policyJson, SettingType.JSON)
+        }
+    }
+
+    private fun stubGetJsonPasswordPolicyDeserializesTo(storedPolicy: PasswordPolicy) {
+        every {
+            settingsService.getJson(
+                "security.password_policy",
+                any<(String) -> PasswordPolicy>(),
+            )
+        } answers {
+            @Suppress("UNCHECKED_CAST")
+            val deserializer = invocation.args[1] as (String) -> PasswordPolicy
+            deserializer(FoundationJson.encodeToString(storedPolicy.toPasswordPolicyPayload()))
+        }
+    }
+
+    private fun stubGetJsonPasswordPolicyReturnsNull() {
+        every {
+            settingsService.getJson(
+                "security.password_policy",
+                any<(String) -> PasswordPolicy>(),
+            )
+        } answers { null }
     }
 }
-

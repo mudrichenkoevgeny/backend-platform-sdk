@@ -9,19 +9,21 @@ dependencies {
     api(project(":core:common"))
     api(project(":core:database"))
     api(project(":core:settings"))
+    api(project(":core:audit"))
 
     // Shared Foundation
     implementation(libs.shared.foundation.core.common)
     api(libs.shared.foundation.core.security)
+    implementation(libs.shared.foundation.core.audit)
 
     // Kotlin
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.serialization.core) // Transitive for Shared Foundation, Ktor, kotlinx-serialization
 
     // Ktor
+    implementation(libs.ktor.server.auth)
     api(libs.ktor.server.core) // Transitive for Project Modules
     api(libs.ktor.http) // Transitive for Ktor
-    implementation(libs.ktor.server.auth)
     implementation(libs.ktor.utils) // Transitive for Ktor
 
     // DI

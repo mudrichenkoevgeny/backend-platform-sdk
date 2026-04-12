@@ -1,9 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.login
 
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
-import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
+import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
 import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
 import io.github.mudrichenkoevgeny.backend.feature.user.model.otp.OtpVerificationType
@@ -45,7 +45,7 @@ class LoginByPhoneUseCase @Inject constructor(
 
         val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
             requestContext = requestContext,
-            rateLimitAction = RateLimitAction.LOGIN_ATTEMPT,
+            rateLimitAction = UserRateLimitAction.LOGIN_ATTEMPT,
             rateLimitIdentifier = phoneNumber,
             auditAction = AUDIT_ACTION,
             auditResource = AUDIT_RESOURCE,

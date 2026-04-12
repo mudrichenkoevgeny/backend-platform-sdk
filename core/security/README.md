@@ -1,20 +1,19 @@
 # core/security
 
-Security primitives for SDK-based applications: password hashing, password policy validation, rate limiting for security-sensitive actions, and security settings exposed via HTTP routes.
+Security primitives for SDK-based applications: password hashing, password policy validation, rate limiting for security-sensitive actions, and persisted security settings (via `core/settings`). **HTTP routes and security “API” use cases** live in **`feature/security-api`**, not in this module.
 
 ## What it provides
 
 - **Config**: [SecurityConfig] built by [SecurityConfigFactory] from env via [SecurityEnvKeys].
 - **Password hashing**: [PasswordHasher] (Password4j Argon2 implementation: [PasswordHasherImpl]).
-- **Password validation**: [ValidatePasswordUseCase] validates a password against the effective policy and returns a structured [SecurityError.PasswordTooWeak] on failure.
-- **Security settings**:
-  - [SecuritySettingsProvider] backed by the settings subsystem ([SecuritySettingsProviderImpl]).
+- **Password policy (in-process)**: default `PasswordPolicy` from [SecurityConfig] and foundation `PasswordPolicyValidator` ([PasswordPolicyValidatorModule]).
+- **Security settings (persistence)**:
+  - [SecuritySettingsProvider] backed by [SystemSettingsService] ([SecuritySettingsProviderImpl]) — password policy JSON and recent-authentication window.
   - [SeedSecuritySettingsUseCase] seeds defaults on bootstrap.
-  - [GetSecuritySettingsUseCase] returns effective settings for API/UI.
-  - [SecuritySettingsRouter] exposes HTTP endpoints defined in `shared-foundation` routes.
 - **Rate limiting**: [RateLimiter] (Redis-backed implementation: [RateLimiterImpl]) with predefined [RateLimitAction] policies and [RateLimitResult].
 - **Authentication freshness**: [AuthenticationPolicyChecker] (implementation: [AuthenticationPolicyCheckerImpl]) to check whether the user recently passed a confirmation step.
-- **DI wiring**: [SecurityModules] aggregates config, services, settings provider, routes and WebSocket handler contribution.
+- **WebSockets**: [SecurityWebSocketMessageHandler] contributed via [SecurityWebSocketModule].
+- **DI wiring**: [SecurityModules] aggregates config, hashing, policy validator, rate limiting, settings provider, auth policy checker, and WebSocket contributions.
 
 ## Environment variables
 
@@ -33,19 +32,10 @@ See: [SecurityEnvKeys].
 
 ## Usage
 
-- Add dependency on `core:security`. Depends on `core:common`, `core:database`, and `core:settings`.
+- Add dependency on `core:security`. Depends on `core:common`, `core:database`, `core:settings`, and `core:audit`.
 - Install [SecurityModules] in your Dagger component.
 - Seed defaults on bootstrap (optional but recommended): call [SeedSecuritySettingsUseCase].
-- Register [SecurityFeatureRouter] in your Ktor `routing { }` block to expose routes.
-
-### Validate a password
-
-```kotlin
-fun validateExample(validatePassword: ValidatePasswordUseCase) {
-    val result = validatePassword("Sup3r_Str0ng_Pass!")
-    // result is AppResult.Success(Unit) or AppResult.Error(SecurityError.PasswordTooWeak)
-}
-```
+- For **HTTP** endpoints (read/update security settings, validate password, etc.), add **`feature/security-api`**, install its Dagger classpath bindings as needed, and register `SecurityRouter` in Ktor (see that module’s README).
 
 ### Rate limit an action
 
@@ -59,17 +49,9 @@ suspend fun rateLimitExample(rateLimiter: RateLimiter) {
 }
 ```
 
-### Register routes
-
-```kotlin
-fun installRoutesExample(route: io.ktor.server.routing.Route, router: SecurityFeatureRouter) {
-    router.register(route)
-}
-```
-
 ## Notes
 
-- **Effective password policy**: the module uses the stored policy from the settings subsystem when present; otherwise it falls back to the default policy from [SecurityConfig].
+- **Effective password policy**: [SecuritySettingsProvider] uses stored values when present; otherwise it falls back to [SecurityConfig].
 - **Rate limiting storage**: [RateLimiterImpl] uses Redis counters with expiration; when the limit is exceeded it returns a `Too Many Requests` error with a retry-after value.
 
 [SecurityConfig]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/config/model/SecurityConfig.kt
@@ -80,15 +62,14 @@ fun installRoutesExample(route: io.ktor.server.routing.Route, router: SecurityFe
 [PasswordHasher]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/passwordhasher/PasswordHasher.kt
 [PasswordHasherImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/passwordhasher/PasswordHasherImpl.kt
 
+[PasswordPolicyValidatorModule]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/di/module/PasswordPolicyValidatorModule.kt
+
 [SecurityError.PasswordTooWeak]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/error/model/SecurityError.kt
-[ValidatePasswordUseCase]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/settings/usecase/ValidatePasswordUseCase.kt
 
 [SecuritySettingsProvider]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/settings/provider/SecuritySettingsProvider.kt
 [SecuritySettingsProviderImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/settings/provider/SecuritySettingsProviderImpl.kt
-[SeedSecuritySettingsUseCase]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/settings/usecase/SeedSecuritySettingsUseCase.kt
-[GetSecuritySettingsUseCase]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/settings/usecase/GetSecuritySettingsUseCase.kt
-[SecuritySettingsRouter]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/settings/route/SecuritySettingsRouter.kt
-[SecurityFeatureRouter]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/route/SecurityFeatureRouter.kt
+[SeedSecuritySettingsUseCase]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/usecase/system/settings/SeedSecuritySettingsUseCase.kt
+[SystemSettingsService]: ../settings/src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/service/SystemSettingsService.kt
 
 [RateLimiter]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/ratelimiter/RateLimiter.kt
 [RateLimiterImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/ratelimiter/RateLimiterImpl.kt
@@ -98,5 +79,7 @@ fun installRoutesExample(route: io.ktor.server.routing.Route, router: SecurityFe
 [AuthenticationPolicyChecker]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/authenticationpolicychecker/AuthenticationPolicyChecker.kt
 [AuthenticationPolicyCheckerImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/authenticationpolicychecker/AuthenticationPolicyCheckerImpl.kt
 
-[SecurityModules]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/di/SecurityModules.kt
+[SecurityWebSocketMessageHandler]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/network/websockets/messagehandler/SecurityWebSocketMessageHandler.kt
+[SecurityWebSocketModule]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/di/module/SecurityWebSocketModule.kt
 
+[SecurityModules]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/di/SecurityModules.kt

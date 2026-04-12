@@ -38,6 +38,56 @@ class UserErrorTest {
     }
 
     @Test
+    fun `UserSecurityHold without userId has null secretArgs`() {
+        val error = UserError.UserSecurityHold(userId = null)
+
+        assertNull(error.publicArgs)
+        assertNull(error.secretArgs)
+    }
+
+    @Test
+    fun `UserPendingDeletion without userId has null secretArgs`() {
+        val error = UserError.UserPendingDeletion(userId = null)
+
+        assertNull(error.publicArgs)
+        assertNull(error.secretArgs)
+    }
+
+    @Test
+    fun `UserSecurityHold stores userId only in secretArgs`() {
+        val userId = UserId.generate()
+
+        val error = UserError.UserSecurityHold(userId = userId)
+
+        assertEquals("USER_SECURITY_HOLD", error.code)
+        assertEquals(HttpStatusCode.Forbidden, error.httpStatusCode)
+        assertEquals(AppErrorSeverity.LOW, error.appErrorSeverity)
+
+        assertNull(error.publicArgs)
+        assertEquals(
+            mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()),
+            error.secretArgs
+        )
+    }
+
+    @Test
+    fun `UserPendingDeletion stores userId only in secretArgs`() {
+        val userId = UserId.generate()
+
+        val error = UserError.UserPendingDeletion(userId = userId)
+
+        assertEquals("USER_PENDING_DELETION", error.code)
+        assertEquals(HttpStatusCode.Forbidden, error.httpStatusCode)
+        assertEquals(AppErrorSeverity.LOW, error.appErrorSeverity)
+
+        assertNull(error.publicArgs)
+        assertEquals(
+            mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()),
+            error.secretArgs
+        )
+    }
+
+    @Test
     fun `UserForbidden stores userId only in secretArgs`() {
         val userId = UserId.generate()
 

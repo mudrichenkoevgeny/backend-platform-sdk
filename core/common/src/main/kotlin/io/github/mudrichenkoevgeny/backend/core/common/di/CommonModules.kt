@@ -5,7 +5,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.di.module.AppLoggerModule
 import io.github.mudrichenkoevgeny.backend.core.common.di.module.CommonConfigModule
 import io.github.mudrichenkoevgeny.backend.core.common.di.module.EnvModule
 import io.github.mudrichenkoevgeny.backend.core.common.di.module.SwaggerModule
-import io.github.mudrichenkoevgeny.backend.core.common.di.module.CommonWebSocketModule
 import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
 import dagger.Module
 
@@ -22,8 +21,7 @@ import dagger.Module
         CommonConfigModule::class,
         AppErrorParserModule::class,
         AppLoggerModule::class,
-        SwaggerModule::class,
-        CommonWebSocketModule::class
+        SwaggerModule::class
     ]
 )
 interface CommonModules

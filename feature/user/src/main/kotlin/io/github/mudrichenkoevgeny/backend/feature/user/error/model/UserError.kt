@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.error.model
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorCodes
 import io.ktor.http.HttpStatusCode
@@ -102,6 +102,44 @@ sealed class UserError(
     )
 
     /**
+     * Account is under a security hold; access is restricted until resolved.
+     *
+     * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
+     */
+    class UserSecurityHold(
+        val userId: UserId? = null
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.USER_SECURITY_HOLD,
+        secretArgs = buildMap {
+            if (userId != null) {
+                put(UserErrorArgs.USER_ID, userId.asHexDashString())
+            }
+        }.takeIf { it.isNotEmpty() },
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
+     * Account is scheduled for deletion; most actions are not allowed.
+     *
+     * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
+     */
+    class UserPendingDeletion(
+        val userId: UserId? = null
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.USER_PENDING_DELETION,
+        secretArgs = buildMap {
+            if (userId != null) {
+                put(UserErrorArgs.USER_ID, userId.asHexDashString())
+            }
+        }.takeIf { it.isNotEmpty() },
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
      * User is not allowed to access this resource (insufficient rights or context).
      *
      * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
@@ -111,6 +149,44 @@ sealed class UserError(
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_FORBIDDEN,
+        secretArgs = buildMap {
+            if (userId != null) {
+                put(UserErrorArgs.USER_ID, userId.asHexDashString())
+            }
+        }.takeIf { it.isNotEmpty() },
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.MEDIUM
+    )
+
+    /**
+     * User role does not allow performing this action.
+     *
+     * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
+     */
+    class UserRoleNotAllowed(
+        val userId: UserId? = null
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.USER_ROLE_NOT_ALLOWED,
+        secretArgs = buildMap {
+            if (userId != null) {
+                put(UserErrorArgs.USER_ID, userId.asHexDashString())
+            }
+        }.takeIf { it.isNotEmpty() },
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.MEDIUM
+    )
+
+    /**
+     * User does not have required permissions to perform this action.
+     *
+     * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
+     */
+    class UserMissingPermissions(
+        val userId: UserId? = null
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.USER_MISSING_PERMISSIONS,
         secretArgs = buildMap {
             if (userId != null) {
                 put(UserErrorArgs.USER_ID, userId.asHexDashString())

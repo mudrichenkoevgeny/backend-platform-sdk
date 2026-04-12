@@ -1,11 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.core.settings.global.provider
 
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.config.model.SettingsConfig
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SettingType
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.GlobalSettings
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -64,35 +66,54 @@ class GlobalSettingsProviderImplTest {
     }
 
     @Test
-    fun `updatePrivacyPolicyUrl delegates to service updateSetting and returns Unit`() = runBlocking {
+    fun `updateGlobalSettings delegates to service updateSetting for all keys`() = runBlocking {
         val service = RecordingSettingsService(
             updateSettingResult = AppResult.Success(Unit)
         )
         val provider = GlobalSettingsProviderImpl(service, SettingsConfig(null, null, null))
+        val payload = GlobalSettings(
+            privacyPolicyUrl = "privacy",
+            termsOfServiceUrl = "tos",
+            contactSupportEmail = "support@example.com"
+        )
 
-        val result = provider.updatePrivacyPolicyUrl("privacy")
+        val result = provider.updateGlobalSettings(payload)
 
         assertTrue(result is AppResult.Success)
         assertEquals(
-            listOf(UpdateSettingCall("global.privacy_policy_url", "privacy", SettingType.STRING)),
+            listOf(
+                UpdateSettingCall("global.privacy_policy_url", "privacy", SettingType.STRING),
+                UpdateSettingCall("global.terms_of_service_url", "tos", SettingType.STRING),
+                UpdateSettingCall("global.contact_support_email", "support@example.com", SettingType.STRING),
+            ),
             service.updateSettingCalls
         )
     }
 
     @Test
-    fun `updateTermsOfServiceUrl returns error when service fails`() = runBlocking {
+    fun `updateGlobalSettings returns error when second update fails`() = runBlocking {
         val error = CommonError.Database("fail")
         val service = RecordingSettingsService(
-            updateSettingResult = AppResult.Error(error)
+            updateSettingResult = AppResult.Success(Unit),
+            failUpdateForKey = "global.terms_of_service_url",
+            failUpdateError = error,
         )
         val provider = GlobalSettingsProviderImpl(service, SettingsConfig(null, null, null))
+        val payload = GlobalSettings(
+            privacyPolicyUrl = "p",
+            termsOfServiceUrl = "t",
+            contactSupportEmail = "e"
+        )
 
-        val result = provider.updateTermsOfServiceUrl("tos")
+        val result = provider.updateGlobalSettings(payload)
 
         assertTrue(result is AppResult.Error)
         assertEquals(error, (result as AppResult.Error).error)
         assertEquals(
-            listOf(UpdateSettingCall("global.terms_of_service_url", "tos", SettingType.STRING)),
+            listOf(
+                UpdateSettingCall("global.privacy_policy_url", "p", SettingType.STRING),
+                UpdateSettingCall("global.terms_of_service_url", "t", SettingType.STRING),
+            ),
             service.updateSettingCalls
         )
     }
@@ -111,7 +132,9 @@ class GlobalSettingsProviderImplTest {
 
     private class RecordingSettingsService(
         private val stringByKey: Map<String, String?> = emptyMap(),
-        private val updateSettingResult: AppResult<Unit> = AppResult.Success(Unit)
+        private val updateSettingResult: AppResult<Unit> = AppResult.Success(Unit),
+        private val failUpdateForKey: String? = null,
+        private val failUpdateError: AppError? = null,
     ) : SystemSettingsService {
         val registerDefaultCalls = mutableListOf<RegisterDefaultCall>()
         val updateSettingCalls = mutableListOf<UpdateSettingCall>()
@@ -146,6 +169,9 @@ class GlobalSettingsProviderImplTest {
             type: SettingType
         ): AppResult<SystemSetting> {
             updateSettingCalls += UpdateSettingCall(key, value, type)
+            if (key == failUpdateForKey && failUpdateError != null) {
+                return AppResult.Error(failUpdateError)
+            }
             return when (updateSettingResult) {
                 is AppResult.Success -> AppResult.Success(
                     SystemSetting(

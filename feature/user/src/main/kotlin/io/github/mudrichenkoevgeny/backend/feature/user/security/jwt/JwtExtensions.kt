@@ -4,6 +4,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.contract.UserTokenClaims
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.toUserSessionIdOrNull
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -34,13 +35,17 @@ fun JwtBuilder.withSessionIdSubject(sessionId: UserSessionId): JwtBuilder {
     return this.claim(UserTokenClaims.SESSION_ID, sessionId.asHexDashString())
 }
 
+fun JwtBuilder.withUserRoleSubject(userRole: UserRole): JwtBuilder {
+    return this.claim(UserTokenClaims.USER_ROLE, userRole.serialName)
+}
+
 /** JWTCredential **/
 /**
  * Extracts a user id from the token subject.
  *
  * @throws JWTDecodeException when the subject is missing or cannot be parsed as a user id
  */
-fun JWTCredential.getUserId(): UserId {
+fun JWTCredential.getUserIdFromCredential(): UserId {
     return payload.subject?.toUserIdOrNull()
         ?: throw JWTDecodeException("Invalid or missing subject")
 }
@@ -50,7 +55,7 @@ fun JWTCredential.getUserId(): UserId {
  *
  * @return parsed session id, or `null` when claim is missing or invalid
  */
-fun JWTCredential.getSessionId(): UserSessionId? {
+fun JWTCredential.getSessionIdFromCredential(): UserSessionId? {
     val sessionId = this.getClaim(UserTokenClaims.SESSION_ID, String::class)
         ?: return null
     return sessionId.toUserSessionIdOrNull()
@@ -72,6 +77,11 @@ fun ApplicationCall.getJWTPrincipal(): JWTPrincipal? {
 fun JWTPrincipal.getUserId(): UserId? {
     val subject = this.payload.subject
     return subject?.toUserIdOrNull()
+}
+
+fun JWTPrincipal.getUserRole(): UserRole? {
+    val userRole = this.getClaim(UserTokenClaims.USER_ROLE, String::class)
+    return userRole?.let { userRole -> UserRole.fromValueOrNull(userRole) }
 }
 
 /**
@@ -136,11 +146,6 @@ fun JWTPrincipal.getUserIdForWebSocket(isOptional: Boolean = false): AppResult<U
             AppResult.Error(UserError.InvalidAccessToken())
         }
     }
-}
-
-/** Alias for readability in WebSocket code. */
-fun JWTPrincipal.getUserSessionId(): UserSessionId? {
-    return this.getSessionId()
 }
 
 /**

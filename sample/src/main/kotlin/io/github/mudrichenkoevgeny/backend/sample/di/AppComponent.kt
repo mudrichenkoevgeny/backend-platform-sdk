@@ -16,12 +16,15 @@ import io.github.mudrichenkoevgeny.backend.core.events.di.EventsModules
 import io.github.mudrichenkoevgeny.backend.core.observability.di.ObservabilityModules
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
 import io.github.mudrichenkoevgeny.backend.core.security.di.SecurityModules
-import io.github.mudrichenkoevgeny.backend.core.security.route.SecurityFeatureRouter
+import io.github.mudrichenkoevgeny.backend.feature.security.api.route.SecurityRouter
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.system.settings.SeedSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.core.settings.di.SettingsModules
-import io.github.mudrichenkoevgeny.backend.core.settings.global.usecase.SeedGlobalSettingsUseCase
-import io.github.mudrichenkoevgeny.backend.core.settings.route.SettingsFeatureRouter
 import io.github.mudrichenkoevgeny.backend.core.storage.di.StorageModules
+import io.github.mudrichenkoevgeny.backend.feature.audit.api.di.AuditApiModules
+import io.github.mudrichenkoevgeny.backend.feature.security.api.di.SecurityApiModules
+import io.github.mudrichenkoevgeny.backend.feature.settings.api.di.SettingsApiModules
+import io.github.mudrichenkoevgeny.backend.feature.settings.api.route.SettingsRouter
+import io.github.mudrichenkoevgeny.backend.core.settings.usecase.system.globalsettings.SeedGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.di.UserModules
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.AuthenticatedWebSocketRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserFeatureRouter
@@ -47,8 +50,11 @@ import javax.inject.Singleton
         ObservabilityModules::class,
         DatabaseModules::class,
         SettingsModules::class,
+        SettingsApiModules::class,
         SecurityModules::class,
+        SecurityApiModules::class,
         AuditModules::class,
+        AuditApiModules::class,
         EventsModules::class,
         StorageModules::class,
         CrosscuttingModules::class,
@@ -86,11 +92,11 @@ interface AppComponent {
 
     // settings
     fun seedGlobalSettingsUseCase(): SeedGlobalSettingsUseCase
-    fun settingsFeatureRouter(): SettingsFeatureRouter
+    fun settingsRouter(): SettingsRouter
 
     // security
     fun seedSecuritySettingsUseCase(): SeedSecuritySettingsUseCase
-    fun securityFeatureRouter(): SecurityFeatureRouter
+    fun securityFeatureRouter(): SecurityRouter
 
     // user
     fun authenticationProvider(): AuthenticationProvider

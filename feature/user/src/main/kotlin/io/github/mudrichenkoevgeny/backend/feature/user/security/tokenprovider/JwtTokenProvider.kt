@@ -2,16 +2,18 @@ package io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AccessToken
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshToken
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserSessionId
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.withSessionIdSubject
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.withUserIdSubject
+import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.withUserRoleSubject
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
@@ -38,6 +40,7 @@ class JwtTokenProvider @Inject constructor(
 
     override fun generateAccessToken(
         userId: UserId,
+        userRole: UserRole,
         sessionId: UserSessionId,
         issuedAt: Instant,
         expiration: Instant
@@ -46,6 +49,7 @@ class JwtTokenProvider @Inject constructor(
             val accessToken = Jwts.builder()
                 .withUserIdSubject(userId)
                 .withSessionIdSubject(sessionId)
+                .withUserRoleSubject()
                 .issuedAt(Date.from(issuedAt))
                 .expiration(Date.from(expiration))
                 .signWith(key)

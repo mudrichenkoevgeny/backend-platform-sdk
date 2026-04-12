@@ -1,7 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler
 
-import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.messagehandler.WebSocketMessageHandlerResult
-import io.github.mudrichenkoevgeny.backend.core.common.network.websocket.model.WebSocketSessionContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import kotlinx.coroutines.runBlocking
@@ -50,6 +49,7 @@ class UserWebSocketMessageHandlerTest {
             socketSessionId = SOCKET_ID,
             clientInfo = null,
             userId = null,
+            userRole = null,
             userSessionId = null
         )
     }

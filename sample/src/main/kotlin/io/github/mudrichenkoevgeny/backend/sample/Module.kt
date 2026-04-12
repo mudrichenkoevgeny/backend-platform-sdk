@@ -83,7 +83,7 @@ fun Application.module(
             setupSwaggerEndpoints()
         }
 
-        appComponent.settingsFeatureRouter().register(this)
+        appComponent.settingsRouter().register(this)
         appComponent.securityFeatureRouter().register(this)
         appComponent.userFeatureRouter().register(this)
         appComponent.authenticatedWebSocketRouter().register(this)

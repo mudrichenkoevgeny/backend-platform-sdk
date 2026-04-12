@@ -1,7 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.audit.logger
 
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 
+// todo delete
 /**
  * Writes audit records for user/auth flows.
  *
