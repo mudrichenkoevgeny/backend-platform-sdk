@@ -27,11 +27,11 @@ import io.github.mudrichenkoevgeny.backend.feature.settings.api.route.SettingsRo
 import io.github.mudrichenkoevgeny.backend.core.settings.usecase.system.globalsettings.SeedGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.di.UserModules
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.AuthenticatedWebSocketRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.UserFeatureRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.UserRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.scheduled.UserScheduledJobs
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.auth.settings.SeedAuthSettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.SeedAdminAccountsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.auth.settings.SeedAuthSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.adminaccounts.SeedAdminAccountsUseCase
 import io.github.mudrichenkoevgeny.backend.sample.appbootstrap.AppBootstrap
 import io.github.mudrichenkoevgeny.backend.sample.lifecycle.AppShutdownHook
 import kotlinx.coroutines.CoroutineScope
@@ -96,13 +96,13 @@ interface AppComponent {
 
     // security
     fun seedSecuritySettingsUseCase(): SeedSecuritySettingsUseCase
-    fun securityFeatureRouter(): SecurityRouter
+    fun securityRouter(): SecurityRouter
 
     // user
     fun authenticationProvider(): AuthenticationProvider
     fun seedAdminAccountsUseCase(): SeedAdminAccountsUseCase
     fun seedAuthSettingsUseCase(): SeedAuthSettingsUseCase
-    fun userFeatureRouter(): UserFeatureRouter
+    fun userRouter(): UserRouter
     fun authenticatedWebSocketRouter(): AuthenticatedWebSocketRouter
     fun userScheduledJobs(): UserScheduledJobs
 

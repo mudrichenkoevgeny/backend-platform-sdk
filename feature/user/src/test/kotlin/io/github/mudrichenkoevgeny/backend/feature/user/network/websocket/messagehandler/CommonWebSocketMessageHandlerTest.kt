@@ -25,7 +25,7 @@ class CommonWebSocketMessageHandlerTest {
         clientInfo = null,
         userId = null,
         userRole = null,
-        userSessionId = null,
+        userSessionId = null
     )
 
     @Test
@@ -34,7 +34,7 @@ class CommonWebSocketMessageHandlerTest {
             id = Uuid.random().toHexDashString(),
             type = CommonWebSocketEventTypes.PING,
             timestamp = System.currentTimeMillis(),
-            payload = null,
+            payload = null
         )
 
         val result = handler.handle(frame, dummyContext)
@@ -56,7 +56,7 @@ class CommonWebSocketMessageHandlerTest {
     fun `INITIALIZE without payload returns MissingRequiredField error`() = runSuspend {
         val frame = socketFrame(
             type = CommonWebSocketEventTypes.INITIALIZE,
-            payload = null,
+            payload = null
         )
 
         val result = handler.handle(frame, dummyContext)
@@ -71,7 +71,7 @@ class CommonWebSocketMessageHandlerTest {
     fun `INITIALIZE with invalid payload returns InvalidJsonBody error`() = runSuspend {
         val frame = socketFrame(
             type = CommonWebSocketEventTypes.INITIALIZE,
-            payload = JsonNull,
+            payload = JsonNull
         )
 
         val result = handler.handle(frame, dummyContext)
@@ -95,7 +95,7 @@ class CommonWebSocketMessageHandlerTest {
 
         val frame = socketFrame(
             type = CommonWebSocketEventTypes.INITIALIZE,
-            payload = payloadElement,
+            payload = payloadElement
         )
 
         val result = handler.handle(frame, dummyContext)
@@ -116,13 +116,13 @@ class CommonWebSocketMessageHandlerTest {
 
     private fun socketFrame(
         type: String,
-        payload: JsonElement? = buildJsonObject { },
+        payload: JsonElement? = buildJsonObject { }
     ): SocketFrame =
         SocketFrame(
             id = Uuid.random().toHexDashString(),
             type = type,
             timestamp = System.currentTimeMillis(),
-            payload = payload,
+            payload = payload
         )
 
     private fun runSuspend(block: suspend () -> Unit) {

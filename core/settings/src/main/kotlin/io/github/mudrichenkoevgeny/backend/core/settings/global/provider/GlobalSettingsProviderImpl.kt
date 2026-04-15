@@ -68,18 +68,18 @@ class GlobalSettingsProviderImpl @Inject constructor(
         return settingsService.updateSetting(
             key = KEY_PRIVACY_POLICY,
             value = globalSettings.privacyPolicyUrl.orEmpty(),
-            type = SettingType.STRING,
+            type = SettingType.STRING
         ).flatMapSuccess {
             settingsService.updateSetting(
                 key = KEY_TERMS_OF_SERVICE,
                 value = globalSettings.termsOfServiceUrl.orEmpty(),
-                type = SettingType.STRING,
+                type = SettingType.STRING
             )
         }.flatMapSuccess {
             settingsService.updateSetting(
                 key = KEY_SUPPORT_EMAIL,
                 value = globalSettings.contactSupportEmail.orEmpty(),
-                type = SettingType.STRING,
+                type = SettingType.STRING
             )
         }.flatMapSuccess { AppResult.Success(Unit) }
     }

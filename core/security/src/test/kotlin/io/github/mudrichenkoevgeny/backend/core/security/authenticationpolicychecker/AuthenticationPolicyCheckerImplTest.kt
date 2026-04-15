@@ -5,7 +5,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.time.Instant
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 class AuthenticationPolicyCheckerImplTest {
 
@@ -14,11 +17,12 @@ class AuthenticationPolicyCheckerImplTest {
         val checker = AuthenticationPolicyCheckerImpl(
             securityConfig = SecurityConfig(
                 recentAuthenticationValidityInMinutes = 60,
+                recentAuthenticationValidityInMinutesForManagement = 60,
                 passwordPolicy = PasswordPolicy()
             )
         )
 
-        val lastReauthenticatedAt = Instant.now().minusSeconds(5)
+        val lastReauthenticatedAt = Clock.System.now() - 5.seconds
 
         assertTrue(checker.isAuthenticationConfirmedRecently(lastReauthenticatedAt))
     }
@@ -28,13 +32,58 @@ class AuthenticationPolicyCheckerImplTest {
         val checker = AuthenticationPolicyCheckerImpl(
             securityConfig = SecurityConfig(
                 recentAuthenticationValidityInMinutes = 1,
+                recentAuthenticationValidityInMinutesForManagement = 60,
                 passwordPolicy = PasswordPolicy()
             )
         )
 
-        val lastReauthenticatedAt = Instant.now().minusSeconds(60 * 60)
+        val lastReauthenticatedAt = Clock.System.now() - 1.hours
 
         assertFalse(checker.isAuthenticationConfirmedRecently(lastReauthenticatedAt))
     }
-}
 
+    @Test
+    fun `isAuthenticationConfirmedRecentlyForManagement uses management validity window`() {
+        val checker = AuthenticationPolicyCheckerImpl(
+            securityConfig = SecurityConfig(
+                recentAuthenticationValidityInMinutes = 1,
+                recentAuthenticationValidityInMinutesForManagement = 60,
+                passwordPolicy = PasswordPolicy()
+            )
+        )
+
+        val thirtyMinutesAgo = Clock.System.now() - 30.minutes
+
+        assertFalse(checker.isAuthenticationConfirmedRecently(thirtyMinutesAgo))
+        assertTrue(checker.isAuthenticationConfirmedRecentlyForManagement(thirtyMinutesAgo))
+    }
+
+    @Test
+    fun `isAuthenticationConfirmedRecentlyForManagement returns false when outside management window`() {
+        val checker = AuthenticationPolicyCheckerImpl(
+            securityConfig = SecurityConfig(
+                recentAuthenticationValidityInMinutes = 60,
+                recentAuthenticationValidityInMinutesForManagement = 1,
+                passwordPolicy = PasswordPolicy()
+            )
+        )
+
+        val lastReauthenticatedAt = Clock.System.now() - 1.hours
+
+        assertFalse(checker.isAuthenticationConfirmedRecentlyForManagement(lastReauthenticatedAt))
+    }
+
+    @Test
+    fun `both checks return false when lastReauthenticatedAt is null`() {
+        val checker = AuthenticationPolicyCheckerImpl(
+            securityConfig = SecurityConfig(
+                recentAuthenticationValidityInMinutes = 60,
+                recentAuthenticationValidityInMinutesForManagement = 60,
+                passwordPolicy = PasswordPolicy()
+            )
+        )
+
+        assertFalse(checker.isAuthenticationConfirmedRecently(null))
+        assertFalse(checker.isAuthenticationConfirmedRecentlyForManagement(null))
+    }
+}

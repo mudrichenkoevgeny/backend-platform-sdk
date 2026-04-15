@@ -84,8 +84,8 @@ fun Application.module(
         }
 
         appComponent.settingsRouter().register(this)
-        appComponent.securityFeatureRouter().register(this)
-        appComponent.userFeatureRouter().register(this)
+        appComponent.securityRouter().register(this)
+        appComponent.userRouter().register(this)
         appComponent.authenticatedWebSocketRouter().register(this)
     }
 }

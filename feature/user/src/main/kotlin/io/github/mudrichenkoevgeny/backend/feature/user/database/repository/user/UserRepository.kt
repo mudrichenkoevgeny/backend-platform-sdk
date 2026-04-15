@@ -2,15 +2,16 @@ package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.use
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingParamNames
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import kotlin.time.Instant
 
 /**
@@ -28,10 +29,10 @@ interface UserRepository {
         user: UserDetails,
         status: UserAccountStatus? = null,
         statusBeforeDeletion: UserAccountStatus? = null,
-        permissions: Set<UserPermissionCode> = setOf(),
+        permissions: Set<PermissionCode> = setOf(),
         lastLoginAt: Instant? = null,
         lastActiveAt: Instant? = null,
-        scheduledPermanentDeletionAt: Instant? = null,
+        scheduledPermanentDeletionAt: Instant? = null
     ): AppResult<UserDetails>
 
     suspend fun getUserById(userId: UserId): AppResult<UserDetails?>
@@ -53,9 +54,9 @@ interface UserRepository {
      * - [role] — [UserDetails.role].
      * - [accountStatus] — [UserDetails.accountStatus].
      * - [accountStatusBeforeDeletion] — [UserDetails.accountStatusBeforeDeletion].
-     * - [userPermissionCode] — user has this code in [UserDetails.permissions] (implementation matches stored
-     *   representation to [UserPermissionCode.value]); `null` means no permission filter.
+     * - [userPermissionCode] — user has this code in [UserDetails.permissions].
      *
+     * @param accessFilter Row-level role visibility applied before optional filters.
      * @param pageParams One-based page and page size.
      * @param sortBy Sort field for the listing.
      * @param sortOrder Sort direction.
@@ -66,13 +67,14 @@ interface UserRepository {
      * @return [PagedResult] of matching users or an error.
      */
     suspend fun getUsersList(
+        accessFilter: UserRoleAccessFilter,
         pageParams: PageParams,
         sortBy: UserSortValues.UserSortBy = UserSortValues.UserSortBy.CREATED_AT,
         sortOrder: SortOrder = SortOrder.DESC,
         role: UserRole? = null,
         accountStatus: UserAccountStatus? = null,
         accountStatusBeforeDeletion: UserAccountStatus? = null,
-        userPermissionCode: UserPermissionCode? = null
+        userPermissionCode: PermissionCode? = null
     ): AppResult<PagedResult<UserDetails>>
 
     /**

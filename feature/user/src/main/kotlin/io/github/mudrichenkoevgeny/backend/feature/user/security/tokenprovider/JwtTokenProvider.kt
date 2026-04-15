@@ -26,7 +26,8 @@ import javax.inject.Singleton
  * JWT-based [TokenProvider] implementation.
  *
  * Access tokens are generated and verified using JJWT with an HMAC key derived from
- * [UserConfig.jwtSecret]. The token subject contains the user id and a claim contains the session id.
+ * [UserConfig.jwtSecret]. Token lifetimes for sessions are taken from [UserConfig.managementAuthSettings].
+ * The token subject contains the user id and a claim contains the session id.
  *
  * Refresh tokens are delegated to [RefreshTokenProvider].
  */
@@ -49,7 +50,7 @@ class JwtTokenProvider @Inject constructor(
             val accessToken = Jwts.builder()
                 .withUserIdSubject(userId)
                 .withSessionIdSubject(sessionId)
-                .withUserRoleSubject()
+                .withUserRoleSubject(userRole)
                 .issuedAt(Date.from(issuedAt))
                 .expiration(Date.from(expiration))
                 .signWith(key)

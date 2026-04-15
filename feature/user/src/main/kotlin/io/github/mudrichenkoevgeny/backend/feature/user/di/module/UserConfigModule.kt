@@ -6,7 +6,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.config.factory.UserConfi
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import dagger.Module
 import dagger.Provides
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import javax.inject.Singleton
 
 @Module
@@ -16,7 +16,7 @@ import javax.inject.Singleton
  * Binds:
  * - [UserConfigFactory] to [UserConfigFactoryImpl]
  * - [UserConfig] created at startup via the factory
- * - [AuthSettings] extracted from [UserConfig]
+ * - [ManagementAuthSettings] extracted from [UserConfig] for defaults and persistence seeding
  */
 class UserConfigModule {
 
@@ -40,9 +40,9 @@ class UserConfigModule {
 
     @Provides
     @Singleton
-    fun provideAuthSettings(
+    fun provideManagementAuthSettings(
         userConfig: UserConfig
-    ): AuthSettings {
-        return userConfig.authSettings
+    ): ManagementAuthSettings {
+        return userConfig.managementAuthSettings
     }
 }

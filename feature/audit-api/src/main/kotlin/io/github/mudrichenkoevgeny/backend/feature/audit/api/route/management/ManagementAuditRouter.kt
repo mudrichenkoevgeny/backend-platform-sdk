@@ -7,13 +7,13 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.validation.ValidationException
-import io.github.mudrichenkoevgeny.backend.core.common.validation.validatePathParameter
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.feature.audit.api.route.AuditSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.audit.api.network.query.parseAuditEventsListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.audit.api.usecase.management.auditevent.GetAuditEventUseCase
 import io.github.mudrichenkoevgeny.backend.feature.audit.api.usecase.management.auditevent.GetAuditEventsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.toAuditEventIdOrThrow
@@ -75,18 +75,23 @@ class ManagementAuditRouter @Inject constructor(
     }
 
     private suspend fun RoutingContext.getAuditEvents() {
-        if (!ensureManagementStaffAccess()) return
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN),
+            requiredAccountStatus = setOf(UserAccountStatus.ACTIVE)
+        )
 
-        val requestContext = call.getRequestContext()
-        val queryParams = try {
-            call.parseAuditEventsListQueryParams(
-                compositeAuditActionTypeParser = compositeAuditActionTypeParser,
-                compositeAuditResourceTypeParser = compositeAuditResourceTypeParser,
-            )
-        } catch (e: ValidationException) {
-            call.respondResult(AppResult.Error(e.error), appLogger, appErrorParser)
+        if (authorizeResult is AppResult.Error) {
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
             return
         }
+
+        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+
+        val queryParams = call.parseAuditEventsListQueryParams(
+            compositeAuditActionTypeParser = compositeAuditActionTypeParser,
+            compositeAuditResourceTypeParser = compositeAuditResourceTypeParser,
+        )
 
         val result = getAuditEventsUseCase(
             pageParams = queryParams.listing.pageParams,
@@ -100,7 +105,7 @@ class ManagementAuditRouter @Inject constructor(
             resourceId = queryParams.resourceId,
             status = queryParams.status,
             message = queryParams.message,
-            requestContext = requestContext
+            authenticatedRequestContext = authenticatedRequestContext
         )
 
         call.respondResult(result, appLogger, appErrorParser) { paged ->
@@ -126,38 +131,30 @@ class ManagementAuditRouter @Inject constructor(
     }
 
     private suspend fun RoutingContext.getAuditEvent() {
-        if (!ensureManagementStaffAccess()) return
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN),
+            requiredAccountStatus = setOf(UserAccountStatus.ACTIVE)
+        )
 
-        val requestContext = call.getRequestContext()
-        val eventId = call.validatePathParameter(AuditApiPaths.EVENT_ID) { raw ->
-            raw.toAuditEventIdOrThrow()
+        if (authorizeResult is AppResult.Error) {
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
+        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+        val eventId = call.validatePathParameter(AuditApiPaths.EVENT_ID) { eventId ->
+            eventId.toAuditEventIdOrThrow()
         }
 
         val result = getAuditEventUseCase(
             auditEventId = eventId,
-            requestContext = requestContext
+            authenticatedRequestContext = authenticatedRequestContext
         )
 
         call.respondResult(result, appLogger, appErrorParser) { event ->
             event.toAuditEventPayload()
         }
-    }
-
-    /**
-     * Ensures the caller is an active staff or admin user. On failure, sends the error response and returns false.
-     */
-    private suspend fun RoutingContext.ensureManagementStaffAccess(): Boolean {
-        val authorizeResult = authenticationProvider.requireUser(
-            call = call,
-            allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN),
-            requiredAccountStatus = setOf(UserAccountStatus.ACTIVE),
-            requiredPermissions = emptySet()
-        )
-        if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
-            return false
-        }
-        return true
     }
 
     companion object {

@@ -19,7 +19,7 @@ class HealthCheckerManagerTest {
     fun `verifyCriticalHealth throws when any critical check fails`() {
         val failingCheck = mockHealthCheck(
             severity = HealthCheckSeverity.CRITICAL,
-            result = AppSystemResult.Error(internalError()),
+            result = AppSystemResult.Error(internalError())
         )
         val appLogger: AppLogger = mockk {
             every { logError(any()) } just Runs
@@ -37,7 +37,7 @@ class HealthCheckerManagerTest {
     fun `verifyCriticalHealth completes when all critical checks succeed`() {
         val okCheck = mockHealthCheck(
             severity = HealthCheckSeverity.CRITICAL,
-            result = AppSystemResult.Success(Unit),
+            result = AppSystemResult.Success(Unit)
         )
         val appLogger: AppLogger = mockk(relaxed = true)
         val manager = HealthCheckerManager(setOf(okCheck), appLogger)
@@ -52,7 +52,7 @@ class HealthCheckerManagerTest {
         val error = internalError()
         val nonCriticalCheck = mockHealthCheck(
             severity = HealthCheckSeverity.NON_CRITICAL,
-            result = AppSystemResult.Error(error),
+            result = AppSystemResult.Error(error)
         )
         val appLogger: AppLogger = mockk {
             every { logError(error) } just Runs
@@ -68,7 +68,7 @@ class HealthCheckerManagerTest {
     fun `checkNonCriticalHealth completes when all non critical checks succeed`() = runBlocking {
         val okCheck = mockHealthCheck(
             severity = HealthCheckSeverity.NON_CRITICAL,
-            result = AppSystemResult.Success(Unit),
+            result = AppSystemResult.Success(Unit)
         )
         val appLogger: AppLogger = mockk(relaxed = true)
         val manager = HealthCheckerManager(setOf(okCheck), appLogger)
@@ -80,7 +80,7 @@ class HealthCheckerManagerTest {
 
     private fun mockHealthCheck(
         severity: HealthCheckSeverity,
-        result: AppSystemResult<Unit>,
+        result: AppSystemResult<Unit>
     ): HealthCheck = mockk {
         every { this@mockk.severity } returns severity
         coEvery { check() } returns result
@@ -88,7 +88,7 @@ class HealthCheckerManagerTest {
 
     private fun internalError(): CommonError.Internal = CommonError.Internal(
         throwable = RuntimeException("health failed"),
-        call = null,
+        call = null
     )
 }
 

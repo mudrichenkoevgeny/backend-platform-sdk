@@ -5,8 +5,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.extractClientInfo
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandlerResult
-import io.github.mudrichenkoevgeny.backend.core.common.validation.ValidationException
-import io.github.mudrichenkoevgeny.backend.core.common.validation.validateDto
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateDto
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener.WebSocketSessionListener
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.websocket.mergeClientInfo
@@ -14,9 +14,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contrac
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonWebSocketCloseReasons
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserDetailsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
@@ -25,6 +28,7 @@ import io.ktor.websocket.readText
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.decodeFromJsonElement
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -125,12 +129,7 @@ class KtorWebSocketManager @Inject constructor(
     }
 
     override suspend fun disconnectSocket(socketId: String) {
-        socketIdToWebSocketSession[socketId]?.close(
-            CloseReason(
-                code = CloseReason.Codes.NORMAL,
-                message = CommonWebSocketCloseReasons.NORMAL
-            )
-        )
+        socketIdToWebSocketSession[socketId]?.closeNormal()
     }
 
     private suspend fun DefaultWebSocketServerSession.handleIncoming(context: WebSocketSessionContext) {
@@ -181,10 +180,9 @@ class KtorWebSocketManager @Inject constructor(
     ) {
         when (result) {
             is WebSocketMessageHandlerResult.InitializeClient -> {
-                // todo wait for shared update
-//                val existing = context.clientInfo ?: emptyClientInfoForWebSocketMerge()
-//                context.clientInfo = result.payload.mergeClientInfo(existing)
-//                sendMessageToSession(session, result.socketFrame)
+                val payload = result.payload
+                context.clientInfo = payload.mergeClientInfo(context.clientInfo)
+                sendMessageToSession(session, result.socketFrame)
             }
             is WebSocketMessageHandlerResult.SendSocketFrame -> sendMessageToSession(session, result.socketFrame)
             is WebSocketMessageHandlerResult.Error -> appLogger.logError(result.appError)
@@ -215,16 +213,41 @@ class KtorWebSocketManager @Inject constructor(
         try {
             if (session.isActive) {
                 session.send(Frame.Text(FoundationJson.encodeToString(frame)))
+                if (frame.type == UserWebSocketEventTypes.SESSION_TERMINATED) {
+                    session.closeNormal()
+                }
+                if (frame.type == UserWebSocketEventTypes.ACCOUNT_STATUS_CHANGED) {
+                    frame.payload?.let { payload ->
+                        val userDetailsPayload = FoundationJson.decodeFromJsonElement<UserDetailsPayload>(payload)
+                        val userAccountStatus = UserAccountStatus
+                            .fromValueOrNull(userDetailsPayload.accountStatus)
+                        if (userAccountStatus == UserAccountStatus.BANNED
+                            || userAccountStatus == UserAccountStatus.SECURITY_HOLD
+                            || userAccountStatus == UserAccountStatus.PENDING_DELETION
+                        ) {
+                            session.closeNormal()
+                        }
+                    }
+                }
             }
         } catch (_: Exception) {}
     }
 
     private fun handleSocketError(e: Throwable) {
         val appError = when (e) {
-            is ValidationException -> e.error
+            is RequestHandlingException -> e.error
             is SerializationException -> CommonError.InvalidJsonBody(e.message)
             else -> CommonError.Unknown(e.message)
         }
         appLogger.logError(appError)
+    }
+
+    private suspend fun DefaultWebSocketServerSession.closeNormal() {
+        close(
+            CloseReason(
+                code = CloseReason.Codes.NORMAL,
+                message = CommonWebSocketCloseReasons.NORMAL
+            )
+        )
     }
 }

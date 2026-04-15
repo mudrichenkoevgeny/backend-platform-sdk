@@ -1,9 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.table
 
-import io.github.mudrichenkoevgeny.backend.feature.user.database.UserDbConstraints
 import io.github.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
 import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.database.UserDbConstraints
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import org.jetbrains.exposed.v1.core.ReferenceOption
 
 /**

@@ -3,8 +3,8 @@ package io.github.mudrichenkoevgeny.backend.feature.security.api.usecase.managem
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.audit.toErrorAuditEventMetadata
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.toErrorUserAuditEventMetadata
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
@@ -36,17 +36,17 @@ class UpdateSecuritySettingsUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         securitySettings: SecuritySettings,
-        requestContext: RequestContext
+        authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
         val updateSecuritySettingsResult = securitySettingsProvider.updateSecuritySettings(securitySettings)
 
-        val metadata: Set<AuditEventMetadata> = requestContext.clientInfo.toAuditMetadata()
+        val metadata: Set<AuditEventMetadata> = authenticatedRequestContext.clientInfo.toAuditMetadata()
         if (updateSecuritySettingsResult is AppResult.Error) {
-            metadata + updateSecuritySettingsResult.error.toErrorAuditEventMetadata()
+            metadata + updateSecuritySettingsResult.error.toErrorUserAuditEventMetadata()
         }
 
         auditLogger.log(
-            actorId = requestContext.userId?.asHexDashString(),
+            actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
             actorUserRole = null,
             action = SecurityAuditActionType.MANAGEMENT_UPDATE_SECURITY_SETTINGS,

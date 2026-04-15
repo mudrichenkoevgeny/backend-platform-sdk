@@ -4,13 +4,13 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 /**
  * Placeholder [PhoneService] implementation.
  *
  * Currently prints to stdout and returns success. A host app is expected to replace this
  * with a real SMS provider integration.
  */
+@Singleton
 class PhoneServiceImpl @Inject constructor() : PhoneService {
     override fun sendVerificationCode(phoneNumber: String, code: String): AppResult<Unit> {
         println("PhoneService: sendVerificationCode | $phoneNumber | $code")

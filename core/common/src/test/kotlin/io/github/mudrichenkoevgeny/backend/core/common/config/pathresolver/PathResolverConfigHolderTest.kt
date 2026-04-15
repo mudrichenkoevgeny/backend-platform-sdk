@@ -20,7 +20,7 @@ class PathResolverConfigHolderTest {
         val custom = PathResolverConfig(
             projectRoot = root,
             envFilePath = ".env",
-            secretsDirPath = "secrets",
+            secretsDirPath = "secrets"
         )
 
         PathResolverConfigHolder.set(custom)

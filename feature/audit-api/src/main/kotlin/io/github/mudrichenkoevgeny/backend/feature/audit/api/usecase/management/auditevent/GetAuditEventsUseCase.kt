@@ -6,7 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.feature.audit.api.manager.AuditManager
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
@@ -35,10 +35,9 @@ class GetAuditEventsUseCase @Inject constructor(
         resourceId: String? = null,
         status: AuditStatus? = null,
         message: String? = null,
-        requestContext: RequestContext
+        authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<AuditEvent>> {
-        val currentUserId = requestContext.userId
-            ?: return AppResult.Error(UserError.UserForbidden())
+        val currentUserId = authenticatedRequestContext.userId
 
         val getCurrentUserResult = userManager.getUserById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())

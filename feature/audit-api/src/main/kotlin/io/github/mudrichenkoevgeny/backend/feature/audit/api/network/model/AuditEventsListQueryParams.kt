@@ -19,5 +19,5 @@ data class AuditEventsListQueryParams(
     val resource: AuditResourceType?,
     val resourceId: String?,
     val status: AuditStatus?,
-    val message: String?,
+    val message: String?
 )

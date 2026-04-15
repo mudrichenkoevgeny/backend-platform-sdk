@@ -1,6 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.common.validation
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingParamNames
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
@@ -23,7 +25,7 @@ class ListingQueryParameterExtensionsTest {
 
         val listing = call.parseListingQueryParams(
             defaultSortBy = defaultSort,
-            parseSortByOrNull = TestSort::fromWireOrNull,
+            parseSortByOrNull = TestSort::fromWireOrNull
         )
 
         assertEquals(PageParams(page = 1, size = PageParams.DEFAULT_PAGE_SIZE), listing.pageParams)
@@ -44,7 +46,7 @@ class ListingQueryParameterExtensionsTest {
 
         val listing = call.parseListingQueryParams(
             defaultSortBy = defaultSort,
-            parseSortByOrNull = TestSort::fromWireOrNull,
+            parseSortByOrNull = TestSort::fromWireOrNull
         )
 
         assertEquals(PageParams(page = 2, size = 15), listing.pageParams)
@@ -58,10 +60,10 @@ class ListingQueryParameterExtensionsTest {
             Parameters.build { append(ListingParamNames.Pagination.PAGE_NUMBER, "0") }
         )
 
-        assertThrows(ValidationException::class.java) {
+        assertThrows(RequestHandlingException::class.java) {
             call.parseListingQueryParams(
                 defaultSortBy = defaultSort,
-                parseSortByOrNull = TestSort::fromWireOrNull,
+                parseSortByOrNull = TestSort::fromWireOrNull
             )
         }
     }
@@ -72,10 +74,10 @@ class ListingQueryParameterExtensionsTest {
             Parameters.build { append(ListingParamNames.Pagination.PAGE_SIZE, "0") }
         )
 
-        assertThrows(ValidationException::class.java) {
+        assertThrows(RequestHandlingException::class.java) {
             call.parseListingQueryParams(
                 defaultSortBy = defaultSort,
-                parseSortByOrNull = TestSort::fromWireOrNull,
+                parseSortByOrNull = TestSort::fromWireOrNull
             )
         }
     }
@@ -86,10 +88,10 @@ class ListingQueryParameterExtensionsTest {
             Parameters.build { append(ListingParamNames.Sort.SORT_BY, "unknown") }
         )
 
-        val ex = assertThrows(ValidationException::class.java) {
+        val ex = assertThrows(RequestHandlingException::class.java) {
             call.parseListingQueryParams(
                 defaultSortBy = defaultSort,
-                parseSortByOrNull = TestSort::fromWireOrNull,
+                parseSortByOrNull = TestSort::fromWireOrNull
             )
         }
         assertEquals(CommonError.InvalidParameterValue::class, ex.error::class)
@@ -101,10 +103,10 @@ class ListingQueryParameterExtensionsTest {
             Parameters.build { append(ListingParamNames.Sort.SORT_ORDER, "sideways") }
         )
 
-        val ex = assertThrows(ValidationException::class.java) {
+        val ex = assertThrows(RequestHandlingException::class.java) {
             call.parseListingQueryParams(
                 defaultSortBy = defaultSort,
-                parseSortByOrNull = TestSort::fromWireOrNull,
+                parseSortByOrNull = TestSort::fromWireOrNull
             )
         }
         assertEquals(CommonError.InvalidParameterValue::class, ex.error::class)
@@ -132,7 +134,7 @@ class ListingQueryParameterExtensionsTest {
         val candidates = listOf(
             sortOrder.name,
             sortOrder.name.lowercase(),
-            sortOrder.name.uppercase(),
+            sortOrder.name.uppercase()
         )
         return candidates.firstOrNull { SortOrder.fromValueOrNull(it) == sortOrder }
             ?: error("No wire string maps to $sortOrder via SortOrder.fromValueOrNull")

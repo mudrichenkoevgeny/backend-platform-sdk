@@ -30,12 +30,12 @@ class SecuritySettingsProviderImpl @Inject constructor(
         return settingsService.registerDefault(
             key = RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES,
             value = "${config.recentAuthenticationValidityInMinutes}",
-            type = SettingType.LONG,
+            type = SettingType.LONG
         ).flatMapSuccess {
             settingsService.registerDefault(
                 key = KEY_PASSWORD_POLICY,
                 value = FoundationJson.encodeToString(config.passwordPolicy.toPasswordPolicyPayload()),
-                type = SettingType.JSON,
+                type = SettingType.JSON
             )
         }
     }
@@ -43,7 +43,7 @@ class SecuritySettingsProviderImpl @Inject constructor(
     override fun getSettings(): AppResult<SecuritySettings> {
         val settings = SecuritySettings(
             recentAuthenticationValidityInMinutes = getRecentAuthenticationValidityInMinutes(),
-            passwordPolicy = getPasswordPolicy(),
+            passwordPolicy = getPasswordPolicy()
         )
         return AppResult.Success(settings)
     }
@@ -63,12 +63,12 @@ class SecuritySettingsProviderImpl @Inject constructor(
         return settingsService.updateSetting(
             key = RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES,
             value = "${securitySettings.recentAuthenticationValidityInMinutes}",
-            type = SettingType.LONG,
+            type = SettingType.LONG
         ).flatMapSuccess {
             settingsService.updateSetting(
                 key = KEY_PASSWORD_POLICY,
                 value = FoundationJson.encodeToString(securitySettings.passwordPolicy),
-                type = SettingType.JSON,
+                type = SettingType.JSON
             ).flatMapSuccess { AppResult.Success(Unit) }
         }
     }

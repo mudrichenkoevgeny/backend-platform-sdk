@@ -6,7 +6,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.met
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CommonAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataDeniedReasonValues
 
-fun AppError.toDeniedAuditEventMetadata(): Set<AuditEventMetadata> {
+fun AppError.toDeniedUserAuditEventMetadata(): Set<AuditEventMetadata> {
    val deniedReasonValue = when (this) {
        is UserError.UserForbidden -> UserAuditMetadataDeniedReasonValues.USER_FORBIDDEN
        is UserError.UserReadOnly -> UserAuditMetadataDeniedReasonValues.USER_READ_ONLY
@@ -21,7 +21,7 @@ fun AppError.toDeniedAuditEventMetadata(): Set<AuditEventMetadata> {
     return setOf(AuditEventMetadata(CommonAuditMetadataKey.DENIED_REASON, deniedReasonValue))
 }
 
-fun AppError.toErrorAuditEventMetadata(): Set<AuditEventMetadata> {
+fun AppError.toErrorUserAuditEventMetadata(): Set<AuditEventMetadata> {
     return setOf(
         AuditEventMetadata(CommonAuditMetadataKey.ERROR_ID, this.errorId.asHexDashString()),
         AuditEventMetadata(CommonAuditMetadataKey.ERROR_CODE, this.code)

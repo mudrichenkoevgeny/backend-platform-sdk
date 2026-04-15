@@ -44,7 +44,7 @@ class AuditEventRepositoryImplTest {
         }
         repository = AuditEventRepositoryImpl(
             compositeAuditActionTypeParser = compositeAuditActionTypeParserForRepositoryTests(),
-            compositeAuditResourceTypeParser = compositeAuditResourceTypeParserForRepositoryTests(),
+            compositeAuditResourceTypeParser = compositeAuditResourceTypeParserForRepositoryTests()
         )
     }
 
@@ -93,7 +93,7 @@ class AuditEventRepositoryImplTest {
         val result = suspendTransaction {
             repository.getEventsList(
                 accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
-                pageParams = PageParams(page = 1, size = 20),
+                pageParams = PageParams(page = 1, size = 20)
             )
         }
 
@@ -119,7 +119,7 @@ class AuditEventRepositoryImplTest {
         val result = suspendTransaction {
             repository.getEventsList(
                 accessFilter = AuditAccessFilter(emptySet(), emptySet()),
-                pageParams = PageParams(page = 1, size = 50),
+                pageParams = PageParams(page = 1, size = 50)
             )
         }
 
@@ -145,7 +145,7 @@ class AuditEventRepositoryImplTest {
             repository.getEventsList(
                 accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
                 pageParams = PageParams(page = 1, size = 50),
-                actorId = actorId,
+                actorId = actorId
             )
         }
 

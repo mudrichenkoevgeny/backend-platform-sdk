@@ -19,8 +19,11 @@ class SecurityConfigFactoryImpl @Inject constructor(
 ): SecurityConfigFactory {
 
     override fun create(): SecurityConfig {
-        val authenticationConfirmationValidityMinutes = envReader
-            .getByKey(SecurityEnvKeys.AUTHENTICATION_CONFIRMATION_VALIDITY_MINUTES).toLong()
+        val recentAuthenticationValidityInMinutes = envReader
+            .getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES).toLong()
+
+        val recentAuthenticationValidityInMinutesForManagement = envReader
+            .getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES_FOR_MANAGEMENT).toLong()
 
         val minLength = envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_MIN_LENGTH)
             ?.toInt() ?: PasswordPolicy.DEFAULT_MIN_LENGTH
@@ -58,7 +61,8 @@ class SecurityConfigFactoryImpl @Inject constructor(
         )
 
         return SecurityConfig(
-            recentAuthenticationValidityInMinutes = authenticationConfirmationValidityMinutes,
+            recentAuthenticationValidityInMinutes = recentAuthenticationValidityInMinutes,
+            recentAuthenticationValidityInMinutesForManagement = recentAuthenticationValidityInMinutesForManagement,
             passwordPolicy = passwordPolicy
         )
     }

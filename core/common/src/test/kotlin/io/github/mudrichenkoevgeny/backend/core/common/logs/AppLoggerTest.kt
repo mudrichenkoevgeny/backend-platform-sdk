@@ -23,7 +23,7 @@ class AppLoggerTest {
     fun `logError routes internal error to system logger`() {
         val internalError = CommonError.Internal(
             throwable = RuntimeException("boom"),
-            call = null,
+            call = null
         )
 
         appLogger.logError(internalError)
@@ -31,7 +31,7 @@ class AppLoggerTest {
         verify {
             systemLogger.error(
                 match<String> { it.contains("Unhandled exception") },
-                any<Throwable>(),
+                any<Throwable>()
             )
         }
     }

@@ -8,11 +8,11 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.validation.validateRequest
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.feature.settings.api.route.SettingsSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.settings.api.usecase.management.globalsettings.UpdateGlobalSettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.audit.toDeniedAuditEventMetadata
-import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.toDeniedUserAuditEventMetadata
+import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -69,7 +69,8 @@ class ManagementGlobalSettingsRouter @Inject constructor(
     }
 
     private suspend fun RoutingContext.updateGlobalSettings() {
-        val requestContext = call.getRequestContext()
+        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+
         val authorizeResult = authenticationProvider.requireUser(
             call = call,
             allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN),
@@ -78,12 +79,12 @@ class ManagementGlobalSettingsRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            val metadata: Set<AuditEventMetadata> = authorizeResult.error.toDeniedAuditEventMetadata() +
-                    requestContext.clientInfo.toAuditMetadata()
+            val metadata: Set<AuditEventMetadata> = authorizeResult.error.toDeniedUserAuditEventMetadata() +
+                    authenticatedRequestContext.clientInfo.toAuditMetadata()
             auditLogger.log(
-                actorId = requestContext.userId?.asHexDashString(),
+                actorId = authenticatedRequestContext.userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = requestContext.userRole?.serialName,
+                actorUserRole = authenticatedRequestContext.userRole.serialName,
                 action = SettingsAuditActionType.MANAGEMENT_UPDATE_GLOBAL_SETTINGS,
                 resource = SettingsAuditResourceType.GLOBAL_SETTINGS,
                 status = AuditStatus.DENIED,
@@ -97,7 +98,7 @@ class ManagementGlobalSettingsRouter @Inject constructor(
 
         val result = updateGlobalSettingsUseCase(
             globalSettings = request.toGlobalSettings(),
-            requestContext = requestContext
+            authenticatedRequestContext = authenticatedRequestContext
         )
 
         call.respondResult(result, appLogger, appErrorParser)

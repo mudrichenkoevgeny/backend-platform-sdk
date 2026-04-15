@@ -19,7 +19,7 @@ class KtorServerFactoryTest {
             serverUrl = "http://localhost:8080",
             allowedOrigins = listOf("*"),
             rateLimit = 100,
-            rateLimitPeriodSeconds = 60,
+            rateLimitPeriodSeconds = 60
         )
 
         val server = KtorServer.create(config) { /* empty module for test */ }

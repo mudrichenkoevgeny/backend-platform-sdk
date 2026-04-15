@@ -1,6 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.core.common.validation
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.firstNonBlankQueryValue
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parsePositiveIntQuery
 import io.ktor.http.Parameters
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.ApplicationRequest
@@ -81,7 +84,7 @@ class ApplicationCallQueryParameterExtensionsTest {
     fun `parsePositiveIntQuery throws when value is not int`() {
         val call = applicationCallWithQuery(Parameters.build { append("page", "x") })
 
-        val ex = assertThrows(ValidationException::class.java) {
+        val ex = assertThrows(RequestHandlingException::class.java) {
             call.parsePositiveIntQuery("page", default = 1)
         }
         assertEquals(CommonError.InvalidParameterValue::class, ex.error::class)
@@ -91,7 +94,7 @@ class ApplicationCallQueryParameterExtensionsTest {
     fun `parsePositiveIntQuery throws when value is zero`() {
         val call = applicationCallWithQuery(Parameters.build { append("page", "0") })
 
-        assertThrows(ValidationException::class.java) {
+        assertThrows(RequestHandlingException::class.java) {
             call.parsePositiveIntQuery("page", default = 1)
         }
     }
@@ -100,7 +103,7 @@ class ApplicationCallQueryParameterExtensionsTest {
     fun `parsePositiveIntQuery throws when value is negative`() {
         val call = applicationCallWithQuery(Parameters.build { append("page", "-1") })
 
-        assertThrows(ValidationException::class.java) {
+        assertThrows(RequestHandlingException::class.java) {
             call.parsePositiveIntQuery("page", default = 1)
         }
     }

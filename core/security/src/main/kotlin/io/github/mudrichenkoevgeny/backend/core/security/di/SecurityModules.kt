@@ -15,7 +15,7 @@ import dagger.Module
  * - [SecurityConfigModule] (config factory + config instance)
  * - [PasswordHasherModule] (password hashing)
  * - [PasswordPolicyValidatorModule] (password policy + validator)
- * - [AuthenticationPolicyCheckerModule] (recent authentication checks)
+ * - [AuthenticationPolicyCheckerModule] (self-service vs management re-authentication freshness)
  * - [RateLimiterModule] (rate limiting implementation)
  * - [SecuritySettingsProviderModule] (DB-backed security settings access)
  */

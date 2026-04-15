@@ -1,37 +1,36 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthSettings
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AvailableAuthProviders
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.PublicAuthSettings
 
 /**
- * Provides runtime authentication settings for the user feature.
+ * Provides persisted authentication settings for the user feature.
  *
- * The provider is responsible for:
- * - seeding system settings with defaults during startup ([initialize]);
- * - returning the current effective settings for request handling ([getSettings]);
- * - persisting updates to auth-provider availability ([updateAvailableAuthProviders]).
+ * The provider is expected to:
+ * - seed defaults on application startup ([initialize])
+ * - expose a management snapshot ([getManagementAuthSettings])
+ * - expose a public snapshot ([getPublicAuthSettings])
+ * - persist updates from management flows ([updateManagementAuthSettings])
  */
 interface AuthSettingsProvider {
     /**
-     * Registers defaults required by this feature in the system settings storage.
-     *
-     * @return [AppResult.Success] on successful registration, or [AppResult.Error] on failure
+     * Registers default values for auth settings if they are missing.
      */
     suspend fun initialize(): AppResult<Unit>
 
     /**
-     * Returns the current effective [AuthSettings].
-     *
-     * @return [AppResult.Success] with the settings. Errors are not expected for in-memory reads.
+     * Returns current effective management settings (including token validity).
      */
-    fun getSettings(): AppResult<AuthSettings>
+    fun getManagementAuthSettings(): AppResult<ManagementAuthSettings>
 
     /**
-     * Persists the enabled auth providers used by clients.
-     *
-     * @param availableAuthProviders enabled providers split by UI priority
-     * @return [AppResult.Success] when stored, or [AppResult.Error] when persistence failed
+     * Returns settings safe to expose to unauthenticated clients.
      */
-    suspend fun updateAvailableAuthProviders(availableAuthProviders: AvailableAuthProviders): AppResult<Unit>
+    fun getPublicAuthSettings(): AppResult<PublicAuthSettings>
+
+    /**
+     * Persists management auth settings.
+     */
+    suspend fun updateManagementAuthSettings(managementAuthSettings: ManagementAuthSettings): AppResult<Unit>
 }

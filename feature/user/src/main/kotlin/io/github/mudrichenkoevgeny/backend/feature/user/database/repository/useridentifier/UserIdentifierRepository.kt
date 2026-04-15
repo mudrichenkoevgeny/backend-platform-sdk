@@ -1,12 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier
 
-import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PageParams
-import io.github.mudrichenkoevgeny.backend.core.common.listing.pagination.model.PagedResponse
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
-import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 
 /**
  * Persistence API for login identifiers linked to a user (email, phone, external provider id).
@@ -18,7 +21,7 @@ interface UserIdentifierRepository {
      * @param userIdentifier identifier model to create
      * @return created identifier or an error
      */
-    suspend fun createUserIdentifier(userIdentifier: UserIdentifier): AppResult<UserIdentifier>
+    suspend fun createUserIdentifier(userIdentifier: UserIdentifierInternal): AppResult<UserIdentifierInternal>
 
     /**
      * Deletes an identifier entry by id.
@@ -47,10 +50,10 @@ interface UserIdentifierRepository {
      * @return updated identifier snapshot or an error
      */
     suspend fun updateUserIdentifier(
-        userIdentifier: UserIdentifier,
+        userIdentifier: UserIdentifierInternal,
         identifier: String? = null,
         passwordHash: String? = null
-    ): AppResult<UserIdentifier>
+    ): AppResult<UserIdentifierInternal>
 
     /**
      * Loads an identifier by id.
@@ -58,7 +61,7 @@ interface UserIdentifierRepository {
      * @param userIdentifierId identifier id to look up
      * @return identifier when found, `null` when missing, or an error
      */
-    suspend fun getUserIdentifierById(userIdentifierId: UserIdentifierId): AppResult<UserIdentifier?>
+    suspend fun getUserIdentifierById(userIdentifierId: UserIdentifierId): AppResult<UserIdentifierInternal?>
 
     /**
      * Returns identifiers for a user, optionally filtered by [userAuthProvider].
@@ -70,7 +73,7 @@ interface UserIdentifierRepository {
     suspend fun getUserIdentifiersListByUserId(
         userId: UserId,
         userAuthProvider: UserAuthProvider? = null
-    ): AppResult<List<UserIdentifier>>
+    ): AppResult<List<UserIdentifierInternal>>
 
     /**
      * Loads a single identifier by provider and identifier value.
@@ -81,18 +84,31 @@ interface UserIdentifierRepository {
      */
     suspend fun getUserIdentifier(
         userAuthProvider: UserAuthProvider,
-        identifier: String,
-    ): AppResult<UserIdentifier?>
+        identifier: String
+    ): AppResult<UserIdentifierInternal?>
 
     /**
-     * Returns a paginated list of identifiers with an optional provider filter.
+     * Returns a paginated list of identifiers constrained by access and optional filters.
      *
+     * [accessFilter] limits visible rows by target user roles.
+     * Filter lists are OR-combined within each axis and AND-combined across axes.
+     *
+     * @param accessFilter row-level role visibility
      * @param params pagination parameters
-     * @param userAuthProvider optional auth provider filter
+     * @param sortBy sort field
+     * @param sortOrder sort direction
+     * @param userIds optional user-id filters
+     * @param userAuthProviders optional auth-provider filters
+     * @param identifiers optional identifier substring filters
      * @return paged response or an error
      */
     suspend fun getUserIdentifiersList(
+        accessFilter: UserRoleAccessFilter = UserRoleAccessFilter(emptySet()),
         params: PageParams,
-        userAuthProvider: UserAuthProvider? = null
-    ): AppResult<PagedResponse<UserIdentifier>>
+        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
+        sortOrder: SortOrder = SortOrder.DESC,
+        userIds: List<UserId> = emptyList(),
+        userAuthProviders: List<UserAuthProvider> = emptyList(),
+        identifiers: List<String> = emptyList()
+    ): AppResult<PagedResult<UserIdentifierInternal>>
 }

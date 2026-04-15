@@ -23,7 +23,7 @@ class PathResolverImplTest {
         val config = PathResolverConfig(
             projectRoot = tempRoot,
             envFilePath = envFile.name,
-            secretsDirPath = secretsDir.name,
+            secretsDirPath = secretsDir.name
         )
 
         val resolver = PathResolverImpl(config, logger)
@@ -40,7 +40,7 @@ class PathResolverImplTest {
         val config = PathResolverConfig(
             projectRoot = tempRoot,
             envFilePath = ".env",
-            secretsDirPath = null,
+            secretsDirPath = null
         )
 
         assertThrows(IllegalStateException::class.java) {
@@ -57,7 +57,7 @@ class PathResolverImplTest {
         val config = PathResolverConfig(
             projectRoot = tempRoot,
             envFilePath = null,
-            secretsDirPath = secretsDir.name,
+            secretsDirPath = secretsDir.name
         )
 
         assertThrows(IllegalStateException::class.java) {

@@ -1,0 +1,48 @@
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.adminaccounts
+
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
+import io.github.mudrichenkoevgeny.backend.feature.user.config.seed.AdminAccount
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/**
+ * Use case: ensure admin accounts from configuration exist (e.g. at startup).
+ *
+ * Runs [AuthManager.getOrCreateUserIdentifier] for each [AdminAccount] in parallel (coroutineScope + async/awaitAll).
+ * If any call fails, returns the first [AppResult.Error]; otherwise [AppResult.Success].
+ * [execute] takes an optional list of admin accounts (defaults to config);
+ * returns [AppResult.Success] when all are created or already exist, or [AppResult.Error] from the first failure.
+ */
+@Singleton
+class SeedAdminAccountsUseCase @Inject constructor(
+    private val userConfig: UserConfig,
+    private val authManager: AuthManager
+) {
+    suspend fun execute(
+        adminAccounts: List<AdminAccount> = userConfig.adminAccountsList
+    ): AppResult<Unit> = coroutineScope {
+        val resultsList = adminAccounts.map { adminAccount ->
+            async {
+                authManager.getOrCreateUserIdentifier(
+                    userAuthProvider = UserAuthProvider.EMAIL,
+                    identifier = adminAccount.email,
+                    password = adminAccount.password,
+                    userRole = UserRole.ADMIN
+                )
+            }
+        }.awaitAll()
+
+        resultsList.filterIsInstance<AppResult.Error>().firstOrNull()?.let { errorResult ->
+            return@coroutineScope AppResult.Error(errorResult.error)
+        }
+
+        AppResult.Success(Unit)
+    }
+}

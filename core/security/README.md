@@ -11,7 +11,7 @@ Security primitives for SDK-based applications: password hashing, password polic
   - [SecuritySettingsProvider] backed by [SystemSettingsService] ([SecuritySettingsProviderImpl]) — password policy JSON and recent-authentication window.
   - [SeedSecuritySettingsUseCase] seeds defaults on bootstrap.
 - **Rate limiting**: [RateLimiter] (Redis-backed implementation: [RateLimiterImpl]) with predefined [RateLimitAction] policies and [RateLimitResult].
-- **Authentication freshness**: [AuthenticationPolicyChecker] (implementation: [AuthenticationPolicyCheckerImpl]) to check whether the user recently passed a confirmation step.
+- **Authentication freshness**: [AuthenticationPolicyChecker] (implementation: [AuthenticationPolicyCheckerImpl]) — `isAuthenticationConfirmedRecently` (self-service window) and `isAuthenticationConfirmedRecentlyForManagement` (management window from [SecurityConfig]).
 - **WebSockets**: [SecurityWebSocketMessageHandler] contributed via [SecurityWebSocketModule].
 - **DI wiring**: [SecurityModules] aggregates config, hashing, policy validator, rate limiting, settings provider, auth policy checker, and WebSocket contributions.
 
@@ -19,7 +19,8 @@ Security primitives for SDK-based applications: password hashing, password polic
 
 The default config factory ([SecurityConfigFactoryImpl]) reads:
 
-- `AUTHENTICATION_CONFIRMATION_VALIDITY_MINUTES` — window (minutes) during which a re-authentication is considered valid.
+- `RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES` — **required**; window (minutes) during which a recent re-authentication is considered valid for **self-service** sensitive actions (`SecurityConfig.recentAuthenticationValidityInMinutes`).
+- `RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES_FOR_MANAGEMENT` — **required**; window (minutes) for **management** sensitive actions (`SecurityConfig.recentAuthenticationValidityInMinutesForManagement`).
 - `PASSWORD_POLICY_MIN_LENGTH` — minimum password length (optional; fallback: `PasswordPolicy.DEFAULT_MIN_LENGTH`).
 - `PASSWORD_POLICY_REQUIRE_LETTER` — `"true"`/`"false"` (optional; fallback: `true`).
 - `PASSWORD_POLICY_REQUIRE_UPPER_CASE` — `"true"`/`"false"` (optional; fallback: `false`).

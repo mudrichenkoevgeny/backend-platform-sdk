@@ -13,7 +13,7 @@ class AppResultTest {
 
         val folded = result.fold(
             onSuccess = { it * 2 },
-            onFailure = { -1 },
+            onFailure = { -1 }
         )
 
         assertEquals(84, folded)
@@ -26,7 +26,7 @@ class AppResultTest {
 
         val folded = result.fold(
             onSuccess = { it * 2 },
-            onFailure = { -1 },
+            onFailure = { -1 }
         )
 
         assertEquals(-1, folded)

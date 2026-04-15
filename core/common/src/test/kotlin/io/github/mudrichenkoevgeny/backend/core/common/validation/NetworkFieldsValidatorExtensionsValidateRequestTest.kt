@@ -1,6 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.common.validation
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.validation.NotBlankStringField
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.validation.NotEmptyCollectionField
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.validation.RequiredField
@@ -27,11 +29,11 @@ class NetworkFieldsValidatorExtensionsValidateRequestTest {
     private val call = mockk<ApplicationCall>(relaxed = true)
 
     @Test
-    fun `validateRequest throws ValidationException when required field is null`() {
+    fun `validateRequest throws RequestHandlingException when required field is null`() {
         val request = TestRequest(null, "ok", listOf("item"))
         coEvery { call.receive<TestRequest>() } returns request
 
-        val exception = assertThrows(ValidationException::class.java) {
+        val exception = assertThrows(RequestHandlingException::class.java) {
             runBlocking { call.validateRequest<TestRequest>() }
         }
         val error = exception.error as CommonError.MissingRequiredField
@@ -39,11 +41,11 @@ class NetworkFieldsValidatorExtensionsValidateRequestTest {
     }
 
     @Test
-    fun `validateRequest throws ValidationException when not blank string is blank`() {
+    fun `validateRequest throws RequestHandlingException when not blank string is blank`() {
         val request = TestRequest("present", "   ", listOf("item"))
         coEvery { call.receive<TestRequest>() } returns request
 
-        val exception = assertThrows(ValidationException::class.java) {
+        val exception = assertThrows(RequestHandlingException::class.java) {
             runBlocking { call.validateRequest<TestRequest>() }
         }
         val error = exception.error as CommonError.BlankStringField
@@ -51,11 +53,11 @@ class NetworkFieldsValidatorExtensionsValidateRequestTest {
     }
 
     @Test
-    fun `validateRequest throws ValidationException when not empty collection is empty`() {
+    fun `validateRequest throws RequestHandlingException when not empty collection is empty`() {
         val request = TestRequest("present", "ok", emptyList())
         coEvery { call.receive<TestRequest>() } returns request
 
-        val exception = assertThrows(ValidationException::class.java) {
+        val exception = assertThrows(RequestHandlingException::class.java) {
             runBlocking { call.validateRequest<TestRequest>() }
         }
         val error = exception.error as CommonError.EmptyCollectionField

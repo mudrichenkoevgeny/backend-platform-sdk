@@ -47,7 +47,7 @@ import javax.inject.Singleton
 @Singleton
 class AuditEventRepositoryImpl @Inject constructor(
     private val compositeAuditActionTypeParser: CompositeAuditActionTypeParser,
-    private val compositeAuditResourceTypeParser: CompositeAuditResourceTypeParser,
+    private val compositeAuditResourceTypeParser: CompositeAuditResourceTypeParser
 ) : AuditEventRepository {
 
     override suspend fun createEvent(event: AuditEvent): AppResult<AuditEvent> {

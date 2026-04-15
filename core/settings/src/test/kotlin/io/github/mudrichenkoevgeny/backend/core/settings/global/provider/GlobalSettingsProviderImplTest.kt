@@ -84,7 +84,7 @@ class GlobalSettingsProviderImplTest {
             listOf(
                 UpdateSettingCall("global.privacy_policy_url", "privacy", SettingType.STRING),
                 UpdateSettingCall("global.terms_of_service_url", "tos", SettingType.STRING),
-                UpdateSettingCall("global.contact_support_email", "support@example.com", SettingType.STRING),
+                UpdateSettingCall("global.contact_support_email", "support@example.com", SettingType.STRING)
             ),
             service.updateSettingCalls
         )
@@ -96,7 +96,7 @@ class GlobalSettingsProviderImplTest {
         val service = RecordingSettingsService(
             updateSettingResult = AppResult.Success(Unit),
             failUpdateForKey = "global.terms_of_service_url",
-            failUpdateError = error,
+            failUpdateError = error
         )
         val provider = GlobalSettingsProviderImpl(service, SettingsConfig(null, null, null))
         val payload = GlobalSettings(
@@ -112,7 +112,7 @@ class GlobalSettingsProviderImplTest {
         assertEquals(
             listOf(
                 UpdateSettingCall("global.privacy_policy_url", "p", SettingType.STRING),
-                UpdateSettingCall("global.terms_of_service_url", "t", SettingType.STRING),
+                UpdateSettingCall("global.terms_of_service_url", "t", SettingType.STRING)
             ),
             service.updateSettingCalls
         )
@@ -134,7 +134,7 @@ class GlobalSettingsProviderImplTest {
         private val stringByKey: Map<String, String?> = emptyMap(),
         private val updateSettingResult: AppResult<Unit> = AppResult.Success(Unit),
         private val failUpdateForKey: String? = null,
-        private val failUpdateError: AppError? = null,
+        private val failUpdateError: AppError? = null
     ) : SystemSettingsService {
         val registerDefaultCalls = mutableListOf<RegisterDefaultCall>()
         val updateSettingCalls = mutableListOf<UpdateSettingCall>()

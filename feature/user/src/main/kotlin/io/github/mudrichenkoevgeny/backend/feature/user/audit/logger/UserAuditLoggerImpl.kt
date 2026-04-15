@@ -15,7 +15,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
 
-@Singleton
 /**
  * Default [UserAuditLogger] implementation that delegates persistence to [AuditService].
  *
@@ -24,6 +23,7 @@ import kotlin.time.Clock
  * - builds [AuditEvent.metadata] from [RequestContext] client information and extra metadata
  * - assigns [AuditEventMetadata.valueSensitivity] per key for downstream masking
  */
+@Singleton
 class UserAuditLoggerImpl @Inject constructor(
     private val auditService: AuditService
 ) : UserAuditLogger {
@@ -151,14 +151,14 @@ class UserAuditLoggerImpl @Inject constructor(
 
 /** Temporary: this class will be replaced; do not move into `core/audit`. */
 private data class StringBackedAuditAction(
-    override val serialName: String,
+    override val serialName: String
 ) : AuditActionType {
     override fun parseOrNull(value: String): AuditActionType? = StringBackedAuditAction(value)
     override fun parseOrThrow(value: String): AuditActionType = StringBackedAuditAction(value)
 }
 
 private data class StringBackedAuditResource(
-    override val serialName: String,
+    override val serialName: String
 ) : AuditResourceType {
     override fun parseOrNull(value: String): AuditResourceType? = StringBackedAuditResource(value)
     override fun parseOrThrow(value: String): AuditResourceType = StringBackedAuditResource(value)

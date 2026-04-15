@@ -15,10 +15,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.minutes
 
-@Singleton
 /**
  * Runs [UserManager.deleteUsersDueForPermanentDeletion] on a fixed delay while the background scope stays active.
  */
+@Singleton
 class UserScheduledJobsImpl @Inject constructor(
     private val userManager: UserManager,
     private val config: UserScheduledJobsConfig,

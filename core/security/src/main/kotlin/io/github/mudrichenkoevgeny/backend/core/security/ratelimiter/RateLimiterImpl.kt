@@ -14,8 +14,8 @@ import javax.inject.Singleton
  * The algorithm:
  * - increments a counter for a key derived from [RateLimitAction] and the provided identifier
  * - sets key expiration to the action window
- * - when the counter exceeds the limit, tries to read TTL and returns [RateLimitResult.Exceeded]
- *   with a [CommonError.TooManyRequests] that includes `retryAfterSeconds`
+ * - when the counter exceeds the limit, tries to read TTL and returns [AppResult.Error] with
+ *   [CommonError.TooManyRequests] that includes `retryAfterSeconds`
  *
  * If TTL lookup fails, the error is logged and the window duration is used as a fallback for
  * `retryAfterSeconds`.
@@ -25,10 +25,10 @@ class RateLimiterImpl @Inject constructor(
     private val redisManager: RedisManager,
     private val appLogger: AppLogger
 ) : RateLimiter {
-    override suspend fun isRateLimited(
+    override suspend fun checkRateLimit(
         action: RateLimitAction,
         identifier: String
-    ): AppResult<RateLimitResult> {
+    ): AppResult<Unit> {
         val key = action.createKey(identifier)
 
         val currentCountResult = redisManager.incrementWithExpiration(
@@ -52,22 +52,20 @@ class RateLimiterImpl @Inject constructor(
                 }
             }
 
-            return AppResult.Success(
-                RateLimitResult.Exceeded(
-                    CommonError.TooManyRequests(
-                        rateLimitActionCode = action.id,
-                        limit = action.limit,
-                        identifier = key,
-                        retryAfterSeconds = if (ttl > 0) {
-                            ttl.toInt()
-                        } else {
-                            action.windowSeconds
-                        }
-                    )
+            return AppResult.Error(
+                CommonError.TooManyRequests(
+                    rateLimitActionCode = action.id,
+                    limit = action.limit,
+                    identifier = key,
+                    retryAfterSeconds = if (ttl > 0) {
+                        ttl.toInt()
+                    } else {
+                        action.windowSeconds
+                    }
                 )
             )
         }
 
-        return AppResult.Success(RateLimitResult.Allowed)
+        return AppResult.Success(Unit)
     }
 }

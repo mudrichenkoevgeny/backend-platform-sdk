@@ -2,8 +2,8 @@ package io.github.mudrichenkoevgeny.backend.feature.user.database.table
 
 import io.github.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
 import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.UserClientType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import org.jetbrains.exposed.v1.core.ReferenceOption
 import org.jetbrains.exposed.v1.javatime.timestamp
 
@@ -15,23 +15,24 @@ import org.jetbrains.exposed.v1.javatime.timestamp
  */
 object UserSessionsTable : BaseTable("user_sessions") {
     val userId = reference("user_id", UsersTable.id, onDelete = ReferenceOption.CASCADE)
-    val userIdentifierId = reference(
-        "user_identifier_id",
+    val identifier = text("identifier")
+    val identifierId = reference(
+        "identifier_id",
         UserIdentifiersTable.id,
         onDelete = ReferenceOption.CASCADE
     )
-    val userIdentifierAuthProvider = enumerationByName(
-        "user_identifier_auth_provider",
+    val identifierAuthProvider = enumerationByName(
+        "identifier_auth_provider",
         BaseDbConstraints.ENUM_MAX_LENGTH,
         UserAuthProvider::class
     )
-    val tokenHash = text("token_hash")
-    val expiresAt = timestamp("expires_at")
+    val refreshTokenHash = text("refresh_token_hash")
+    val expiresAt = timestamp("expires_at").nullable()
     val revoked = bool("revoked").default(false)
-    val userClientType = enumerationByName(
-        "user_client_type",
+    val clientType = enumerationByName(
+        "client_type",
         BaseDbConstraints.ENUM_MAX_LENGTH,
-        UserClientType::class
+        ClientType::class
     ).nullable()
     val userAgent = varchar("user_agent", BaseDbConstraints.DEFAULT_MAX_LENGTH).nullable()
     val ipAddress = varchar("ip_address", BaseDbConstraints.IP_MAX_LENGTH).nullable()
@@ -40,6 +41,6 @@ object UserSessionsTable : BaseTable("user_sessions") {
     val deviceName = text("device_name").nullable()
     val appVersion = varchar("app_version", BaseDbConstraints.VERSION_MAX_LENGTH).nullable()
     val operationSystemVersion = varchar("operation_system_version", BaseDbConstraints.VERSION_MAX_LENGTH).nullable()
-    val lastAccessedAt = timestamp("last_accessed_at")
-    val lastReauthenticatedAt = timestamp("last_reauthenticated_at")
+    val lastAccessedAt = timestamp("last_accessed_at").nullable()
+    val lastReauthenticatedAt = timestamp("last_reauthenticated_at").nullable()
 }

@@ -1,6 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.common.validation
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.ktor.http.parametersOf
 import io.ktor.server.application.ApplicationCall
 import io.mockk.every
@@ -28,7 +30,7 @@ class NetworkParameterValidatorExtensionsTest {
             every { parameters } returns parametersOf()
         }
 
-        val ex = assertThrows(ValidationException::class.java) {
+        val ex = assertThrows(RequestHandlingException::class.java) {
             call.validatePathParameter("id") { it.toInt() }
         }
 
@@ -41,7 +43,7 @@ class NetworkParameterValidatorExtensionsTest {
             every { parameters } returns parametersOf("id", "not-int")
         }
 
-        val ex = assertThrows(ValidationException::class.java) {
+        val ex = assertThrows(RequestHandlingException::class.java) {
             call.validatePathParameter("id") { it.toInt() }
         }
 

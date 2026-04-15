@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manag
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.validation.ValidationException
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener.WebSocketSessionListener
 import io.mockk.mockk
@@ -20,9 +20,9 @@ class KtorWebSocketManagerTest {
     private val manager = KtorWebSocketManager(appLogger, handlers, listeners)
 
     @Test
-    fun `handleSocketError logs correct appError for ValidationException`() {
+    fun `handleSocketError logs correct appError for RequestHandlingException`() {
         val validationError = CommonError.MissingRequiredField("field")
-        val validationException = ValidationException(validationError)
+        val validationException = RequestHandlingException(validationError)
 
         invokeHandleSocketError(validationException)
 

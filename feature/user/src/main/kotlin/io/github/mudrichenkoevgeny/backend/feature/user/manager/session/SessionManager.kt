@@ -1,12 +1,18 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.session
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.SessionToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -101,7 +107,19 @@ interface SessionManager {
      * @param userSessionId session id
      * @return session when found, `null` when missing, or an error
      */
-    suspend fun getUserSessionById(userSessionId: UserSessionId): AppResult<UserSession?>
+    suspend fun getUserSessionById(userSessionId: UserSessionId): AppResult<UserSessionInternal?>
+
+    /**
+     * Loads a session by id with permission-aware masking.
+     *
+     * [userPermissionCodes] define which owner roles are readable and whether sensitive fields
+     * should be returned masked or unmasked.
+     */
+    suspend fun getUserSessionById(
+        userSessionId: UserSessionId,
+        userId: UserId,
+        userPermissionCodes: Set<PermissionCode>
+    ): AppResult<UserSessionInternal?>
 
     /**
      * Loads all sessions for a user.
@@ -109,5 +127,42 @@ interface SessionManager {
      * @param userId user id
      * @return list of sessions or an error
      */
-    suspend fun getAllUserSessions(userId: UserId): AppResult<List<UserSession>>
+    suspend fun getAllUserSessions(userId: UserId): AppResult<List<UserSessionInternal>>
+
+    /**
+     * Loads sessions by identifier id with an optional owner filter.
+     *
+     * @param userIdentifierId identifier id used by sessions
+     * @param userId optional owner filter for user-scoped access
+     * @return list of sessions or an error
+     */
+    suspend fun getUserSessionsByIdentifierId(
+        userIdentifierId: UserIdentifierId,
+        userId: UserId? = null
+    ): AppResult<List<UserSessionInternal>>
+
+    /**
+     * Returns a paginated list of sessions visible for the caller permissions.
+     *
+     * Optional filters are AND-combined by the repository.
+     */
+    suspend fun getUserSessionsList(
+        userPermissionCodes: Set<PermissionCode>,
+        pageParams: PageParams,
+        sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
+        sortOrder: SortOrder = SortOrder.DESC,
+        userIds: List<UserId> = emptyList(),
+        identifiers: List<String> = emptyList(),
+        identifierIds: List<UserIdentifierId> = emptyList(),
+        identifierAuthProviders: List<UserAuthProvider> = emptyList(),
+        revokedValues: List<Boolean> = emptyList(),
+        clientTypes: List<ClientType> = emptyList(),
+        userAgents: List<String> = emptyList(),
+        ipAddresses: List<String> = emptyList(),
+        languages: List<String> = emptyList(),
+        deviceIds: List<String> = emptyList(),
+        deviceNames: List<String> = emptyList(),
+        appVersions: List<String> = emptyList(),
+        operationSystemVersions: List<String> = emptyList()
+    ): AppResult<PagedResult<UserSessionInternal>>
 }

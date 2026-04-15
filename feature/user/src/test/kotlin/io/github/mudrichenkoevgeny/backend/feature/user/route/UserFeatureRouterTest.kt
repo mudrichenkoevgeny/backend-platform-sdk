@@ -1,10 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route
 
-import io.github.mudrichenkoevgeny.backend.feature.user.route.auth.AuthRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.configuration.UserConfigurationRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.AuthRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.configuration.UserConfigurationRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.security.UserSecurityRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.session.SessionRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.user.UserRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.session.SessionRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.user.UserRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
@@ -25,7 +25,7 @@ class UserFeatureRouterTest {
         val userSecurityRouter = mockk<UserSecurityRouter>(relaxed = true)
         val userConfigurationRouter = mockk<UserConfigurationRouter>(relaxed = true)
 
-        val router = UserFeatureRouter(
+        val router = UserRouter(
             authRouter = authRouter,
             userRouter = userRouter,
             sessionRouter = sessionRouter,

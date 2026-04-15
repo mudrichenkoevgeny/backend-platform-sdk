@@ -6,8 +6,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManagerImpl
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManagerImpl
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManagerImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManagerImpl
 import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
@@ -26,7 +26,7 @@ interface UserManagersModule {
 
     @Binds
     @Singleton
-    fun bindUserIdentifierManager(userIdentifierManagerImpl: UserIdentifierManagerImpl): UserIdentifierManager
+    fun bindUserIdentifierManager(userIdentifierManagerImpl: IdentifierManagerImpl): IdentifierManager
 
     @Binds
     @Singleton

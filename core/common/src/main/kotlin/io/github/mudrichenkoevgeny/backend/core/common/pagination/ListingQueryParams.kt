@@ -11,5 +11,5 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 data class ListingQueryParams<SortBy>(
     val pageParams: PageParams,
     val sortBy: SortBy,
-    val sortOrder: SortOrder,
+    val sortOrder: SortOrder
 )

@@ -9,7 +9,7 @@ import javax.inject.Singleton
 /**
  * Dagger bindings for authentication policy checks.
  *
- * Binds [AuthenticationPolicyChecker] to [AuthenticationPolicyCheckerImpl].
+ * Binds [AuthenticationPolicyChecker] to [AuthenticationPolicyCheckerImpl] (self-service and management re-auth windows).
  */
 @Module
 interface AuthenticationPolicyCheckerModule {

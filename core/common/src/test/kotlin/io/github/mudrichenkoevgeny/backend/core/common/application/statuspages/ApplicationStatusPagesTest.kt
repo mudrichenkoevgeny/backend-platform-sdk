@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.application.statuspages
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.validation.ValidationException
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.model.ApiErrorResponse
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -50,7 +50,7 @@ class ApplicationStatusPagesTest {
         val apiError = ApiErrorResponse(
             id = "",
             code = expectedError.code,
-            message = "Field is missing",
+            message = "Field is missing"
         )
         every { appLogger.logError(expectedError) } just runs
         coEvery { appErrorParser.getApiErrorResponse(expectedError) } returns apiError
@@ -59,7 +59,7 @@ class ApplicationStatusPagesTest {
             install(ContentNegotiation) { json() }
             configureStatusPages(appErrorParser, appLogger)
             routing {
-                get("/test") { throw ValidationException(expectedError) }
+                get("/test") { throw RequestHandlingException(expectedError) }
             }
         }
 
@@ -75,7 +75,7 @@ class ApplicationStatusPagesTest {
         val apiError = ApiErrorResponse(
             id = "",
             code = CommonError.InvalidJsonBody(null).code,
-            message = "Invalid JSON",
+            message = "Invalid JSON"
         )
         every { appLogger.logError(any<CommonError.InvalidJsonBody>()) } just Runs
         coEvery { appErrorParser.getApiErrorResponse(any<CommonError.InvalidJsonBody>()) } returns apiError
@@ -106,7 +106,7 @@ class ApplicationStatusPagesTest {
         val apiError = ApiErrorResponse(
             id = "",
             code = CommonError.BadRequest(null).code,
-            message = "Bad request",
+            message = "Bad request"
         )
         every { appLogger.logError(any<CommonError.BadRequest>()) } just runs
         coEvery { appErrorParser.getApiErrorResponse(any<CommonError.BadRequest>()) } returns apiError
@@ -131,7 +131,7 @@ class ApplicationStatusPagesTest {
         val apiError = ApiErrorResponse(
             id = "",
             code = CommonError.Internal(RuntimeException("boom")).code,
-            message = "Internal error",
+            message = "Internal error"
         )
         every { appLogger.logError(any<CommonError.Internal>()) } just runs
         coEvery { appErrorParser.getApiErrorResponse(any<CommonError.Internal>()) } returns apiError

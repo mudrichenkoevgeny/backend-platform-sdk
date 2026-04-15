@@ -111,7 +111,7 @@ class SystemSettingsServiceImplTest {
         val service = SystemSettingsServiceImpl(manager)
         service.initialize()
 
-        val ok = service.getJson("json") { raw -> raw.length }
+        val ok = service.getJson("json") { text -> text.length }
         val bad = service.getJson("json") { _ -> error("parse failed") }
 
         assertEquals("""{"a":1}""".length, ok)

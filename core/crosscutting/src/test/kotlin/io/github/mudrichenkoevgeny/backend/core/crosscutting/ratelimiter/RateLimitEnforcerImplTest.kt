@@ -32,7 +32,7 @@ class RateLimitEnforcerImplTest {
     @Test
     fun `enforce returns success when allowed and does not write audit`() = runTest {
         val requestContext = testRequestContext()
-        coEvery { rateLimiter.isRateLimited(TestRateLimitAction.LOGIN_ATTEMPT, "ip:1") } returns
+        coEvery { rateLimiter.checkRateLimit(TestRateLimitAction.LOGIN_ATTEMPT, "ip:1") } returns
             AppResult.Success(RateLimitResult.Allowed)
 
         val result = enforcer.enforce(
@@ -58,7 +58,7 @@ class RateLimitEnforcerImplTest {
             retryAfterSeconds = 10
         )
 
-        coEvery { rateLimiter.isRateLimited(TestRateLimitAction.LOGIN_ATTEMPT, "ip:2") } returns
+        coEvery { rateLimiter.checkRateLimit(TestRateLimitAction.LOGIN_ATTEMPT, "ip:2") } returns
             AppResult.Success(RateLimitResult.Exceeded(error))
 
         val auditEventSlot = slot<AuditEvent>()
@@ -99,7 +99,7 @@ class RateLimitEnforcerImplTest {
         val requestContext = testRequestContext()
         val dependencyError = CommonError.Internal(Throwable("redis down"))
 
-        coEvery { rateLimiter.isRateLimited(TestRateLimitAction.LOGIN_ATTEMPT, "ip:3") } returns
+        coEvery { rateLimiter.checkRateLimit(TestRateLimitAction.LOGIN_ATTEMPT, "ip:3") } returns
             AppResult.Error(dependencyError)
 
         val result = enforcer.enforce(

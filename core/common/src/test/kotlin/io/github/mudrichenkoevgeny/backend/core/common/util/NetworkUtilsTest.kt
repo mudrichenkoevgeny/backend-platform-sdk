@@ -20,7 +20,7 @@ class NetworkUtilsTest {
             respond(
                 content = "ok",
                 status = HttpStatusCode.OK,
-                headers = headersOf("Content-Type", "text/plain"),
+                headers = headersOf("Content-Type", "text/plain")
             )
         }
         val client = HttpClient(engine)
@@ -37,7 +37,7 @@ class NetworkUtilsTest {
             respond(
                 content = "not json",
                 status = HttpStatusCode.OK,
-                headers = headersOf("Content-Type", "application/json"),
+                headers = headersOf("Content-Type", "application/json")
             )
         }
         val client = HttpClient(engine)

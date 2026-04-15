@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.application.statuspages
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.validation.ValidationException
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.application.install
@@ -16,7 +16,7 @@ import io.ktor.server.response.respond
  * Configures Ktor [StatusPages] to translate exceptions into structured API error responses.
  *
  * Mappings:
- * - [ValidationException] → logs the wrapped [CommonError] and responds with its HTTP status.
+ * - [RequestHandlingException] → logs the wrapped [CommonError] and responds with its HTTP status.
  * - [ContentTransformationException] → wraps into [CommonError.InvalidJsonBody] and responds accordingly.
  * - [BadRequestException] → wraps into [CommonError.BadRequest].
  * - Any other [Throwable] → wraps into [CommonError.Internal] including the [ApplicationCall] context.
@@ -26,7 +26,7 @@ fun Application.configureStatusPages(
     appLogger: AppLogger
 ) {
     install(StatusPages) {
-        exception<ValidationException> { call, cause ->
+        exception<RequestHandlingException> { call, cause ->
             val appError = cause.error
             appLogger.logError(appError)
             val apiErrorResponse = appErrorParser.getApiErrorResponse(appError)

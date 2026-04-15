@@ -11,18 +11,22 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 interface EmailService {
     /** Sends a verification code to confirm email ownership. */
     suspend fun sendVerificationCode(email: String, code: String, language: String?): AppResult<Unit>
+
     /** Sends a verification code for password reset flow. */
     suspend fun sendResetPasswordVerificationCode(email: String, code: String, language: String?): AppResult<Unit>
 
     /** Notifies that the email is already registered (security notification). */
     suspend fun sendAlreadyRegisteredEmail(email: String, ipAddress: String?, deviceName: String?, language: String?): AppResult<Unit>
+
     /** Confirms successful registration. */
     suspend fun sendSuccessfulRegistrationEmail(email: String): AppResult<Unit>
+
     /** Notifies about successful login (security notification). */
     suspend fun sendSuccessfulLoginEmail(email: String, ipAddress: String?, deviceName: String?): AppResult<Unit>
+
     /** Notifies that the password was changed. */
     suspend fun sendPasswordSuccessfullyChangedEmail(email: String, ipAddress: String?, deviceName: String?): AppResult<Unit>
 
-    /** Testing hook that simulates a successful email send. */
+    /** Simulate a successful email send. */
     suspend fun fakeSendEmail(): AppResult<Unit>
 }

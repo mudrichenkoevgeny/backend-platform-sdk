@@ -196,7 +196,7 @@ class UserRepositoryImplTest {
                 params = PageParams(page = 1, size = 10),
                 role = null,
                 accountStatus = null,
-                sort = UserListSort(UserListSortBy.CREATED_AT, SortDirection.ASC),
+                sort = UserListSort(UserListSortBy.CREATED_AT, SortDirection.ASC)
             )
         }
 

@@ -1,0 +1,143 @@
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.resetpassword
+
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
+import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
+import io.github.mudrichenkoevgeny.backend.feature.user.model.otp.OtpVerificationType
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.model.confirmation.SendConfirmation
+import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
+import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.resource.UserAuditResourceType
+import javax.inject.Inject
+import javax.inject.Singleton
+
+// todo refactor
+/**
+ * Use case: send a password-reset verification code to an email.
+ *
+ * If the email is registered, sends the code; otherwise runs a fake flow (same response, no leak) and logs "email not registered".
+ * Applies rate limiting and audit. [execute] takes email and request context;
+ * returns [AppResult.Success] with [SendConfirmation] or [AppResult.Error] (e.g. rate limit, send failure).
+ */
+@Singleton
+class SendResetPasswordConfirmationUseCase @Inject constructor(
+    private val rateLimiterEnforcer: RateLimitEnforcer,
+    private val userAuditLogger: UserAuditLogger,
+    private val otpService: OtpService,
+    private val emailService: EmailService,
+    private val identifierManager: IdentifierManager
+) {
+    suspend fun execute(
+        email: String,
+        requestContext: RequestContext
+    ): AppResult<SendConfirmation> {
+        val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
+            requestContext = requestContext,
+            rateLimitAction = UserRateLimitAction.SEND_OTP_EMAIL,
+            rateLimitIdentifier = email,
+            auditAction = AUDIT_ACTION,
+            auditResource = AUDIT_RESOURCE,
+            auditResourceId = email
+        )
+        if (rateLimiterEnforcerResult is AppResult.Error) {
+            return rateLimiterEnforcerResult
+        }
+
+        val identifierResult = identifierManager.getUserIdentifier(
+            userAuthProvider = UserAuthProvider.EMAIL,
+            identifier = email
+        )
+
+        val userIdentifier = when (identifierResult) {
+            is AppResult.Success -> identifierResult.data
+            is AppResult.Error -> return identifierResult
+        }
+
+        return if (userIdentifier != null) {
+            sendConfirmationCode(email, requestContext)
+        } else {
+            fakeResetPasswordFlow(email, requestContext)
+        }
+    }
+
+    private suspend fun sendConfirmationCode(
+        email: String,
+        requestContext: RequestContext
+    ): AppResult<SendConfirmation> {
+        val getOtpResult = otpService.getOtp(
+            identifier = email,
+            type = OtpVerificationType.EMAIL_PASSWORD_RESET
+        )
+
+        val code = when (getOtpResult) {
+            is AppResult.Success -> getOtpResult.data
+            is AppResult.Error -> return getOtpResult
+        }
+
+        val sendEmailResult = emailService.sendResetPasswordVerificationCode(email, code, requestContext.clientInfo.language)
+
+        if (sendEmailResult is AppResult.Error) {
+            return sendEmailResult
+        }
+
+        userAuditLogger.logSuccess(
+            requestContext = requestContext,
+            action = AUDIT_ACTION,
+            resource = AUDIT_RESOURCE,
+            resourceId = email,
+            type = UserAuditMetadata.Types.VERIFICATION_CODE_SENT
+        )
+
+        return AppResult.Success(
+            SendConfirmation(
+                retryAfterSeconds = RETRY_AFTER_SECONDS
+            )
+        )
+    }
+
+    private suspend fun fakeResetPasswordFlow(
+        email: String,
+        requestContext: RequestContext
+    ): AppResult<SendConfirmation> {
+        val getOtpResult = otpService.getOtpFake(
+            identifier = email
+        )
+
+        if (getOtpResult is AppResult.Error) {
+            return getOtpResult
+        }
+
+        val sendEmailResult = emailService.fakeSendEmail()
+
+        if (sendEmailResult is AppResult.Error) {
+            return sendEmailResult
+        }
+
+        userAuditLogger.logSuccess(
+            requestContext = requestContext,
+            action = AUDIT_ACTION,
+            resource = AUDIT_RESOURCE,
+            resourceId = email,
+            type = UserAuditMetadata.Types.EMAIL_NOT_REGISTERED
+        )
+
+        return AppResult.Success(
+            SendConfirmation(
+                retryAfterSeconds = RETRY_AFTER_SECONDS
+            )
+        )
+    }
+
+    companion object {
+        const val RETRY_AFTER_SECONDS = 60
+
+        const val AUDIT_ACTION = UserAuditActionType.ACTION_SEND_RESET_PASSWORD_CONFIRMATION
+        const val AUDIT_RESOURCE = UserAuditResourceType.RESOURCE_USER_EMAIL
+    }
+}

@@ -49,7 +49,7 @@ class AuditServiceImplTest {
         }
         repository = AuditEventRepositoryImpl(
             compositeAuditActionTypeParser = compositeAuditActionTypeParserForRepositoryTests(),
-            compositeAuditResourceTypeParser = compositeAuditResourceTypeParserForRepositoryTests(),
+            compositeAuditResourceTypeParser = compositeAuditResourceTypeParserForRepositoryTests()
         )
     }
 
@@ -90,7 +90,7 @@ class AuditServiceImplTest {
     private fun sampleAuditEvent(
         action: String,
         resource: String,
-        status: AuditStatus = AuditStatus.SUCCESS,
+        status: AuditStatus = AuditStatus.SUCCESS
     ): AuditEvent = AuditEvent(
         actorType = AuditActorType.SYSTEM,
         action = RepositoryTestAuditAction(action),

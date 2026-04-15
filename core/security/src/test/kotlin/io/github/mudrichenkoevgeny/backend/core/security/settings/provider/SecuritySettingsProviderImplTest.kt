@@ -25,6 +25,7 @@ class SecuritySettingsProviderImplTest {
     private val defaultPolicy = PasswordPolicy(minLength = 10, requireDigit = true)
     private val config = SecurityConfig(
         recentAuthenticationValidityInMinutes = 30,
+        recentAuthenticationValidityInMinutesForManagement = 60,
         passwordPolicy = defaultPolicy
     )
     private val provider = SecuritySettingsProviderImpl(settingsService, config)
@@ -148,7 +149,7 @@ class SecuritySettingsProviderImplTest {
         every {
             settingsService.getJson(
                 "security.password_policy",
-                any<(String) -> PasswordPolicy>(),
+                any<(String) -> PasswordPolicy>()
             )
         } answers {
             @Suppress("UNCHECKED_CAST")
@@ -161,7 +162,7 @@ class SecuritySettingsProviderImplTest {
         every {
             settingsService.getJson(
                 "security.password_policy",
-                any<(String) -> PasswordPolicy>(),
+                any<(String) -> PasswordPolicy>()
             )
         } answers { null }
     }

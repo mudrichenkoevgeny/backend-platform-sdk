@@ -42,7 +42,7 @@ class JsonUtilsTest {
         val source = mapOf(
             "a" to 1,
             "b" to null,
-            "c" to "str",
+            "c" to "str"
         )
 
         val result = source.toJsonElementMap()

@@ -6,7 +6,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.F
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 /**
  * Classpath-resource-based [EmailParser] implementation.
  *
@@ -19,6 +18,7 @@ import javax.inject.Singleton
  * - language-only (e.g. `en` for `en-US`)
  * - default locale (`en`)
  */
+@Singleton
 class EmailParserImpl @Inject constructor(
     config: EmailParserConfig
 ) : EmailParser {

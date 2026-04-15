@@ -1,0 +1,80 @@
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.session
+
+import io.github.mudrichenkoevgeny.backend.core.common.model.UserSessionId
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
+import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import javax.inject.Inject
+import javax.inject.Singleton
+
+// todo refactor
+/**
+ * Use case: revoke a session by ID.
+ *
+ * Applies rate limiting, then delegates to [SessionManager.revokeSessionById].
+ * Audit is logged on success or internal error.
+ * [execute] takes sessionId and request context;
+ * returns [AppResult.Success] or [AppResult.Error] (e.g. rate limit, session not found).
+ */
+@Singleton
+class DeleteSessionUseCase @Inject constructor(
+    private val rateLimiterEnforcer: RateLimitEnforcer,
+    private val userAuditLogger: UserAuditLogger,
+    private val sessionManager: SessionManager
+) {
+    suspend fun execute(
+        sessionId: UserSessionId,
+        requestContext: RequestContext
+    ): AppResult<Unit> {
+        val auditResourceId = requestContext.userId?.asHexDashString()
+
+        val auditMetadata = mapOf(UserAuditMetadata.Keys.SESSION_ID to sessionId.asHexDashString())
+
+        val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
+            requestContext = requestContext,
+            rateLimitAction = UserRateLimitAction.LOGOUT_ATTEMPT,
+            rateLimitIdentifier = sessionId.asHexDashString(),
+            auditAction = AUDIT_ACTION,
+            auditResource = AUDIT_RESOURCE,
+            auditResourceId = auditResourceId
+        )
+        if (rateLimiterEnforcerResult is AppResult.Error) {
+            return rateLimiterEnforcerResult
+        }
+
+        val revokeSessionResult = sessionManager.revokeSessionById(sessionId)
+
+        when (revokeSessionResult) {
+            is AppResult.Success -> {
+                userAuditLogger.logSuccess(
+                    requestContext = requestContext,
+                    action = AUDIT_ACTION,
+                    resource = AUDIT_RESOURCE,
+                    resourceId = auditResourceId,
+                    metadata = auditMetadata
+                )
+            }
+            is AppResult.Error -> {
+                userAuditLogger.logInternalError(
+                    requestContext = requestContext,
+                    action = AUDIT_ACTION,
+                    resource = AUDIT_RESOURCE,
+                    resourceId = auditResourceId,
+                    metadata = auditMetadata
+                )
+            }
+        }
+
+        return revokeSessionResult
+    }
+
+
+    companion object {
+        const val AUDIT_ACTION = "delete_session"
+        const val AUDIT_RESOURCE = "user"
+    }
+}

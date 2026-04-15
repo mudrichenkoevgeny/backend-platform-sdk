@@ -15,9 +15,9 @@ enum class UserRateLimitAction(
     override val limit: Int,
     override val windowSeconds: Int
 ) : RateLimitAction {
-    SEND_OTP_EMAIL("send_otp", limit = 3, windowSeconds = 200),
+    SEND_OTP_EMAIL("send_otp_email", limit = 3, windowSeconds = 200),
 
-    SEND_OTP_PHONE("send_otp", limit = 3, windowSeconds = 300),
+    SEND_OTP_PHONE("send_otp_phone", limit = 3, windowSeconds = 300),
 
     LOGIN_ATTEMPT("login", limit = 5, windowSeconds = 60),
 

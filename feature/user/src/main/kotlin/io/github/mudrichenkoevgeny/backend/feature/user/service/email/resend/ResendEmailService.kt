@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 /**
  * [EmailService] implementation backed by the Resend API.
  *
@@ -31,6 +30,7 @@ import javax.inject.Singleton
  *
  * This service also exposes [fakeSendEmail] which simulates network latency without sending real emails.
  */
+@Singleton
 class ResendEmailService @Inject constructor(
     private val config: ResendConfig,
     private val httpClient: HttpClient,

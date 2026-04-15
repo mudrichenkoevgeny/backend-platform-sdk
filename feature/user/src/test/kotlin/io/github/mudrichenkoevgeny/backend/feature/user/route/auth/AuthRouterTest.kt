@@ -1,10 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.auth
 
-import io.github.mudrichenkoevgeny.backend.feature.user.route.auth.login.LoginRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.auth.refreshtoken.RefreshTokenRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.auth.register.RegisterRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.auth.resetpassword.ResetPasswordRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.auth.settings.AuthSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.AuthRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.login.LoginRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.refreshtoken.RefreshTokenRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.register.RegisterRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.resetpassword.ResetPasswordRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.settings.AuthSettingsRouter
 import io.ktor.server.routing.Route
 import io.mockk.mockk
 import io.mockk.verify

@@ -10,19 +10,22 @@ import io.github.mudrichenkoevgeny.backend.core.database.extensions.applyPaginat
 import io.github.mudrichenkoevgeny.backend.core.database.extensions.jsonbContainsSingleString
 import io.github.mudrichenkoevgeny.backend.core.database.mapper.toExposedSortOrder
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.core.Op
+import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
@@ -33,13 +36,13 @@ import javax.inject.Inject
 import kotlin.time.Instant as KotlinInstant
 import javax.inject.Singleton
 
-@Singleton
 /**
  * Default [UserRepository] implementation backed by Exposed and [UsersTable].
  *
  * Performs synchronous Exposed DSL operations and maps [ResultRow] values into [UserDetails].
  * Returns [CommonError.Database] when inserts/updates report no affected rows.
  */
+@Singleton
 class UserRepositoryImpl @Inject constructor() : UserRepository {
 
     override suspend fun createUser(user: UserDetails): AppResult<UserDetails> {
@@ -76,10 +79,10 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         user: UserDetails,
         status: UserAccountStatus?,
         statusBeforeDeletion: UserAccountStatus?,
-        permissions: Set<UserPermissionCode>,
+        permissions: Set<PermissionCode>,
         lastLoginAt: KotlinInstant?,
         lastActiveAt: KotlinInstant?,
-        scheduledPermanentDeletionAt: KotlinInstant?,
+        scheduledPermanentDeletionAt: KotlinInstant?
     ): AppResult<UserDetails> {
         val permissionsUpdated = permissions.isNotEmpty()
         if (
@@ -123,17 +126,13 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             )
         }
 
-        return AppResult.Success(
-            user.copy(
-                accountStatus = status ?: user.accountStatus,
-                accountStatusBeforeDeletion = statusBeforeDeletion ?: user.accountStatusBeforeDeletion,
-                permissions = if (permissionsUpdated) permissions else user.permissions,
-                lastLoginAt = lastLoginAt ?: user.lastLoginAt,
-                lastActiveAt = lastActiveAt ?: user.lastActiveAt,
-                scheduledPermanentDeletionAt = scheduledPermanentDeletionAt ?: user.scheduledPermanentDeletionAt,
-                updatedAt = updatedAtJavaInstant.toKotlinInstant(),
-            )
-        )
+        val updatedRow = UsersTable
+            .selectAll()
+            .where { UsersTable.id eq user.id.value }
+            .singleOrNull()
+            ?: return AppResult.Error(CommonError.Database("Updated user not found for id=${user.id.value}"))
+
+        return AppResult.Success(updatedRow.toUser())
     }
 
     override suspend fun getUserById(userId: UserId): AppResult<UserDetails?> {
@@ -146,15 +145,23 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
     }
 
     override suspend fun getUsersList(
+        accessFilter: UserRoleAccessFilter,
         pageParams: PageParams,
         sortBy: UserSortValues.UserSortBy,
         sortOrder: SortOrder,
         role: UserRole?,
         accountStatus: UserAccountStatus?,
         accountStatusBeforeDeletion: UserAccountStatus?,
-        userPermissionCode: UserPermissionCode?
+        userPermissionCode: PermissionCode?
     ): AppResult<PagedResult<UserDetails>> {
         var query = UsersTable.selectAll()
+
+        query = query.andWhere {
+            val roleConditions = accessFilter.allowedUserRoles
+                .map { allowedRole -> UsersTable.role eq allowedRole }
+
+            roleConditions.reduceOrNull { acc, op -> acc or op } ?: Op.FALSE
+        }
 
         role?.let { r -> query = query.andWhere { UsersTable.role eq r } }
         accountStatus?.let { status -> query = query.andWhere { UsersTable.accountStatus eq status } }
@@ -189,7 +196,7 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
                 totalCount = totalCount,
                 pageNumber = pageParams.page,
                 pageSize = pageParams.size,
-                totalPages = totalPages,
+                totalPages = totalPages
             )
         )
     }
@@ -210,13 +217,15 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             accountStatus = this[UsersTable.accountStatus],
             accountStatusBeforeDeletion = this[UsersTable.accountStatusBeforeDeletion],
             permissions = this[UsersTable.permissions].mapNotNull { permissionString ->
-                permissionString.takeIf { it.isNotBlank() }?.let { UserPermissionCode(it) }
+                permissionString
+                    .takeIf { it.isNotBlank() }
+                    ?.let { PermissionCode(it) }
             }.toSet(),
             lastLoginAt = this[UsersTable.lastLoginAt]?.toKotlinInstant(),
             lastActiveAt = this[UsersTable.lastActiveAt]?.toKotlinInstant(),
             createdAt = this[UsersTable.createdAt].toKotlinInstant(),
             updatedAt = this[UsersTable.updatedAt]?.toKotlinInstant(),
-            scheduledPermanentDeletionAt = this[UsersTable.scheduledPermanentDeletionAt]?.toKotlinInstant(),
+            scheduledPermanentDeletionAt = this[UsersTable.scheduledPermanentDeletionAt]?.toKotlinInstant()
         )
     }
 }

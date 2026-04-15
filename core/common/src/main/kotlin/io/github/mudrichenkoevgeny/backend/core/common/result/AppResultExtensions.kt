@@ -46,3 +46,14 @@ inline fun <T, R> AppResult<T>.flatMapSuccess(transform: (T) -> AppResult<R>): A
         is AppResult.Success -> transform(data)
         is AppResult.Error -> AppResult.Error(error)
     }
+
+/**
+ * Extracts successful data or returns `null` for errors.
+ *
+ * - If this is [AppResult.Success], returns [AppResult.Success.data].
+ * - If this is [AppResult.Error], returns `null`.
+ */
+fun <T> AppResult<T>.dataOrNull(): T? = when (this) {
+    is AppResult.Success -> data
+    is AppResult.Error -> null
+}

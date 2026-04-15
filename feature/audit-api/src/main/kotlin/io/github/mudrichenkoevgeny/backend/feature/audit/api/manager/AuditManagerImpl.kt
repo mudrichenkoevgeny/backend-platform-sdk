@@ -6,8 +6,8 @@ import io.github.mudrichenkoevgeny.backend.core.audit.mask.AuditDataMasker.maskS
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
-import io.github.mudrichenkoevgeny.backend.feature.audit.api.domain.model.AuditActorPermissionSet
-import io.github.mudrichenkoevgeny.backend.feature.audit.api.domain.model.PermissionRequirement
+import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
+import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionRequirement
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
@@ -159,27 +159,27 @@ class AuditManagerImpl @Inject constructor(
         }
     }
 
-    private fun getRequiredPermissionsForEvent(auditEvent: AuditEvent): AuditActorPermissionSet? {
+    private fun getRequiredPermissionsForEvent(auditEvent: AuditEvent): PermissionSet? {
         return when (auditEvent.actorType) {
-            AuditActorType.SYSTEM -> AuditActorPermissionSet(
+            AuditActorType.SYSTEM -> PermissionSet(
                 masked = AuditPermissionCode.AUDIT_GET_FOR_SYSTEM_ACTOR_MASKED,
                 unmasked = AuditPermissionCode.AUDIT_GET_FOR_SYSTEM_ACTOR_UNMASKED
             )
-            AuditActorType.SERVICE -> AuditActorPermissionSet(
+            AuditActorType.SERVICE -> PermissionSet(
                 masked = AuditPermissionCode.AUDIT_GET_FOR_SERVICE_ACTOR_MASKED,
                 unmasked = AuditPermissionCode.AUDIT_GET_FOR_SERVICE_ACTOR_UNMASKED
             )
             AuditActorType.USER -> {
                 when (UserRole.fromValueOrNull(auditEvent.actorUserRole ?: "")) {
-                    UserRole.USER -> AuditActorPermissionSet(
+                    UserRole.USER -> PermissionSet(
                         masked = AuditPermissionCode.AUDIT_GET_FOR_USER_ACTOR_MASKED,
                         unmasked = AuditPermissionCode.AUDIT_GET_FOR_USER_ACTOR_UNMASKED
                     )
-                    UserRole.STAFF -> AuditActorPermissionSet(
+                    UserRole.STAFF -> PermissionSet(
                         masked = AuditPermissionCode.AUDIT_GET_FOR_STAFF_ACTOR_MASKED,
                         unmasked = AuditPermissionCode.AUDIT_GET_FOR_STAFF_ACTOR_UNMASKED
                     )
-                    UserRole.ADMIN -> AuditActorPermissionSet(
+                    UserRole.ADMIN -> PermissionSet(
                         masked = AuditPermissionCode.AUDIT_GET_FOR_ADMIN_ACTOR_MASKED,
                         unmasked = AuditPermissionCode.AUDIT_GET_FOR_ADMIN_ACTOR_UNMASKED
                     )

@@ -6,7 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import javax.inject.Inject
@@ -19,10 +19,9 @@ class GetAuditEventUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(
         auditEventId: AuditEventId,
-        requestContext: RequestContext
+        authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<AuditEvent> {
-        val currentUserId = requestContext.userId
-            ?: return AppResult.Error(UserError.UserForbidden())
+        val currentUserId = authenticatedRequestContext.userId
 
         val getCurrentUserResult = userManager.getUserById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())

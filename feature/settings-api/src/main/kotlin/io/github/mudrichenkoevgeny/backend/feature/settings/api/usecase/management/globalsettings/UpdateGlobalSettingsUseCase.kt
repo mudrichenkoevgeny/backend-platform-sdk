@@ -3,8 +3,8 @@ package io.github.mudrichenkoevgeny.backend.feature.settings.api.usecase.managem
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.audit.toErrorAuditEventMetadata
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.audit.toErrorUserAuditEventMetadata
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
@@ -40,17 +40,17 @@ class UpdateGlobalSettingsUseCase @Inject constructor(
      */
     suspend operator fun invoke(
         globalSettings: GlobalSettings,
-        requestContext: RequestContext
+        authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
         val updateGlobalSettingsResult = globalSettingsProvider.updateGlobalSettings(globalSettings)
 
-        val metadata: Set<AuditEventMetadata> = requestContext.clientInfo.toAuditMetadata()
+        val metadata: Set<AuditEventMetadata> = authenticatedRequestContext.clientInfo.toAuditMetadata()
         if (updateGlobalSettingsResult is AppResult.Error) {
-            metadata + updateGlobalSettingsResult.error.toErrorAuditEventMetadata()
+            metadata + updateGlobalSettingsResult.error.toErrorUserAuditEventMetadata()
         }
 
         auditLogger.log(
-            actorId = requestContext.userId?.asHexDashString(),
+            actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
             actorUserRole = null,
             action = SettingsAuditActionType.MANAGEMENT_UPDATE_GLOBAL_SETTINGS,
@@ -70,7 +70,6 @@ class UpdateGlobalSettingsUseCase @Inject constructor(
             val globalSettingsPayload = globalSettings.toGlobalSettingsPayload()
             webSocketManager.sendMessageToAll(
                 SocketFrame(
-                    id = Uuid.random().toHexDashString(), // todo wait for shared update
                     type = SettingsWebSocketEventTypes.GLOBAL_SETTINGS_UPDATED,
                     timestamp = System.currentTimeMillis(),
                     payload = FoundationJson.encodeToJsonElement(

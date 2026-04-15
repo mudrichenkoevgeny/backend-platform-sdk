@@ -6,7 +6,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.otp.OtpVerificatio
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 /**
  * Redis-backed [OtpService] implementation.
  *
@@ -18,6 +17,7 @@ import javax.inject.Singleton
  * - returns an existing OTP if one is already stored (to prevent spamming new codes),
  * - generates a 6-digit numeric code when missing.
  */
+@Singleton
 class OtpServiceImpl @Inject constructor(
     private val redisManager: RedisManager
 ) : OtpService {

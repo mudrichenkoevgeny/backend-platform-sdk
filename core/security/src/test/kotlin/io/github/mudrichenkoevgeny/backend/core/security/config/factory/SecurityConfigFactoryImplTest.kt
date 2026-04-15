@@ -15,7 +15,10 @@ class SecurityConfigFactoryImplTest {
     @Test
     fun `create reads required keys and applies defaults for optional password policy`() {
         val envReader = mockk<EnvReader>()
-        every { envReader.getByKey(SecurityEnvKeys.AUTHENTICATION_CONFIRMATION_VALIDITY_MINUTES) } returns "15"
+        every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES) } returns "15"
+        every {
+            envReader.getByKeyOrNull(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES_FOR_MANAGEMENT)
+        } returns null
 
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_MIN_LENGTH) } returns null
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_LETTER) } returns null
@@ -30,6 +33,7 @@ class SecurityConfigFactoryImplTest {
         val config = factory.create()
 
         assertEquals(15L, config.recentAuthenticationValidityInMinutes)
+        assertEquals(60L, config.recentAuthenticationValidityInMinutesForManagement)
         assertEquals(PasswordPolicy.DEFAULT_MIN_LENGTH, config.passwordPolicy.minLength)
         assertTrue(config.passwordPolicy.requireLetter)
         assertFalse(config.passwordPolicy.requireUpperCase)
@@ -42,7 +46,10 @@ class SecurityConfigFactoryImplTest {
     @Test
     fun `create parses password policy values from env`() {
         val envReader = mockk<EnvReader>()
-        every { envReader.getByKey(SecurityEnvKeys.AUTHENTICATION_CONFIRMATION_VALIDITY_MINUTES) } returns "60"
+        every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES) } returns "60"
+        every {
+            envReader.getByKeyOrNull(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES_FOR_MANAGEMENT)
+        } returns "90"
 
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_MIN_LENGTH) } returns "12"
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_LETTER) } returns "false"
@@ -57,6 +64,7 @@ class SecurityConfigFactoryImplTest {
         val config = factory.create()
 
         assertEquals(60L, config.recentAuthenticationValidityInMinutes)
+        assertEquals(90L, config.recentAuthenticationValidityInMinutesForManagement)
         assertEquals(12, config.passwordPolicy.minLength)
         assertFalse(config.passwordPolicy.requireLetter)
         assertTrue(config.passwordPolicy.requireUpperCase)

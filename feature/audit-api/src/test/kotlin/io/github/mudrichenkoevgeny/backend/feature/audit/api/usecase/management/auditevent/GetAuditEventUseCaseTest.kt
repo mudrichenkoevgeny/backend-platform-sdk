@@ -167,14 +167,14 @@ class GetAuditEventUseCaseTest {
     }
 
     private data class StringBackedAuditAction(
-        override val serialName: String,
+        override val serialName: String
     ) : AuditActionType {
         override fun parseOrNull(value: String): AuditActionType = StringBackedAuditAction(value)
         override fun parseOrThrow(value: String): AuditActionType = StringBackedAuditAction(value)
     }
 
     private data class StringBackedAuditResource(
-        override val serialName: String,
+        override val serialName: String
     ) : AuditResourceType {
         override fun parseOrNull(value: String): AuditResourceType = StringBackedAuditResource(value)
         override fun parseOrThrow(value: String): AuditResourceType = StringBackedAuditResource(value)

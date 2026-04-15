@@ -1,9 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.feature.audit.api.network.query
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
-import io.github.mudrichenkoevgeny.backend.core.common.validation.ValidationException
-import io.github.mudrichenkoevgeny.backend.core.common.validation.firstNonBlankQueryValue
-import io.github.mudrichenkoevgeny.backend.core.common.validation.parseListingQueryParams
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.firstNonBlankQueryValue
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.audit.api.network.model.AuditEventsListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
@@ -18,45 +18,45 @@ import io.ktor.server.application.ApplicationCall
  */
 fun ApplicationCall.parseAuditEventsListQueryParams(
     compositeAuditActionTypeParser: CompositeAuditActionTypeParser,
-    compositeAuditResourceTypeParser: CompositeAuditResourceTypeParser,
+    compositeAuditResourceTypeParser: CompositeAuditResourceTypeParser
 ): AuditEventsListQueryParams {
     val listing = parseListingQueryParams(
         defaultSortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
-        parseSortByOrNull = AuditSortValues.AuditEventSortBy::fromValueOrNull,
+        parseSortByOrNull = AuditSortValues.AuditEventSortBy::fromValueOrNull
     )
 
     val auditEventFilterParamNames = AuditFilterValues.AuditEventFilterValues
 
     val actorId = firstNonBlankQueryValue(auditEventFilterParamNames.ACTOR_ID)
-    val actorType = firstNonBlankQueryValue(auditEventFilterParamNames.ACTOR_TYPE)?.let { raw ->
-        AuditActorType.fromValueOrNull(raw)
-            ?: throw ValidationException(
+    val actorType = firstNonBlankQueryValue(auditEventFilterParamNames.ACTOR_TYPE)?.let { actorType ->
+        AuditActorType.fromValueOrNull(actorType)
+            ?: throw RequestHandlingException(
                 CommonError.InvalidParameterValue(auditEventFilterParamNames.ACTOR_TYPE)
             )
     }
     val actorUserRole = firstNonBlankQueryValue(auditEventFilterParamNames.ACTOR_USER_ROLE)
-    val action = firstNonBlankQueryValue(auditEventFilterParamNames.ACTION)?.let { raw ->
+    val action = firstNonBlankQueryValue(auditEventFilterParamNames.ACTION)?.let { action ->
         try {
-            compositeAuditActionTypeParser.fromValueOrThrow(raw)
+            compositeAuditActionTypeParser.fromValueOrThrow(action)
         } catch (_: Exception) {
-            throw ValidationException(
+            throw RequestHandlingException(
                 CommonError.InvalidParameterValue(auditEventFilterParamNames.ACTION)
             )
         }
     }
-    val resource = firstNonBlankQueryValue(auditEventFilterParamNames.RESOURCE)?.let { raw ->
+    val resource = firstNonBlankQueryValue(auditEventFilterParamNames.RESOURCE)?.let { resource ->
         try {
-            compositeAuditResourceTypeParser.fromValueOrThrow(raw)
+            compositeAuditResourceTypeParser.fromValueOrThrow(resource)
         } catch (_: Exception) {
-            throw ValidationException(
+            throw RequestHandlingException(
                 CommonError.InvalidParameterValue(auditEventFilterParamNames.RESOURCE)
             )
         }
     }
     val resourceId = firstNonBlankQueryValue(auditEventFilterParamNames.RESOURCE_ID)
-    val status = firstNonBlankQueryValue(auditEventFilterParamNames.STATUS)?.let { raw ->
-        AuditStatus.fromValueOrNull(raw)
-            ?: throw ValidationException(
+    val status = firstNonBlankQueryValue(auditEventFilterParamNames.STATUS)?.let { status ->
+        AuditStatus.fromValueOrNull(status)
+            ?: throw RequestHandlingException(
                 CommonError.InvalidParameterValue(auditEventFilterParamNames.STATUS)
             )
     }
@@ -71,6 +71,6 @@ fun ApplicationCall.parseAuditEventsListQueryParams(
         resource = resource,
         resourceId = resourceId,
         status = status,
-        message = message,
+        message = message
     )
 }

@@ -21,12 +21,12 @@ object UsersTable : BaseTable("users") {
     val accountStatusBeforeDeletion = enumerationByName(
         "account_status_before_deletion",
         BaseDbConstraints.ENUM_MAX_LENGTH,
-        UserAccountStatus::class,
+        UserAccountStatus::class
     )
     val permissions = jsonb<Set<String>>(
         "permissions",
         FoundationJson,
-        serializer<Set<String>>(),
+        serializer<Set<String>>()
     )
     val lastLoginAt = timestamp("last_login_at").nullable()
     val lastActiveAt = timestamp("last_active_at").nullable()

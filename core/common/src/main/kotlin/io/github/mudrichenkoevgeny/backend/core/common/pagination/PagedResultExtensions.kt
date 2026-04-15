@@ -10,5 +10,5 @@ fun <T, R> PagedResult<T>.mapItems(transform: (T) -> R): PagedResult<R> = PagedR
     totalCount = totalCount,
     pageNumber = pageNumber,
     pageSize = pageSize,
-    totalPages = totalPages,
+    totalPages = totalPages
 )

@@ -1,37 +1,37 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.auth
 
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
-import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 /**
  * Default [AuthManager] implementation.
  *
  * Executes auth flows inside [dbQuery] and coordinates:
  * - user resolution via [UserManager]
- * - identifier resolution/creation via [UserIdentifierManager]
+ * - identifier resolution/creation via [IdentifierManager]
  * - session creation via [SessionManager]
  *
  * Enforces role checks and account status restrictions and returns [UserError] when access is denied.
  */
+@Singleton
 class AuthManagerImpl @Inject constructor(
     private val userManager: UserManager,
-    private val userIdentifierManager: UserIdentifierManager,
+    private val identifierManager: IdentifierManager,
     private val sessionManager: SessionManager
 ) : AuthManager {
 
@@ -89,7 +89,7 @@ class AuthManagerImpl @Inject constructor(
             return@dbQuery userResult
         }
 
-        val userIdentifierResult = userIdentifierManager.getUserIdentifier(
+        val userIdentifierResult = identifierManager.getUserIdentifier(
             userAuthProvider = userAuthProvider,
             identifier = identifier
         )
@@ -103,7 +103,7 @@ class AuthManagerImpl @Inject constructor(
             return@dbQuery AppResult.Error(UserError.CannotCreateUserIdentifier())
         }
 
-        userIdentifierManager.createUserIdentifier(
+        identifierManager.createUserIdentifier(
             userId = userId,
             userAuthProvider = userAuthProvider,
             identifier = identifier,
@@ -119,7 +119,7 @@ class AuthManagerImpl @Inject constructor(
         userRole: UserRole
     ): AppResult<UserIdentifier> {
         return dbQuery {
-            val userIdentifierResult = userIdentifierManager.getUserIdentifier(
+            val userIdentifierResult = identifierManager.getUserIdentifier(
                 userAuthProvider = userAuthProvider,
                 identifier = identifier
             )
@@ -143,7 +143,7 @@ class AuthManagerImpl @Inject constructor(
                 is AppResult.Error -> return@dbQuery userResult
             }
 
-            userIdentifierManager.createUserIdentifier(
+            identifierManager.createUserIdentifier(
                 userId = user.id,
                 userAuthProvider = userAuthProvider,
                 identifier = identifier,

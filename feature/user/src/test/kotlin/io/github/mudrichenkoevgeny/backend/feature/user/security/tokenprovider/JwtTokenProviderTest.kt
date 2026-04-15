@@ -3,13 +3,14 @@ package io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AccessToken
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthSettings
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -32,6 +33,7 @@ class JwtTokenProviderTest {
 
         val tokenResult = provider.generateAccessToken(
             userId = userId,
+            userRole = UserRole.USER,
             sessionId = sessionId,
             issuedAt = now,
             expiration = now.plusSeconds(60)
@@ -54,6 +56,7 @@ class JwtTokenProviderTest {
 
         val tokenResult = provider.generateAccessToken(
             userId = userId,
+            userRole = UserRole.USER,
             sessionId = sessionId,
             issuedAt = now.minusSeconds(120),
             expiration = now.minusSeconds(60)
@@ -79,15 +82,15 @@ class JwtTokenProviderTest {
     private fun userConfig(jwtSecret: String): UserConfig {
         return UserConfig(
             jwtSecret = jwtSecret,
-            accessTokenValidityHours = 1,
-            refreshTokenValidityDays = 30,
             authRealm = "test",
             adminAccountsList = emptyList(),
-            authSettings = AuthSettings(
+            managementAuthSettings = ManagementAuthSettings(
                 availableAuthProviders = AvailableAuthProviders(
                     primary = listOf(UserAuthProvider.EMAIL),
                     secondary = emptyList()
-                )
+                ),
+                accessTokenValidityHours = 1,
+                refreshTokenValidityDays = 30
             ),
             googleWebClientId = null,
             uniOneConfig = null,
@@ -100,4 +103,3 @@ class JwtTokenProviderTest {
         const val SECRET = "01234567890123456789012345678901"
     }
 }
-

@@ -74,7 +74,7 @@ class AuditDataMaskerTest {
     fun `maskSensitiveData masks resourceId by resourceValueSensitivity`() {
         val event = baseEvent().copy(
             resourceId = "visible-id",
-            resourceValueSensitivity = AuditValueSensitivity.FULL_VALUE_MASK,
+            resourceValueSensitivity = AuditValueSensitivity.FULL_VALUE_MASK
         )
         val masked = with(AuditDataMasker) { event.maskSensitiveData() }
         assertEquals(DataMasker.LARGE_MASK, masked.resourceId)
@@ -84,7 +84,7 @@ class AuditDataMaskerTest {
     fun `maskSensitiveData leaves null resourceId`() {
         val event = baseEvent().copy(
             resourceId = null,
-            resourceValueSensitivity = AuditValueSensitivity.EMAIL,
+            resourceValueSensitivity = AuditValueSensitivity.EMAIL
         )
         val masked = with(AuditDataMasker) { event.maskSensitiveData() }
         assertNull(masked.resourceId)
@@ -94,7 +94,7 @@ class AuditDataMaskerTest {
     fun `maskSensitiveData maps metadata values through key sensitivity`() {
         val code = "E_AUTH"
         val event = baseEvent().copy(
-            metadata = setOf(AuditEventMetadata(CommonAuditMetadataKey.ERROR_CODE, code)),
+            metadata = setOf(AuditEventMetadata(CommonAuditMetadataKey.ERROR_CODE, code))
         )
         val masked = with(AuditDataMasker) { event.maskSensitiveData() }
         val meta = masked.metadata.single { it.key == CommonAuditMetadataKey.ERROR_CODE }
@@ -116,6 +116,6 @@ class AuditDataMaskerTest {
         action = RepositoryTestAuditAction("mask_test_action"),
         resource = RepositoryTestAuditResource("mask_test_resource"),
         status = AuditStatus.SUCCESS,
-        createdAt = Clock.System.now(),
+        createdAt = Clock.System.now()
     )
 }

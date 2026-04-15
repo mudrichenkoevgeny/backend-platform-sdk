@@ -38,7 +38,7 @@ class RateLimitEnforcerImpl @Inject constructor(
         auditResource: String,
         auditResourceId: String?
     ): AppResult<Unit> {
-        val isRateLimitedResult = rateLimiter.isRateLimited(rateLimitAction, rateLimitIdentifier)
+        val isRateLimitedResult = rateLimiter.checkRateLimit(rateLimitAction, rateLimitIdentifier)
 
         return when (isRateLimitedResult) {
             is AppResult.Success -> {
@@ -82,14 +82,14 @@ class RateLimitEnforcerImpl @Inject constructor(
 
 /** Temporary: this file is slated for removal/refactor; do not move into `core/audit`. */
 private data class StringBackedAuditAction(
-    override val serialName: String,
+    override val serialName: String
 ) : AuditActionType {
     override fun parseOrNull(value: String): AuditActionType? = StringBackedAuditAction(value)
     override fun parseOrThrow(value: String): AuditActionType = StringBackedAuditAction(value)
 }
 
 private data class StringBackedAuditResource(
-    override val serialName: String,
+    override val serialName: String
 ) : AuditResourceType {
     override fun parseOrNull(value: String): AuditResourceType? = StringBackedAuditResource(value)
     override fun parseOrThrow(value: String): AuditResourceType = StringBackedAuditResource(value)

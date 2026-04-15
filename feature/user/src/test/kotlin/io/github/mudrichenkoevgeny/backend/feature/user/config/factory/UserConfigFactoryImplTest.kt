@@ -45,8 +45,6 @@ class UserConfigFactoryImplTest {
         val config = factory.create()
 
         assertEquals("jwt-secret", config.jwtSecret)
-        assertEquals(12L, config.accessTokenValidityHours)
-        assertEquals(30L, config.refreshTokenValidityDays)
         assertEquals("realm", config.authRealm)
         assertEquals(1, config.adminAccountsList.size)
 
@@ -54,8 +52,11 @@ class UserConfigFactoryImplTest {
         assertNull(config.uniOneConfig)
         assertNull(config.resendConfig)
 
-        assertEquals(listOf(UserAuthProvider.GOOGLE), config.authSettings.availableAuthProviders.primary)
-        assertEquals(listOf(UserAuthProvider.EMAIL), config.authSettings.availableAuthProviders.secondary)
+        val auth = config.managementAuthSettings
+        assertEquals(12L, auth.accessTokenValidityHours)
+        assertEquals(30L, auth.refreshTokenValidityDays)
+        assertEquals(listOf(UserAuthProvider.GOOGLE), auth.availableAuthProviders.primary)
+        assertEquals(listOf(UserAuthProvider.EMAIL), auth.availableAuthProviders.secondary)
     }
 
     @Test

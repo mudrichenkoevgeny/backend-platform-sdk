@@ -6,7 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.useridentifier.UserIdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
 import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
 import io.github.mudrichenkoevgeny.backend.feature.user.testutil.ExposedTestDb
@@ -23,12 +23,12 @@ import java.time.Instant
 class AuthManagerImplTest {
 
     private val userManager: UserManager = mockk()
-    private val userIdentifierManager: UserIdentifierManager = mockk()
+    private val identifierManager: IdentifierManager = mockk()
     private val sessionManager: SessionManager = mockk()
 
     private val manager = AuthManagerImpl(
         userManager = userManager,
-        userIdentifierManager = userIdentifierManager,
+        identifierManager = identifierManager,
         sessionManager = sessionManager
     )
 
@@ -119,7 +119,7 @@ class AuthManagerImplTest {
         )
 
         coEvery {
-            userIdentifierManager.getUserIdentifier(
+            identifierManager.getUserIdentifier(
                 userAuthProvider = UserAuthProvider.EMAIL,
                 identifier = IDENTIFIER
             )

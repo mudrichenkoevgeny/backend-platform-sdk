@@ -10,7 +10,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
-@Singleton
 /**
  * Default [RefreshTokenProvider] implementation.
  *
@@ -20,6 +19,7 @@ import kotlin.uuid.Uuid
  * Hashing:
  * - SHA-256 digest encoded as Base64 to make storage and transmission safe.
  */
+@Singleton
 class RefreshTokenProviderImpl @Inject constructor() : RefreshTokenProvider {
     override fun getRefreshToken(): AppResult<RefreshToken> {
         return AppResult.Success(

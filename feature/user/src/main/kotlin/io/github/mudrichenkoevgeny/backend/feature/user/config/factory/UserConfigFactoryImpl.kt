@@ -6,24 +6,24 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.env.readJsonSecret
 import io.github.mudrichenkoevgeny.backend.feature.user.config.seed.AdminList
 import io.github.mudrichenkoevgeny.backend.feature.user.config.envkeys.UserEnvKeys
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthSettings
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.resend.model.ResendConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.model.UniOneConfig
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 /**
  * Default [UserConfigFactory] implementation that reads configuration from environment variables
  * and secret files via [EnvReader].
  *
  * The factory:
  * - loads secrets (JWT secret, admin list JSON, provider API keys) from paths specified in env
- * - parses available auth providers from string lists into [UserAuthProvider] values
+ * - parses available auth providers from string lists into [UserAuthProvider] values and builds [ManagementAuthSettings]
  * - builds email provider configs ([UniOneConfig], [ResendConfig]) when required values are present
  */
+@Singleton
 class UserConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader
 ): UserConfigFactory {
@@ -47,12 +47,13 @@ class UserConfigFactoryImpl @Inject constructor(
         val availableSecondaryAuthProviders = envReader
             .getStringList(UserEnvKeys.AVAILABLE_AUTH_PROVIDERS_SECONDARY)
             .mapNotNull { UserAuthProvider.fromValue(it) }
-        val availableAuthProviders = AvailableAuthProviders(
-            primary = availablePrimaryAuthProviders,
-            secondary = availableSecondaryAuthProviders
-        )
-        val authSettings = AuthSettings(
-            availableAuthProviders = availableAuthProviders
+        val managementAuthSettings = ManagementAuthSettings(
+            availableAuthProviders = AvailableAuthProviders(
+                primary = availablePrimaryAuthProviders,
+                secondary = availableSecondaryAuthProviders
+            ),
+            accessTokenValidityHours = accessTokenValidityHours,
+            refreshTokenValidityDays = refreshTokenValidityDays
         )
 
         val googleWebClientId = envReader.getByKey(UserEnvKeys.GOOGLE_WEB_CLIENT_ID)
@@ -88,11 +89,9 @@ class UserConfigFactoryImpl @Inject constructor(
 
         return UserConfig(
             jwtSecret = jwtSecret,
-            accessTokenValidityHours = accessTokenValidityHours,
-            refreshTokenValidityDays = refreshTokenValidityDays,
             authRealm = authRealm,
             adminAccountsList = adminList.admins,
-            authSettings = authSettings,
+            managementAuthSettings = managementAuthSettings,
             googleWebClientId = googleWebClientId,
             uniOneConfig = uniOneConfig,
             resendConfig = resendConfig
