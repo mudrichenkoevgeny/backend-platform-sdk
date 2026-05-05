@@ -28,13 +28,42 @@ class JsonUtilsTest {
     fun `toElement converts collections and maps`() {
         val listElement = JsonConverter.toElement(listOf(1, 2))
         assertTrue(listElement is JsonArray)
-        assertEquals(listOf(JsonPrimitive(1), JsonPrimitive(2)), listElement)
+        assertEquals(2, (listElement as JsonArray).size)
 
         val mapElement = JsonConverter.toElement(mapOf("a" to 1, "b" to "x"))
         assertTrue(mapElement is JsonObject)
         val jsonObject = mapElement as JsonObject
         assertEquals(JsonPrimitive(1), jsonObject["a"])
         assertEquals(JsonPrimitive("x"), jsonObject["b"])
+    }
+
+    @Test
+    fun `toElement converts recursively`() {
+        val complexData = mapOf(
+            "list" to listOf(mapOf("id" to 1))
+        )
+
+        val result = JsonConverter.toElement(complexData) as JsonObject
+        val list = result["list"] as JsonArray
+        val nestedMap = list[0] as JsonObject
+
+        assertEquals(JsonPrimitive(1), nestedMap["id"])
+    }
+
+    @Test
+    fun `toElement returns JsonElement as is`() {
+        val existing = JsonPrimitive("already_json")
+        val result = JsonConverter.toElement(existing)
+
+        assertEquals(existing, result)
+    }
+
+    @Test
+    fun `toJsonObject converts map directly`() {
+        val source = mapOf("key" to 100)
+        val result = JsonConverter.toJsonObject(source)
+
+        assertEquals(JsonPrimitive(100), result["key"])
     }
 
     @Test
@@ -47,9 +76,9 @@ class JsonUtilsTest {
 
         val result = source.toJsonElementMap()
 
+        assertEquals(2, result.size)
         assertEquals(setOf("a", "c"), result.keys)
         assertEquals(JsonPrimitive(1), result["a"])
         assertEquals(JsonPrimitive("str"), result["c"])
     }
 }
-

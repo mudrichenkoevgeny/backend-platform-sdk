@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.getNumOfTotalPages
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.core.common.util.toJavaInstant
 import io.github.mudrichenkoevgeny.backend.core.common.util.toKotlinInstant
 import io.github.mudrichenkoevgeny.backend.core.database.extensions.applyPagination
@@ -17,9 +18,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CompositeAuditMetadataKeyParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CompositeAuditResourceTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventMetadataPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import org.jetbrains.exposed.v1.core.ResultRow
@@ -37,17 +41,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * [AuditEventRepository] implementation using Exposed and [AuditEventsTable]: inserts events
- * into the table, reads by id or with optional filters, and returns paginated lists ordered
- * by [AuditEventsTable.createdAt] and the requested [SortOrder].
+ * Exposed-based implementation of [AuditEventRepository].
  *
- * Hydrates persisted `action` / `resource` columns with the host-configured
- * [CompositeAuditActionTypeParser] and [CompositeAuditResourceTypeParser].
+ * Uses composite parsers to hydrate persisted action, resource, and metadata keys.
  */
 @Singleton
 class AuditEventRepositoryImpl @Inject constructor(
     private val compositeAuditActionTypeParser: CompositeAuditActionTypeParser,
-    private val compositeAuditResourceTypeParser: CompositeAuditResourceTypeParser
+    private val compositeAuditResourceTypeParser: CompositeAuditResourceTypeParser,
+    private val compositeAuditMetadataKeyParser: CompositeAuditMetadataKeyParser
 ) : AuditEventRepository {
 
     override suspend fun createEvent(event: AuditEvent): AppResult<AuditEvent> {
@@ -61,7 +63,9 @@ class AuditEventRepositoryImpl @Inject constructor(
             auditEventRow[resourceId] = event.resourceId
             auditEventRow[resourceValueSensitivity] = event.resourceValueSensitivity
             auditEventRow[status] = event.status
-            auditEventRow[metadata] = event.metadata
+            auditEventRow[metadata] = event.metadata.mapToSet { auditEventMetadata ->
+                auditEventMetadata.toAuditEventMetadataPayload()
+            }
             auditEventRow[message] = event.message
             auditEventRow[createdAt] = event.createdAt.toJavaInstant()
         }
@@ -84,19 +88,19 @@ class AuditEventRepositoryImpl @Inject constructor(
         return AppResult.Success(resultRow?.toAuditEvent())
     }
 
-    override suspend fun getEventsList(
+    override suspend fun getEventsPageWithAccessFilter(
         accessFilter: AuditAccessFilter,
         pageParams: PageParams,
         sortBy: AuditSortValues.AuditEventSortBy,
         sortOrder: SortOrder,
-        actorId: String?,
-        actorType: AuditActorType?,
-        actorUserRole: String?,
-        action: AuditActionType?,
-        resource: AuditResourceType?,
-        resourceId: String?,
-        status: AuditStatus?,
-        message: String?
+        actorIds: List<String>,
+        actorTypes: List<AuditActorType>,
+        actorUserRoles: List<String>,
+        actions: List<AuditActionType>,
+        resources: List<AuditResourceType>,
+        resourceIds: List<String>,
+        statuses: List<AuditStatus>,
+        messages: List<String>
     ): AppResult<PagedResult<AuditEvent>> {
         var query = AuditEventsTable.selectAll()
 
@@ -121,14 +125,29 @@ class AuditEventRepositoryImpl @Inject constructor(
             conditions.reduceOrNull { acc, op -> acc or op } ?: Op.FALSE
         }
 
-        actorId?.let { id -> query = query.andWhere { AuditEventsTable.actorId eq id } }
-        actorType?.let { type -> query = query.andWhere { AuditEventsTable.actorType eq type } }
-        actorUserRole?.let { role -> query = query.andWhere { AuditEventsTable.actorUserRole eq role } }
-        action?.let { act -> query = query.andWhere { AuditEventsTable.action eq act.serialName } }
-        resource?.let { res -> query = query.andWhere { AuditEventsTable.resource eq res.serialName } }
-        resourceId?.let { resId -> query = query.andWhere { AuditEventsTable.resourceId eq resId } }
-        status?.let { st -> query = query.andWhere { AuditEventsTable.status eq st } }
-        message?.takeIf { it.isNotBlank() }?.let { needle ->
+        if (actorIds.isNotEmpty()) {
+            query = query.andWhere { AuditEventsTable.actorId inList actorIds }
+        }
+        if (actorTypes.isNotEmpty()) {
+            query = query.andWhere { AuditEventsTable.actorType inList actorTypes }
+        }
+        if (actorUserRoles.isNotEmpty()) {
+            query = query.andWhere { AuditEventsTable.actorUserRole inList actorUserRoles }
+        }
+        if (actions.isNotEmpty()) {
+            query = query.andWhere { AuditEventsTable.action inList actions.map { it.serialName } }
+        }
+        if (resources.isNotEmpty()) {
+            query = query.andWhere { AuditEventsTable.resource inList resources.map { it.serialName } }
+        }
+        if (resourceIds.isNotEmpty()) {
+            query = query.andWhere { AuditEventsTable.resourceId inList resourceIds }
+        }
+        if (statuses.isNotEmpty()) {
+            query = query.andWhere { AuditEventsTable.status inList statuses }
+        }
+
+        messages.filter { it.isNotBlank() }.forEach { needle ->
             val pattern = substringSqlLikePattern(needle.lowercase())
             query = query.andWhere { AuditEventsTable.message.lowerCase() like pattern }
         }
@@ -168,7 +187,9 @@ class AuditEventRepositoryImpl @Inject constructor(
         resourceId = this[AuditEventsTable.resourceId],
         resourceValueSensitivity = this[AuditEventsTable.resourceValueSensitivity],
         status = this[AuditEventsTable.status],
-        metadata = this[AuditEventsTable.metadata],
+        metadata = this[AuditEventsTable.metadata].mapToSet { auditEventMetadataPayload ->
+            auditEventMetadataPayload.toAuditEventMetadata(compositeAuditMetadataKeyParser)
+        },
         message = this[AuditEventsTable.message],
         createdAt = this[AuditEventsTable.createdAt].toKotlinInstant()
     )

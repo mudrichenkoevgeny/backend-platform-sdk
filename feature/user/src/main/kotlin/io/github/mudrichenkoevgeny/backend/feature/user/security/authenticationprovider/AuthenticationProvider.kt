@@ -25,24 +25,24 @@ interface AuthenticationProvider {
      * [UserDetails].
      *
      * Typical order of checks (after a valid token / principal is present): load user by id from
-     * storage; verify [allowedRoles]; verify [requiredAccountStatus] when non-empty; verify
+     * storage; verify [allowedRoles]; verify [allowedAccountStatuses] when non-empty; verify
      * [requiredPermissions] when non-empty.
      *
      * @param call Current HTTP/WebSocket call (must carry credentials the implementation understands).
-     * @param allowedRoles User must have one of these roles. Default: every [UserRole] value.
-     * @param requiredAccountStatus When **empty**, account status is not checked. When **non-empty**,
-     * user account status must be one of the listed [UserAccountStatus] values (**OR** semantics).
+     * @param allowedRoles User must have one of these roles. **If empty, access is denied for everyone.**
+     * @param allowedAccountStatuses User account status must be one of the listed values (**OR** semantics).
+     * **If empty, access is denied for everyone.**
      * @param requiredPermissions When **empty** (default), permissions are not checked. When
      * **non-empty**, the user must hold **every** listed [PermissionCode] in
-     * [UserDetails.permissions] (**AND** semantics). Missing any required code yields the same
+     * [UserDetails.permissionCodes] (**AND** semantics). Missing any required code yields the same
      * outcome as an insufficient role (e.g. forbidden).
      * @return [AppResult.Success] with the loaded user, or [AppResult.Error] (token, not found,
      * forbidden, blocked, read-only, security hold, pending deletion, etc.).
      */
     suspend fun requireUser(
         call: ApplicationCall,
-        allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
-        requiredAccountStatus: Set<UserAccountStatus> = UserAccountStatus.entries.toSet(),
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>,
         requiredPermissions: Set<PermissionCode> = setOf()
     ): AppResult<UserDetails>
 }

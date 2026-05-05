@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.security.settings.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.SecuritySettings
 
@@ -21,9 +22,17 @@ interface SecuritySettingsProvider {
     /**
      * Returns current effective settings.
      */
-    fun getSettings(): AppResult<SecuritySettings>
+    fun getSettings(): SecuritySettings
 
-    fun getRecentAuthenticationValidityInMinutes(): Long
+    /**
+     * Returns the validity window (in seconds) for recent re-authentication in self-service flows.
+     */
+    fun getRecentAuthenticationValidityInSeconds(): Int
+
+    /**
+     * Returns the validity window (in seconds) for recent re-authentication in administrative/management flows.
+     */
+    fun getRecentAuthenticationValidityInSecondsForManagement(): Int
 
     /**
      * Returns the effective password policy.
@@ -33,7 +42,17 @@ interface SecuritySettingsProvider {
     fun getPasswordPolicy(): PasswordPolicy
 
     /**
-     * Updates the stored password policy.
+     * Returns the effective OTP configuration.
+     */
+    fun getOtpConfirmation(): OtpConfirmation
+
+    /**
+     * Returns the expiration time (in seconds) for temporary MFA challenge tokens.
+     */
+    fun getMfaTokenExpirationSeconds(): Int
+
+    /**
+     * Updates the stored security settings including password policy, OTP, and expiration windows.
      */
     suspend fun updateSecuritySettings(securitySettings: SecuritySettings): AppResult<Unit>
 }

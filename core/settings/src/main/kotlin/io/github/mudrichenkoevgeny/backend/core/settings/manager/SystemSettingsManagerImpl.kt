@@ -27,4 +27,8 @@ class SystemSettingsManagerImpl @Inject constructor(
     override suspend fun getAllSettings(): AppResult<List<SystemSetting>> = dbQuery {
         repository.getAllSettings()
     }
+
+    override suspend fun deleteSetting(key: String): AppResult<Unit> = dbQuery {
+        repository.deleteSetting(key)
+    }
 }

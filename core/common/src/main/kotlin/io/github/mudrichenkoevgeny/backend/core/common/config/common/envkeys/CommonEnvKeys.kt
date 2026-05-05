@@ -13,6 +13,7 @@ object CommonEnvKeys {
     const val ENV_FILE = "ENV_FILE"
     const val SECRETS_DIR = "SECRETS_DIR"
     const val ENVIRONMENT = "ENVIRONMENT"
+    const val INSTANCE_MODE = "INSTANCE_MODE"
     const val SERVER_URL = "SERVER_URL"
     const val KTOR_SERVER_HOST = "KTOR_SERVER_HOST"
     const val KTOR_SERVER_PORT = "KTOR_SERVER_PORT"

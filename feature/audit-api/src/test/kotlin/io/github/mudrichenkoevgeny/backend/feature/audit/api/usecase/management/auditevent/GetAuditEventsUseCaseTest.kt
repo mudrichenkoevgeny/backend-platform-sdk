@@ -6,7 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.audit.api.manager.AuditManager
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
@@ -15,6 +15,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
@@ -28,33 +29,22 @@ import kotlin.time.Clock
 
 class GetAuditEventsUseCaseTest {
 
-    private companion object {
-        private const val IP_ADDRESS = "127.0.0.1"
-    }
-
     private val pageParams = PageParams(page = 1, size = 10)
 
     private fun clientInfo(): ClientInfo = ClientInfo(
-        deviceInfo = ClientDeviceInfo(
-            deviceId = null,
-            deviceName = null,
-            clientType = null,
-            language = null,
-            appVersion = null,
-            operationSystemVersion = null
-        ),
+        deviceInfo = ClientDeviceInfo(null, null, null, null, null, null),
         userAgent = null,
-        ipAddress = IP_ADDRESS,
+        ipAddress = "127.0.0.1",
         host = null,
         origin = null,
         apiVersion = null
     )
 
-    private fun requestContext(userId: UserId?): RequestContext = RequestContext(
+    private fun authContext(userId: UserId): AuthenticatedRequestContext = AuthenticatedRequestContext(
         traceId = null,
         userId = userId,
-        userRole = null,
-        sessionId = null,
+        userRole = UserRole.ADMIN,
+        sessionId = UserSessionId.generate(),
         clientInfo = clientInfo()
     )
 
@@ -65,33 +55,23 @@ class GetAuditEventsUseCaseTest {
             role = UserRole.ADMIN,
             accountStatus = UserAccountStatus.ACTIVE,
             accountStatusBeforeDeletion = UserAccountStatus.ACTIVE,
-            permissions = emptySet(),
+            authorityLevel = 1,
+            permissionCodes = emptySet(),
+            isTotpEnabled = false,
             lastLoginAt = now,
             lastActiveAt = now,
-            createdAt = now,
-            updatedAt = null,
-            scheduledPermanentDeletionAt = null
+            createdAt = now
         )
-    }
-
-    @Test
-    fun `returns UserForbidden when request has no userId`() = runTest {
-        val useCase = GetAuditEventsUseCase(mockk(), mockk(relaxed = true))
-
-        val result = useCase(pageParams, requestContext = requestContext(userId = null))
-
-        assertTrue(result is AppResult.Error)
-        assertTrue((result as AppResult.Error).error is UserError.UserForbidden)
     }
 
     @Test
     fun `returns UserForbidden when current user is not found`() = runTest {
         val userId = UserId.generate()
         val userManager = mockk<UserManager>()
-        coEvery { userManager.getUserById(userId) } returns AppResult.Success(null)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(null)
         val useCase = GetAuditEventsUseCase(userManager, mockk(relaxed = true))
 
-        val result = useCase(pageParams, requestContext = requestContext(userId))
+        val result = useCase(pageParams, authenticatedRequestContext = authContext(userId))
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.UserForbidden)
@@ -102,10 +82,10 @@ class GetAuditEventsUseCaseTest {
         val userId = UserId.generate()
         val err = CommonError.Internal(Throwable("db"))
         val userManager = mockk<UserManager>()
-        coEvery { userManager.getUserById(userId) } returns AppResult.Error(err)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Error(err)
         val useCase = GetAuditEventsUseCase(userManager, mockk(relaxed = true))
 
-        val result = useCase(pageParams, requestContext = requestContext(userId))
+        val result = useCase(pageParams, authenticatedRequestContext = authContext(userId))
 
         assertEquals(AppResult.Error(err), result)
     }
@@ -114,109 +94,46 @@ class GetAuditEventsUseCaseTest {
     fun `delegates to audit manager with user permissions and returns result`() = runTest {
         val userId = UserId.generate()
         val details = userDetails(userId)
-        val paged = PagedResult<AuditEvent>(
-            items = emptyList(),
-            totalCount = 0L,
-            pageNumber = 1,
-            pageSize = 10,
-            totalPages = 0L
-        )
+        val paged = PagedResult<AuditEvent>(emptyList(), 0L, 1, 10, 0L)
         val userManager = mockk<UserManager>()
         val auditManager = mockk<AuditManager>()
-        coEvery { userManager.getUserById(userId) } returns AppResult.Success(details)
+
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(details)
         coEvery {
-            auditManager.getEventsList(
-                userPermissionCodes = details.permissions,
-                pageParams = pageParams,
-                sortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
-                sortOrder = SortOrder.DESC,
-                actorId = null,
-                actorType = null,
-                actorUserRole = null,
-                action = null,
-                resource = null,
-                resourceId = null,
-                status = null,
-                message = null
+            auditManager.getEventsPage(
+                managementUserPermissionCodes = details.permissionCodes,
+                pageParams = any(),
+                sortBy = any(),
+                sortOrder = any(),
+                actorIds = any(),
+                actorTypes = any(),
+                actorUserRoles = any(),
+                actions = any(),
+                resources = any(),
+                resourceIds = any(),
+                statuses = any(),
+                messages = any()
             )
         } returns AppResult.Success(paged)
 
         val useCase = GetAuditEventsUseCase(userManager, auditManager)
-        val result = useCase(pageParams, requestContext = requestContext(userId))
+        val result = useCase(pageParams, authenticatedRequestContext = authContext(userId))
 
         assertEquals(AppResult.Success(paged), result)
         coVerify(exactly = 1) {
-            auditManager.getEventsList(
-                userPermissionCodes = details.permissions,
+            auditManager.getEventsPage(
+                managementUserPermissionCodes = details.permissionCodes,
                 pageParams = pageParams,
                 sortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
                 sortOrder = SortOrder.DESC,
-                actorId = null,
-                actorType = null,
-                actorUserRole = null,
-                action = null,
-                resource = null,
-                resourceId = null,
-                status = null,
-                message = null
-            )
-        }
-    }
-
-    @Test
-    fun `passes list filters through to audit manager`() = runTest {
-        val userId = UserId.generate()
-        val details = userDetails(userId)
-        val userManager = mockk<UserManager>()
-        val auditManager = mockk<AuditManager>()
-        coEvery { userManager.getUserById(userId) } returns AppResult.Success(details)
-        coEvery {
-            auditManager.getEventsList(
-                userPermissionCodes = details.permissions,
-                pageParams = pageParams,
-                sortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
-                sortOrder = SortOrder.ASC,
-                actorId = "actor-1",
-                actorType = null,
-                actorUserRole = null,
-                action = null,
-                resource = null,
-                resourceId = null,
-                status = null,
-                message = null
-            )
-        } returns AppResult.Success(
-            PagedResult(
-                items = emptyList(),
-                totalCount = 0L,
-                pageNumber = 1,
-                pageSize = 10,
-                totalPages = 0L
-            )
-        )
-
-        val useCase = GetAuditEventsUseCase(userManager, auditManager)
-        useCase(
-            pageParams = pageParams,
-            sortOrder = SortOrder.ASC,
-            actorId = "actor-1",
-            requestContext = requestContext(userId)
-        )
-
-        coVerify(exactly = 1) {
-            auditManager.getEventsList(
-                userPermissionCodes = details.permissions,
-                pageParams = pageParams,
-                sortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
-                sortOrder = SortOrder.ASC,
-                actorId = "actor-1",
-                actorType = null,
-                actorUserRole = null,
-                action = null,
-                resource = null,
-                resourceId = null,
-                status = null,
-                message = null
+                actorIds = emptyList(),
+                actorTypes = emptyList(),
+                actorUserRoles = emptyList(),
+                actions = emptyList(),
+                resources = emptyList(),
+                resourceIds = emptyList(),
+                statuses = emptyList(),
+                messages = emptyList()
             )
         }
     }

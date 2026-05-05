@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.model.ExternalAuthProviderData
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 
 /**
  * Verifies a token issued by an external authentication provider (e.g. Google) and extracts the

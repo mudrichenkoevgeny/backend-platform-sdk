@@ -39,42 +39,42 @@ interface AuditEventRepository {
      * absent parameter means no filter on that axis. Non-null parameters combine as **AND**. Repeating the same
      * filter key as **OR** is not expressed here; compose that at a higher layer (e.g. HTTP handler) if needed.
      *
-     * - [actorId] — actor id ([AuditEvent.actorId]).
-     * - [actorType] — [AuditEvent.actorType] (persisted wire / enum).
-     * - [actorUserRole] — [AuditEvent.actorUserRole] (equality).
-     * - [action] — [AuditEvent.action] (matches persisted [AuditActionType.serialName]).
-     * - [resource] — [AuditEvent.resource] (matches persisted [AuditResourceType.serialName]).
-     * - [resourceId] — [AuditEvent.resourceId] (equality).
-     * - [status] — [AuditEvent.status].
-     * - [message] — case-insensitive substring on [AuditEvent.message]; blank is treated as no filter.
+     * - [actorIds] — actor ids ([AuditEvent.actorId]).
+     * - [actorTypes] — [AuditEvent.actorType] values.
+     * - [actorUserRoles] — [AuditEvent.actorUserRole] values.
+     * - [actions] — [AuditEvent.action] values (matches persisted [AuditActionType.serialName]).
+     * - [resources] — [AuditEvent.resource] values (matches persisted [AuditResourceType.serialName]).
+     * - [resourceIds] — [AuditEvent.resourceId] values.
+     * - [statuses] — [AuditEvent.status] values.
+     * - [messages] — case-insensitive substrings on [AuditEvent.message].
      *
      * @param accessFilter defines the security boundaries by restricting the database query to specific
      * actor types and user roles.
      * @param pageParams One-based page and page size.
      * @param sortBy Sort field for the listing.
      * @param sortOrder Sort direction.
-     * @param actorId Filter by actor id.
-     * @param actorType Filter by actor type.
-     * @param actorUserRole Filter by actor user role (equality).
-     * @param action Filter by action type (persisted wire name).
-     * @param resource Filter by resource type (persisted wire name).
-     * @param resourceId Filter by resource instance id (equality).
-     * @param status Filter by audit status.
-     * @param message Optional substring filter on message.
+     * @param actorIds Filters by actor ids.
+     * @param actorTypes Filters by actor types.
+     * @param actorUserRoles Filters by actor user roles.
+     * @param actions Filters by action types.
+     * @param resources Filters by resource types.
+     * @param resourceIds Filters by resource instance ids.
+     * @param statuses Filters by audit statuses.
+     * @param messages Substring filters on message.
      * @return [PagedResult] of matching events or an error.
      */
-    suspend fun getEventsList(
+    suspend fun getEventsPageWithAccessFilter(
         accessFilter: AuditAccessFilter,
         pageParams: PageParams,
         sortBy: AuditSortValues.AuditEventSortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
         sortOrder: SortOrder = SortOrder.DESC,
-        actorId: String? = null,
-        actorType: AuditActorType? = null,
-        actorUserRole: String? = null,
-        action: AuditActionType? = null,
-        resource: AuditResourceType? = null,
-        resourceId: String? = null,
-        status: AuditStatus? = null,
-        message: String? = null
+        actorIds: List<String> = emptyList(),
+        actorTypes: List<AuditActorType> = emptyList(),
+        actorUserRoles: List<String> = emptyList(),
+        actions: List<AuditActionType> = emptyList(),
+        resources: List<AuditResourceType> = emptyList(),
+        resourceIds: List<String> = emptyList(),
+        statuses: List<AuditStatus> = emptyList(),
+        messages: List<String> = emptyList()
     ): AppResult<PagedResult<AuditEvent>>
 }

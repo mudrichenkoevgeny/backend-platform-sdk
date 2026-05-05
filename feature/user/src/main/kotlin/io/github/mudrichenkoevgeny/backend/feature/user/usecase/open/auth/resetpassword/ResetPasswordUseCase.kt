@@ -1,144 +1,184 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.resetpassword
 
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
-import io.github.mudrichenkoevgeny.backend.core.crosscutting.ratelimiter.RateLimitEnforcer
-import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
+import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.audit.UserAuditMetadata
-import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
-import io.github.mudrichenkoevgeny.backend.feature.user.model.otp.OtpVerificationType
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
-import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
-import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.OtpService
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.action.UserAuditActionType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
+import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// todo refactor
-/**
- * Use case: reset a user's password by email using a verification code.
- *
- * Applies rate limiting, validates new password policy, verifies OTP, then updates the email identifier's password via [IdentifierManager].
- * [execute] takes email, newPassword, confirmationCode, and request context;
- * returns [AppResult.Success] with updated [UserIdentifier] or [AppResult.Error] (e.g. [UserError.WrongConfirmationCode], [UserError.UserNotFound]).
- */
 @Singleton
 class ResetPasswordUseCase @Inject constructor(
-    private val rateLimiterEnforcer: RateLimitEnforcer,
-    private val userAuditLogger: UserAuditLogger,
+    private val rateLimiter: RateLimiter,
+    private val auditLogger: AuditLogger,
+    private val auditErrorConverter: AuditErrorConverter,
     private val otpService: OtpService,
     private val identifierManager: IdentifierManager,
     private val validatePasswordUseCase: ValidatePasswordUseCase
 ) {
-    suspend fun execute(
+    /**
+     * Resets a user's password using an OTP verification code sent to their email.
+     *
+     * **Allowed Account Statuses:** Any (Public access).
+     *
+     * **Security:**
+     * - Enforces password complexity rules via [ValidatePasswordUseCase].
+     * - Requires a valid [confirmationCode] previously issued via [OtpService].
+     * - Prevents brute-force attacks via rate limiting on [UserRateLimitAction.PASSWORD_CHANGE].
+     *
+     * **Workflow:**
+     * 1. Checks rate limits for the provided email.
+     * 2. Validates the [newPassword] against the system's security policy.
+     * 3. Verifies the [confirmationCode] for the [UserOtpVerificationType.EMAIL_PASSWORD_RESET] type.
+     * 4. Resolves the user's [UserIdentifier] associated with the provided email.
+     * 5. Updates the identifier's password hash via [IdentifierManager].
+     * 6. Logs the security event via [AuditLogger] with [UserAuditActionType.RESET_PASSWORD].
+     *
+     * @param email The email address of the account to reset.
+     * @param newPassword The new password to be set.
+     * @param confirmationCode The OTP code received by the user.
+     * @param requestContext The context of the public request.
+     * @return [AppResult.Success] if the password was updated, or an [AppResult.Error] otherwise.
+     */
+    suspend operator fun invoke(
         email: String,
         newPassword: String,
         confirmationCode: String,
         requestContext: RequestContext
-    ): AppResult<UserIdentifier> {
-        val auditResourceId = requestContext.userId?.asHexDashString()
-
-        val rateLimiterEnforcerResult = rateLimiterEnforcer.enforce(
-            requestContext = requestContext,
-            rateLimitAction = UserRateLimitAction.PASSWORD_CHANGE,
-            rateLimitIdentifier = email,
-            auditAction = AUDIT_ACTION,
-            auditResource = AUDIT_RESOURCE,
-            auditResourceId = auditResourceId
+    ): AppResult<Unit> {
+        val auditMetadata = requestContext.clientInfo.toAuditMetadata().toMutableSet()
+        auditMetadata.add(
+            AuditEventMetadata(
+                key = UserAuditMetadataKey.EMAIL_ADDRESS,
+                value = email
+            )
         )
-        if (rateLimiterEnforcerResult is AppResult.Error) {
-            return rateLimiterEnforcerResult
+
+        val rateLimitCheck = rateLimiter.checkRateLimit(
+            action = UserRateLimitAction.PASSWORD_CHANGE,
+            identifier = email
+        )
+        if (rateLimitCheck is AppResult.Error) {
+            return handleError(
+                error = rateLimitCheck.error,
+                baseMetadata = auditMetadata
+            )
         }
 
         val passwordPolicyCheckResult = validatePasswordUseCase(newPassword)
-
         if (passwordPolicyCheckResult is AppResult.Error) {
-            userAuditLogger.logFail(
-                requestContext = requestContext,
-                action = AUDIT_ACTION,
-                resource = AUDIT_RESOURCE,
-                resourceId = auditResourceId,
-                type = UserAuditMetadata.Types.TOO_WEAK_PASSWORD
+            return handleError(
+                error = passwordPolicyCheckResult.error,
+                baseMetadata = auditMetadata
             )
-            return passwordPolicyCheckResult
         }
 
         val verifyOtpResult = otpService.verifyOtp(
             identifier = email,
-            type = OtpVerificationType.EMAIL_PASSWORD_RESET,
+            type = UserOtpVerificationType.EMAIL_PASSWORD_RESET,
             code = confirmationCode
         )
 
         val isConfirmationCodeCorrect = when (verifyOtpResult) {
             is AppResult.Success -> verifyOtpResult.data
-            is AppResult.Error -> return verifyOtpResult
+            is AppResult.Error -> return handleError(
+                error = verifyOtpResult.error,
+                baseMetadata = auditMetadata
+            )
         }
 
         if (!isConfirmationCodeCorrect) {
-            userAuditLogger.logFail(
-                requestContext = requestContext,
-                action = AUDIT_ACTION,
-                resource = AUDIT_RESOURCE,
-                resourceId = auditResourceId,
-                type = UserAuditMetadata.Types.WRONG_VERIFICATION_CODE
+            return handleError(
+                error = UserError.WrongConfirmationCode(),
+                baseMetadata = auditMetadata
             )
-            return AppResult.Error(UserError.WrongConfirmationCode())
         }
 
-        val identifierResult = identifierManager.getUserIdentifier(
+        val identifierResult = identifierManager.getUserIdentifierInternalByProvider(
             userAuthProvider = UserAuthProvider.EMAIL,
             identifier = email
-        ).mapNotNullOrError(
-            UserError.UserNotFound()
-        )
+        ).mapNotNullOrError(UserError.UserNotFound())
 
         val userIdentifier = when (identifierResult) {
             is AppResult.Success -> identifierResult.data
-            is AppResult.Error -> {
-                logAuditInternalError(requestContext, auditResourceId)
-                return identifierResult
-            }
+            is AppResult.Error -> return handleError(
+                error = identifierResult.error,
+                baseMetadata = auditMetadata
+            )
         }
 
-        val updatedUserIdentifierResult = identifierManager.updateUserIdentifierPassword(
+        val updateUserIdentifierResult = identifierManager.updateUserIdentifierPassword(
             userIdentifier = userIdentifier,
-            identifier = email,
             password = newPassword
         )
 
-        when (updatedUserIdentifierResult) {
+        return when (updateUserIdentifierResult) {
+            is AppResult.Error -> handleError(
+                error = updateUserIdentifierResult.error,
+                actorId = userIdentifier.userId.asHexDashString(),
+                resourceId = userIdentifier.userId.asHexDashString(),
+                baseMetadata = auditMetadata
+            )
             is AppResult.Success -> {
-                userAuditLogger.logSuccess(
-                    requestContext = requestContext,
-                    action = AUDIT_ACTION,
-                    resource = AUDIT_RESOURCE,
-                    resourceId = auditResourceId
+                logAudit(
+                    actorId = userIdentifier.userId.asHexDashString(),
+                    resourceId = userIdentifier.userId.asHexDashString(),
+                    status = AuditStatus.SUCCESS,
+                    metadata = auditMetadata
                 )
-            }
-            is AppResult.Error -> {
-                logAuditInternalError(requestContext, auditResourceId)
+                AppResult.Success(Unit)
             }
         }
-
-        return updatedUserIdentifierResult
     }
 
-    private fun logAuditInternalError(requestContext: RequestContext, auditResourceId: String?) {
-        userAuditLogger.logInternalError(
-            requestContext = requestContext,
-            action = AUDIT_ACTION,
-            resource = AUDIT_RESOURCE,
-            resourceId = auditResourceId
+    private fun <T> handleError(
+        error: AppError,
+        actorId: String? = null,
+        resourceId: String? = null,
+        baseMetadata: Set<AuditEventMetadata>
+    ): AppResult<T> {
+        val auditErrorLogData = auditErrorConverter.convert(error)
+        logAudit(
+            actorId = actorId,
+            resourceId = resourceId,
+            status = auditErrorLogData.status,
+            metadata = baseMetadata + auditErrorLogData.metadata
         )
+        return AppResult.Error(error)
     }
 
-    companion object {
-        const val AUDIT_ACTION = UserAuditActionType.ACTION_RESET_PASSWORD
-        const val AUDIT_RESOURCE = UserAuditResourceType.RESOURCE_USER
+    private fun logAudit(
+        actorId: String? = null,
+        resourceId: String? = null,
+        status: AuditStatus,
+        metadata: Set<AuditEventMetadata>
+    ) {
+        auditLogger.log(
+            actorId = actorId,
+            actorType = AuditActorType.USER,
+            action = UserAuditActionType.RESET_PASSWORD,
+            resource = UserAuditResourceType.USER,
+            resourceId = resourceId,
+            status = status,
+            metadata = metadata
+        )
     }
 }

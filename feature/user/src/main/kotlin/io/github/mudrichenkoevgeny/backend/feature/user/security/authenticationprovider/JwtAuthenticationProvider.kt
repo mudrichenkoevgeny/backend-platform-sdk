@@ -7,6 +7,7 @@ import com.auth0.jwt.exceptions.TokenExpiredException
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
@@ -36,6 +37,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class JwtAuthenticationProvider @Inject constructor(
+    private val securityConfig: SecurityConfig,
     private val userConfig: UserConfig,
     private val userRepository: UserRepository,
     private val userSessionRepository: UserSessionRepository,
@@ -45,7 +47,7 @@ class JwtAuthenticationProvider @Inject constructor(
     override fun configureAuthentication(application: Application) {
         application.install(Authentication) {
             jwt(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
-                realm = userConfig.authRealm
+                realm = securityConfig.authRealm
 
                 this.verifier(JWT.require(Algorithm.HMAC256(userConfig.jwtSecret)).build())
 
@@ -66,7 +68,7 @@ class JwtAuthenticationProvider @Inject constructor(
                 validate { credential ->
                     try {
                         val userId = credential.getUserIdFromCredential()
-                        val userResult = userRepository.getUserById(userId)
+                        val userResult = userRepository.getUserDetailsById(userId)
                         return@validate when (userResult) {
                             is AppResult.Success -> {
                                 val sessionId = credential.getSessionIdFromCredential()
@@ -98,10 +100,11 @@ class JwtAuthenticationProvider @Inject constructor(
     override suspend fun requireUser(
         call: ApplicationCall,
         allowedRoles: Set<UserRole>,
-        requiredAccountStatus: Set<UserAccountStatus>,
+        allowedAccountStatuses: Set<UserAccountStatus>,
         requiredPermissions: Set<PermissionCode>
     ): AppResult<UserDetails> {
-        val userId = when (val userIdResult = call.getUserIdFromPayload()) {
+        val userIdResult = call.getUserIdFromPayload()
+        val userId = when (userIdResult) {
             is AppResult.Success -> {
                 userIdResult.data
             }
@@ -110,7 +113,7 @@ class JwtAuthenticationProvider @Inject constructor(
             }
         }
 
-        val userResult = userRepository.getUserById(
+        val userResult = userRepository.getUserDetailsById(
             userId = userId
         ).mapNotNullOrError(UserError.UserNotFound(userId))
 
@@ -119,11 +122,11 @@ class JwtAuthenticationProvider @Inject constructor(
             is AppResult.Error -> return AppResult.Error(UserError.UserNotFound(userId))
         }
 
-        if (allowedRoles.isNotEmpty() && user.role !in allowedRoles) {
+        if (user.role !in allowedRoles) {
             return AppResult.Error(UserError.UserRoleNotAllowed(userId))
         }
 
-        if (requiredAccountStatus.isNotEmpty() && user.accountStatus !in requiredAccountStatus) {
+        if (user.accountStatus !in allowedAccountStatuses) {
             return AppResult.Error(
                 when (user.accountStatus) {
                     UserAccountStatus.ACTIVE -> UserError.UserForbidden(userId)
@@ -135,8 +138,7 @@ class JwtAuthenticationProvider @Inject constructor(
             )
         }
 
-        val missingPermissions = requiredPermissions - user.permissions
-        if (missingPermissions.isNotEmpty()) {
+        if (requiredPermissions.isNotEmpty() && !user.permissionCodes.containsAll(requiredPermissions)) {
             return AppResult.Error(UserError.UserMissingPermissions(userId))
         }
 

@@ -29,12 +29,15 @@ dependencies {
     implementation(libs.smiley4.ktor.openapi)
 
     // Testing
+    testImplementation(testFixtures(project(":feature:user")))
+
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.kotlinx.coroutines.test)
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.mockk)
     testRuntimeOnly(libs.h2database)
+    testImplementation(libs.ktor.server.test.host)
 }
 
 tasks.test {

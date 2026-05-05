@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.cl
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 
 /**
@@ -13,10 +14,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
 data class SessionListQueryParams(
     val listing: ListingQueryParams<UserSortValues.UserSessionSortBy>,
     val userIds: List<UserId>,
+    val userRoles: List<UserRole>,
     val identifiers: List<String>,
     val identifierIds: List<UserIdentifierId>,
     val identifierAuthProviders: List<UserAuthProvider>,
-    val revokedValues: List<Boolean>,
     val clientTypes: List<ClientType>,
     val userAgents: List<String>,
     val ipAddresses: List<String>,

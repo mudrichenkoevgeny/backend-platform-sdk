@@ -25,7 +25,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.met
 object AuditDataMasker {
 
     /**
-     * Returns a copy of this event with [resourceId] and metadata values transformed per their sensitivity;
+     * Returns a copy of this event with resourceId and metadata values transformed per their sensitivity;
      * non-sensitive values are unchanged.
      */
     fun AuditEvent.maskSensitiveData(): AuditEvent {

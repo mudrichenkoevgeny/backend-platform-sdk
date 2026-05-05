@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import com.password4j.Password
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,22 +19,22 @@ import javax.inject.Singleton
 class PasswordHasherImpl @Inject constructor(
     private val appLogger: AppLogger
 ): PasswordHasher {
-    override fun hash(password: String): AppResult<String> {
+    override fun hash(password: String): AppResult<PasswordHash> {
         return try {
             val passwordHash = Password.hash(password)
                 .addRandomSalt()
                 .withArgon2()
                 .result
-            AppResult.Success(passwordHash)
+            AppResult.Success(PasswordHash(passwordHash))
         } catch (t: Throwable) {
             appLogger.logError(CommonError.Internal(t))
             throw t
         }
     }
 
-    override fun verify(password: String, storedHash: String): AppResult<Boolean> {
+    override fun verify(password: String, storedPasswordHash: PasswordHash): AppResult<Boolean> {
         return try {
-            val checkResult = Password.check(password, storedHash).withArgon2()
+            val checkResult = Password.check(password, storedPasswordHash.value).withArgon2()
             AppResult.Success(checkResult)
         } catch (t: Throwable) {
             appLogger.logError(CommonError.Internal(t))
@@ -41,12 +42,12 @@ class PasswordHasherImpl @Inject constructor(
         }
     }
 
-    override fun isPasswordValid(password: String?, hash: String?): AppResult<Boolean> {
-        if (password.isNullOrEmpty() || hash.isNullOrEmpty()) {
+    override fun isPasswordValid(password: String?, passwordHash: PasswordHash?): AppResult<Boolean> {
+        if (password.isNullOrEmpty() || passwordHash?.value.isNullOrEmpty()) {
             return AppResult.Success(false)
         }
 
-        return verify(password, hash)
+        return verify(password, passwordHash)
     }
 
     override fun isPasswordValidFakeCheck(password: String?): AppResult<Unit> {

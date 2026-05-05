@@ -11,7 +11,7 @@ dependencies {
 
     // Shared Foundation
     implementation(libs.shared.foundation.core.common)
-    api(libs.shared.foundation.core.settings)
+//    api(libs.shared.foundation.core.settings)
     implementation(libs.shared.foundation.core.audit)
     implementation(libs.shared.foundation.feature.audit.api)
 
@@ -27,13 +27,19 @@ dependencies {
     implementation(libs.smiley4.ktor.openapi)
 
     // Testing
+    testImplementation(testFixtures(project(":feature:user")))
+
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
+    testRuntimeOnly(libs.h2database)
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)
+//    testImplementation(libs.ktor.client.mock)
+    testImplementation(libs.ktor.server.test.host)
 }
 
 tasks.test {
     useJUnitPlatform()
 }
+

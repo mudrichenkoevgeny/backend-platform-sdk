@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.config.common.model
 
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.factory.CommonConfigFactoryImpl
 import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironment
+import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppInstanceMode
 
 /**
  * Aggregated configuration for the core application runtime.
@@ -10,6 +11,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironme
  * describe basic service metadata, network configuration and global rate limiting.
  *
  * @param environment logical application environment.
+ * @param instanceMode functional role of this specific application instance.
  * @param version current application version.
  * @param appName unique application name.
  * @param ktorServerHost host interface used by Ktor.
@@ -22,6 +24,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironme
  */
 data class CommonConfig(
     val environment: AppEnvironment,
+    val instanceMode: AppInstanceMode,
     val version: String,
     val appName: String,
     val ktorServerHost: String,

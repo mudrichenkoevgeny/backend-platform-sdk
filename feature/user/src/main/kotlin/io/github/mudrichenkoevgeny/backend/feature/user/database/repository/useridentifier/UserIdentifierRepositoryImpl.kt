@@ -4,7 +4,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.getNumOfTotalPages
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.common.util.CollectionUtils.isAllArgsNull
 import io.github.mudrichenkoevgeny.backend.core.common.util.toJavaInstant
 import io.github.mudrichenkoevgeny.backend.core.common.util.toKotlinInstant
 import io.github.mudrichenkoevgeny.backend.core.database.extensions.applyPagination
@@ -15,7 +14,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserIdent
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
@@ -28,6 +29,7 @@ import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.core.lowerCase
 import org.jetbrains.exposed.v1.core.or
+import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
@@ -55,7 +57,7 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
             userIdentifierRow[userId] = userIdentifier.userId.value
             userIdentifierRow[userAuthProvider] = userIdentifier.userAuthProvider
             userIdentifierRow[identifier] = userIdentifier.identifier
-            userIdentifierRow[passwordHash] = userIdentifier.passwordHash
+            userIdentifierRow[passwordHash] = userIdentifier.passwordHash?.value
             userIdentifierRow[createdAt] = userIdentifier.createdAt.toJavaInstant()
             userIdentifierRow[updatedAt] = userIdentifier.updatedAt?.toJavaInstant()
         }
@@ -89,64 +91,55 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         return AppResult.Success(Unit)
     }
 
-    override suspend fun deleteAllUserIdentifierByUserId(
-        userId: UserId
-    ): AppResult<Unit> {
-        UserIdentifiersTable.deleteWhere { UserIdentifiersTable.userId eq userId.value }
-
-        return AppResult.Success(Unit)
-    }
-
-    override suspend fun updateUserIdentifier(
+    override suspend fun updatePasswordHash(
         userIdentifier: UserIdentifierInternal,
-        identifier: String?,
-        passwordHash: String?
+        newPasswordHash: PasswordHash
     ): AppResult<UserIdentifierInternal> {
-        if (isAllArgsNull(identifier, passwordHash)) {
-            return AppResult.Success(userIdentifier)
-        }
-
         val updatedAt = JavaInstant.now()
 
-        val updatedRows = UserIdentifiersTable.update({ UserIdentifiersTable.id eq userIdentifier.id.value}) {
-            if (identifier != null) {
-                it[UserIdentifiersTable.identifier] = identifier
-            }
-
-            if (passwordHash != null) {
-                it[UserIdentifiersTable.passwordHash] = passwordHash
-            }
-
+        val updatedRows = UserIdentifiersTable.update(
+            { UserIdentifiersTable.id eq userIdentifier.id.value }
+        ) {
+            it[UserIdentifiersTable.passwordHash] = newPasswordHash.value
             it[UserIdentifiersTable.updatedAt] = updatedAt
         }
 
         if (updatedRows == 0) {
             return AppResult.Error(
                 CommonError.Database(
-                    "Failed to update fields for userIdentifier id=${userIdentifier.id.value}"
+                    "Failed to update password hash for userIdentifier id=${userIdentifier.id.value}"
                 )
             )
         }
 
         return AppResult.Success(
             userIdentifier.copy(
-                identifier = identifier ?: userIdentifier.identifier,
-                passwordHash = passwordHash ?: userIdentifier.passwordHash,
+                passwordHash = newPasswordHash,
                 updatedAt = updatedAt.toKotlinInstant()
             )
         )
     }
 
-    override suspend fun getUserIdentifierById(
+    override suspend fun getUserIdentifierInternalById(
         userIdentifierId: UserIdentifierId
     ): AppResult<UserIdentifierInternal?> {
-        val resultRow = UserIdentifiersTable
+        return AppResult.Success(getIdentifierResultRow(userIdentifierId)?.toUserIdentifierInternal())
+    }
+
+    override suspend fun getUserIdentifierById(
+        userIdentifierId: UserIdentifierId
+    ): AppResult<UserIdentifier?> {
+        return AppResult.Success(getIdentifierResultRow(userIdentifierId)?.toUserIdentifier())
+    }
+
+    private fun getIdentifierResultRow(
+        userIdentifierId: UserIdentifierId
+    ): ResultRow? {
+        return UserIdentifiersTable
             .selectAll()
             .where { UserIdentifiersTable.id eq userIdentifierId.value }
             .limit(1)
             .singleOrNull()
-
-        return AppResult.Success(resultRow?.toUserIdentifierInternal())
     }
 
     override suspend fun getUserIdentifiersListByUserId(
@@ -166,11 +159,20 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         return AppResult.Success(userIdentifiers)
     }
 
-    override suspend fun getUserIdentifier(
+    override suspend fun getUserIdentifierInternalByProvider(
         userAuthProvider: UserAuthProvider,
         identifier: String
     ): AppResult<UserIdentifierInternal?> {
-        val query = UserIdentifiersTable
+        return AppResult.Success(
+            getUserIdentifierByProviderResultRow(userAuthProvider, identifier)?.toUserIdentifierInternal()
+        )
+    }
+
+    private fun getUserIdentifierByProviderResultRow(
+        userAuthProvider: UserAuthProvider,
+        identifier: String
+    ): ResultRow? {
+        return UserIdentifiersTable
             .selectAll()
             .where {
                 (UserIdentifiersTable.identifier eq identifier) and
@@ -178,11 +180,9 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
             }
             .limit(1)
             .singleOrNull()
-
-        return AppResult.Success(query?.toUserIdentifierInternal())
     }
 
-    override suspend fun getUserIdentifiersList(
+    override suspend fun getUserIdentifiersPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter,
         params: PageParams,
         sortBy: UserSortValues.UserIdentifierSortBy,
@@ -190,7 +190,7 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         userIds: List<UserId>,
         userAuthProviders: List<UserAuthProvider>,
         identifiers: List<String>
-    ): AppResult<PagedResult<UserIdentifierInternal>> {
+    ): AppResult<PagedResult<UserIdentifier>> {
         var query = UserIdentifiersTable.selectAll()
 
         query = query.andWhere {
@@ -217,8 +217,48 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
             query = query.andWhere { UserIdentifiersTable.userId inList userIds.map { it.value } }
         }
 
+        return executeUserIdentifiersPagedQuery(
+            query = query,
+            params = params,
+            sortBy = sortBy,
+            sortOrder = sortOrder,
+            userAuthProviders = userAuthProviders,
+            identifiers = identifiers
+        )
+    }
+
+    override suspend fun getUserIdentifiersPageByUserId(
+        userId: UserId,
+        params: PageParams,
+        sortBy: UserSortValues.UserIdentifierSortBy,
+        sortOrder: SortOrder,
+        userAuthProviders: List<UserAuthProvider>,
+        identifiers: List<String>
+    ): AppResult<PagedResult<UserIdentifier>> {
+        val query = UserIdentifiersTable
+            .selectAll()
+            .where { UserIdentifiersTable.userId eq userId.value }
+
+        return executeUserIdentifiersPagedQuery(
+            query = query,
+            params = params,
+            sortBy = sortBy,
+            sortOrder = sortOrder,
+            userAuthProviders = userAuthProviders,
+            identifiers = identifiers
+        )
+    }
+
+    private fun executeUserIdentifiersPagedQuery(
+        query: Query,
+        params: PageParams,
+        sortBy: UserSortValues.UserIdentifierSortBy,
+        sortOrder: SortOrder,
+        userAuthProviders: List<UserAuthProvider>,
+        identifiers: List<String>
+    ): AppResult<PagedResult<UserIdentifier>> {
         if (userAuthProviders.isNotEmpty()) {
-            query = query.andWhere { UserIdentifiersTable.userAuthProvider inList userAuthProviders }
+            query.andWhere { UserIdentifiersTable.userAuthProvider inList userAuthProviders }
         }
 
         val nonBlankIdentifiers = identifiers.filter { it.isNotBlank() }
@@ -226,30 +266,28 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
             val identifierPredicate: Op<Boolean> = nonBlankIdentifiers
                 .map { needle ->
                     (UserIdentifiersTable.identifier.lowerCase() like substringSqlLikePattern(needle.lowercase()))
-                        as Op<Boolean>
+                            as Op<Boolean>
                 }
                 .reduce { acc, condition -> acc or condition }
-            query = query.andWhere { identifierPredicate }
+            query.andWhere { identifierPredicate }
         }
 
         val totalCount = query.count()
+        val totalPages = getNumOfTotalPages(totalCount, params.size)
 
         val sortColumn = when (sortBy) {
             UserSortValues.UserIdentifierSortBy.CREATED_AT -> UserIdentifiersTable.createdAt
             UserSortValues.UserIdentifierSortBy.UPDATED_AT -> UserIdentifiersTable.updatedAt
         }
-        val exposedSortOrder = sortOrder.toExposedSortOrder()
 
-        val userIdentifiers = query
-            .orderBy(sortColumn to exposedSortOrder)
+        val items = query
+            .orderBy(sortColumn to sortOrder.toExposedSortOrder())
             .applyPagination(params)
-            .map { it.toUserIdentifierInternal() }
-
-        val totalPages = getNumOfTotalPages(totalCount, params.size)
+            .map { it.toUserIdentifier() }
 
         return AppResult.Success(
             PagedResult(
-                items = userIdentifiers,
+                items = items,
                 totalCount = totalCount,
                 pageNumber = params.page,
                 pageSize = params.size,
@@ -263,7 +301,20 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         userId = UserId(this[UserIdentifiersTable.userId].value),
         userAuthProvider = this[UserIdentifiersTable.userAuthProvider],
         identifier = this[UserIdentifiersTable.identifier],
-        passwordHash = this[UserIdentifiersTable.passwordHash],
+        externalProviderEmail = this[UserIdentifiersTable.externalProviderEmail],
+        passwordHash = this[UserIdentifiersTable.passwordHash]?.let { passwordHash ->
+            PasswordHash(passwordHash)
+        },
+        createdAt = this[UserIdentifiersTable.createdAt].toKotlinInstant(),
+        updatedAt = this[UserIdentifiersTable.updatedAt]?.toKotlinInstant()
+    )
+
+    private fun ResultRow.toUserIdentifier(): UserIdentifier = UserIdentifier(
+        id = UserIdentifierId(this[UserIdentifiersTable.id].value),
+        userId = UserId(this[UserIdentifiersTable.userId].value),
+        userAuthProvider = this[UserIdentifiersTable.userAuthProvider],
+        identifier = this[UserIdentifiersTable.identifier],
+        externalProviderEmail = this[UserIdentifiersTable.externalProviderEmail],
         isSensitiveValuesMasked = false,
         createdAt = this[UserIdentifiersTable.createdAt].toKotlinInstant(),
         updatedAt = this[UserIdentifiersTable.updatedAt]?.toKotlinInstant()

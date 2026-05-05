@@ -4,7 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.GlobalSettings
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SeedGlobalSettingsUseCaseTest {
@@ -14,10 +14,10 @@ class SeedGlobalSettingsUseCaseTest {
         val provider = RecordingProvider()
         val useCase = SeedGlobalSettingsUseCase(provider)
 
-        val result = useCase.execute()
+        val result = useCase()
 
-        Assertions.assertTrue(result is AppResult.Success)
-        Assertions.assertTrue(provider.initializeCalled)
+        assertTrue(result is AppResult.Success)
+        assertTrue(provider.initializeCalled)
     }
 
     private class RecordingProvider : GlobalSettingsProvider {
@@ -28,9 +28,13 @@ class SeedGlobalSettingsUseCaseTest {
             return AppResult.Success(Unit)
         }
 
-        override fun getSettings(): AppResult<GlobalSettings> {
+        override fun getSettings(): GlobalSettings {
             error("Not used")
         }
+
+        override fun getPrivacyPolicyUrl(): String? = null
+        override fun getTermsOfServiceUrl(): String? = null
+        override fun getContactSupportEmail(): String? = null
 
         override suspend fun updateGlobalSettings(globalSettings: GlobalSettings): AppResult<Unit> =
             AppResult.Success(Unit)

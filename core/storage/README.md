@@ -12,8 +12,8 @@ The backend is selected from configuration ([StorageConfig]) during DI wiring.
 - **Config**: [StorageConfig] built by [StorageConfigFactory] from env via [StorageEnvKeys].
 - **Storage API**: [StorageService] with `save`, `delete`, and `getUrl`.
 - **Implementations**:
-  - [S3StorageService] — uploads/deletes objects in S3-compatible storage.
-  - [LocalStorageService] — saves/deletes files on local filesystem.
+    - [S3StorageService] — uploads/deletes objects in S3-compatible storage.
+    - [LocalStorageService] — saves/deletes files on local filesystem.
 - **DI wiring**: [StorageModules] aggregates config and service selection.
 
 ## Environment variables
@@ -74,11 +74,10 @@ fun urlExample(storage: StorageService): AppResult<String> {
 
 ## Notes
 
-- **Local backend + public URLs**: [LocalStorageService.getUrl] uses [StorageConfig.s3PublicUrl] as a base. This enables a uniform URL strategy
-  across backends (e.g. local files served through a reverse proxy under the same public base URL).
+- **Local backend + public URLs**: [LocalStorageService.getUrl] uses [StorageConfig.s3PublicUrl] as a base. This enables a uniform URL strategy across backends (e.g. local files served through a reverse proxy under the same public base URL).
 - **Bucket parameter**:
-  - For S3, `bucket` overrides the configured default bucket.
-  - For local filesystem, `bucket` is treated as a subdirectory under `LOCAL_STORAGE_PATH`.
+    - For S3, `bucket` overrides the configured default bucket.
+    - For local filesystem, `bucket` is treated as a subdirectory under `LOCAL_STORAGE_PATH`.
 
 [StorageConfig]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/storage/config/model/StorageConfig.kt
 [StorageEnvKeys]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/storage/config/envkeys/StorageEnvKeys.kt
@@ -89,4 +88,3 @@ fun urlExample(storage: StorageService): AppResult<String> {
 [LocalStorageService.getUrl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/storage/service/LocalStorageService.kt
 [S3StorageService]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/storage/service/S3StorageService.kt
 [StorageModules]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/storage/di/StorageModules.kt
-

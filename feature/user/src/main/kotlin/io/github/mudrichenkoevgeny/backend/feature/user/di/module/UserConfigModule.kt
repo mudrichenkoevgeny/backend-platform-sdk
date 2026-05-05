@@ -9,7 +9,6 @@ import dagger.Provides
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import javax.inject.Singleton
 
-@Module
 /**
  * Provides user feature configuration bindings.
  *
@@ -18,6 +17,7 @@ import javax.inject.Singleton
  * - [UserConfig] created at startup via the factory
  * - [ManagementAuthSettings] extracted from [UserConfig] for defaults and persistence seeding
  */
+@Module
 class UserConfigModule {
 
     @Provides

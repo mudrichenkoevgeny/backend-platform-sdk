@@ -6,7 +6,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.model.event.AuditEventMetadataPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import kotlinx.serialization.serializer
 import org.jetbrains.exposed.v1.json.jsonb
@@ -31,10 +31,10 @@ object AuditEventsTable : BaseTable("audit_events") {
         AuditValueSensitivity::class
     )
     val status = enumerationByName("status", BaseDbConstraints.ENUM_MAX_LENGTH, AuditStatus::class)
-    val metadata = jsonb<Set<AuditEventMetadata>>(
+    val metadata = jsonb<Set<AuditEventMetadataPayload>>(
         "metadata",
         FoundationJson,
-        serializer<Set<AuditEventMetadata>>()
+        serializer<Set<AuditEventMetadataPayload>>()
     )
     val message = text("message").nullable()
 }

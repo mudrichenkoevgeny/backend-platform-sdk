@@ -3,11 +3,12 @@ package io.github.mudrichenkoevgeny.backend.core.security.settings.provider
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SettingType
-import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.SecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.otpconfirmation.toOtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.passwordpolicy.toPasswordPolicyPayload
 import io.mockk.clearMocks
 import io.mockk.coEvery
@@ -23,11 +24,22 @@ class SecuritySettingsProviderImplTest {
 
     private val settingsService = mockk<SystemSettingsService>()
     private val defaultPolicy = PasswordPolicy(minLength = 10, requireDigit = true)
-    private val config = SecurityConfig(
-        recentAuthenticationValidityInMinutes = 30,
-        recentAuthenticationValidityInMinutesForManagement = 60,
-        passwordPolicy = defaultPolicy
+    private val defaultOtpConfirmation = OtpConfirmation(
+        retryAfterSeconds = 60,
+        numberOfSymbols = 6,
+        expirationSeconds = 300
     )
+
+    private val config = SecurityConfig(
+        authRealm = "test-realm",
+        totpEncryptionSecret = "test-secret",
+        recentAuthenticationValidityInSeconds = 30,
+        recentAuthenticationValidityInSecondsForManagement = 60,
+        passwordPolicy = defaultPolicy,
+        otpConfirmation = defaultOtpConfirmation,
+        mfaTokenExpirationSeconds = 120
+    )
+
     private val provider = SecuritySettingsProviderImpl(settingsService, config)
 
     @BeforeEach
@@ -36,29 +48,43 @@ class SecuritySettingsProviderImplTest {
     }
 
     @Test
-    fun `initialize registers recent auth validity then password policy json`() = runTest {
+    fun `initialize registers all default security settings`() = runTest {
         coEvery {
-            settingsService.registerDefault(
-                key = any(),
-                value = any(),
-                type = any()
-            )
+            settingsService.registerDefault(any(), any(), any())
         } returns AppResult.Success(Unit)
 
         val result = provider.initialize()
 
         assertEquals(AppResult.Success(Unit), result)
+
         val expectedPolicyJson = FoundationJson.encodeToString(config.passwordPolicy.toPasswordPolicyPayload())
+        val expectedOtpJson = FoundationJson.encodeToString(config.otpConfirmation.toOtpConfirmationPayload())
+
         coVerifyOrder {
             settingsService.registerDefault(
-                key = "security.recent_authentication_validity_in_minutes",
+                key = "security.recent_authentication_validity_in_seconds",
                 value = "30",
-                type = SettingType.LONG
+                type = SettingType.INT
+            )
+            settingsService.registerDefault(
+                key = "security.recent_authentication_validity_in_seconds_for_management",
+                value = "60",
+                type = SettingType.INT
             )
             settingsService.registerDefault(
                 key = "security.password_policy",
                 value = expectedPolicyJson,
                 type = SettingType.JSON
+            )
+            settingsService.registerDefault(
+                key = "security.otp_confirmation",
+                value = expectedOtpJson,
+                type = SettingType.JSON
+            )
+            settingsService.registerDefault(
+                key = "security.mfa_token_expiration_seconds",
+                value = "120",
+                type = SettingType.INT
             )
         }
     }
@@ -66,24 +92,32 @@ class SecuritySettingsProviderImplTest {
     @Test
     fun `getSettings returns stored values when present`() {
         val storedPolicy = PasswordPolicy(minLength = 20, requireSpecialChar = true)
-        every { settingsService.getLong("security.recent_authentication_validity_in_minutes") } returns 99L
+        val storedOtp = OtpConfirmation(retryAfterSeconds = 10, numberOfSymbols = 4, expirationSeconds = 60)
+
+        every { settingsService.getLong("security.recent_authentication_validity_in_seconds") } returns 99L
+        every { settingsService.getLong("security.recent_authentication_validity_in_seconds_for_management") } returns 120L
+        every { settingsService.getLong("security.mfa_token_expiration_seconds") } returns 300L
         stubGetJsonPasswordPolicyDeserializesTo(storedPolicy)
+        stubGetJsonOtpConfirmationDeserializesTo(storedOtp)
 
-        val result = provider.getSettings() as AppResult.Success
+        val result = provider.getSettings()
 
-        assertEquals(99L, result.data.recentAuthenticationValidityInMinutes)
-        assertEquals(storedPolicy, result.data.passwordPolicy)
+        assertEquals(99, result.recentAuthenticationValiditySeconds)
+        assertEquals(storedPolicy, result.passwordPolicy)
+        assertEquals(storedOtp, result.otpConfirmation)
     }
 
     @Test
     fun `getSettings falls back to config when keys missing`() {
-        every { settingsService.getLong("security.recent_authentication_validity_in_minutes") } returns null
+        every { settingsService.getLong(any()) } returns null
         stubGetJsonPasswordPolicyReturnsNull()
+        stubGetJsonOtpConfirmationReturnsNull()
 
-        val result = provider.getSettings() as AppResult.Success
+        val result = provider.getSettings()
 
-        assertEquals(30L, result.data.recentAuthenticationValidityInMinutes)
-        assertEquals(defaultPolicy, result.data.passwordPolicy)
+        assertEquals(30, result.recentAuthenticationValiditySeconds)
+        assertEquals(60, result.recentAuthenticationValiditySecondsForManagement)
+        assertEquals(defaultPolicy, result.passwordPolicy)
     }
 
     @Test
@@ -106,42 +140,28 @@ class SecuritySettingsProviderImplTest {
     }
 
     @Test
-    fun `updateSecuritySettings returns success when both updates succeed`() = runTest {
+    fun `updateSecuritySettings returns success when all updates succeed`() = runTest {
         val newSettings = SecuritySettings(
-            recentAuthenticationValidityInMinutes = 45L,
-            passwordPolicy = PasswordPolicy(minLength = 25)
+            recentAuthenticationValiditySeconds = 45,
+            recentAuthenticationValiditySecondsForManagement = 90,
+            passwordPolicy = PasswordPolicy(minLength = 25),
+            otpConfirmation = defaultOtpConfirmation,
+            mfaTokenExpirationSeconds = 180
         )
-        val policyJson = FoundationJson.encodeToString(newSettings.passwordPolicy)
 
         coEvery {
-            settingsService.updateSetting(
-                "security.recent_authentication_validity_in_minutes",
-                "45",
-                SettingType.LONG
-            )
-        } returns AppResult.Success(
-            SystemSetting(
-                key = "security.recent_authentication_validity_in_minutes",
-                value = "45",
-                type = SettingType.LONG
-            )
-        )
-        coEvery {
-            settingsService.updateSetting("security.password_policy", policyJson, SettingType.JSON)
-        } returns AppResult.Success(
-            SystemSetting(key = "security.password_policy", value = policyJson, type = SettingType.JSON)
-        )
+            settingsService.updateSetting(any(), any(), any())
+        } returns AppResult.Success(mockk())
 
         val result = provider.updateSecuritySettings(newSettings)
 
         assertEquals(AppResult.Success(Unit), result)
         coVerifyOrder {
-            settingsService.updateSetting(
-                "security.recent_authentication_validity_in_minutes",
-                "45",
-                SettingType.LONG
-            )
-            settingsService.updateSetting("security.password_policy", policyJson, SettingType.JSON)
+            settingsService.updateSetting("security.recent_authentication_validity_in_seconds", "45", SettingType.INT)
+            settingsService.updateSetting("security.recent_authentication_validity_in_seconds_for_management", "90", SettingType.INT)
+            settingsService.updateSetting("security.password_policy", any(), SettingType.JSON)
+            settingsService.updateSetting("security.otp_confirmation", any(), SettingType.JSON)
+            settingsService.updateSetting("security.mfa_token_expiration_seconds", "180", SettingType.INT)
         }
     }
 
@@ -158,12 +178,28 @@ class SecuritySettingsProviderImplTest {
         }
     }
 
-    private fun stubGetJsonPasswordPolicyReturnsNull() {
+    private fun stubGetJsonOtpConfirmationDeserializesTo(storedOtp: OtpConfirmation) {
         every {
             settingsService.getJson(
-                "security.password_policy",
-                any<(String) -> PasswordPolicy>()
+                "security.otp_confirmation",
+                any<(String) -> OtpConfirmation>()
             )
-        } answers { null }
+        } answers {
+            @Suppress("UNCHECKED_CAST")
+            val deserializer = invocation.args[1] as (String) -> OtpConfirmation
+            deserializer(FoundationJson.encodeToString(storedOtp.toOtpConfirmationPayload()))
+        }
+    }
+
+    private fun stubGetJsonPasswordPolicyReturnsNull() {
+        every {
+            settingsService.getJson("security.password_policy", any<(String) -> PasswordPolicy>())
+        } returns null
+    }
+
+    private fun stubGetJsonOtpConfirmationReturnsNull() {
+        every {
+            settingsService.getJson("security.otp_confirmation", any<(String) -> OtpConfirmation>())
+        } returns null
     }
 }

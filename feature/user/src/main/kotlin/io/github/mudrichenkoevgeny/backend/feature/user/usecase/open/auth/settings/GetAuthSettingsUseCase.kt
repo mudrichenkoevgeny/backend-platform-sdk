@@ -6,16 +6,22 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Use case: fetch authentication settings for clients (e.g. available auth providers).
- *
- * Delegates to [AuthSettingsProvider.getPublicAuthSettings].
- */
 @Singleton
 class GetAuthSettingsUseCase @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider
 ) {
+    /**
+     * Retrieves public-facing authentication settings for clients.
+     *
+     * **Allowed Account Statuses:** Any (Public access).
+     *
+     * **Workflow:**
+     * 1. Accesses the current authentication configuration via [AuthSettingsProvider].
+     * 2. Returns settings including enabled providers and password requirements.
+     *
+     * @return [AppResult.Success] containing [PublicAuthSettings].
+     */
     operator fun invoke(): AppResult<PublicAuthSettings> {
-        return authSettingsProvider.getPublicAuthSettings()
+        return AppResult.Success(authSettingsProvider.getPublicAuthSettings())
     }
 }

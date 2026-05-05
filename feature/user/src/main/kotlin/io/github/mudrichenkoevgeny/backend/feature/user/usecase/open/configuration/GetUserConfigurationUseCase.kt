@@ -8,39 +8,30 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.c
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Use case: fetch combined user-feature configuration for clients.
- *
- * Aggregates global, security, and auth settings from the respective providers.
- * Returns the first [AppResult.Error] if any provider fails; otherwise [AppResult.Success] with [UserConfiguration].
- */
 @Singleton
 class GetUserConfigurationUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider,
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val authSettingsProvider: AuthSettingsProvider
 ) {
+    /**
+     * Fetches the combined user-feature configuration for public clients.
+     *
+     * **Allowed Account Statuses:** Any (Public access).
+     *
+     * **Workflow:**
+     * 1. Aggregates general platform settings from [GlobalSettingsProvider].
+     * 2. Collects security-related constraints from [SecuritySettingsProvider].
+     * 3. Retrieves available authentication methods and provider settings from [AuthSettingsProvider].
+     *
+     * @return [AppResult.Success] containing the aggregated [UserConfiguration].
+     */
     operator fun invoke(): AppResult<UserConfiguration> {
-        val globalSettingsResult = globalSettingsProvider.getSettings()
-        if (globalSettingsResult is AppResult.Error) {
-            return AppResult.Error(globalSettingsResult.error)
-        }
-
-        val securitySettingsResult = securitySettingsProvider.getSettings()
-        if (securitySettingsResult is AppResult.Error) {
-            return AppResult.Error(securitySettingsResult.error)
-        }
-
-        val authSettingsResult = authSettingsProvider.getPublicAuthSettings()
-        if (authSettingsResult is AppResult.Error) {
-            return AppResult.Error(authSettingsResult.error)
-        }
-
         return AppResult.Success(
             UserConfiguration(
-                globalSettings = (globalSettingsResult as AppResult.Success).data,
-                securitySettings = (securitySettingsResult as AppResult.Success).data,
-                authSettings = (authSettingsResult as AppResult.Success).data
+                globalSettings = globalSettingsProvider.getSettings(),
+                securitySettings = securitySettingsProvider.getSettings(),
+                authSettings = authSettingsProvider.getPublicAuthSettings()
             )
         )
     }

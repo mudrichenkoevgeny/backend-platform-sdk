@@ -6,17 +6,16 @@ DB-backed system settings and the **core** global-settings provider used by HTTP
 
 - **Config**: [SettingsConfig] built by [SettingsConfigFactory] from env via [SettingsEnvKeys].
 - **DB-backed settings**:
-  - Exposed table: [SystemSettingsTable] (schema via Flyway).
-  - Persistence contract: [SystemSettingRepository] ([SystemSettingRepositoryImpl]).
-  - Transaction-bound access: [SystemSettingsManager] ([SystemSettingsManagerImpl]).
-  - In-memory cached access with typed getters: [SystemSettingsService] ([SystemSettingsServiceImpl]).
+    - Exposed table: [SystemSettingsTable] (schema via Flyway).
+    - Persistence contract: [SystemSettingRepository] ([SystemSettingRepositoryImpl]).
+    - Transaction-bound access: [SystemSettingsManager] ([SystemSettingsManagerImpl]).
+    - In-memory cached access with typed getters and Redis-based synchronization: [SystemSettingsService] ([SystemSettingsServiceImpl]).
 - **Global settings (domain provider)**:
-  - [GlobalSettingsProvider] ([GlobalSettingsProviderImpl]) reading/writing DB-backed keys.
-  - System seeding: [SeedGlobalSettingsUseCase] (bootstrap / env defaults into the DB).
-- **WebSockets**: [SettingsWebSocketMessageHandler] contributed into the app-wide handler set.
+    - [GlobalSettingsProvider] ([GlobalSettingsProviderImpl]) reading/writing DB-backed keys.
+    - System seeding: [SeedGlobalSettingsUseCase] (bootstrap / env defaults into the DB).
 - **DI wiring**: [SettingsModules] aggregates all settings-related Dagger modules.
 
-**HTTP** read/update of global settings (open and management routes) is implemented in **`feature/settings-api`** (`GetGlobalSettingsUseCase`, `UpdateGlobalSettingsUseCase`, routers) on top of [GlobalSettingsProvider].
+**HTTP** read/update of global settings (open and management routes) is implemented in **`feature/settings-api`** on top of [GlobalSettingsProvider].
 
 ## Environment variables
 
@@ -30,22 +29,23 @@ See: [SettingsEnvKeys].
 
 ## Usage
 
-- Add dependency on `core:settings`. Depends on `core:common` and `core:database`.
+- Add dependency on `core:settings`. Depends on `core:common`, `core:database`, and `shared:foundation`.
 - Install [SettingsModules] in your Dagger component.
 - Ensure your Flyway migrator is configured to include settings migrations (see below).
-- To expose global settings over HTTP, add **`feature/settings-api`** and register `SettingsRouter` (see that module’s README).
 
 ### Startup seeding (recommended)
 
-On application startup, seed defaults from env into the DB (if present) and initialize the in-memory cache:
-
+On application startup, initialize the in-memory cache and seed defaults from environment variables into the database:
 ```kotlin
 suspend fun seedSettings(
     systemSettingsService: SystemSettingsService,
     seedGlobalSettingsUseCase: SeedGlobalSettingsUseCase
 ) {
+    // 1. Load existing settings into cache and subscribe to updates
     systemSettingsService.initialize()
-    seedGlobalSettingsUseCase.execute()
+
+    // 2. Seed defaults from ENV if they are not yet in DB
+    seedGlobalSettingsUseCase()
 }
 ```
 
@@ -70,7 +70,5 @@ The app must include this path in its Flyway migration locations.
 [GlobalSettingsProvider]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/global/provider/GlobalSettingsProvider.kt
 [GlobalSettingsProviderImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/global/provider/GlobalSettingsProviderImpl.kt
 [SeedGlobalSettingsUseCase]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/usecase/system/globalsettings/SeedGlobalSettingsUseCase.kt
-
-[SettingsWebSocketMessageHandler]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/network/websockets/messagehandler/SettingsWebSocketMessageHandler.kt
 
 [SettingsModules]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/di/SettingsModules.kt

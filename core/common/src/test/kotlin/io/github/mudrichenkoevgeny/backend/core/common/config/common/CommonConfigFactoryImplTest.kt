@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.AppIn
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.CommonConfig
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironment
+import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppInstanceMode
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -15,6 +16,7 @@ class CommonConfigFactoryImplTest {
 
     private companion object {
         private const val ENV_DEV = "dev"
+        private const val INSTANCE_MODE = "FULL"
         private const val SERVER_URL = "http://localhost:8080"
         private const val KTOR_HOST = "0.0.0.0"
         private const val KTOR_PORT = "8080"
@@ -35,11 +37,14 @@ class CommonConfigFactoryImplTest {
     @Test
     fun `create builds CommonConfig from env`() {
         every { envReader.getByKey(CommonEnvKeys.ENVIRONMENT) } returns ENV_DEV
+        every { envReader.getByKey(CommonEnvKeys.INSTANCE_MODE) } returns INSTANCE_MODE
         every { envReader.getByKey(CommonEnvKeys.SERVER_URL) } returns SERVER_URL
         every { envReader.getByKey(CommonEnvKeys.KTOR_SERVER_HOST) } returns KTOR_HOST
         every { envReader.getByKey(CommonEnvKeys.KTOR_SERVER_PORT) } returns KTOR_PORT
         every { envReader.getByKey(CommonEnvKeys.KTOR_MANAGEMENT_PORT) } returns KTOR_MANAGEMENT_PORT
+
         every { envReader.getByKeyOrNull(CommonEnvKeys.ALLOWED_ORIGINS) } returns ALLOWED_ORIGIN
+
         every { envReader.getByKey(CommonEnvKeys.RATE_LIMIT) } returns RATE_LIMIT
         every { envReader.getByKey(CommonEnvKeys.RATE_LIMIT_PERIOD_SECONDS) } returns RATE_LIMIT_PERIOD
 
@@ -48,6 +53,7 @@ class CommonConfigFactoryImplTest {
         val config: CommonConfig = factory.create()
 
         assertEquals(AppEnvironment.DEV, config.environment)
+        assertEquals(AppInstanceMode.FULL, config.instanceMode)
         assertEquals(APP_VERSION, config.version)
         assertEquals(APP_NAME, config.appName)
         assertEquals(KTOR_HOST, config.ktorServerHost)
@@ -59,4 +65,3 @@ class CommonConfigFactoryImplTest {
         assertEquals(RATE_LIMIT_PERIOD.toInt(), config.rateLimitPeriodSeconds)
     }
 }
-

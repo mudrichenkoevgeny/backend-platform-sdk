@@ -15,13 +15,16 @@ dependencies {
     api(project(":core:events"))
     api(project(":core:observability"))
     api(project(":core:storage"))
-    api(project(":core:crosscutting"))
     api(project(":feature:user"))
     api(project(":feature:settings-api"))
     api(project(":feature:security-api"))
     api(project(":feature:audit-api"))
 
     // Shared foundation
+    api(libs.shared.foundation.feature.user)
+    api(libs.shared.foundation.feature.settings.api)
+    api(libs.shared.foundation.feature.security.api)
+    api(libs.shared.foundation.feature.audit.api)
     implementation(libs.shared.foundation.core.security) // Transitive
     implementation(libs.slf4j) // Transitive
 

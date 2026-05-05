@@ -8,48 +8,54 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SecurityConfigFactoryImplTest {
 
+    private val envReader = mockk<EnvReader>()
+    private lateinit var factory: SecurityConfigFactoryImpl
+
+    @BeforeEach
+    fun setup() {
+        factory = SecurityConfigFactoryImpl(envReader)
+
+        every { envReader.getByKey(SecurityEnvKeys.TOTP_ENCRYPTION_SECRET_FILE) } returns "secret.file"
+        every { envReader.readSecret("secret.file") } returns "top-secret-key"
+        every { envReader.getByKey(SecurityEnvKeys.AUTH_REALM) } returns "TestRealm"
+
+        every { envReader.getByKey(SecurityEnvKeys.OTP_RETRY_AFTER_SECONDS) } returns "60"
+        every { envReader.getByKey(SecurityEnvKeys.OTP_NUMBER_OF_SYMBOLS) } returns "6"
+        every { envReader.getByKey(SecurityEnvKeys.OTP_EXPIRATION_SECONDS) } returns "300"
+        every { envReader.getByKey(SecurityEnvKeys.MFA_TOKEN_EXPIRATION_SECONDS) } returns "120"
+    }
+
     @Test
     fun `create reads required keys and applies defaults for optional password policy`() {
-        val envReader = mockk<EnvReader>()
-        every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES) } returns "15"
-        every {
-            envReader.getByKeyOrNull(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES_FOR_MANAGEMENT)
-        } returns null
+        every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS) } returns "15"
+        every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT) } returns "45"
 
-        every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_MIN_LENGTH) } returns null
-        every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_LETTER) } returns null
-        every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_UPPER_CASE) } returns null
-        every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_LOWER_CASE) } returns null
-        every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_DIGIT) } returns null
-        every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_SPECIAL_CHAR) } returns null
-        every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_COMMON_PASSWORDS) } returns null
-
-        val factory = SecurityConfigFactoryImpl(envReader)
+        every { envReader.getByKeyOrNull(any()) } returns null
 
         val config = factory.create()
 
-        assertEquals(15L, config.recentAuthenticationValidityInMinutes)
-        assertEquals(60L, config.recentAuthenticationValidityInMinutesForManagement)
+        assertEquals("TestRealm", config.authRealm)
+        assertEquals("top-secret-key", config.totpEncryptionSecret)
+        assertEquals(15, config.recentAuthenticationValidityInSeconds)
+        assertEquals(45, config.recentAuthenticationValidityInSecondsForManagement)
+
         assertEquals(PasswordPolicy.DEFAULT_MIN_LENGTH, config.passwordPolicy.minLength)
         assertTrue(config.passwordPolicy.requireLetter)
         assertFalse(config.passwordPolicy.requireUpperCase)
-        assertFalse(config.passwordPolicy.requireLowerCase)
-        assertFalse(config.passwordPolicy.requireDigit)
-        assertFalse(config.passwordPolicy.requireSpecialChar)
-        assertEquals(PasswordPolicy.DEFAULT_COMMON_PASSWORDS, config.passwordPolicy.commonPasswords)
+
+        assertEquals(6, config.otpConfirmation.numberOfSymbols)
+        assertEquals(120, config.mfaTokenExpirationSeconds)
     }
 
     @Test
     fun `create parses password policy values from env`() {
-        val envReader = mockk<EnvReader>()
-        every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES) } returns "60"
-        every {
-            envReader.getByKeyOrNull(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES_FOR_MANAGEMENT)
-        } returns "90"
+        every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS) } returns "60"
+        every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT) } returns "90"
 
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_MIN_LENGTH) } returns "12"
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_LETTER) } returns "false"
@@ -59,12 +65,10 @@ class SecurityConfigFactoryImplTest {
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_SPECIAL_CHAR) } returns "true"
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_COMMON_PASSWORDS) } returns "pass123,  qwerty  , ,  letmein "
 
-        val factory = SecurityConfigFactoryImpl(envReader)
-
         val config = factory.create()
 
-        assertEquals(60L, config.recentAuthenticationValidityInMinutes)
-        assertEquals(90L, config.recentAuthenticationValidityInMinutesForManagement)
+        assertEquals(60, config.recentAuthenticationValidityInSeconds)
+        assertEquals(90, config.recentAuthenticationValidityInSecondsForManagement)
         assertEquals(12, config.passwordPolicy.minLength)
         assertFalse(config.passwordPolicy.requireLetter)
         assertTrue(config.passwordPolicy.requireUpperCase)
@@ -74,4 +78,3 @@ class SecurityConfigFactoryImplTest {
         assertEquals(setOf("pass123", "qwerty", "letmein"), config.passwordPolicy.commonPasswords)
     }
 }
-

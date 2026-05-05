@@ -6,12 +6,9 @@ import io.github.mudrichenkoevgeny.backend.core.audit.di.module.AuditServicesMod
 import dagger.Module
 
 /**
- * Aggregates core audit modules that are typically used by applications that need audit logging.
+ * Aggregates core audit modules for repository, service, and logging.
  *
- * Wires `AuditEventRepository` and `AuditService`; it expects database and configuration
- * to be provided by the application component.
- *
- * HTTP/query-facing `AuditManager` from the `feature/audit-api` module is bound via `AuditApiModules`.
+ * Expects database and common configurations to be provided by the application.
  */
 @Module(
     includes = [

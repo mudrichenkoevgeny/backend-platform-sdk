@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.java.library)
+    `java-test-fixtures`
 }
 
 dependencies {
@@ -12,7 +13,6 @@ dependencies {
     api(project(":core:security"))
     api(project(":core:audit"))
     api(project(":core:settings"))
-    api(project(":core:crosscutting"))
 
     // Shared Foundation
     api(libs.shared.foundation.core.common)
@@ -62,6 +62,16 @@ dependencies {
     implementation(libs.google.http.client)
 
     // Testing
+    testFixturesApi(libs.ktor.serialization.json)
+    testFixturesApi(libs.mockk)
+    testFixturesApi(libs.ktor.server.status.pages)
+    testFixturesApi(libs.ktor.server.content.negotiation)
+    testFixturesApi(libs.ktor.server.test.host)
+    testFixturesApi(libs.ktor.server.core)
+    testFixturesApi(libs.ktor.server.auth)
+    testFixturesApi(libs.ktor.server.auth.jwt)
+    testFixturesApi(libs.ktor.client.content.negotiation)
+
     testRuntimeOnly(libs.kotlin.test.junit5)
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)

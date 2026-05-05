@@ -34,6 +34,8 @@ interface SystemSettingsService {
     fun getString(key: String): String?
     /** Parses the value as [Long], or returns `null` if missing/invalid. */
     fun getLong(key: String): Long?
+    /** Parses the value as [Int], or returns `null` if missing/invalid. */
+    fun getInt(key: String): Int?
     /** Parses the value as [Double], or returns `null` if missing/invalid. */
     fun getDouble(key: String): Double?
     /** Parses the value as a strict boolean, or returns `null` if missing/invalid. */
@@ -57,4 +59,12 @@ interface SystemSettingsService {
      * @return [AppResult.Success] with the stored [SystemSetting], or [AppResult.Error]
      */
     suspend fun updateSetting(key: String, value: String, type: SettingType): AppResult<SystemSetting>
+
+    /**
+     * Deletes a setting from the database and removes it from the cache.
+     *
+     * @param key unique setting key to remove
+     * @return [AppResult.Success] if deleted, or [AppResult.Error]
+     */
+    suspend fun deleteSetting(key: String): AppResult<Unit>
 }

@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.security.passwordhasher
 
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -38,15 +39,13 @@ class PasswordHasherImplTest {
 
     @Test
     fun `isPasswordValid returns false when password or hash is missing`() {
-        val result1 = hasher.isPasswordValid(null, "hash") as AppResult.Success
+        val result1 = hasher.isPasswordValid(null, PasswordHash("hash")) as AppResult.Success
         val result2 = hasher.isPasswordValid("pass", null) as AppResult.Success
-        val result3 = hasher.isPasswordValid("", "hash") as AppResult.Success
-        val result4 = hasher.isPasswordValid("pass", "") as AppResult.Success
+        val result3 = hasher.isPasswordValid("", PasswordHash("hash")) as AppResult.Success
 
         assertFalse(result1.data)
         assertFalse(result2.data)
         assertFalse(result3.data)
-        assertFalse(result4.data)
     }
 
     @Test

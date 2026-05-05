@@ -11,6 +11,8 @@ enum class SettingType {
     STRING,
     /** A `Long` value encoded as a string. */
     LONG,
+    /** A `Int` value encoded as a string. */
+    INT,
     /** A `Double` value encoded as a string. */
     DOUBLE,
     /** A strict boolean (`true`/`false`) encoded as a string. */

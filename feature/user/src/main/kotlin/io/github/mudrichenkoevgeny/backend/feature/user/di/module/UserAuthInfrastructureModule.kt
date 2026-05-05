@@ -10,7 +10,6 @@ import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
 
-@Module
 /**
  * Binds core auth/security infrastructure for the user feature.
  *
@@ -19,6 +18,7 @@ import javax.inject.Singleton
  * - [RefreshTokenProvider] via [RefreshTokenProviderImpl]
  * - [TokenProvider] via [JwtTokenProvider]
  */
+@Module
 interface UserAuthInfrastructureModule {
 
     @Binds

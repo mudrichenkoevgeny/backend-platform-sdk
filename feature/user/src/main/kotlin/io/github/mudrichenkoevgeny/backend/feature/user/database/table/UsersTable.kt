@@ -22,12 +22,14 @@ object UsersTable : BaseTable("users") {
         "account_status_before_deletion",
         BaseDbConstraints.ENUM_MAX_LENGTH,
         UserAccountStatus::class
-    )
-    val permissions = jsonb<Set<String>>(
-        "permissions",
+    ).nullable()
+    val authorityLevel = integer("authority_level")
+    val permissionCodes = jsonb<Set<String>>(
+        "permission_codes",
         FoundationJson,
         serializer<Set<String>>()
     )
+    val isTotpEnabled = bool("is_totp_enabled").default(false)
     val lastLoginAt = timestamp("last_login_at").nullable()
     val lastActiveAt = timestamp("last_active_at").nullable()
     val scheduledPermanentDeletionAt = timestamp("scheduled_permanent_deletion_at").nullable()

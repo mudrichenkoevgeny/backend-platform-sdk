@@ -11,6 +11,8 @@ import io.github.mudrichenkoevgeny.backend.core.database.redisclient.RedisClient
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
+import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
+import kotlinx.coroutines.CoroutineScope
 import javax.inject.Singleton
 
 /**
@@ -44,11 +46,13 @@ interface RedisModule {
         @Provides
         @Singleton
         fun provideRedisManager(
-            factory: RedisFactory
+            factory: RedisFactory,
+            @BackgroundScope scope: CoroutineScope
         ): RedisManager {
             val redisClient = factory.create()
             return RedisManagerImpl(
-                redisClient = redisClient
+                redisClient = redisClient,
+                scope = scope
             )
         }
     }

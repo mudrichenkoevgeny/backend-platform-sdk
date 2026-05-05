@@ -1,124 +1,195 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.session
 
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
-import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AccessToken
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshToken
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.RefreshTokenHash
-import io.github.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.testutil.ExposedTestDb
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.time.Duration
-import java.time.Instant
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 
-class SessionManagerImplTest {
+class SessionManagerImplExtendedTest {
 
-    private val userConfig: UserConfig = mockk()
-    private val tokenProvider: TokenProvider = mockk()
-    private val refreshTokenProvider: RefreshTokenProvider = mockk()
-    private val repository: UserSessionRepository = mockk()
+    private val authSettingsProvider = mockk<AuthSettingsProvider>()
+    private val jwtTokenProvider = mockk<TokenProvider>()
+    private val refreshTokenProvider = mockk<RefreshTokenProvider>()
+    private val userManager = mockk<UserManager>()
+    private val repository = mockk<UserSessionRepository>()
 
     private val manager = SessionManagerImpl(
-        userConfig = userConfig,
-        jwtTokenProvider = tokenProvider,
-        refreshTokenProvider = refreshTokenProvider,
-        userSessionRepository = repository
+        authSettingsProvider,
+        jwtTokenProvider,
+        refreshTokenProvider,
+        userManager,
+        repository
     )
 
+    private val userId = UserId.generate()
+    private val sessionId = UserSessionId.generate()
+    private val deviceInfo = ClientDeviceInfo(deviceId = ClientDeviceId.generate())
+
     @Test
-    fun `createSession returns SessionToken when repository persists session`() = runBlocking {
-        ExposedTestDb.initOnce()
+    fun `updateLastReauthenticated calls repository`() = runTest {
+        coEvery { repository.updateLastReauthenticated(sessionId) } returns AppResult.Success(Unit)
 
-        every { userConfig.getAccessTokenValidityHoursDuration() } returns Duration.ofHours(ACCESS_HOURS)
-        every { userConfig.getRefreshTokenValidityDaysDuration() } returns Duration.ofDays(REFRESH_DAYS)
+        val result = manager.updateLastReauthenticated(sessionId)
 
-        every { tokenProvider.generateAccessToken(any(), any(), any(), any()) } returns AppResult.Success(AccessToken(ACCESS_TOKEN))
-        every { refreshTokenProvider.getRefreshToken() } returns AppResult.Success(RefreshToken(REFRESH_TOKEN))
-        every { refreshTokenProvider.getRefreshTokenHash(RefreshToken(REFRESH_TOKEN)) } returns AppResult.Success(RefreshTokenHash(REFRESH_HASH))
+        assertTrue(result is AppResult.Success)
+    }
 
-        val sessionSlot = slot<UserSession>()
-        coEvery { repository.createUserSession(capture(sessionSlot)) } answers {
-            AppResult.Success(sessionSlot.captured)
-        }
+    @Test
+    fun `deleteAllUserSessions calls repository`() = runTest {
+        coEvery { repository.deleteAllUserSessions(userId) } returns AppResult.Success(Unit)
 
-        val result = manager.createSession(
-            userId = USER_ID,
-            userIdentifierId = USER_IDENTIFIER_ID,
-            userIdentifierAuthProvider = UserAuthProvider.EMAIL,
-            clientInfo = TestClientInfo.DEFAULT,
-            lastReauthenticatedAt = Instant.parse(LAST_REAUTH_AT)
+        val result = manager.deleteAllUserSessions(userId)
+
+        assertTrue(result is AppResult.Success)
+    }
+
+    @Test
+    fun `deleteAllSessionsExceptOneForSelf returns list of deleted ids`() = runTest {
+        val deletedIds = listOf(UserSessionId.generate(), UserSessionId.generate())
+        coEvery {
+            repository.deleteAllUserSessionsExceptOne(userId, sessionId)
+        } returns AppResult.Success(deletedIds)
+
+        val result = manager.deleteAllSessionsExceptOneForSelf(userId, sessionId)
+
+        assertTrue(result is AppResult.Success)
+        assertEquals(deletedIds, (result as AppResult.Success).data.deletedSessionIds)
+    }
+
+    @Test
+    fun `getUserSessionsByIdentifierId returns list of internal sessions`() = runTest {
+        val identifierId = UserIdentifierId.generate()
+        val sessions = listOf(
+            createSampleInternalSession(userId, RefreshTokenHash("hash-1")),
+            createSampleInternalSession(userId, RefreshTokenHash("hash-2"))
+        )
+
+        coEvery {
+            repository.getUserSessionsByIdentifierId(identifierId, userId)
+        } returns AppResult.Success(sessions)
+
+        val result = manager.getUserSessionsByIdentifierId(identifierId, userId)
+
+        assertTrue(result is AppResult.Success)
+        assertEquals(2, (result as AppResult.Success).data.size)
+    }
+
+    @Test
+    fun `getSessionsPageForSelf returns paged sessions for current user`() = runTest {
+        val session = createSampleUserSession(sessionId, userId)
+        val paged = PagedResult(listOf(session), 1, 1, 10, 1)
+
+        coEvery {
+            repository.getUserSessionsPageByUserId(
+                userId = userId,
+                pageParams = any(),
+                sortBy = any(),
+                sortOrder = any(),
+                identifiers = any(),
+                identifierIds = any(),
+                identifierAuthProviders = any(),
+                clientTypes = any(),
+                userAgents = any(),
+                ipAddresses = any(),
+                languages = any(),
+                deviceIds = any(),
+                deviceNames = any(),
+                appVersions = any(),
+                operationSystemVersions = any()
+            )
+        } returns AppResult.Success(paged)
+
+        val result = manager.getSessionsPageForSelf(
+            userId = userId,
+            pageParams = PageParams(1, 10),
+            sortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
+            sortOrder = SortOrder.DESC,
+            identifiers = emptyList(),
+            identifierIds = emptyList(),
+            identifierAuthProviders = emptyList(),
+            clientTypes = emptyList(),
+            userAgents = emptyList(),
+            ipAddresses = emptyList(),
+            languages = emptyList(),
+            deviceIds = emptyList(),
+            deviceNames = emptyList(),
+            appVersions = emptyList(),
+            operationSystemVersions = emptyList()
         )
 
         assertTrue(result is AppResult.Success)
-        val token = (result as AppResult.Success).data
-        assertEquals(ACCESS_TOKEN, token.accessToken.value)
-        assertEquals(REFRESH_TOKEN, token.refreshToken.value)
-        assertEquals(sessionSlot.captured.expiresAt, token.expiresAt)
-
-        coVerify(exactly = 1) { repository.createUserSession(any()) }
+        assertEquals(1, (result as AppResult.Success).data.items.size)
+        assertEquals(sessionId, result.data.items.first().id)
     }
 
     @Test
-    fun `refreshSession returns InvalidRefreshToken when session is missing`() = runBlocking {
-        ExposedTestDb.initOnce()
+    fun `deleteLeastRecentlyUsedUserSession returns deleted session id`() = runTest {
+        val deletedId = UserSessionId.generate()
+        coEvery { repository.deleteLeastRecentlyUsedUserSession(userId) } returns AppResult.Success(deletedId)
 
-        every { refreshTokenProvider.getRefreshTokenHash(RefreshToken(REFRESH_TOKEN)) } returns AppResult.Success(RefreshTokenHash(REFRESH_HASH))
-        coEvery { repository.getUserSessionByHash(userId = null, refreshTokenHash = RefreshTokenHash(REFRESH_HASH)) } returns AppResult.Success(null)
+        val result = manager.deleteLeastRecentlyUsedUserSession(userId)
 
-        val result = manager.refreshSession(
-            userId = null,
-            refreshToken = RefreshToken(REFRESH_TOKEN),
-            clientInfo = TestClientInfo.DEFAULT
-        )
-
-        assertTrue(result is AppResult.Error)
-        assertTrue((result as AppResult.Error).error is UserError.InvalidRefreshToken)
+        assertTrue(result is AppResult.Success)
+        assertEquals(deletedId, (result as AppResult.Success).data)
     }
 
-    private object TestClientInfo {
-        val DEFAULT = ClientInfo(
-            clientType = null,
-            userAgent = null,
-            ipAddress = IP_ADDRESS,
-            language = null,
-            host = null,
-            origin = null,
-            deviceId = null,
-            deviceName = null,
-            appVersion = null,
-            operationSystemVersion = null
-        )
-    }
+    private fun createSampleInternalSession(uId: UserId, hash: RefreshTokenHash) = UserSessionInternal(
+        id = UserSessionId.generate(),
+        userId = uId,
+        userRole = UserRole.USER,
+        identifier = "test",
+        identifierId = UserIdentifierId.generate(),
+        identifierAuthProvider = UserAuthProvider.EMAIL,
+        refreshTokenHash = hash,
+        deviceInfo = deviceInfo,
+        userAgent = "Mozilla",
+        ipAddress = "127.0.0.1",
+        expiresAt = Clock.System.now() + 1.days,
+        lastAccessedAt = Clock.System.now(),
+        lastReauthenticatedAt = Clock.System.now(),
+        createdAt = Clock.System.now(),
+        updatedAt = null
+    )
 
-    private companion object {
-        val USER_ID: UserId = UserId.generate()
-        val USER_IDENTIFIER_ID: UserIdentifierId = UserIdentifierId.generate()
-
-        const val ACCESS_TOKEN = "access"
-        const val REFRESH_TOKEN = "refresh"
-        const val REFRESH_HASH = "hash"
-
-        const val IP_ADDRESS = "127.0.0.1"
-        const val LAST_REAUTH_AT = "2026-01-01T00:00:00Z"
-
-        const val ACCESS_HOURS = 1L
-        const val REFRESH_DAYS = 7L
-    }
+    private fun createSampleUserSession(sId: UserSessionId, uId: UserId) = UserSession(
+        id = sId,
+        userId = uId,
+        userRole = UserRole.USER,
+        identifier = "test",
+        identifierId = UserIdentifierId.generate(),
+        identifierAuthProvider = UserAuthProvider.EMAIL,
+        deviceInfo = deviceInfo,
+        userAgent = "Mozilla",
+        ipAddress = "127.0.0.1",
+        expiresAt = Clock.System.now() + 1.days,
+        lastAccessedAt = Clock.System.now(),
+        lastReauthenticatedAt = Clock.System.now(),
+        isSensitiveValuesMasked = false,
+        createdAt = Clock.System.now(),
+        updatedAt = null
+    )
 }
-

@@ -58,35 +58,35 @@ class AuditManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun getEventsList(
-        userPermissionCodes: Set<PermissionCode>,
+    override suspend fun getEventsPage(
+        managementUserPermissionCodes: Set<PermissionCode>,
         pageParams: PageParams,
         sortBy: AuditSortValues.AuditEventSortBy,
         sortOrder: SortOrder,
-        actorId: String?,
-        actorType: AuditActorType?,
-        actorUserRole: String?,
-        action: AuditActionType?,
-        resource: AuditResourceType?,
-        resourceId: String?,
-        status: AuditStatus?,
-        message: String?
+        actorIds: List<String>,
+        actorTypes: List<AuditActorType>,
+        actorUserRoles: List<String>,
+        actions: List<AuditActionType>,
+        resources: List<AuditResourceType>,
+        resourceIds: List<String>,
+        statuses: List<AuditStatus>,
+        messages: List<String>
     ): AppResult<PagedResult<AuditEvent>> = dbQuery {
-        val accessFilter = buildAccessFilter(userPermissionCodes)
+        val accessFilter = buildAccessFilter(managementUserPermissionCodes)
 
-        val getEventsResult = auditRepository.getEventsList(
+        val getEventsResult = auditRepository.getEventsPageWithAccessFilter(
             accessFilter = accessFilter,
             pageParams = pageParams,
             sortBy = sortBy,
             sortOrder = sortOrder,
-            actorId = actorId,
-            actorType = actorType,
-            actorUserRole = actorUserRole,
-            action = action,
-            resource = resource,
-            resourceId = resourceId,
-            status = status,
-            message = message
+            actorIds = actorIds,
+            actorTypes = actorTypes,
+            actorUserRoles = actorUserRoles,
+            actions = actions,
+            resources = resources,
+            resourceIds = resourceIds,
+            statuses = statuses,
+            messages = messages
         )
 
         when (getEventsResult) {
@@ -94,7 +94,7 @@ class AuditManagerImpl @Inject constructor(
             is AppResult.Success -> {
                 val pagedResult = getEventsResult.data
                 val finalItems = pagedResult.items.mapNotNull { auditEvent ->
-                    when (determinePermissionRequirement(auditEvent, userPermissionCodes)) {
+                    when (determinePermissionRequirement(auditEvent, managementUserPermissionCodes)) {
                         PermissionRequirement.UNMASKED -> auditEvent
                         PermissionRequirement.MASKED -> auditEvent.maskSensitiveData()
                         PermissionRequirement.FORBIDDEN -> null
@@ -133,13 +133,13 @@ class AuditManagerImpl @Inject constructor(
         if (hasUserAccess || hasStaffAccess || hasAdminAccess) {
             allowedActorTypes.add(AuditActorType.USER)
             if (hasUserAccess) {
-                allowedUserRoles.add(UserRole.ROLE_USER)
+                allowedUserRoles.add(UserRole.USER.serialName)
             }
             if (hasStaffAccess) {
-                allowedUserRoles.add(UserRole.ROLE_STAFF)
+                allowedUserRoles.add(UserRole.STAFF.serialName)
             }
             if (hasAdminAccess) {
-                allowedUserRoles.add(UserRole.ROLE_ADMIN)
+                allowedUserRoles.add(UserRole.ADMIN.serialName)
             }
         }
 

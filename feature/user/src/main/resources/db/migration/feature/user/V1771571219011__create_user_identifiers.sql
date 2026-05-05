@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS user_identifiers (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     user_auth_provider VARCHAR(32) NOT NULL,
     identifier VARCHAR(255) NOT NULL,
+    external_provider_email VARCHAR(255),
     password_hash VARCHAR(255),
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ

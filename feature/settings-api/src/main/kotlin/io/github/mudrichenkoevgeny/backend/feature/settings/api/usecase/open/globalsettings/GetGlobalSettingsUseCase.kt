@@ -6,17 +6,26 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Use case for retrieving a public snapshot of [GlobalSettings].
- */
 @Singleton
 class GetGlobalSettingsUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider
 ) {
     /**
-     * Returns the current global settings snapshot.
+     * Retrieves a public snapshot of global platform settings.
+     *
+     * **Authorization:**
+     * - **Public Access:** Allowed.
+     *
+     * **Security:**
+     * - No authentication required.
+     * - Provides only public-facing settings as defined in [GlobalSettings].
+     *
+     * **Workflow:**
+     * 1. Fetches current settings snapshot via [globalSettingsProvider].
+     *
+     * @return [AppResult] containing the [GlobalSettings].
      */
     operator fun invoke(): AppResult<GlobalSettings> {
-        return globalSettingsProvider.getSettings()
+        return AppResult.Success(globalSettingsProvider.getSettings())
     }
 }

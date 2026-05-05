@@ -2,7 +2,6 @@ package io.github.mudrichenkoevgeny.backend.feature.audit.api.network.query
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.firstNonBlankQueryValue
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.audit.api.network.model.AuditEventsListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser
@@ -27,50 +26,69 @@ fun ApplicationCall.parseAuditEventsListQueryParams(
 
     val auditEventFilterParamNames = AuditFilterValues.AuditEventFilterValues
 
-    val actorId = firstNonBlankQueryValue(auditEventFilterParamNames.ACTOR_ID)
-    val actorType = firstNonBlankQueryValue(auditEventFilterParamNames.ACTOR_TYPE)?.let { actorType ->
-        AuditActorType.fromValueOrNull(actorType)
-            ?: throw RequestHandlingException(
-                CommonError.InvalidParameterValue(auditEventFilterParamNames.ACTOR_TYPE)
-            )
-    }
-    val actorUserRole = firstNonBlankQueryValue(auditEventFilterParamNames.ACTOR_USER_ROLE)
-    val action = firstNonBlankQueryValue(auditEventFilterParamNames.ACTION)?.let { action ->
-        try {
-            compositeAuditActionTypeParser.fromValueOrThrow(action)
-        } catch (_: Exception) {
-            throw RequestHandlingException(
-                CommonError.InvalidParameterValue(auditEventFilterParamNames.ACTION)
-            )
+    val actorIds = parameters.getAll(auditEventFilterParamNames.ACTOR_ID).orEmpty()
+        .filter { it.isNotBlank() }
+
+    val actorTypes = parameters.getAll(auditEventFilterParamNames.ACTOR_TYPE).orEmpty()
+        .filter { it.isNotBlank() }
+        .map { value ->
+            AuditActorType.fromValueOrNull(value)
+                ?: throw RequestHandlingException(
+                    CommonError.InvalidParameterValue(auditEventFilterParamNames.ACTOR_TYPE)
+                )
         }
-    }
-    val resource = firstNonBlankQueryValue(auditEventFilterParamNames.RESOURCE)?.let { resource ->
-        try {
-            compositeAuditResourceTypeParser.fromValueOrThrow(resource)
-        } catch (_: Exception) {
-            throw RequestHandlingException(
-                CommonError.InvalidParameterValue(auditEventFilterParamNames.RESOURCE)
-            )
+
+    val actorUserRoles = parameters.getAll(auditEventFilterParamNames.ACTOR_USER_ROLE).orEmpty()
+        .filter { it.isNotBlank() }
+
+    val actions = parameters.getAll(auditEventFilterParamNames.ACTION).orEmpty()
+        .filter { it.isNotBlank() }
+        .map { value ->
+            try {
+                compositeAuditActionTypeParser.fromValueOrThrow(value)
+            } catch (_: Exception) {
+                throw RequestHandlingException(
+                    CommonError.InvalidParameterValue(auditEventFilterParamNames.ACTION)
+                )
+            }
         }
-    }
-    val resourceId = firstNonBlankQueryValue(auditEventFilterParamNames.RESOURCE_ID)
-    val status = firstNonBlankQueryValue(auditEventFilterParamNames.STATUS)?.let { status ->
-        AuditStatus.fromValueOrNull(status)
-            ?: throw RequestHandlingException(
-                CommonError.InvalidParameterValue(auditEventFilterParamNames.STATUS)
-            )
-    }
-    val message = firstNonBlankQueryValue(auditEventFilterParamNames.MESSAGE)
+
+    val resources = parameters.getAll(auditEventFilterParamNames.RESOURCE).orEmpty()
+        .filter { it.isNotBlank() }
+        .map { value ->
+            try {
+                compositeAuditResourceTypeParser.fromValueOrThrow(value)
+            } catch (_: Exception) {
+                throw RequestHandlingException(
+                    CommonError.InvalidParameterValue(auditEventFilterParamNames.RESOURCE)
+                )
+            }
+        }
+
+    val resourceIds = parameters.getAll(auditEventFilterParamNames.RESOURCE_ID).orEmpty()
+        .filter { it.isNotBlank() }
+
+    val statuses = parameters.getAll(auditEventFilterParamNames.STATUS).orEmpty()
+        .filter { it.isNotBlank() }
+        .map { value ->
+            AuditStatus.fromValueOrNull(value)
+                ?: throw RequestHandlingException(
+                    CommonError.InvalidParameterValue(auditEventFilterParamNames.STATUS)
+                )
+        }
+
+    val messages = parameters.getAll(auditEventFilterParamNames.MESSAGE).orEmpty()
+        .filter { it.isNotBlank() }
 
     return AuditEventsListQueryParams(
         listing = listing,
-        actorId = actorId,
-        actorType = actorType,
-        actorUserRole = actorUserRole,
-        action = action,
-        resource = resource,
-        resourceId = resourceId,
-        status = status,
-        message = message
+        actorIds = actorIds,
+        actorTypes = actorTypes,
+        actorUserRoles = actorUserRoles,
+        actions = actions,
+        resources = resources,
+        resourceIds = resourceIds,
+        statuses = statuses,
+        messages = messages
     )
 }

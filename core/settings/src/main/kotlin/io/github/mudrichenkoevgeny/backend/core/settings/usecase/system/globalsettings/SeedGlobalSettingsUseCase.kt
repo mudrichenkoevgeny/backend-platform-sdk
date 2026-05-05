@@ -17,7 +17,7 @@ class SeedGlobalSettingsUseCase @Inject constructor(
     /**
      * Seeds default values (if any) and returns the result.
      */
-    suspend fun execute(): AppResult<Unit> {
+    suspend operator fun invoke(): AppResult<Unit> {
         return globalSettingsProvider.initialize()
     }
 }

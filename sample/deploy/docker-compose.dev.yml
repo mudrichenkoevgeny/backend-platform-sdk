@@ -1,6 +1,18 @@
 services:
-  app:
+  app-public:
     env_file:
+      - ./env/.versions.env
+      - ./env/.env.config.dev
+    environment:
+      OTEL_TRACES_EXPORTER: otlp
+      JAVA_TOOL_OPTIONS: -javaagent:/app/opentelemetry-javaagent.jar
+      ENV_FILE: sample/deploy/env/.env.config.dev
+    volumes:
+      - ./env/.env.config.dev:/app/sample/deploy/env/.env.config.dev
+
+  app-admin:
+    env_file:
+      - ./env/.versions.env
       - ./env/.env.config.dev
     environment:
       OTEL_TRACES_EXPORTER: otlp

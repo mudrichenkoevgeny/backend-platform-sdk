@@ -1,51 +1,102 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.session
 
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.audit.PlatformUserAuditActionTypeExtension
-import io.github.mudrichenkoevgeny.backend.feature.user.audit.logger.UserAuditLogger
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
-import io.github.mudrichenkoevgeny.backend.feature.user.model.session.UserSession
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// todo refactor
-/**
- * Use case: list all active sessions for the current user.
- *
- * Requires userId in request context. Delegates to [SessionManager] and logs audit on success.
- * [execute] takes request context;
- * returns [AppResult.Success] with list of [UserSession] or [AppResult.Error] (e.g. [UserError.InvalidAccessToken]).
- */
 @Singleton
 class GetSessionsUseCase @Inject constructor(
-    private val userAuditLogger: UserAuditLogger,
+    private val userManager: UserManager,
     private val sessionManager: SessionManager
 ) {
-    suspend fun execute(
-        requestContext: RequestContext
-    ): AppResult<List<UserSession>> {
-        val userId = requestContext.userId
-            ?: return AppResult.Error(UserError.InvalidAccessToken())
+    /**
+     * Retrieves a paginated and filtered list of active sessions for the current authenticated user.
+     *
+     * **Allowed Account Statuses:** Any.
+     *
+     * **Workflow:**
+     * 1. Validates the existence and accessibility of the caller via [UserManager].
+     * 2. Fetches a paged result of [UserSession] from [SessionManager] using provided filters and pagination params.
+     * 3. Masks sensitive technical data in the result based on the user's session context.
+     *
+     * @param pageParams Pagination settings (index and size).
+     * @param sortBy Field to sort the results by.
+     * @param sortOrder Sorting direction ([SortOrder.ASC] or [SortOrder.DESC]).
+     * @param identifiers Optional filter by identifier values.
+     * @param identifierIds Optional filter by unique identifier IDs.
+     * @param identifierAuthProviders Optional filter by [UserAuthProvider] types.
+     * @param clientTypes Optional filter by [ClientType].
+     * @param userAgents Optional filters for user-agent strings.
+     * @param ipAddresses Optional filters for IP addresses.
+     * @param languages Optional filters for client language headers.
+     * @param deviceIds Optional filters for hardware device IDs.
+     * @param deviceNames Optional filters for device names.
+     * @param appVersions Optional filters for application versions.
+     * @param operationSystemVersions Optional filters for OS versions.
+     * @param authenticatedRequestContext The context of the authenticated request.
+     * @return [AppResult] with [PagedResult] of [UserSession].
+     */
+    suspend operator fun invoke(
+        pageParams: PageParams,
+        sortBy: UserSortValues.UserSessionSortBy,
+        sortOrder: SortOrder,
+        identifiers: List<String>,
+        identifierIds: List<UserIdentifierId>,
+        identifierAuthProviders: List<UserAuthProvider>,
+        clientTypes: List<ClientType>,
+        userAgents: List<String>,
+        ipAddresses: List<String>,
+        languages: List<String>,
+        deviceIds: List<String>,
+        deviceNames: List<String>,
+        appVersions: List<String>,
+        operationSystemVersions: List<String>,
+        authenticatedRequestContext: AuthenticatedRequestContext
+    ): AppResult<PagedResult<UserSession>> {
+        val currentUserId = authenticatedRequestContext.userId
 
-        val userSessionsResult = sessionManager.getAllUserSessions(userId)
+        val getCurrentUserResult = userManager.getUserByIdForSelf(currentUserId)
+            .mapNotNullOrError(UserError.UserForbidden())
 
-        if (userSessionsResult is AppResult.Success) {
-            userAuditLogger.logSuccess(
-                requestContext = requestContext,
-                action = AUDIT_ACTION,
-                resource = AUDIT_RESOURCE,
-                resourceId = userId.asHexDashString()
-            )
+        val currentUser = when (getCurrentUserResult) {
+            is AppResult.Error -> return getCurrentUserResult
+            is AppResult.Success -> getCurrentUserResult.data
         }
 
-        return userSessionsResult
-    }
+        if (currentUser.accountStatus !in setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)) {
+            return AppResult.Error(UserError.UserForbidden(currentUserId))
+        }
 
-    companion object {
-        const val AUDIT_ACTION = PlatformUserAuditActionTypeExtension.SERIAL_GET_SESSIONS
-        const val AUDIT_RESOURCE = UserAuditResourceType.RESOURCE_USER
+        return sessionManager.getSessionsPageForSelf(
+            userId = currentUserId,
+            pageParams = pageParams,
+            sortBy = sortBy,
+            sortOrder = sortOrder,
+            identifiers = identifiers,
+            identifierIds = identifierIds,
+            identifierAuthProviders = identifierAuthProviders,
+            clientTypes = clientTypes,
+            userAgents = userAgents,
+            ipAddresses = ipAddresses,
+            languages = languages,
+            deviceIds = deviceIds,
+            deviceNames = deviceNames,
+            appVersions = appVersions,
+            operationSystemVersions = operationSystemVersions
+        )
     }
 }

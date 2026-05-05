@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionRequirement
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
@@ -16,12 +17,14 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifier
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
@@ -42,21 +45,27 @@ class IdentifierManagerImpl @Inject constructor(
     private val userIdentifierRepository: UserIdentifierRepository
 ): IdentifierManager {
 
-    override suspend fun getUserIdentifier(
+    override suspend fun getUserIdentifierInternalByProvider(
         userAuthProvider: UserAuthProvider,
         identifier: String
     ): AppResult<UserIdentifierInternal?> = dbQuery {
-        userIdentifierRepository.getUserIdentifier(
+        userIdentifierRepository.getUserIdentifierInternalByProvider(
             userAuthProvider = userAuthProvider,
             identifier = identifier
         )
     }
 
-    override suspend fun getUserIdentifierById(
-        userIdentifierId: UserIdentifierId,
-        userId: UserId,
-        userPermissionCodes: Set<PermissionCode>
+    override suspend fun getUserIdentifierByIdForSystem(
+        userIdentifierId: UserIdentifierId
     ): AppResult<UserIdentifierInternal?> = dbQuery {
+        userIdentifierRepository.getUserIdentifierInternalById(userIdentifierId)
+    }
+
+    override suspend fun getUserIdentifierByIdForManagement(
+        userIdentifierId: UserIdentifierId,
+        managementUserId: UserId,
+        managementUserPermissionCodes: Set<PermissionCode>
+    ): AppResult<UserIdentifier?> = dbQuery {
         val getIdentifierResult = userIdentifierRepository.getUserIdentifierById(userIdentifierId)
 
         when (getIdentifierResult) {
@@ -64,27 +73,27 @@ class IdentifierManagerImpl @Inject constructor(
             is AppResult.Success -> {
                 val userIdentifier = getIdentifierResult.data ?: return@dbQuery AppResult.Success(null)
 
-                val getTargetUserResult = userManager.getUserById(userIdentifier.userId)
+                val getTargetUserResult = userManager.getUserByIdForSelf(userIdentifier.userId)
                     .mapNotNullOrError(UserError.UserNotFound(userIdentifier.userId))
 
                 when (getTargetUserResult) {
                     is AppResult.Error -> getTargetUserResult
                     is AppResult.Success -> {
                         val targetUser = getTargetUserResult.data
-                        val accessFilter = buildAccessFilter(userPermissionCodes)
+                        val accessFilter = buildAccessFilter(managementUserPermissionCodes)
                         if (targetUser.role !in accessFilter.allowedUserRoles) {
-                            return@dbQuery AppResult.Error(UserError.UserMissingPermissions(userId))
+                            return@dbQuery AppResult.Error(UserError.UserMissingPermissions(managementUserId))
                         }
 
                         val permissionRequirement = determinePermissionRequirement(
                             userRole = targetUser.role,
-                            userPermissionCodes = userPermissionCodes
+                            userPermissionCodes = managementUserPermissionCodes
                         )
 
                         when (permissionRequirement) {
                             PermissionRequirement.UNMASKED -> AppResult.Success(userIdentifier)
                             PermissionRequirement.MASKED -> AppResult.Success(userIdentifier.maskSensitiveData())
-                            PermissionRequirement.FORBIDDEN -> AppResult.Error(UserError.UserMissingPermissions(userId))
+                            PermissionRequirement.FORBIDDEN -> AppResult.Error(UserError.UserMissingPermissions(managementUserId))
                         }
                     }
                 }
@@ -100,63 +109,12 @@ class IdentifierManagerImpl @Inject constructor(
         )
     }
 
-    override suspend fun getUserIdentifiersList(
-        userPermissionCodes: Set<PermissionCode>,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy,
-        sortOrder: SortOrder,
-        userIds: List<UserId>,
-        userAuthProviders: List<UserAuthProvider>,
-        identifiers: List<String>
-    ): AppResult<PagedResult<UserIdentifierInternal>> = dbQuery {
-        val accessFilter = buildAccessFilter(userPermissionCodes)
-
-        val getIdentifiersResult = userIdentifierRepository.getUserIdentifiersList(
-            accessFilter = accessFilter,
-            params = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            userIds = userIds,
-            userAuthProviders = userAuthProviders,
-            identifiers = identifiers
-        )
-
-        when (getIdentifiersResult) {
-            is AppResult.Error -> getIdentifiersResult
-            is AppResult.Success -> {
-                val paged = getIdentifiersResult.data
-                val userRoleCache = mutableMapOf<UserId, UserRole>()
-
-                val finalItems = paged.items.mapNotNull { identifier ->
-                    val targetRole = userRoleCache[identifier.userId] ?: run {
-                        val targetUserResult = userManager.getUserById(identifier.userId)
-                            .mapNotNullOrError(UserError.UserNotFound(identifier.userId))
-
-                        when (targetUserResult) {
-                            is AppResult.Error -> return@dbQuery targetUserResult
-                            is AppResult.Success -> targetUserResult.data.role.also {
-                                userRoleCache[identifier.userId] = it
-                            }
-                        }
-                    }
-
-                    when (determinePermissionRequirement(targetRole, userPermissionCodes)) {
-                        PermissionRequirement.UNMASKED -> identifier
-                        PermissionRequirement.MASKED -> identifier.maskSensitiveData()
-                        PermissionRequirement.FORBIDDEN -> null
-                    }
-                }
-
-                AppResult.Success(paged.copy(items = finalItems))
-            }
-        }
-    }
-
     override suspend fun createUserIdentifier(
         userId: UserId,
         userAuthProvider: UserAuthProvider,
         identifier: String,
-        password: String?
+        password: String?,
+        externalProviderEmail: String?
     ): AppResult<UserIdentifierInternal> = dbQuery {
         val passwordHash = password?.let { password ->
             val passwordHashResult = passwordHasher.hash(password)
@@ -172,7 +130,7 @@ class IdentifierManagerImpl @Inject constructor(
             userAuthProvider = userAuthProvider,
             identifier = identifier,
             passwordHash = passwordHash,
-            isSensitiveValuesMasked = false,
+            externalProviderEmail = externalProviderEmail,
             createdAt = Clock.System.now(),
             updatedAt = null
         )
@@ -186,9 +144,8 @@ class IdentifierManagerImpl @Inject constructor(
 
     override suspend fun updateUserIdentifierPassword(
         userIdentifier: UserIdentifierInternal,
-        identifier: String,
         password: String
-    ): AppResult<UserIdentifierInternal> = dbQuery {
+    ): AppResult<UserIdentifier> = dbQuery {
         val passwordHashResult = passwordHasher.hash(password)
 
         val passwordHash = when (passwordHashResult) {
@@ -196,10 +153,79 @@ class IdentifierManagerImpl @Inject constructor(
             is AppResult.Error -> return@dbQuery passwordHashResult
         }
 
-        userIdentifierRepository.updateUserIdentifier(
+        userIdentifierRepository.updatePasswordHash(
             userIdentifier = userIdentifier,
-            identifier = identifier,
-            passwordHash = passwordHash
+            newPasswordHash = passwordHash
+        ).mapSuccess { userIdentifierInternal -> userIdentifierInternal.toUserIdentifier() }
+    }
+
+    override suspend fun getIdentifiersPageForManagement(
+        managementUserPermissionCodes: Set<PermissionCode>,
+        pageParams: PageParams,
+        sortBy: UserSortValues.UserIdentifierSortBy,
+        sortOrder: SortOrder,
+        userIds: List<UserId>,
+        userAuthProviders: List<UserAuthProvider>,
+        identifiers: List<String>
+    ): AppResult<PagedResult<UserIdentifier>> = dbQuery {
+        val accessFilter = buildAccessFilter(managementUserPermissionCodes)
+
+        val getIdentifiersResult = userIdentifierRepository.getUserIdentifiersPageWithAccessFilter(
+            accessFilter = accessFilter,
+            params = pageParams,
+            sortBy = sortBy,
+            sortOrder = sortOrder,
+            userIds = userIds,
+            userAuthProviders = userAuthProviders,
+            identifiers = identifiers
+        )
+
+        when (getIdentifiersResult) {
+            is AppResult.Error -> getIdentifiersResult
+            is AppResult.Success -> {
+                val paged = getIdentifiersResult.data
+                val userRoleCache = mutableMapOf<UserId, UserRole>()
+
+                val resultedItems = paged.items.mapNotNull { identifier ->
+                    val targetRole = userRoleCache[identifier.userId] ?: run {
+                        val targetUserResult = userManager.getUserByIdForSelf(identifier.userId)
+                            .mapNotNullOrError(UserError.UserNotFound(identifier.userId))
+
+                        when (targetUserResult) {
+                            is AppResult.Error -> return@dbQuery targetUserResult
+                            is AppResult.Success -> targetUserResult.data.role.also {
+                                userRoleCache[identifier.userId] = it
+                            }
+                        }
+                    }
+
+                    when (determinePermissionRequirement(targetRole, managementUserPermissionCodes)) {
+                        PermissionRequirement.UNMASKED -> identifier
+                        PermissionRequirement.MASKED -> identifier.maskSensitiveData()
+                        PermissionRequirement.FORBIDDEN -> null
+                    }
+                }
+
+                AppResult.Success(paged.copy(items = resultedItems))
+            }
+        }
+    }
+
+    override suspend fun getIdentifiersPageForSelf(
+        userId: UserId,
+        pageParams: PageParams,
+        sortBy: UserSortValues.UserIdentifierSortBy,
+        sortOrder: SortOrder,
+        userAuthProviders: List<UserAuthProvider>,
+        identifiers: List<String>
+    ): AppResult<PagedResult<UserIdentifier>> = dbQuery {
+        userIdentifierRepository.getUserIdentifiersPageByUserId(
+            userId = userId,
+            params = pageParams,
+            sortBy = sortBy,
+            sortOrder = sortOrder,
+            userAuthProviders = userAuthProviders,
+            identifiers = identifiers
         )
     }
 
@@ -243,13 +269,12 @@ class IdentifierManagerImpl @Inject constructor(
         return UserRoleAccessFilter(allowedUserRoles = allowedUserRoles)
     }
 
-    private fun UserIdentifierInternal.maskSensitiveData(): UserIdentifierInternal = copy(
+    private fun UserIdentifier.maskSensitiveData(): UserIdentifier = copy(
         identifier = when (userAuthProvider) {
             UserAuthProvider.EMAIL -> DataMasker.maskEmail(identifier)
             UserAuthProvider.PHONE -> DataMasker.maskPhone(identifier)
             else -> DataMasker.maskId(identifier)
         },
-        passwordHash = passwordHash?.let(DataMasker::maskFullValue),
         isSensitiveValuesMasked = true
     )
 }

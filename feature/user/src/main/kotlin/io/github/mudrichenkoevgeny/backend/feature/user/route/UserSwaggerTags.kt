@@ -12,4 +12,5 @@ object UserSwaggerTags {
     const val IDENTIFIER = "Identifiers"
     const val AUTH_SETTINGS = "Auth settings"
     const val USER_CONFIGURATION = "User configuration"
+    const val USER_SECURITY = "User security"
 }

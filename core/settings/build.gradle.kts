@@ -1,26 +1,21 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.java.library)
 }
 
-// todo fix dependencies
 dependencies {
     // Project Modules
     api(project(":core:common"))
     api(project(":core:database"))
-    api(project(":core:audit"))
 
     // Shared Foundation
     implementation(libs.shared.foundation.core.common)
     api(libs.shared.foundation.core.settings)
-    implementation(libs.shared.foundation.core.audit)
 
     // Ktor
-    implementation(libs.ktor.server.auth)
-    api(libs.ktor.server.core) // Transitive for Project Modules
-    implementation(libs.ktor.http) // Transitive for Ktor
-    implementation(libs.ktor.utils) // Transitive for Ktor
+    runtimeOnly(libs.ktor.server.core) // Transitive for Project Modules
 
     // DI
     ksp(libs.dagger.compiler)
@@ -44,6 +39,7 @@ dependencies {
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
     testRuntimeOnly(libs.h2database)
 }

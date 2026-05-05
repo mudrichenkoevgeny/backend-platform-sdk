@@ -3,6 +3,8 @@ package io.github.mudrichenkoevgeny.backend.feature.user.error.model
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.CommonErrorArgs
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorCodes
@@ -44,7 +46,7 @@ sealed class UserError(
     )
 
     /**
-     * Refresh token is missing, invalid, or revoked.
+     * Refresh token is missing or invalid.
      */
     class InvalidRefreshToken() : UserError(
         errorId = ErrorId.generate(),
@@ -73,11 +75,7 @@ sealed class UserError(
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_BLOCKED,
-        secretArgs = buildMap {
-            if (userId != null) {
-                put(UserErrorArgs.USER_ID, userId.asHexDashString())
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = userId?.let { userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()) },
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -92,11 +90,7 @@ sealed class UserError(
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_READ_ONLY,
-        secretArgs = buildMap {
-            if (userId != null) {
-                put(UserErrorArgs.USER_ID, userId.asHexDashString())
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = userId?.let { userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()) },
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -111,11 +105,7 @@ sealed class UserError(
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_SECURITY_HOLD,
-        secretArgs = buildMap {
-            if (userId != null) {
-                put(UserErrorArgs.USER_ID, userId.asHexDashString())
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = userId?.let { userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()) },
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -130,11 +120,7 @@ sealed class UserError(
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_PENDING_DELETION,
-        secretArgs = buildMap {
-            if (userId != null) {
-                put(UserErrorArgs.USER_ID, userId.asHexDashString())
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = userId?.let { userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()) },
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -149,11 +135,7 @@ sealed class UserError(
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_FORBIDDEN,
-        secretArgs = buildMap {
-            if (userId != null) {
-                put(UserErrorArgs.USER_ID, userId.asHexDashString())
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = userId?.let { userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()) },
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
@@ -168,11 +150,7 @@ sealed class UserError(
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_ROLE_NOT_ALLOWED,
-        secretArgs = buildMap {
-            if (userId != null) {
-                put(UserErrorArgs.USER_ID, userId.asHexDashString())
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = userId?.let { userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()) },
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
@@ -187,11 +165,37 @@ sealed class UserError(
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_MISSING_PERMISSIONS,
-        secretArgs = buildMap {
-            if (userId != null) {
-                put(UserErrorArgs.USER_ID, userId.asHexDashString())
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = userId?.let { userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()) },
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.MEDIUM
+    )
+
+    /**
+     * User account status is incompatible with the requested operation.
+     *
+     * @param userId Optional user id; stored in [secretArgs] for logging.
+     */
+    class UserIllegalAccountStatus(
+        val userId: UserId? = null
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.USER_ILLEGAL_ACCOUNT_STATUS,
+        secretArgs = userId?.let { userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()) },
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.MEDIUM
+    )
+
+    /**
+     * The operation is denied because the user's authority level is lower than required.
+     *
+     * @param userId Optional user id; stored in [secretArgs] for logging.
+     */
+    class UserInsufficientAuthorityLevel(
+        val userId: UserId? = null
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.USER_INSUFFICIENT_AUTHORITY_LEVEL,
+        secretArgs = userId?.let { userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()) },
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
@@ -206,11 +210,7 @@ sealed class UserError(
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_NOT_FOUND,
-        secretArgs = buildMap {
-            if (userId != null) {
-                put(UserErrorArgs.USER_ID, userId.asHexDashString())
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = userId?.let { userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()) },
         httpStatusCode = HttpStatusCode.NotFound,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -246,13 +246,40 @@ sealed class UserError(
     )
 
     /**
-     * User already has a sign-in method of this type (e.g. email or same OAuth provider).
+     * Maximum number of identifiers for a specific type or provider has been reached.
+     *
+     * @param maxNumberOfIdentifiers The limit allowed for the provider.
+     * @param userAuthProvider The provider that reached its limit.
      */
-    class AlreadyHasUserIdentifierWithThatType() : UserError(
+    class UserIdentifierLimitReached(
+        maxNumberOfIdentifiers: Int,
+        userAuthProvider: UserAuthProvider
+    ) : UserError(
         errorId = ErrorId.generate(),
-        code = UserErrorCodes.ALREADY_HAS_USER_IDENTIFIER_WITH_THAT_TYPE,
+        code = UserErrorCodes.USER_IDENTIFIER_LIMIT_REACHED,
+        publicArgs = mapOf(
+            UserErrorArgs.MAX_NUMBER_OF_IDENTIFIERS to maxNumberOfIdentifiers,
+            UserErrorArgs.USER_AUTH_PROVIDER to userAuthProvider.serialName
+        ),
         httpStatusCode = HttpStatusCode.Conflict,
-        appErrorSeverity = AppErrorSeverity.MEDIUM
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
+     * Overall maximum number of identifiers allowed for the account has been reached.
+     *
+     * @param maxNumberOfIdentifiers The total overall limit.
+     */
+    class TotalUserIdentifiersLimitReached(
+        maxNumberOfIdentifiers: Int
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.TOTAL_USER_IDENTIFIERS_LIMIT_REACHED,
+        publicArgs = mapOf(
+            UserErrorArgs.MAX_NUMBER_OF_IDENTIFIERS to maxNumberOfIdentifiers
+        ),
+        httpStatusCode = HttpStatusCode.Conflict,
+        appErrorSeverity = AppErrorSeverity.LOW
     )
 
     /**
@@ -276,27 +303,17 @@ sealed class UserError(
     )
 
     /**
-     * External provider id does not match or could not be linked (e.g. already linked to another account).
+     * Linking with an external provider (OAuth/OpenID) failed.
      *
-     * @param throwable Optional cause; stored in [secretArgs] for logging, not sent to the client.
+     * @param message Cause of the linkage failure; stored in [secretArgs] for logging.
      */
-    class ExternalIdMismatch(
-        val throwable: Throwable? = null
+    class ExternalIdentifierLinkageFailed(
+        message: String? = null
     ) : UserError(
         errorId = ErrorId.generate(),
-        code = UserErrorCodes.EXTERNAL_ID_MISMATCH,
-        httpStatusCode = HttpStatusCode.NotFound,
-        appErrorSeverity = AppErrorSeverity.MEDIUM
-    )
-
-    /**
-     * External token is invalid, expired, or revoked.
-     *
-     */
-    class ExternalTokenInvalid() : UserError(
-        errorId = ErrorId.generate(),
-        code = UserErrorCodes.EXTERNAL_TOKEN_INVALID,
-        httpStatusCode = HttpStatusCode.NotFound,
+        code = UserErrorCodes.EXTERNAL_IDENTIFIER_LINKAGE_FAILED,
+        secretArgs = message?.let { mapOf(CommonErrorArgs.MESSAGE to it) },
+        httpStatusCode = HttpStatusCode.Conflict,
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 }

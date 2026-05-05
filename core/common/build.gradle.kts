@@ -29,7 +29,6 @@ dependencies {
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.logging)
     implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.client.core) // Transitive for Ktor
     implementation(libs.ktor.http) // Transitive for Ktor
     implementation(libs.ktor.serialization) // Transitive for Ktor
@@ -60,8 +59,6 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.ktor.server.test.host)
-
-    // H2 for createTestDataSource (test utility in main; consumers provide H2 at test runtime)
     compileOnly(libs.h2database)
 }
 

@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.settings.database.table.SystemSe
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.upsert
 import java.time.Instant
@@ -59,6 +60,17 @@ class SystemSettingRepositoryImpl @Inject constructor() : SystemSettingRepositor
             .map { it.toSystemSetting() }
 
         return AppResult.Success(settings)
+    }
+
+    override suspend fun deleteSetting(key: String): AppResult<Unit> {
+        return try {
+            SystemSettingsTable.deleteWhere { SystemSettingsTable.key eq key }
+            AppResult.Success(Unit)
+        } catch (e: Exception) {
+            AppResult.Error(
+                CommonError.Database("Database error while deleting setting $key: ${e.message}")
+            )
+        }
     }
 
     private fun ResultRow.toSystemSetting(): SystemSetting = SystemSetting(

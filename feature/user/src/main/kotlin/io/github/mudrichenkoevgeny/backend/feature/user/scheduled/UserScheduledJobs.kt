@@ -1,9 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.scheduled
 
-import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserScheduledJobsConfig
-
 /**
- * Background work for the user feature, driven by [UserScheduledJobsConfig].
+ * Entry point for managing background maintenance tasks within the user feature.
  */
 interface UserScheduledJobs {
 

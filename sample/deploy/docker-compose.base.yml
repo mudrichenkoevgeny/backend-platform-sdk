@@ -1,14 +1,14 @@
 services:
-  app:
+  app-public:
     build:
       context: ../../
       dockerfile: sample/deploy/docker/app/Dockerfile
       args:
-        APP_PORT: ${APP_PORT}
+        APP_PORT: ${KTOR_SERVER_PORT}
         GRADLE_IMAGE: ${GRADLE_IMAGE}
         JRE_IMAGE: ${JRE_IMAGE}
     ports:
-      - "${APP_PORT}:${APP_PORT}"
+      - "${KTOR_SERVER_PORT}:${KTOR_SERVER_PORT}"
     depends_on:
       db:
         condition: service_healthy
@@ -19,9 +19,11 @@ services:
     env_file:
       - ./env/.versions.env
     environment:
+      INSTANCE_MODE: PUBLIC
+      APP_PORT: ${KTOR_SERVER_PORT}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
-      OTEL_SERVICE_NAME: ${APP_NAME}
+      OTEL_SERVICE_NAME: ${APP_NAME}-public
       KAFKA_BOOTSTRAP_SERVERS: kafka:9094
       SECRETS_DIR: /app/sample/deploy/secrets
     secrets:
@@ -29,6 +31,52 @@ services:
       - DB_PASSWORD
       - REDIS_URL
       - JWT_SECRET
+      - TOTP_ENCRYPTION_SECRET
+      - ADMIN_ACCOUNTS_JSON
+      - UNIONE_API_KEY
+      - RESEND_API_KEY
+      - S3_ACCESS_KEY
+      - S3_SECRET_KEY
+    volumes:
+      - ${LOG_PATH}:/app/logs
+      - ./secrets:/app/sample/deploy/secrets
+      - gradle_cache:/root/.gradle
+    networks:
+      - app-network
+
+  app-admin:
+    build:
+      context: ../../
+      dockerfile: sample/deploy/docker/app/Dockerfile
+      args:
+        APP_PORT: ${ADMIN_APP_PORT}
+        GRADLE_IMAGE: ${GRADLE_IMAGE}
+        JRE_IMAGE: ${JRE_IMAGE}
+    ports:
+      - "${ADMIN_APP_PORT}:${ADMIN_APP_PORT}"
+    depends_on:
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+    env_file:
+      - ./env/.versions.env
+    environment:
+      INSTANCE_MODE: MANAGEMENT
+      APP_PORT: ${ADMIN_APP_PORT}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_SERVICE_NAME: ${APP_NAME}-admin
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+      SECRETS_DIR: /app/sample/deploy/secrets
+    secrets:
+      - DB_USER
+      - DB_PASSWORD
+      - REDIS_URL
+      - JWT_SECRET
+      - TOTP_ENCRYPTION_SECRET
       - ADMIN_ACCOUNTS_JSON
       - UNIONE_API_KEY
       - RESEND_API_KEY
@@ -205,6 +253,8 @@ secrets:
     file: ./secrets/REDIS_URL
   JWT_SECRET:
     file: ./secrets/JWT_SECRET
+  TOTP_ENCRYPTION_SECRET:
+    file: ./secrets/TOTP_ENCRYPTION_SECRET
   ADMIN_ACCOUNTS_JSON:
     file: ./secrets/ADMIN_ACCOUNTS_JSON
   UNIONE_API_KEY:

@@ -10,13 +10,15 @@
   "USER_FORBIDDEN": "Access to this resource is forbidden.",
   "USER_ROLE_NOT_ALLOWED": "Your role does not allow this action.",
   "USER_MISSING_PERMISSIONS": "You do not have the required permissions for this action.",
+  "USER_ILLEGAL_ACCOUNT_STATUS": "The current account status does not allow this operation.",
+  "USER_INSUFFICIENT_AUTHORITY_LEVEL": "Your authority level is insufficient for this action.",
   "USER_NOT_FOUND": "User not found.",
   "INVALID_CREDENTIALS": "Invalid email or password.",
   "CAN_NOT_DELETE_USER_IDENTIFIER": "This sign-in method cannot be removed.",
   "CAN_NOT_CREATE_USER_IDENTIFIER": "This sign-in method could not be added.",
-  "ALREADY_HAS_USER_IDENTIFIER_WITH_THAT_TYPE": "This sign-in method is already linked to your account.",
+  "USER_IDENTIFIER_LIMIT_REACHED": "The limit of {maxNumberOfIdentifiers} identifiers for '{userAuthProvider}' has been reached.",
+  "TOTAL_USER_IDENTIFIERS_LIMIT_REACHED": "The maximum total limit of {maxNumberOfIdentifiers} identifiers per account has been reached.",
   "WRONG_PASSWORD": "The current password is incorrect.",
   "WRONG_CONFIRMATION_CODE": "The confirmation code is incorrect or has expired.",
-  "EXTERNAL_ID_MISMATCH": "External account could not be linked.",
-  "EXTERNAL_TOKEN_INVALID": "The external authentication token is invalid."
+  "EXTERNAL_IDENTIFIER_LINKAGE_FAILED": "External account could not be linked."
 }

@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.auth.model
 
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 
 /**
  * Result of successful external provider token verification.
@@ -10,5 +10,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.U
  */
 data class ExternalAuthProviderData(
     val authProvider: UserAuthProvider,
-    val externalId: String
+    val externalId: String,
+    val email: String?
 )

@@ -213,10 +213,10 @@ class KtorWebSocketManager @Inject constructor(
         try {
             if (session.isActive) {
                 session.send(Frame.Text(FoundationJson.encodeToString(frame)))
-                if (frame.type == UserWebSocketEventTypes.SESSION_TERMINATED) {
+                if (frame.type == UserWebSocketEventTypes.SESSION_DELETED) {
                     session.closeNormal()
                 }
-                if (frame.type == UserWebSocketEventTypes.ACCOUNT_STATUS_CHANGED) {
+                if (frame.type == UserWebSocketEventTypes.USER_UPDATED) {
                     frame.payload?.let { payload ->
                         val userDetailsPayload = FoundationJson.decodeFromJsonElement<UserDetailsPayload>(payload)
                         val userAccountStatus = UserAccountStatus

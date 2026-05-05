@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
@@ -24,27 +25,30 @@ interface IdentifierManager {
      * @param identifier identifier value (email/phone/external subject)
      * @return identifier when found, `null` when missing, or an error
      */
-    suspend fun getUserIdentifier(
+    suspend fun getUserIdentifierInternalByProvider(
         userAuthProvider: UserAuthProvider,
         identifier: String
     ): AppResult<UserIdentifierInternal?>
 
+    suspend fun getUserIdentifierByIdForSystem(
+        userIdentifierId: UserIdentifierId
+    ): AppResult<UserIdentifierInternal?>
     /**
      * Loads an identifier by id with permission-aware masking.
      *
-     * [userPermissionCodes] define which target roles are accessible and whether sensitive fields
+     * [managementUserPermissionCodes] define which target roles are accessible and whether sensitive fields
      * should be returned masked or unmasked.
      *
      * @param userIdentifierId identifier id
-     * @param userId caller user id (used for permission errors)
-     * @param userPermissionCodes caller permissions
+     * @param managementUserId caller user id (used for permission errors)
+     * @param managementUserPermissionCodes caller permissions
      * @return identifier when found and allowed, `null` when missing, or an error
      */
-    suspend fun getUserIdentifierById(
+    suspend fun getUserIdentifierByIdForManagement(
         userIdentifierId: UserIdentifierId,
-        userId: UserId,
-        userPermissionCodes: Set<PermissionCode>
-    ): AppResult<UserIdentifierInternal?>
+        managementUserId: UserId,
+        managementUserPermissionCodes: Set<PermissionCode>
+    ): AppResult<UserIdentifier?>
 
     /**
      * Returns all identifiers for a user.
@@ -55,30 +59,6 @@ interface IdentifierManager {
     suspend fun getUserIdentifiersByUserId(
         userId: UserId
     ): AppResult<List<UserIdentifierInternal>>
-
-    /**
-     * Returns a paginated list of identifiers visible for the caller permissions.
-     *
-     * Role-scoped visibility and masked/unmasked output are derived from [userPermissionCodes].
-     * Optional filters are OR-combined within each list and AND-combined across different filter axes.
-     *
-     * @param userPermissionCodes caller permissions used for access control
-     * @param pageParams one-based page and size
-     * @param sortBy list sort field
-     * @param sortOrder sort direction
-     * @param userIds optional user-id filters
-     * @param userAuthProviders optional auth-provider filters
-     * @param identifiers optional identifier substring filters
-     */
-    suspend fun getUserIdentifiersList(
-        userPermissionCodes: Set<PermissionCode>,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-        sortOrder: SortOrder = SortOrder.DESC,
-        userIds: List<UserId> = emptyList(),
-        userAuthProviders: List<UserAuthProvider> = emptyList(),
-        identifiers: List<String> = emptyList()
-    ): AppResult<PagedResult<UserIdentifierInternal>>
 
     /**
      * Creates a new identifier for a user.
@@ -95,7 +75,8 @@ interface IdentifierManager {
         userId: UserId,
         userAuthProvider: UserAuthProvider,
         identifier: String,
-        password: String? = null
+        password: String? = null,
+        externalProviderEmail: String? = null
     ): AppResult<UserIdentifierInternal>
 
     /**
@@ -112,13 +93,58 @@ interface IdentifierManager {
      * Updates the identifier value and password for an existing identifier.
      *
      * @param userIdentifier current identifier snapshot
-     * @param identifier new identifier value
      * @param password new password to hash
      * @return updated identifier snapshot or an error
      */
     suspend fun updateUserIdentifierPassword(
         userIdentifier: UserIdentifierInternal,
-        identifier: String, // todo do we need it?
         password: String
-    ): AppResult<UserIdentifierInternal>
+    ): AppResult<UserIdentifier>
+
+    /**
+     * Returns a paginated list of identifiers for management purposes.
+     * * Applies role-scoped visibility and data masking based on [managementUserPermissionCodes].
+     * This method ensures that the caller can only see identifiers of users within their
+     * allowed administrative scope.
+     *
+     * @param managementUserPermissionCodes caller permissions used to derive access and masking rules
+     * @param pageParams pagination settings (page, size)
+     * @param sortBy field to sort by
+     * @param sortOrder sorting direction
+     * @param userIds optional filters for specific user IDs
+     * @param userAuthProviders optional filters for authentication providers
+     * @param identifiers optional substring patterns for identifier values
+     * @return paged result with potentially masked data or an error
+     */
+    suspend fun getIdentifiersPageForManagement(
+        managementUserPermissionCodes: Set<PermissionCode>,
+        pageParams: PageParams,
+        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
+        sortOrder: SortOrder = SortOrder.DESC,
+        userIds: List<UserId> = emptyList(),
+        userAuthProviders: List<UserAuthProvider> = emptyList(),
+        identifiers: List<String> = emptyList()
+    ): AppResult<PagedResult<UserIdentifier>>
+
+    /**
+     * Returns a paginated list of identifiers belonging to the current user.
+     * * Designed for "Self" service scenarios where the user manages their own
+     * authentication methods. No administrative access filters are applied.
+     *
+     * @param userId the ID of the user requesting their own identifiers
+     * @param pageParams pagination settings (page, size)
+     * @param sortBy field to sort by
+     * @param sortOrder sorting direction
+     * @param userAuthProviders optional filters for authentication providers
+     * @param identifiers optional substring patterns for identifier values
+     * @return paged result of user's own identifiers or an error
+     */
+    suspend fun getIdentifiersPageForSelf(
+        userId: UserId,
+        pageParams: PageParams,
+        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
+        sortOrder: SortOrder = SortOrder.DESC,
+        userAuthProviders: List<UserAuthProvider> = emptyList(),
+        identifiers: List<String> = emptyList()
+    ): AppResult<PagedResult<UserIdentifier>>
 }

@@ -10,7 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
  */
 interface PhoneService {
     /** Sends a verification code to confirm phone ownership. */
-    fun sendVerificationCode(phoneNumber: String, code: String): AppResult<Unit>
+    suspend fun sendVerificationCode(phoneNumber: String, code: String, language: String?): AppResult<Unit>
     /** Notifies that the phone number is already registered (security notification). */
-    fun sendAlreadyRegisteredPhoneNumber(phoneNumber: String, ipAddress: String?, deviceName: String?): AppResult<Unit>
+    suspend fun sendAlreadyRegisteredPhoneNumber(phoneNumber: String, ipAddress: String?, deviceName: String?, language: String?): AppResult<Unit>
 }

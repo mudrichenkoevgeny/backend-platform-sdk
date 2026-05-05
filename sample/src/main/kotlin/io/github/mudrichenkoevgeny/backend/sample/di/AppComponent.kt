@@ -10,24 +10,27 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.ini
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheckerManager
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.crosscutting.di.CrosscuttingModules
 import io.github.mudrichenkoevgeny.backend.core.database.di.DatabaseModules
 import io.github.mudrichenkoevgeny.backend.core.events.di.EventsModules
 import io.github.mudrichenkoevgeny.backend.core.observability.di.ObservabilityModules
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
 import io.github.mudrichenkoevgeny.backend.core.security.di.SecurityModules
-import io.github.mudrichenkoevgeny.backend.feature.security.api.route.SecurityRouter
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.system.settings.SeedSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.core.settings.di.SettingsModules
 import io.github.mudrichenkoevgeny.backend.core.storage.di.StorageModules
 import io.github.mudrichenkoevgeny.backend.feature.audit.api.di.AuditApiModules
 import io.github.mudrichenkoevgeny.backend.feature.security.api.di.SecurityApiModules
 import io.github.mudrichenkoevgeny.backend.feature.settings.api.di.SettingsApiModules
-import io.github.mudrichenkoevgeny.backend.feature.settings.api.route.SettingsRouter
 import io.github.mudrichenkoevgeny.backend.core.settings.usecase.system.globalsettings.SeedGlobalSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.audit.api.route.management.ManagementAuditRouter
+import io.github.mudrichenkoevgeny.backend.feature.security.api.route.management.ManagementSecuritySettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.security.api.route.open.OpenSecuritySettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.settings.api.route.management.ManagementGlobalSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.settings.api.route.open.OpenGlobalSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.di.UserModules
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.AuthenticatedWebSocketRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.UserRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.ManagementCoreUserRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.OpenCoreUserRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.scheduled.UserScheduledJobs
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.auth.settings.SeedAuthSettingsUseCase
@@ -57,7 +60,6 @@ import javax.inject.Singleton
         AuditApiModules::class,
         EventsModules::class,
         StorageModules::class,
-        CrosscuttingModules::class,
         UserModules::class,
         AuditParsersModule::class,
         AppModule::class
@@ -90,19 +92,25 @@ interface AppComponent {
     fun telemetryProvider(): TelemetryProvider
     fun swaggerInitializer(): SwaggerInitializer
 
+    // audit
+    fun managementAuditRouter(): ManagementAuditRouter
+
     // settings
     fun seedGlobalSettingsUseCase(): SeedGlobalSettingsUseCase
-    fun settingsRouter(): SettingsRouter
+    fun openGlobalSettingsSettingsRouter(): OpenGlobalSettingsRouter
+    fun managementGlobalSettingsRouter(): ManagementGlobalSettingsRouter
 
     // security
     fun seedSecuritySettingsUseCase(): SeedSecuritySettingsUseCase
-    fun securityRouter(): SecurityRouter
+    fun openSecuritySettingsRouter(): OpenSecuritySettingsRouter
+    fun managementSecuritySettingsRouter(): ManagementSecuritySettingsRouter
 
     // user
     fun authenticationProvider(): AuthenticationProvider
     fun seedAdminAccountsUseCase(): SeedAdminAccountsUseCase
     fun seedAuthSettingsUseCase(): SeedAuthSettingsUseCase
-    fun userRouter(): UserRouter
+    fun openCoreUserRouter(): OpenCoreUserRouter
+    fun managementCoreUserRouter(): ManagementCoreUserRouter
     fun authenticatedWebSocketRouter(): AuthenticatedWebSocketRouter
     fun userScheduledJobs(): UserScheduledJobs
 

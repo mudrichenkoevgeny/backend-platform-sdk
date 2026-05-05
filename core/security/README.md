@@ -1,42 +1,67 @@
 # core/security
 
-Security primitives for SDK-based applications: password hashing, password policy validation, rate limiting for security-sensitive actions, and persisted security settings (via `core/settings`). **HTTP routes and security “API” use cases** live in **`feature/security-api`**, not in this module.
+Security primitives for SDK-based applications: password hashing, MFA management, TOTP processing, and symmetric encryption. **HTTP routes and security “API” use cases** live in **`feature/security-api`**, not in this module.
 
 ## What it provides
 
-- **Config**: [SecurityConfig] built by [SecurityConfigFactory] from env via [SecurityEnvKeys].
-- **Password hashing**: [PasswordHasher] (Password4j Argon2 implementation: [PasswordHasherImpl]).
-- **Password policy (in-process)**: default `PasswordPolicy` from [SecurityConfig] and foundation `PasswordPolicyValidator` ([PasswordPolicyValidatorModule]).
-- **Security settings (persistence)**:
-  - [SecuritySettingsProvider] backed by [SystemSettingsService] ([SecuritySettingsProviderImpl]) — password policy JSON and recent-authentication window.
-  - [SeedSecuritySettingsUseCase] seeds defaults on bootstrap.
-- **Rate limiting**: [RateLimiter] (Redis-backed implementation: [RateLimiterImpl]) with predefined [RateLimitAction] policies and [RateLimitResult].
-- **Authentication freshness**: [AuthenticationPolicyChecker] (implementation: [AuthenticationPolicyCheckerImpl]) — `isAuthenticationConfirmedRecently` (self-service window) and `isAuthenticationConfirmedRecentlyForManagement` (management window from [SecurityConfig]).
-- **WebSockets**: [SecurityWebSocketMessageHandler] contributed via [SecurityWebSocketModule].
-- **DI wiring**: [SecurityModules] aggregates config, hashing, policy validator, rate limiting, settings provider, auth policy checker, and WebSocket contributions.
+- **Config**: [SecurityConfig] built by [SecurityConfigFactory] from env variables.
+- **Cryptography**:
+    - **Symmetric Encryption**: [AesCryptor] (AES-256-GCM) for securing sensitive data (like TOTP secrets) before database persistence.
+    - **TOTP Processor**: [TotpCryptoProcessor] for RFC 6238 compliant generation and verification of time-based tokens.
+- **MFA & OTP Services**:
+    - **MFA Service**: [MfaService] manages multistep authentication state via temporary `mfaToken` challenges.
+    - **Otp Service**: [OtpService] issues and verifies one-time passwords (e.g., for email/SMS confirmation).
+- **Password Management**:
+    - **Hashing**: [PasswordHasher] (Argon2 implementation via Password4j).
+    - **Validation**: [ValidatePasswordUseCase] enforces the active [PasswordPolicy] provided by [SecuritySettingsProvider].
+- **Rate Limiting**: [RateLimiter] (Redis-backed) with policies for actions like login attempts or OTP retries.
+- **Audit Integration**: [SecurityAuditErrorParser] maps security failures (weak passwords, expired MFA tokens) to standard audit reason codes.
+- **DI Wiring**: [SecurityModules] aggregates all components, including MFA, OTP, and Crypto processors.
+- **Utilities**:
+    - **Base32**: [Base32] utility for encoding/decoding secrets (RFC 4648) used in TOTP.
+    - **Error Mapping**: [PasswordPolicyValidatorResultMapper] for converting domain policy failures into localized `SecurityError` objects.
 
 ## Environment variables
 
 The default config factory ([SecurityConfigFactoryImpl]) reads:
 
-- `RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES` — **required**; window (minutes) during which a recent re-authentication is considered valid for **self-service** sensitive actions (`SecurityConfig.recentAuthenticationValidityInMinutes`).
-- `RECENT_AUTHENTICATION_VALIDITY_IN_MINUTES_FOR_MANAGEMENT` — **required**; window (minutes) for **management** sensitive actions (`SecurityConfig.recentAuthenticationValidityInMinutesForManagement`).
-- `PASSWORD_POLICY_MIN_LENGTH` — minimum password length (optional; fallback: `PasswordPolicy.DEFAULT_MIN_LENGTH`).
-- `PASSWORD_POLICY_REQUIRE_LETTER` — `"true"`/`"false"` (optional; fallback: `true`).
-- `PASSWORD_POLICY_REQUIRE_UPPER_CASE` — `"true"`/`"false"` (optional; fallback: `false`).
-- `PASSWORD_POLICY_REQUIRE_LOWER_CASE` — `"true"`/`"false"` (optional; fallback: `false`).
-- `PASSWORD_POLICY_REQUIRE_DIGIT` — `"true"`/`"false"` (optional; fallback: `false`).
-- `PASSWORD_POLICY_REQUIRE_SPECIAL_CHAR` — `"true"`/`"false"` (optional; fallback: `false`).
-- `PASSWORD_POLICY_COMMON_PASSWORDS` — comma-separated list of common passwords to reject (optional; fallback: `PasswordPolicy.DEFAULT_COMMON_PASSWORDS`).
-
-See: [SecurityEnvKeys].
+- `AUTH_REALM` — **required**; the authentication realm used for `otpauth://` URIs.
+- `TOTP_ENCRYPTION_SECRET` — **required**; Base64-encoded 32-byte secret for AES encryption.
+- `RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS` — window for sensitive **self-service** actions.
+- `RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT` — window for **management** actions.
+- `MFA_TOKEN_EXPIRATION_SECONDS` — lifetime of the temporary `mfaToken`.
+- `PASSWORD_POLICY_*` — various constraints (length, digits, special characters, etc.).
 
 ## Usage
 
-- Add dependency on `core:security`. Depends on `core:common`, `core:database`, `core:settings`, and `core:audit`.
-- Install [SecurityModules] in your Dagger component.
-- Seed defaults on bootstrap (optional but recommended): call [SeedSecuritySettingsUseCase].
-- For **HTTP** endpoints (read/update security settings, validate password, etc.), add **`feature/security-api`**, install its Dagger classpath bindings as needed, and register `SecurityRouter` in Ktor (see that module’s README).
+### TOTP Generation & Verification
+
+```kotlin
+// 1. Generate new secret for a user
+val result = totpProcessor.generateNewSecret("user@example.com") 
+// Returns GeneratedTotpSecret with raw secret, encrypted secret, and QR URI
+
+// 2. Verify code from user
+val isValid = totpProcessor.isCodeValid(userCode, encryptedSecretFromDb)
+```
+
+### MFA Challenge Flow
+
+```kotlin
+// Create a challenge during login
+val challenge = mfaService.createChallenge(
+    userId = user.id,
+    userRole = user.role,
+    type = MfaChallengeType.LOGIN_TOTP
+)
+
+// Later, validate and consume the token in one atomical operation
+val validation = mfaService.validateChallenge(
+    token = clientToken,
+    type = MfaChallengeType.LOGIN_TOTP,
+    userId = user.id
+)
+```
 
 ### Rate limit an action
 
@@ -50,37 +75,26 @@ suspend fun rateLimitExample(rateLimiter: RateLimiter) {
 }
 ```
 
-## Notes
+## Security Notes
 
-- **Effective password policy**: [SecuritySettingsProvider] uses stored values when present; otherwise it falls back to [SecurityConfig].
-- **Rate limiting storage**: [RateLimiterImpl] uses Redis counters with expiration; when the limit is exceeded it returns a `Too Many Requests` error with a retry-after value.
+- **Data at Rest**: Sensitive data like TOTP secrets must never be stored in plain text. [TotpCryptoProcessor] relies on [AesCryptor] to encrypt secrets before they reach the database.
+- **Audit Logs**: All security failures are automatically mapped to `AuditStatus.DENIED` with specific reasons (e.g., `PASSWORD_TOO_WEAK`) via the [SecurityAuditErrorParser].
+- **MFA Tokens**: `mfaToken` is a high-entropy temporary string that is invalidated immediately upon use or expiration.
+
+---
 
 [SecurityConfig]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/config/model/SecurityConfig.kt
-[SecurityConfigFactory]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/config/factory/SecurityConfigFactory.kt
 [SecurityConfigFactoryImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/config/factory/SecurityConfigFactoryImpl.kt
-[SecurityEnvKeys]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/config/envkeys/SecurityEnvKeys.kt
-
-[PasswordHasher]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/passwordhasher/PasswordHasher.kt
-[PasswordHasherImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/passwordhasher/PasswordHasherImpl.kt
-
-[PasswordPolicyValidatorModule]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/di/module/PasswordPolicyValidatorModule.kt
-
-[SecurityError.PasswordTooWeak]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/error/model/SecurityError.kt
-
-[SecuritySettingsProvider]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/settings/provider/SecuritySettingsProvider.kt
-[SecuritySettingsProviderImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/settings/provider/SecuritySettingsProviderImpl.kt
-[SeedSecuritySettingsUseCase]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/usecase/system/settings/SeedSecuritySettingsUseCase.kt
-[SystemSettingsService]: ../settings/src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/service/SystemSettingsService.kt
-
-[RateLimiter]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/ratelimiter/RateLimiter.kt
-[RateLimiterImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/ratelimiter/RateLimiterImpl.kt
-[RateLimitAction]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/ratelimiter/model/RateLimitAction.kt
-[RateLimitResult]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/ratelimiter/RateLimitResult.kt
-
-[AuthenticationPolicyChecker]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/authenticationpolicychecker/AuthenticationPolicyChecker.kt
-[AuthenticationPolicyCheckerImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/authenticationpolicychecker/AuthenticationPolicyCheckerImpl.kt
-
-[SecurityWebSocketMessageHandler]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/network/websockets/messagehandler/SecurityWebSocketMessageHandler.kt
-[SecurityWebSocketModule]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/di/module/SecurityWebSocketModule.kt
-
 [SecurityModules]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/di/SecurityModules.kt
+[AesCryptor]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/aescryptor/AesCryptor.kt
+[TotpCryptoProcessor]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/totpcryptoprocessor/TotpCryptoProcessor.kt
+[MfaService]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/service/mfa/MfaService.kt
+[OtpService]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/service/otp/OtpService.kt
+[ValidatePasswordUseCase]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/usecase/open/passwordpolicy/ValidatePasswordUseCase.kt
+[SecurityAuditErrorParser]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/audit/error/SecurityAuditErrorParser.kt
+[RateLimiter]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/ratelimiter/RateLimiter.kt
+[SecuritySettingsProvider]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/settings/provider/SecuritySettingsProvider.kt
+[SeedSecuritySettingsUseCase]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/usecase/system/settings/SeedSecuritySettingsUseCase.kt
+[PasswordHasher]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/passwordhasher/PasswordHasher.kt
+[Base32]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/util/Base32.kt
+[PasswordPolicyValidatorResultMapper]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/error/mapper/PasswordPolicyValidatorResultMapper.kt

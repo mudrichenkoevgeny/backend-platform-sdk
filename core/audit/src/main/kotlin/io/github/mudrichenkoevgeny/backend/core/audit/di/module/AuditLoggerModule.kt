@@ -6,10 +6,12 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLoggerImpl
 import javax.inject.Singleton
 
-@Module
 /**
- * Binds audit logging abstractions.
+ * Wires audit logging components.
+ *
+ * Binds [AuditLogger] to [AuditLoggerImpl].
  */
+@Module
 interface AuditLoggerModule {
 
     @Binds

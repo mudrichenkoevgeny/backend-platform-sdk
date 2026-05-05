@@ -33,9 +33,9 @@ class AuditDataMaskerTest {
     }
 
     @Test
-    fun `maskBySensitivity full value mask keeps blank`() {
+    fun `maskBySensitivity full value mask returns empty for blank strings`() {
         assertEquals("", AuditDataMasker.maskBySensitivity("", AuditValueSensitivity.FULL_VALUE_MASK))
-        assertEquals("   ", AuditDataMasker.maskBySensitivity("   ", AuditValueSensitivity.FULL_VALUE_MASK))
+        assertEquals("", AuditDataMasker.maskBySensitivity("   ", AuditValueSensitivity.FULL_VALUE_MASK))
     }
 
     @Test

@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.server
 
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.CommonConfig
 import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironment
+import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppInstanceMode
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
@@ -11,6 +12,7 @@ class KtorServerFactoryTest {
     fun `create builds server with two connectors`() {
         val config = CommonConfig(
             environment = AppEnvironment.DEV,
+            instanceMode = AppInstanceMode.FULL,
             version = "1.0.0-test",
             appName = "test-app",
             ktorServerHost = "0.0.0.0",

@@ -7,7 +7,7 @@ import dagger.Module
 import javax.inject.Singleton
 
 /**
- * Wires audit event persistence.
+ * Wires audit persistence components.
  *
  * Binds [AuditEventRepository] to [AuditEventRepositoryImpl].
  */

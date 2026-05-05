@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditE
 import io.github.mudrichenkoevgeny.backend.core.audit.database.table.AuditEventsTable
 import io.github.mudrichenkoevgeny.backend.core.audit.RepositoryTestAuditAction
 import io.github.mudrichenkoevgeny.backend.core.audit.RepositoryTestAuditResource
+import io.github.mudrichenkoevgeny.backend.core.audit.compositeAuditMetadataKeyParserForRepositoryTests
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
@@ -49,7 +50,8 @@ class AuditServiceImplTest {
         }
         repository = AuditEventRepositoryImpl(
             compositeAuditActionTypeParser = compositeAuditActionTypeParserForRepositoryTests(),
-            compositeAuditResourceTypeParser = compositeAuditResourceTypeParserForRepositoryTests()
+            compositeAuditResourceTypeParser = compositeAuditResourceTypeParserForRepositoryTests(),
+            compositeAuditMetadataKeyParser = compositeAuditMetadataKeyParserForRepositoryTests()
         )
     }
 

@@ -1,4 +1,11 @@
 {
-  "AUTHENTICATION_CONFIRMATION_REQUIRED": "Authentication confirmation is required.",
-  "PASSWORD_TOO_WEAK": "Password is too weak. Password too short: {passwordTooShort} (minimum length: {passwordMinLength}), No letters: {passwordNoLetter}, No uppercase letters: {passwordNoUpperCase}, No lowercase letters: {passwordNoLowerCase}, No digits: {passwordNoDigit}, No special characters: {passwordNoSpecialChar}, Password too common: {passwordTooCommon}."
+  "TOTP_CONFIRMATION_REQUIRED": "Authentication confirmation is required. MFA token: {mfaToken}",
+  "PASSWORD_TOO_WEAK": "Password is too weak. Password too short: {passwordTooShort} (minimum length: {passwordMinLength}), No letters: {passwordNoLetter}, No uppercase letters: {passwordNoUpperCase}, No lowercase letters: {passwordNoLowerCase}, No digits: {passwordNoDigit}, No special characters: {passwordNoSpecialChar}, Password too common: {passwordTooCommon}.",
+  "OTP_RETRY_TOO_SOON": "Too many attempts. Please try again in {retryAfterSeconds} seconds.",
+  "TOTP_ALREADY_ENABLED": "Two-factor authentication is already enabled for this account.",
+  "TOTP_NOT_ENABLED": "Two-factor authentication is not enabled for this account.",
+  "MFA_TOKEN_EXPIRED": "The MFA token has expired. Please request a new one.",
+  "RECOVERY_CODE_ALREADY_USED": "This recovery code has already been used.",
+  "INVALID_TOTP_CODE": "The provided code is invalid.",
+  "INVALID_MFA_TOKEN": "The MFA token is invalid or malformed."
 }

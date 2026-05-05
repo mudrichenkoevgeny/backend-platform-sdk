@@ -1,124 +1,184 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier
 
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
+import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
-import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
-import io.github.mudrichenkoevgeny.backend.feature.user.testutil.ExposedTestDb
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
 import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
-class UserIdentifierManagerImplTest {
+class IdentifierManagerImplTest {
 
-    private val passwordHasher: PasswordHasher = mockk()
-    private val repository: UserIdentifierRepository = mockk()
-    private val manager = IdentifierManagerImpl(
-        passwordHasher = passwordHasher,
-        userIdentifierRepository = repository
-    )
+    private val passwordHasher = mockk<PasswordHasher>()
+    private val userManager = mockk<UserManager>()
+    private val repository = mockk<UserIdentifierRepository>()
+    private val manager = IdentifierManagerImpl(passwordHasher, userManager, repository)
 
-    @Test
-    fun `createUserIdentifier hashes password when provided`() = runBlocking {
-        ExposedTestDb.initOnce()
+    private val userId = UserId.generate()
+    private val managementUserId = UserId.generate()
 
-        every { passwordHasher.hash(PASSWORD_RAW) } returns AppResult.Success(PASSWORD_HASH)
-
-        val createdSlot = slot<UserIdentifier>()
-        coEvery { repository.createUserIdentifier(capture(createdSlot)) } answers {
-            AppResult.Success(createdSlot.captured)
-        }
-
-        val result = manager.createUserIdentifier(
-            userId = USER_ID,
-            userAuthProvider = UserAuthProvider.EMAIL,
-            identifier = IDENTIFIER_EMAIL,
-            password = PASSWORD_RAW
-        )
-
-        assertTrue(result is AppResult.Success)
-        val created = (result as AppResult.Success).data
-        assertEquals(PASSWORD_HASH, created.passwordHash)
-        assertEquals(IDENTIFIER_EMAIL, created.identifier)
-        assertEquals(UserAuthProvider.EMAIL, created.userAuthProvider)
-        assertEquals(USER_ID, created.userId)
-
-        coVerify(exactly = 1) { repository.createUserIdentifier(any()) }
+    @BeforeEach
+    fun setup() {
+        Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
     }
 
     @Test
-    fun `createUserIdentifier does not hash password when absent`() = runBlocking {
-        ExposedTestDb.initOnce()
+    fun `getUserIdentifierByIdForManagement returns UNMASKED when user has permission`() = runTest {
+        val identifierId = UserIdentifierId.generate()
+        val identifier = createSampleIdentifier(identifierId, userId, "test@test.com")
+        val targetUser = createSampleUserDetails(userId, UserRole.USER)
 
-        val createdSlot = slot<UserIdentifier>()
-        coEvery { repository.createUserIdentifier(capture(createdSlot)) } answers {
-            AppResult.Success(createdSlot.captured)
-        }
+        coEvery { repository.getUserIdentifierById(identifierId) } returns AppResult.Success(identifier)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(targetUser)
 
-        val result = manager.createUserIdentifier(
-            userId = USER_ID,
-            userAuthProvider = UserAuthProvider.PHONE,
-            identifier = IDENTIFIER_PHONE,
-            password = null
-        )
+        val permissions = setOf(IdentifierPermissionCode.IDENTIFIER_GET_OF_USER_UNMASKED)
+        val result = manager.getUserIdentifierByIdForManagement(identifierId, managementUserId, permissions)
 
         assertTrue(result is AppResult.Success)
-        val created = (result as AppResult.Success).data
-        assertEquals(null, created.passwordHash)
-
-        coVerify(exactly = 0) { passwordHasher.hash(any()) }
+        val data = (result as AppResult.Success).data
+        assertEquals("test@test.com", data?.identifier)
+        assertEquals(false, data?.isSensitiveValuesMasked)
     }
 
     @Test
-    fun `updateUserIdentifierPassword hashes new password and delegates to repository`() = runBlocking {
-        ExposedTestDb.initOnce()
+    fun `getUserIdentifierByIdForManagement returns MASKED when user has only masked permission`() = runTest {
+        val identifierId = UserIdentifierId.generate()
+        val rawEmail = "secret@example.com"
+        val identifier = createSampleIdentifier(identifierId, userId, rawEmail)
+        val targetUser = createSampleUserDetails(userId, UserRole.USER)
 
-        val existing = UserIdentifier(
-            id = io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId.generate(),
-            userId = USER_ID,
+        coEvery { repository.getUserIdentifierById(identifierId) } returns AppResult.Success(identifier)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(targetUser)
+
+        val permissions = setOf(IdentifierPermissionCode.IDENTIFIER_GET_OF_USER_MASKED)
+        val result = manager.getUserIdentifierByIdForManagement(identifierId, managementUserId, permissions)
+
+        assertTrue(result is AppResult.Success)
+        val data = (result as AppResult.Success).data
+        assertEquals(DataMasker.maskEmail(rawEmail), data?.identifier)
+        assertEquals(true, data?.isSensitiveValuesMasked)
+    }
+
+    @Test
+    fun `getUserIdentifierByIdForManagement returns Error when target is ADMIN`() = runTest {
+        val identifierId = UserIdentifierId.generate()
+        val identifier = createSampleIdentifier(identifierId, userId)
+        val targetUser = createSampleUserDetails(userId, UserRole.ADMIN)
+
+        coEvery { repository.getUserIdentifierById(identifierId) } returns AppResult.Success(identifier)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(targetUser)
+
+        val permissions = setOf(IdentifierPermissionCode.IDENTIFIER_GET_OF_USER_UNMASKED)
+        val result = manager.getUserIdentifierByIdForManagement(identifierId, managementUserId, permissions)
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is UserError.UserMissingPermissions)
+    }
+
+    @Test
+    fun `createUserIdentifier hashes password before saving`() = runTest {
+        val rawPassword = "plain_password"
+        val hashedPassword = PasswordHash("hashed_password")
+
+        coEvery { passwordHasher.hash(rawPassword) } returns AppResult.Success(hashedPassword)
+        coEvery { repository.createUserIdentifier(any()) } answers { AppResult.Success(firstArg()) }
+
+        val result = manager.createUserIdentifier(
+            userId = userId,
             userAuthProvider = UserAuthProvider.EMAIL,
-            identifier = IDENTIFIER_EMAIL,
-            passwordHash = null,
-            createdAt = java.time.Instant.now(),
-            updatedAt = null
+            identifier = "new@test.com",
+            password = rawPassword
         )
 
-        every { passwordHasher.hash(PASSWORD_RAW) } returns AppResult.Success(PASSWORD_HASH)
+        assertTrue(result is AppResult.Success)
+        assertEquals(hashedPassword, (result as AppResult.Success).data.passwordHash)
+    }
+
+    @Test
+    fun `getIdentifiersPageForManagement filters and masks items correctly`() = runTest {
+        val user1Id = UserId.generate()
+        val user2Id = UserId.generate()
+
+        val iden1 = createSampleIdentifier(UserIdentifierId.generate(), user1Id, "user@test.com")
+        val iden2 = createSampleIdentifier(UserIdentifierId.generate(), user2Id, "staff@test.com")
+
+        val pagedResult = PagedResult(
+            items = listOf(iden1, iden2),
+            totalCount = 2,
+            pageNumber = 1,
+            pageSize = 10,
+            totalPages = 1
+        )
 
         coEvery {
-            repository.updateUserIdentifier(
-                userIdentifier = existing,
-                identifier = IDENTIFIER_EMAIL,
-                passwordHash = PASSWORD_HASH
-            )
-        } returns AppResult.Success(existing.copy(passwordHash = PASSWORD_HASH))
+            repository.getUserIdentifiersPageWithAccessFilter(any(), any(), any(), any(), any(), any(), any())
+        } returns AppResult.Success(pagedResult)
+        coEvery {
+            userManager.getUserByIdForSelf(user1Id)
+        } returns AppResult.Success(createSampleUserDetails(user1Id, UserRole.USER))
+        coEvery {
+            userManager.getUserByIdForSelf(user2Id)
+        } returns AppResult.Success(createSampleUserDetails(user2Id, UserRole.STAFF))
 
-        val result = manager.updateUserIdentifierPassword(
-            userIdentifier = existing,
-            identifier = IDENTIFIER_EMAIL,
-            password = PASSWORD_RAW
+        val permissions = setOf(IdentifierPermissionCode.IDENTIFIER_GET_OF_USER_UNMASKED)
+
+        val result = manager.getIdentifiersPageForManagement(
+            managementUserPermissionCodes = permissions,
+            pageParams = PageParams(1, 10),
+            sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
+            sortOrder = SortOrder.DESC,
+            userIds = emptyList(),
+            userAuthProviders = emptyList(),
+            identifiers = emptyList()
         )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(PASSWORD_HASH, (result as AppResult.Success).data.passwordHash)
+        val data = (result as AppResult.Success).data
+        assertEquals(1, data.items.size)
+        assertEquals("user@test.com", data.items.first().identifier)
     }
 
-    private companion object {
-        val USER_ID: UserId = UserId.generate()
+    private fun createSampleIdentifier(id: UserIdentifierId, uId: UserId, value: String = "test") = UserIdentifier(
+        id = id,
+        userId = uId,
+        userAuthProvider = UserAuthProvider.EMAIL,
+        identifier = value,
+        externalProviderEmail = null,
+        isSensitiveValuesMasked = false,
+        createdAt = Clock.System.now(),
+        updatedAt = null
+    )
 
-        const val IDENTIFIER_EMAIL = "user@example.com"
-        const val IDENTIFIER_PHONE = "+10000000000"
-
-        const val PASSWORD_RAW = "p@ssw0rd"
-        const val PASSWORD_HASH = "hash"
-    }
+    private fun createSampleUserDetails(uId: UserId, role: UserRole) = UserDetails(
+        id = uId,
+        role = role,
+        accountStatus = UserAccountStatus.ACTIVE,
+        accountStatusBeforeDeletion = null,
+        authorityLevel = 1,
+        permissionCodes = emptySet(),
+        isTotpEnabled = false,
+        createdAt = Clock.System.now()
+    )
 }
-

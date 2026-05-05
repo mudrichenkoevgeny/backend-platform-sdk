@@ -13,7 +13,7 @@ plugins {
 
 allprojects {
     group = "io.github.mudrichenkoevgeny"
-    version = "0.0.15"
+    version = "0.0.16"
 }
 
 subprojects {
@@ -38,6 +38,7 @@ subprojects {
 
                 freeCompilerArgs.add("-opt-in=kotlin.uuid.ExperimentalUuidApi")
                 freeCompilerArgs.add("-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi")
+                freeCompilerArgs.add("-opt-in=kotlin.concurrent.atomics.ExperimentalAtomicApi")
             }
         }
     }

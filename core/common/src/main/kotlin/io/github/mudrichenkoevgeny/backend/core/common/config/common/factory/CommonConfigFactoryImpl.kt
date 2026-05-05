@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironme
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.CommonConfig
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.getStringList
+import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppInstanceMode
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,6 +26,7 @@ class CommonConfigFactoryImpl @Inject constructor(
         val version = appInfo.version
 
         val environment = AppEnvironment.fromString(envReader.getByKey(CommonEnvKeys.ENVIRONMENT))
+        val instanceMode = AppInstanceMode.fromString(envReader.getByKey(CommonEnvKeys.INSTANCE_MODE))
         val serverUrl = envReader.getByKey(CommonEnvKeys.SERVER_URL)
         val ktorHost = envReader.getByKey(CommonEnvKeys.KTOR_SERVER_HOST)
         val ktorPort = envReader.getByKey(CommonEnvKeys.KTOR_SERVER_PORT).toInt()
@@ -35,6 +37,7 @@ class CommonConfigFactoryImpl @Inject constructor(
 
         return CommonConfig(
             environment = environment,
+            instanceMode = instanceMode,
             version = version,
             appName = appName,
             ktorServerHost = ktorHost,

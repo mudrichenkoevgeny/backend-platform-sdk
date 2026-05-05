@@ -15,9 +15,9 @@ class UserWebSocketMessageHandlerTest {
     fun `handle marks known user events as handled`() {
         val knownTypes = listOf(
             UserWebSocketEventTypes.UNAUTHORIZED,
-            UserWebSocketEventTypes.SESSION_TERMINATED,
+            UserWebSocketEventTypes.SESSION_DELETED,
             UserWebSocketEventTypes.AUTH_SETTINGS_UPDATED,
-            UserWebSocketEventTypes.ACCOUNT_STATUS_CHANGED
+            UserWebSocketEventTypes.USER_UPDATED
         )
 
         knownTypes.forEach { type ->

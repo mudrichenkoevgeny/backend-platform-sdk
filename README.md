@@ -6,21 +6,20 @@ A modular foundational SDK for building scalable Kotlin/Ktor microservices. Prov
 
 ## Modules
 
-| Module                   | Purpose |
-|--------------------------|--------|
-| **core/common**          | Base for all: Ktor server setup, `BaseRouter`, `CommonConfig`, error handling, serialization, Swagger, WebSockets, env/config, logging. Most other modules depend on it. |
-| **core/database**        | Exposed, PostgreSQL, Hikari, Flyway, Redis (Lettuce). Used by settings, security, audit, feature/user. |
-| **core/observability**   | OpenTelemetry, Micrometer/Prometheus, Ktor metrics. |
-| **core/security**        | Password validation, security settings (use cases, routes). |
-| **core/settings**        | Global/system settings, DB-backed storage/services and use cases. |
-| **feature/settings-api** | HTTP API for global settings. Exposes `SettingsRouter`. |
-| **core/audit**           | Audit events model and persistence. |
-| **core/storage**         | S3 (AWS SDK); file/blob storage abstraction. |
-| **core/events**          | Event publishing/subscribing (e.g. Kafka). `EventPublisher`, `EventSubscriber`. |
-| **core/crosscutting**    | Cross-cutting concerns (e.g. rate limiting). Uses common, security, audit. |
-| **feature/user**         | User and auth: registration, login (email + external), JWT + refresh tokens, password reset, sessions, user CRUD. Exposes auth routes, `UserFeatureRouter`. Depends on core: common, database, security, audit, settings, crosscutting. |
-
-Depend only on what you need. Use the BOM for version alignment. Per-module details: [core/README.md](core/README.md), [core/common/README.md](core/common/README.md), [core/audit/README.md](core/audit/README.md).
+| Module | Purpose |
+| :--- | :--- |
+| **core/common** | Base for all: Dual-connector Ktor setup (API + Management), DTO validation, error handling, localization, data masking, and logging. |
+| **core/database** | PostgreSQL (Exposed), Redis (Lettuce), Flyway migrations. Provides JSONB support and Pub/Sub capabilities. |
+| **core/observability** | OpenTelemetry tracing and Micrometer/Prometheus metrics integration. |
+| **core/security** | Security primitives: Argon2 hashing, AES-256-GCM encryption, TOTP (RFC 6238), and MFA state management. |
+| **core/settings** | DB-backed system settings with Redis-based cache synchronization across instances. |
+| **core/audit** | Infrastructure for background audit logging with visibility filtering and error parsing. |
+| **core/storage** | Object storage abstraction supporting S3 (AWS/MinIO) and Local Filesystem. |
+| **core/events** | Event publishing/subscribing via Kafka or In-Memory bus. |
+| **feature/user** | Advanced IAM: Multi-method auth (Email, Phone, OAuth), JWT/Refresh sessions, 2FA/TOTP, and full user lifecycle. |
+| **feature/audit-api** | HTTP API for audit trail management with permission-aware filtering. |
+| **feature/security-api** | Security policy management with real-time WebSocket synchronization. |
+| **feature/settings-api** | Public and management APIs for global configuration with WebSocket sync. |
 
 ## Installation
 
@@ -29,23 +28,23 @@ Use the BOM and add the modules you need:
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation(platform("io.github.mudrichenkoevgeny:backend-platform-sdk-bom:0.0.15"))
+    implementation(platform("io.github.mudrichenkoevgeny:backend-platform-sdk-bom:0.0.16"))
     implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-common")
     implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-database")
     // ... other core modules and backend-platform-sdk-feature-user as required
 }
 ```
 
-With a version catalog: declare the BOM and library aliases in `libs.versions.toml`, then `implementation(platform(libs.backend.sdk.bom))` and `implementation(libs.backend.sdk.core.common)` etc.
-
 ## Integration Steps
 
-1. **AppInfo** — Implement `AppInfo` (app name, version) and bind it in your Dagger graph. The SDK needs it for config and responses.
+1. **AppInfo & Scope** — Implement `AppInfo` (app name, version) and provide a `BackgroundScope` (CoroutineScope) in your Dagger graph. These are required for configuration, background tasks, and Redis sync.
 
-2. **Common** — Install `CommonModules` in your app component. Provide `BackgroundScope` (e.g. from your app’s root scope) in the component; common does not create it. Bootstrap with `KtorServer.create(commonConfig) { module(applicationModule) }` and register your routes (including feature routers) inside the application module.
+2. **Common** — Install `CommonModules` and bootstrap with `KtorServer.create(commonConfig)`. Configure observability using the `telemetryProvider` and register your feature routers within the application routing block.
 
-3. **Database** — If you use **core/database**, provide DB config (url, user, password) and include your Flyway migration paths (e.g. from each core module that has migrations, such as **core/audit** — see [core/audit/README.md](core/audit/README.md)).
+3. **Database** — If using `core/database`, provide DB and Redis connection secrets. Include Flyway migration paths for all used modules (e.g., `db/migration/core/audit`, `db/migration/feature/user`).
 
-4. **Feature/user** — If you use **feature/user**, install its Dagger modules, register `UserFeatureRouter` (and optionally `SettingsRouter`, `SecurityFeatureRouter`) in your `routing { }` block, and run the migrations for the user/settings tables.
+4. **System Initialization** — On application startup, you must initialize the settings cache and seed default values:
+
+5. **Real-time Sync** — For modules using WebSockets (settings, security, user), ensure the respective API modules are installed to enable inter-service synchronization via Redis Pub/Sub.
 
 For a full wiring example, see the [sample](sample) application.

@@ -1,4 +1,11 @@
 {
-  "AUTHENTICATION_CONFIRMATION_REQUIRED": "Требуется подтверждение аутентификации.",
-  "PASSWORD_TOO_WEAK": "Пароль слишком слабый. Слишком короткий: {passwordTooShort} (минимальная длина: {passwordMinLength}), Нет букв: {passwordNoLetter}, Нет заглавных букв: {passwordNoUpperCase}, Нет строчных букв: {passwordNoLowerCase}, Нет цифр: {passwordNoDigit}, Нет спецсимволов: {passwordNoSpecialChar}, Слишком распространённый пароль: {passwordTooCommon}."
+  "TOTP_CONFIRMATION_REQUIRED": "Требуется подтверждение аутентификации. MFA токен: {mfaToken}",
+  "PASSWORD_TOO_WEAK": "Пароль слишком слабый. Слишком короткий: {passwordTooShort} (минимальная длина: {passwordMinLength}), Нет букв: {passwordNoLetter}, Нет заглавных букв: {passwordNoUpperCase}, Нет строчных букв: {passwordNoLowerCase}, Нет цифр: {passwordNoDigit}, Нет спецсимволов: {passwordNoSpecialChar}, Слишком распространённый пароль: {passwordTooCommon}.",
+  "OTP_RETRY_TOO_SOON": "Слишком много попыток. Пожалуйста, попробуйте снова через {retryAfterSeconds} сек.",
+  "TOTP_ALREADY_ENABLED": "Двухфакторная аутентификация уже включена для этого аккаунта.",
+  "TOTP_NOT_ENABLED": "Двухфакторная аутентификация не включена для этого аккаунта.",
+  "MFA_TOKEN_EXPIRED": "Срок действия MFA токена истек. Пожалуйста, запросите новый.",
+  "RECOVERY_CODE_ALREADY_USED": "Этот код восстановления уже был использован.",
+  "INVALID_TOTP_CODE": "Предоставленный код неверный.",
+  "INVALID_MFA_TOKEN": "MFA токен недействителен или поврежден."
 }

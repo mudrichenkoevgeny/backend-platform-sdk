@@ -5,18 +5,18 @@ with Dagger and run a Ktor server.
 
 ## What it provides
 
-- **Entrypoint**: [MainKt] starts the server and installs shutdown handling.
+- **Entrypoint**: [MainKt] sets UTC timezone, configures global holders ([PathResolverConfigHolder], [AppErrorParserConfigHolder]), builds Dagger component, and starts the server with shutdown handling.
 - **Dagger wiring**:
-  - [AppComponent] aggregates all SDK modules + [AppModule].
-  - [AppModule] binds sample-specific app metadata ([SampleAppInfo]) and shutdown hook ([AppShutdownHook]).
-- **Ktor application module**: [module] installs SDK configuration and registers routes:
-  - HTTP defaults, serialization, status pages, global rate limit, WebSockets
-  - observability (OpenTelemetry + metrics) and `/metrics` endpoint
-  - Swagger endpoints in non-PROD environments
-  - feature routers (settings, security, user) and authenticated WebSocket router
-- **Bootstrap**: [AppBootstrap] initializes database, verifies critical health, warms up Redis and telemetry.
-- **Graceful shutdown**: [AppShutdownHookImpl] stops the server, waits (best-effort) for audit persistence, then
-  shuts down database and Redis.
+    - [AppComponent] aggregates all SDK modules, including core infrastructure and **feature API modules** (`SettingsApi`, `SecurityApi`, `AuditApi`).
+    - [AppModule] binds app metadata ([SampleAppInfo]) and shutdown logic ([AppShutdownHook]).
+    - [AuditParsersModule] registers resource, action, and metadata parsers for all included features.
+- **Ktor application module**: [module] installs SDK configuration and registers routes based on **AppInstanceMode**:
+    - **PUBLIC**: Registers open routers for settings and user features.
+    - **MANAGEMENT**: Registers management/admin routers for audit, security, and users.
+    - **FULL**: Combines both public and management access.
+    - Includes: HTTP defaults, serialization, status pages, global rate limit, WebSockets, and Swagger (in non-PROD).
+- **Bootstrap**: [AppBootstrap] initializes database, verifies critical health, and warms up Redis and telemetry.
+- **Graceful shutdown**: [AppShutdownHookImpl] stops the server, waits (best-effort) for audit persistence, then shuts down database and Redis.
 
 ## Environment variables
 
@@ -25,9 +25,10 @@ in [AppComponent], for example:
 
 - `core:common` (server/ports/cors/etc.)
 - `core:database` (DB URL/credentials, Flyway migration locations, Redis URL)
-- `core:settings` (global settings seed values)
-- `core:security`, `core:events`, `core:observability`, `core:storage`, `core:crosscutting`
-- `feature:user` (auth/user feature settings)
+- `core:settings` and `feature:settings-api` (global settings seed values and sync)
+- `core:security` and `feature:security-api` (security policies and MFA)
+- `feature:user` (auth, JWT, and user lifecycle settings)
+- `core:audit` and `feature:audit-api` (audit persistence and management)
 
 See the README files of those modules for the complete list of required variables.
 
@@ -36,14 +37,14 @@ See the README files of those modules for the complete list of required variable
 The reference wiring lives in:
 
 - [MainKt] — creates the Dagger component, runs bootstrap, starts Ktor server.
-- [module] — installs Ktor plugins and registers routes/seeders.
+- [module] — installs Ktor plugins and registers routers based on the instance mode.
 
 ### Startup seeding
 
 On `ApplicationStarted`, the sample app triggers:
 
-- non-critical health checks
-- seeding use cases (admin accounts, global settings, security settings, auth settings)
+- **Health checks**: Non-critical health verification.
+- **Data Seeding**: If not in `PUBLIC` mode, triggers use cases for admin accounts (with full permissions), global settings, security, and auth settings.
 
 See: [module].
 
@@ -54,6 +55,7 @@ locations include the relevant paths, for example:
 
 - `db/migration/core/settings/`
 - `db/migration/core/audit/`
+- `db/migration/feature/user/`
 
 The exact list depends on the modules you include in the host application.
 
@@ -62,6 +64,7 @@ The exact list depends on the modules you include in the host application.
 
 [AppComponent]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/sample/di/AppComponent.kt
 [AppModule]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/sample/di/AppModule.kt
+[AuditParsersModule]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/sample/di/AuditParsersModule.kt
 
 [AppBootstrap]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/sample/appbootstrap/AppBootstrap.kt
 

@@ -12,7 +12,6 @@ dependencies {
         api(project(":core:audit"))
         api(project(":core:storage"))
         api(project(":core:events"))
-        api(project(":core:crosscutting"))
         api(project(":feature:user"))
         api(project(":feature:security-api"))
         api(project(":feature:settings-api"))

@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.database.table.AuditEvents
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditAccessFilter
 import io.github.mudrichenkoevgeny.backend.core.audit.RepositoryTestAuditAction
 import io.github.mudrichenkoevgeny.backend.core.audit.RepositoryTestAuditResource
+import io.github.mudrichenkoevgeny.backend.core.audit.compositeAuditMetadataKeyParserForRepositoryTests
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
@@ -31,7 +32,6 @@ import kotlin.time.Clock
 class AuditEventRepositoryImplTest {
 
     private val dataSource = createTestDataSource("audit_repo")
-
     private lateinit var repository: AuditEventRepository
 
     @BeforeAll
@@ -44,7 +44,8 @@ class AuditEventRepositoryImplTest {
         }
         repository = AuditEventRepositoryImpl(
             compositeAuditActionTypeParser = compositeAuditActionTypeParserForRepositoryTests(),
-            compositeAuditResourceTypeParser = compositeAuditResourceTypeParserForRepositoryTests()
+            compositeAuditResourceTypeParser = compositeAuditResourceTypeParserForRepositoryTests(),
+            compositeAuditMetadataKeyParser = compositeAuditMetadataKeyParserForRepositoryTests()
         )
     }
 
@@ -91,7 +92,7 @@ class AuditEventRepositoryImplTest {
         suspendTransaction { repository.createEvent(event) }
 
         val result = suspendTransaction {
-            repository.getEventsList(
+            repository.getEventsPageWithAccessFilter(
                 accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
                 pageParams = PageParams(page = 1, size = 20)
             )
@@ -117,7 +118,7 @@ class AuditEventRepositoryImplTest {
         }
 
         val result = suspendTransaction {
-            repository.getEventsList(
+            repository.getEventsPageWithAccessFilter(
                 accessFilter = AuditAccessFilter(emptySet(), emptySet()),
                 pageParams = PageParams(page = 1, size = 50)
             )
@@ -129,7 +130,7 @@ class AuditEventRepositoryImplTest {
     }
 
     @Test
-    fun `getEventsList filters by actorId`() = runBlocking {
+    fun `getEventsList filters by actorIds`() = runBlocking {
         val actorId = UUID.randomUUID().toString()
         val event = AuditEvent(
             actorId = actorId,
@@ -142,15 +143,40 @@ class AuditEventRepositoryImplTest {
         suspendTransaction { repository.createEvent(event) }
 
         val result = suspendTransaction {
-            repository.getEventsList(
+            repository.getEventsPageWithAccessFilter(
                 accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
                 pageParams = PageParams(page = 1, size = 50),
-                actorId = actorId
+                actorIds = listOf(actorId)
             )
         }
 
         val success = result as AppResult.Success
         assertTrue(success.data.items.any { it.id == event.id })
         assertTrue(success.data.items.all { it.actorId == actorId })
+    }
+
+    @Test
+    fun `getEventsList filters by messages using ILIKE`() = runBlocking {
+        val message = "Sensitive data leak"
+        val event = AuditEvent(
+            actorType = AuditActorType.SYSTEM,
+            action = RepositoryTestAuditAction("alert"),
+            resource = RepositoryTestAuditResource("security"),
+            status = AuditStatus.FAILED,
+            message = message,
+            createdAt = Clock.System.now()
+        )
+        suspendTransaction { repository.createEvent(event) }
+
+        val result = suspendTransaction {
+            repository.getEventsPageWithAccessFilter(
+                accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
+                pageParams = PageParams(page = 1, size = 10),
+                messages = listOf("DATA")
+            )
+        }
+
+        val success = result as AppResult.Success
+        assertTrue(success.data.items.any { it.message == message })
     }
 }

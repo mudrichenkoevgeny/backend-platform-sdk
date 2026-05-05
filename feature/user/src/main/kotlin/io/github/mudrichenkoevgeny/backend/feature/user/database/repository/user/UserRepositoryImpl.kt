@@ -1,16 +1,20 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
+import io.github.mudrichenkoevgeny.backend.core.common.model.onSet
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.getNumOfTotalPages
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.util.toJavaInstant
 import io.github.mudrichenkoevgeny.backend.core.common.util.toKotlinInstant
 import io.github.mudrichenkoevgeny.backend.core.database.extensions.applyPagination
-import io.github.mudrichenkoevgeny.backend.core.database.extensions.jsonbContainsSingleString
+import io.github.mudrichenkoevgeny.backend.core.database.extensions.jsonbContainsAllStrings
 import io.github.mudrichenkoevgeny.backend.core.database.mapper.toExposedSortOrder
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
@@ -25,6 +29,8 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.isNotNull
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.core.Op
+import org.jetbrains.exposed.v1.core.greaterEq
+import org.jetbrains.exposed.v1.core.inList
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
@@ -47,18 +53,18 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
 
     override suspend fun createUser(user: UserDetails): AppResult<UserDetails> {
         val inserted = UsersTable.insert { row ->
-            row[UsersTable.id] = user.id.value
-            row[UsersTable.role] = user.role
-            row[UsersTable.accountStatus] = user.accountStatus
-            row[UsersTable.accountStatusBeforeDeletion] = user.accountStatusBeforeDeletion
-            row[UsersTable.permissions] = user.permissions.map { userPermissionCode ->
-                userPermissionCode.value
-            }.toSet()
-            row[UsersTable.lastLoginAt] = user.lastLoginAt?.toJavaInstant()
-            row[UsersTable.lastActiveAt] = user.lastActiveAt?.toJavaInstant()
-            row[UsersTable.createdAt] = user.createdAt.toJavaInstant()
-            row[UsersTable.updatedAt] = user.updatedAt?.toJavaInstant()
-            row[UsersTable.scheduledPermanentDeletionAt] = user.scheduledPermanentDeletionAt?.toJavaInstant()
+            row[id] = user.id.value
+            row[role] = user.role
+            row[accountStatus] = user.accountStatus
+            row[accountStatusBeforeDeletion] = user.accountStatusBeforeDeletion
+            row[authorityLevel] = user.authorityLevel
+            row[permissionCodes] = user.permissionCodes.map { it.value }.toSet()
+            row[isTotpEnabled] = user.isTotpEnabled
+            row[lastLoginAt] = user.lastLoginAt?.toJavaInstant()
+            row[lastActiveAt] = user.lastActiveAt?.toJavaInstant()
+            row[createdAt] = user.createdAt.toJavaInstant()
+            row[updatedAt] = user.updatedAt?.toJavaInstant()
+            row[scheduledPermanentDeletionAt] = user.scheduledPermanentDeletionAt?.toJavaInstant()
         }
 
         if (inserted.insertedCount == 0) {
@@ -76,100 +82,137 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
     }
 
     override suspend fun updateUser(
-        user: UserDetails,
-        status: UserAccountStatus?,
-        statusBeforeDeletion: UserAccountStatus?,
-        permissions: Set<PermissionCode>,
-        lastLoginAt: KotlinInstant?,
-        lastActiveAt: KotlinInstant?,
-        scheduledPermanentDeletionAt: KotlinInstant?
+        userId: UserId,
+        status: UpdateField<UserAccountStatus>,
+        statusBeforeDeletion: UpdateField<UserAccountStatus>,
+        authorityLevel: UpdateField<Int>,
+        permissionCodes: UpdateField<Set<PermissionCode>>,
+        isTotpEnabled: UpdateField<Boolean>,
+        lastLoginAt: UpdateField<KotlinInstant>,
+        lastActiveAt: UpdateField<KotlinInstant>,
+        scheduledPermanentDeletionAt: UpdateField<KotlinInstant>
     ): AppResult<UserDetails> {
-        val permissionsUpdated = permissions.isNotEmpty()
-        if (
-            status == null &&
-            statusBeforeDeletion == null &&
-            !permissionsUpdated &&
-            lastLoginAt == null &&
-            lastActiveAt == null &&
-            scheduledPermanentDeletionAt == null
-        ) {
-            return AppResult.Success(user)
-        }
+        val statusToSet = if (status is UpdateField.Set) {
+            status.value
+                ?: return AppResult.Error(CommonError.Database("Status cannot be null"))
+        } else null
+
+        val authorityLevelToSet = if (authorityLevel is UpdateField.Set) {
+            authorityLevel.value
+                ?: return AppResult.Error(CommonError.Database("Authority level cannot be null"))
+        } else null
+
+        val isTotpEnabledToSet = if (isTotpEnabled is UpdateField.Set) {
+            isTotpEnabled.value
+                ?: return AppResult.Error(CommonError.Database("isTotpEnabled cannot be null"))
+        } else null
 
         val updatedAtJavaInstant = JavaInstant.now()
 
-        val updatedRows = UsersTable.update({ UsersTable.id eq user.id.value }) { stmt ->
-            if (status != null) {
-                stmt[UsersTable.accountStatus] = status
+        val updatedRows = UsersTable.update({ UsersTable.id eq userId.value }) { updateStatement ->
+            statusToSet?.let { accountStatus ->
+                updateStatement[UsersTable.accountStatus] = accountStatus
             }
-            if (statusBeforeDeletion != null) {
-                stmt[UsersTable.accountStatusBeforeDeletion] = statusBeforeDeletion
+
+            statusBeforeDeletion.onSet { accountStatusBeforeDeletion ->
+                updateStatement[UsersTable.accountStatusBeforeDeletion] = accountStatusBeforeDeletion
             }
-            if (permissionsUpdated) {
-                stmt[UsersTable.permissions] = permissions.map { it.value }.toSet()
+
+            authorityLevelToSet?.let { level ->
+                updateStatement[UsersTable.authorityLevel] = level
             }
-            if (lastLoginAt != null) {
-                stmt[UsersTable.lastLoginAt] = lastLoginAt.toJavaInstant()
+
+            permissionCodes.onSet { codes ->
+                updateStatement[UsersTable.permissionCodes] = codes?.map { permissionCode ->
+                    permissionCode.value
+                }?.toSet() ?: emptySet()
             }
-            if (lastActiveAt != null) {
-                stmt[UsersTable.lastActiveAt] = lastActiveAt.toJavaInstant()
+
+            isTotpEnabledToSet?.let { enabled ->
+                updateStatement[UsersTable.isTotpEnabled] = enabled
             }
-            if (scheduledPermanentDeletionAt != null) {
-                stmt[UsersTable.scheduledPermanentDeletionAt] = scheduledPermanentDeletionAt.toJavaInstant()
+
+            lastLoginAt.onSet { lastLoginAt ->
+                updateStatement[UsersTable.lastLoginAt] = lastLoginAt?.toJavaInstant()
             }
-            stmt[UsersTable.updatedAt] = updatedAtJavaInstant
+
+            lastActiveAt.onSet { lastActiveAt ->
+                updateStatement[UsersTable.lastActiveAt] = lastActiveAt?.toJavaInstant()
+            }
+
+            scheduledPermanentDeletionAt.onSet { scheduledDeletionAt ->
+                updateStatement[UsersTable.scheduledPermanentDeletionAt] = scheduledDeletionAt?.toJavaInstant()
+            }
+
+            updateStatement[UsersTable.updatedAt] = updatedAtJavaInstant
         }
 
         if (updatedRows == 0) {
             return AppResult.Error(
-                CommonError.Database("Failed to update fields for user id=${user.id.value}")
+                CommonError.Database("Failed to update fields for user id=${userId.value}")
             )
         }
 
-        val updatedRow = UsersTable
-            .selectAll()
-            .where { UsersTable.id eq user.id.value }
-            .singleOrNull()
-            ?: return AppResult.Error(CommonError.Database("Updated user not found for id=${user.id.value}"))
-
-        return AppResult.Success(updatedRow.toUser())
+        return getUserDetailsById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
     }
 
-    override suspend fun getUserById(userId: UserId): AppResult<UserDetails?> {
-        val resultRow = UsersTable
+    override suspend fun getUserDetailsById(userId: UserId): AppResult<UserDetails?> {
+        return AppResult.Success(getUserResultRow(userId)?.toUserDetails())
+    }
+
+    private fun getUserResultRow(userId: UserId): ResultRow? {
+        return UsersTable
             .selectAll()
             .where { UsersTable.id eq userId.value }
             .singleOrNull()
-
-        return AppResult.Success(resultRow?.toUser())
     }
 
-    override suspend fun getUsersList(
+    override suspend fun getUsersPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter,
         pageParams: PageParams,
         sortBy: UserSortValues.UserSortBy,
         sortOrder: SortOrder,
-        role: UserRole?,
-        accountStatus: UserAccountStatus?,
-        accountStatusBeforeDeletion: UserAccountStatus?,
-        userPermissionCode: PermissionCode?
+        roles: List<UserRole>,
+        accountStatuses: List<UserAccountStatus>,
+        accountStatusesBeforeDeletion: List<UserAccountStatus>,
+        authorityLevelFrom: Int?,
+        authorityLevelTo: Int?,
+        permissionCodes: Set<PermissionCode>,
+        isTotpEnabled: Boolean?
     ): AppResult<PagedResult<UserDetails>> {
-        var query = UsersTable.selectAll()
+        val query = UsersTable.selectAll()
 
-        query = query.andWhere {
+        query.andWhere {
             val roleConditions = accessFilter.allowedUserRoles
                 .map { allowedRole -> UsersTable.role eq allowedRole }
-
             roleConditions.reduceOrNull { acc, op -> acc or op } ?: Op.FALSE
         }
 
-        role?.let { r -> query = query.andWhere { UsersTable.role eq r } }
-        accountStatus?.let { status -> query = query.andWhere { UsersTable.accountStatus eq status } }
-        accountStatusBeforeDeletion?.let { status ->
-            query = query.andWhere { UsersTable.accountStatusBeforeDeletion eq status }
+        if (roles.isNotEmpty()) {
+            query.andWhere { UsersTable.role inList roles }
         }
-        userPermissionCode?.let { code ->
-            query = query.andWhere { UsersTable.permissions jsonbContainsSingleString code.value }
+        if (accountStatuses.isNotEmpty()) {
+            query.andWhere { UsersTable.accountStatus inList accountStatuses }
+        }
+        if (accountStatusesBeforeDeletion.isNotEmpty()) {
+            query.andWhere { UsersTable.accountStatusBeforeDeletion inList accountStatusesBeforeDeletion }
+        }
+
+        if (authorityLevelFrom != null) {
+            query.andWhere { UsersTable.authorityLevel greaterEq authorityLevelFrom }
+        }
+        if (authorityLevelTo != null) {
+            query.andWhere { UsersTable.authorityLevel lessEq authorityLevelTo }
+        }
+
+        if (isTotpEnabled != null) {
+            query.andWhere { UsersTable.isTotpEnabled eq isTotpEnabled }
+        }
+
+        if (permissionCodes.isNotEmpty()) {
+            query.andWhere {
+                UsersTable.permissionCodes jsonbContainsAllStrings permissionCodes.map { it.value }.toSet()
+            }
         }
 
         val totalCount = query.count()
@@ -181,12 +224,11 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             UserSortValues.UserSortBy.CREATED_AT -> UsersTable.createdAt
             UserSortValues.UserSortBy.UPDATED_AT -> UsersTable.updatedAt
         }
-        val exposedSortOrder = sortOrder.toExposedSortOrder()
 
         val users = query
-            .orderBy(sortColumn to exposedSortOrder)
+            .orderBy(sortColumn to sortOrder.toExposedSortOrder())
             .applyPagination(pageParams)
-            .map { it.toUser() }
+            .map { it.toUserDetails() }
 
         val totalPages = getNumOfTotalPages(totalCount, pageParams.size)
 
@@ -210,17 +252,15 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         return AppResult.Success(deletedCount)
     }
 
-    private fun ResultRow.toUser(): UserDetails {
+    private fun ResultRow.toUserDetails(): UserDetails {
         return UserDetails(
             id = UserId(this[UsersTable.id].value),
             role = this[UsersTable.role],
             accountStatus = this[UsersTable.accountStatus],
             accountStatusBeforeDeletion = this[UsersTable.accountStatusBeforeDeletion],
-            permissions = this[UsersTable.permissions].mapNotNull { permissionString ->
-                permissionString
-                    .takeIf { it.isNotBlank() }
-                    ?.let { PermissionCode(it) }
-            }.toSet(),
+            authorityLevel = this[UsersTable.authorityLevel],
+            permissionCodes = this[UsersTable.permissionCodes].map { PermissionCode(it) }.toSet(),
+            isTotpEnabled = this[UsersTable.isTotpEnabled],
             lastLoginAt = this[UsersTable.lastLoginAt]?.toKotlinInstant(),
             lastActiveAt = this[UsersTable.lastActiveAt]?.toKotlinInstant(),
             createdAt = this[UsersTable.createdAt].toKotlinInstant(),

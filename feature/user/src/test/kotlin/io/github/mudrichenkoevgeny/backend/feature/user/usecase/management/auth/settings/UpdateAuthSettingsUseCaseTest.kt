@@ -1,69 +1,69 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auth.settings
 
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
+import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.PublicAuthSettings
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.settings.toAuthSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.settings.PublicAuthSettingsPayload
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class UpdateAuthSettingsUseCaseTest {
 
-    private companion object {
-        private const val IP_ADDRESS = "127.0.0.1"
-    }
-
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
+    private val auditErrorConverter = mockk<AuditErrorConverter>()
     private val webSocketManager = mockk<WebSocketManager>(relaxed = true)
 
     private val useCase = UpdateAuthSettingsUseCase(
         authSettingsProvider = authSettingsProvider,
         auditLogger = auditLogger,
+        auditErrorConverter = auditErrorConverter,
         webSocketManager = webSocketManager
     )
 
-    private val requestContext = RequestContext(
+    private fun sampleManagementSettings() = ManagementAuthSettings(
+        availableAuthProviders = mockk(),
+        maxTotalIdentifiers = 5,
+        maxEmailIdentifiers = 2,
+        maxPhoneIdentifiers = 2,
+        maxIdentifiersPerExternalProvider = 1,
+        maxActiveSessions = 10,
+        accessTokenExpirationSeconds = 3600,
+        refreshTokenExpirationSeconds = 86400,
+        accountDeletionDelaySeconds = 2592000
+    )
+
+    private fun authContext(userId: UserId) = AuthenticatedRequestContext(
         traceId = null,
-        userId = null,
-        userRole = null,
-        sessionId = null,
+        userId = userId,
+        userRole = UserRole.ADMIN,
+        sessionId = UserSessionId.generate(),
         clientInfo = ClientInfo(
-            deviceInfo = ClientDeviceInfo(
-                deviceId = null,
-                deviceName = null,
-                clientType = null,
-                language = null,
-                appVersion = null,
-                operationSystemVersion = null
-            ),
-            userAgent = null,
-            ipAddress = IP_ADDRESS,
+            deviceInfo = ClientDeviceInfo(null, null, null, null, null, null),
+            userAgent = "test-agent",
+            ipAddress = "127.0.0.1",
             host = null,
             origin = null,
             apiVersion = null
@@ -71,95 +71,76 @@ class UpdateAuthSettingsUseCaseTest {
     )
 
     @Test
-    fun `invoke on success sends AUTH_SETTINGS_UPDATED with public payload`() = runTest {
-        val management = sampleManagementAuthSettings()
-        val publicAfterUpdate = PublicAuthSettings(
-            availableAuthProviders = management.availableAuthProviders
-        )
+    fun `successfully updates settings, logs audit and broadcasts via websocket`() = runTest {
+        val settings = sampleManagementSettings()
+        val userId = UserId.generate()
+        val context = authContext(userId)
+        val publicSettings = mockk<PublicAuthSettings>(relaxed = true)
 
-        coEvery { authSettingsProvider.updateManagementAuthSettings(management) } returns AppResult.Success(Unit)
-        every { authSettingsProvider.getPublicAuthSettings() } returns AppResult.Success(publicAfterUpdate)
+        coEvery {
+            authSettingsProvider.updateManagementAuthSettings(settings)
+        } returns AppResult.Success(Unit)
 
-        val result = useCase.invoke(management, requestContext)
+        every { authSettingsProvider.getPublicAuthSettings() } returns publicSettings
+
+        val result = useCase(settings, context)
 
         assertEquals(AppResult.Success(Unit), result)
 
-        verify(exactly = 1) {
+        coVerify(exactly = 1) {
+            authSettingsProvider.updateManagementAuthSettings(settings)
             auditLogger.log(
-                any(),
-                AuditActorType.USER,
-                any(),
-                UserAuditActionType.MANAGEMENT_UPDATE_AUTH_SETTINGS,
-                UserAuditResourceType.AUTH_SETTINGS,
-                any(),
-                AuditStatus.SUCCESS,
-                any(),
-                any()
+                actorId = userId.asHexDashString(),
+                actorType = AuditActorType.USER,
+                actorUserRole = UserRole.ADMIN.serialName,
+                action = UserAuditActionType.MANAGEMENT_UPDATE_AUTH_SETTINGS,
+                resource = UserAuditResourceType.AUTH_SETTINGS,
+                status = AuditStatus.SUCCESS,
+                metadata = any()
             )
+            webSocketManager.sendMessageToAll(match {
+                it.type == UserWebSocketEventTypes.AUTH_SETTINGS_UPDATED
+            })
         }
-
-        val frameSlot = slot<SocketFrame>()
-        coVerify(exactly = 1) { webSocketManager.sendMessageToAll(capture(frameSlot)) }
-        val frame = frameSlot.captured
-        assertEquals(UserWebSocketEventTypes.AUTH_SETTINGS_UPDATED, frame.type)
-        assertNotNull(frame.payload)
-        val decoded = FoundationJson.decodeFromJsonElement(
-            PublicAuthSettingsPayload.serializer(),
-            frame.payload!!
-        )
-        assertEquals(publicAfterUpdate.toAuthSettingsPayload(), decoded)
     }
 
     @Test
-    fun `invoke on provider error logs failed audit and does not broadcast`() = runTest {
-        val management = sampleManagementAuthSettings()
-        val error = CommonError.Unknown(message = "persist failed")
+    fun `handles error, logs failure audit and does not broadcast`() = runTest {
+        val settings = sampleManagementSettings()
+        val userId = UserId.generate()
+        val context = authContext(userId)
+        val error = UserError.UserForbidden()
+        val errorLogData = AuditErrorLogData(
+            status = AuditStatus.FAILED,
+            metadata = emptySet()
+        )
 
-        coEvery { authSettingsProvider.updateManagementAuthSettings(management) } returns AppResult.Error(error)
+        coEvery {
+            authSettingsProvider.updateManagementAuthSettings(settings)
+        } returns AppResult.Error(error)
 
-        val result = useCase.invoke(management, requestContext)
+        every { auditErrorConverter.convert(error) } returns errorLogData
 
-        assertEquals(AppResult.Error(error), result)
+        val result = useCase(settings, context)
 
-        verify(exactly = 1) {
+        assertTrue(result is AppResult.Error)
+        assertEquals(error, (result as AppResult.Error).error)
+
+        coVerify(exactly = 1) {
             auditLogger.log(
-                any(),
-                AuditActorType.USER,
-                any(),
-                UserAuditActionType.MANAGEMENT_UPDATE_AUTH_SETTINGS,
-                UserAuditResourceType.AUTH_SETTINGS,
-                any(),
-                AuditStatus.FAILED,
-                any(),
-                any()
+                actorId = userId.asHexDashString(),
+                actorType = AuditActorType.USER,
+                actorUserRole = UserRole.ADMIN.serialName,
+                action = UserAuditActionType.MANAGEMENT_UPDATE_AUTH_SETTINGS,
+                resource = UserAuditResourceType.AUTH_SETTINGS,
+                status = AuditStatus.FAILED,
+                metadata = any()
             )
         }
 
-        coVerify(exactly = 0) { webSocketManager.sendMessageToAll(any()) }
-        verify(exactly = 0) { authSettingsProvider.getPublicAuthSettings() }
+        coVerify(exactly = 0) {
+            authSettingsProvider.getPublicAuthSettings()
+            webSocketManager.sendMessageToAll(any())
+        }
     }
-
-    @Test
-    fun `invoke does not broadcast when update succeeds but public settings read fails`() = runTest {
-        val management = sampleManagementAuthSettings()
-        val readError = CommonError.Unknown(message = "read failed")
-
-        coEvery { authSettingsProvider.updateManagementAuthSettings(management) } returns AppResult.Success(Unit)
-        every { authSettingsProvider.getPublicAuthSettings() } returns AppResult.Error(readError)
-
-        val result = useCase.invoke(management, requestContext)
-
-        assertEquals(AppResult.Success(Unit), result)
-        coVerify(exactly = 0) { webSocketManager.sendMessageToAll(any()) }
-        verify(exactly = 1) { authSettingsProvider.getPublicAuthSettings() }
-    }
-
-    private fun sampleManagementAuthSettings() = ManagementAuthSettings(
-        availableAuthProviders = AvailableAuthProviders(
-            primary = listOf(UserAuthProvider.EMAIL),
-            secondary = listOf(UserAuthProvider.GOOGLE)
-        ),
-        accessTokenValidityHours = 24L,
-        refreshTokenValidityDays = 30L
-    )
 }

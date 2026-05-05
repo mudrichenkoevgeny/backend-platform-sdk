@@ -1,24 +1,34 @@
 # feature/security-api
 
-HTTP routing module for security settings APIs (password policy, recent-authentication window, etc.).
+HTTP routing and orchestration for security settings (password policies, authentication windows, etc.) and real-time policy synchronization via WebSockets.
 
 ## What it provides
 
-- `SecurityRouter` as the aggregate router for security-related HTTP endpoints.
-- Public/open routes via `OpenSecuritySettingsRouter` (e.g. password policy for clients).
-- Management routes via `ManagementSecuritySettingsRouter` (JWT-protected updates).
-- Use cases that delegate to `core/security` providers and services.
+- **Routing:**
+    - [OpenSecuritySettingsRouter] — public endpoints for reading current security policies (e.g., password requirements).
+    - [ManagementSecuritySettingsRouter] — authenticated (STAFF/ADMIN) routes for updating global security parameters.
+- **Orchestration:**
+    - **UpdateSecuritySettings:** [UpdateSecuritySettingsUseCase] for persisting settings, logging administrative audit events, and broadcasting updates via WebSockets.
+    - **GetSecuritySettings:** [GetSecuritySettingsUseCase] for retrieving the effective security snapshot.
+- **Real-time Sync:** [SecurityWebSocketMessageHandler] — handles security-related WebSocket frames, specifically acknowledging policy updates to ensure immediate enforcement across clients.
+- **Swagger:** [SecuritySwaggerTags] for consistent categorization of security endpoints in OpenAPI docs.
 
 ## Usage
 
-- Add a Gradle dependency on the `:feature:security-api` project (it already depends on `:core:security`, `:core:settings`, `:core:audit`, and `:feature:user`).
-- Include [SecurityModules] from `core/security` in your Dagger component so [SecuritySettingsProvider] and related types are bound. This module does not ship a separate Dagger `@Module` aggregate; HTTP routers use `@Inject` and become available once `:feature:security-api` is on your component’s classpath.
-- Register `SecurityRouter` in your Ktor `routing { }` block.
+### 1. DI Configuration
+Include **[SecurityApiModules]** in your Dagger component.
+- It contributes the WebSocket handler into the global `Set<WebSocketMessageHandler>` via multibindings.
+- The module requires [SecurityModules] from `core/security` to be present for [SecuritySettingsProvider] and other core security logic.
 
-## Notes
+### 2. Route Registration
+Inject [OpenSecuritySettingsRouter] and [ManagementSecuritySettingsRouter], then register them within your Ktor `routing { }` block.
 
-- This module exposes HTTP APIs only.
-- Persisted security settings and seeding use cases live in `core/security` (and system settings storage from `core/settings`).
+---
 
-[SecurityModules]: ../core/security/src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/di/SecurityModules.kt
-[SecuritySettingsProvider]: ../core/security/src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/security/settings/provider/SecuritySettingsProvider.kt
+[SecurityApiModules]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/security/api/di/SecurityApiModules.kt
+[OpenSecuritySettingsRouter]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/security/api/route/open/OpenSecuritySettingsRouter.kt
+[ManagementSecuritySettingsRouter]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/security/api/route/management/ManagementSecuritySettingsRouter.kt
+[UpdateSecuritySettingsUseCase]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/security/api/usecase/management/settings/UpdateSecuritySettingsUseCase.kt
+[GetSecuritySettingsUseCase]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/security/api/usecase/open/settings/GetSecuritySettingsUseCase.kt
+[SecurityWebSocketMessageHandler]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/security/api/network/websockets/messagehandler/SecurityWebSocketMessageHandler.kt
+[SecuritySwaggerTags]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/security/api/route/SecuritySwaggerTags.kt

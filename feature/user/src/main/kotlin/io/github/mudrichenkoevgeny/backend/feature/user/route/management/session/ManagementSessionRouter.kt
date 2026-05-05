@@ -1,6 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.management.session
 
+import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
+import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.mapItems
@@ -9,17 +12,19 @@ import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
-import io.github.mudrichenkoevgeny.backend.feature.user.audit.toDeniedUserAuditEventMetadata
+import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseSessionsListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.session.ManagementDeleteAllUserSessionsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.session.ManagementDeleteUserSessionUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.session.ManagementGetUserSessionUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.session.ManagementGetUserSessionsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.session.ManagementDeleteAllSessionsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.session.ManagementDeleteSessionUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.session.ManagementGetSessionUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.session.ManagementGetSessionsUseCase
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
@@ -35,50 +40,99 @@ import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Management HTTP routes for overseeing and terminating user sessions.
+ *
+ * Registered routes:
+ * 1. [ManagementSessionRoutes.GET_SESSIONS] — retrieves a filtered list of user sessions via [ManagementGetSessionsUseCase].
+ * 2. [ManagementSessionRoutes.GET_SESSION] — retrieves specific session details via [ManagementGetSessionUseCase].
+ * 3. [ManagementSessionRoutes.DELETE_SESSION] — terminates a specific user session via [ManagementDeleteSessionUseCase].
+ * 4. [ManagementSessionRoutes.DELETE_ALL_USER_SESSIONS] — terminates all active sessions for a user via [ManagementDeleteAllSessionsUseCase].
+ */
 @Singleton
 class ManagementSessionRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val auditLogger: AuditLogger,
-    private val managementGetUserSessionsUseCase: ManagementGetUserSessionsUseCase,
-    private val managementGetUserSessionUseCase: ManagementGetUserSessionUseCase,
-    private val managementDeleteUserSessionUseCase: ManagementDeleteUserSessionUseCase,
-    private val managementDeleteAllUserSessionsUseCase: ManagementDeleteAllUserSessionsUseCase
+    private val auditErrorConverter: AuditErrorConverter,
+    private val managementGetSessionsUseCase: ManagementGetSessionsUseCase,
+    private val managementGetSessionUseCase: ManagementGetSessionUseCase,
+    private val managementDeleteSessionUseCase: ManagementDeleteSessionUseCase,
+    private val managementDeleteAllSessionsUseCase: ManagementDeleteAllSessionsUseCase
 ) : BaseRouter {
+
     override fun register(route: Route) {
+        route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
+            registerGetSessionsRoute(this)
+            registerGetSessionRoute(this)
+            registerDeleteSessionRoute(this)
+            registerDeleteAllUserSessionsRoute(this)
+        }
+    }
+
+    private fun registerGetSessionsRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+
         route.get(
-            path = ManagementSessionRoutes.GET_USER_SESSIONS,
-            builder = { getSessionsDocs() },
-            body = { getSessions() }
-        )
-        route.get(
-            path = ManagementSessionRoutes.GET_USER_SESSION,
-            builder = { getSessionDocs() },
-            body = { getSession() }
-        )
-        route.delete(
-            path = ManagementSessionRoutes.DELETE_USER_SESSION,
-            builder = { deleteSessionDocs() },
-            body = { deleteSession() }
-        )
-        route.delete(
-            path = ManagementSessionRoutes.DELETE_ALL_USER_SESSIONS,
-            builder = { deleteAllUserSessionsDocs() },
-            body = { deleteAllUserSessions() }
+            path = ManagementSessionRoutes.GET_SESSIONS,
+            builder = { getSessionsDocs(allowedRoles, allowedAccountStatuses) },
+            body = { getSessions(allowedRoles, allowedAccountStatuses) }
         )
     }
 
-    private fun RouteConfig.getSessionsDocs() {
+    private fun registerGetSessionRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+
+        route.get(
+            path = ManagementSessionRoutes.GET_SESSION,
+            builder = { getSessionDocs(allowedRoles, allowedAccountStatuses) },
+            body = { getSession(allowedRoles, allowedAccountStatuses) }
+        )
+    }
+
+    private fun registerDeleteSessionRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
+
+        route.delete(
+            path = ManagementSessionRoutes.DELETE_SESSION,
+            builder = { deleteSessionDocs(allowedRoles, allowedAccountStatuses) },
+            body = { deleteSession(allowedRoles, allowedAccountStatuses) }
+        )
+    }
+
+    private fun registerDeleteAllUserSessionsRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
+
+        route.delete(
+            path = ManagementSessionRoutes.DELETE_ALL_USER_SESSIONS,
+            builder = { deleteAllUserSessionsDocs(allowedRoles, allowedAccountStatuses) },
+            body = { deleteAllUserSessions(allowedRoles, allowedAccountStatuses) }
+        )
+    }
+
+    private fun RouteConfig.getSessionsDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         summary = GET_SESSIONS_ROUTE_SUMMARY
-        description = GET_SESSIONS_ROUTE_DESCRIPTION
         operationId = GET_SESSIONS_ROUTE_OPERATION_ID
         tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        description = getFormattedDescription(
+            description = GET_SESSIONS_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.serialName },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+        )
         response {
             code(HttpStatusCode.OK) {
                 description = GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION
@@ -86,11 +140,14 @@ class ManagementSessionRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.getSessions() {
+    private suspend fun RoutingContext.getSessions(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val authorizeResult = authenticationProvider.requireUser(
             call = call,
-            allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN),
-            requiredAccountStatus = setOf(UserAccountStatus.ACTIVE)
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         if (authorizeResult is AppResult.Error) {
@@ -101,16 +158,15 @@ class ManagementSessionRouter @Inject constructor(
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
         val queryParams = call.parseSessionsListQueryParams()
 
-        val result = managementGetUserSessionsUseCase(
-            authenticatedRequestContext = authenticatedRequestContext,
+        val result = managementGetSessionsUseCase(
             pageParams = queryParams.listing.pageParams,
             sortBy = queryParams.listing.sortBy,
             sortOrder = queryParams.listing.sortOrder,
             userIds = queryParams.userIds,
+            userRoles = queryParams.userRoles,
             identifiers = queryParams.identifiers,
             identifierIds = queryParams.identifierIds,
             identifierAuthProviders = queryParams.identifierAuthProviders,
-            revokedValues = queryParams.revokedValues,
             clientTypes = queryParams.clientTypes,
             userAgents = queryParams.userAgents,
             ipAddresses = queryParams.ipAddresses,
@@ -118,19 +174,27 @@ class ManagementSessionRouter @Inject constructor(
             deviceIds = queryParams.deviceIds,
             deviceNames = queryParams.deviceNames,
             appVersions = queryParams.appVersions,
-            operationSystemVersions = queryParams.operationSystemVersions
+            operationSystemVersions = queryParams.operationSystemVersions,
+            authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { paged ->
-            paged.mapItems { it.toUserSessionPayload() }
+        call.respondResult(result, appLogger, appErrorParser) { pagedSessions ->
+            pagedSessions.mapItems { userSession -> userSession.toUserSessionPayload() }
         }
     }
 
-    private fun RouteConfig.getSessionDocs() {
+    private fun RouteConfig.getSessionDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         summary = GET_SESSION_ROUTE_SUMMARY
-        description = GET_SESSION_ROUTE_DESCRIPTION
         operationId = GET_SESSION_ROUTE_OPERATION_ID
         tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        description = getFormattedDescription(
+            description = GET_SESSION_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.serialName },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+        )
         request {
             pathParameter<String>(UserApiPaths.USER_ID) {
                 description = GET_SESSION_ROUTE_PATH_USER_ID_DESCRIPTION
@@ -146,11 +210,14 @@ class ManagementSessionRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.getSession() {
+    private suspend fun RoutingContext.getSession(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val authorizeResult = authenticationProvider.requireUser(
             call = call,
-            allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN),
-            requiredAccountStatus = setOf(UserAccountStatus.ACTIVE)
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         if (authorizeResult is AppResult.Error) {
@@ -159,15 +226,11 @@ class ManagementSessionRouter @Inject constructor(
         }
 
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
-        val userId = call.validatePathParameter(UserApiPaths.USER_ID) { userId ->
-            userId.toUserIdOrThrow()
-        }
         val userSessionId = call.validatePathParameter(UserApiPaths.SESSION_ID) { userSessionId ->
             userSessionId.toUserSessionIdOrThrow()
         }
 
-        val result = managementGetUserSessionUseCase(
-            userId = userId,
+        val result = managementGetSessionUseCase(
             userSessionId = userSessionId,
             authenticatedRequestContext = authenticatedRequestContext
         )
@@ -177,11 +240,18 @@ class ManagementSessionRouter @Inject constructor(
         }
     }
 
-    private fun RouteConfig.deleteSessionDocs() {
+    private fun RouteConfig.deleteSessionDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         summary = DELETE_SESSION_ROUTE_SUMMARY
-        description = DELETE_SESSION_ROUTE_DESCRIPTION
         operationId = DELETE_SESSION_ROUTE_OPERATION_ID
         tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        description = getFormattedDescription(
+            description = DELETE_SESSION_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.serialName },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+        )
         request {
             pathParameter<String>(UserApiPaths.USER_ID) {
                 description = DELETE_SESSION_ROUTE_PATH_USER_ID_DESCRIPTION
@@ -197,40 +267,33 @@ class ManagementSessionRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.deleteSession() {
+    private suspend fun RoutingContext.deleteSession(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
 
         val authorizeResult = authenticationProvider.requireUser(
             call = call,
-            allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN),
-            requiredAccountStatus = setOf(UserAccountStatus.ACTIVE)
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         if (authorizeResult is AppResult.Error) {
-            val metadata: Set<AuditEventMetadata> = authorizeResult.error.toDeniedUserAuditEventMetadata() +
-                    authenticatedRequestContext.clientInfo.toAuditMetadata()
-            auditLogger.log(
-                actorId = authenticatedRequestContext.userId.asHexDashString(),
-                actorType = AuditActorType.USER,
-                actorUserRole = authenticatedRequestContext.userRole.serialName,
-                action = UserAuditActionType.MANAGEMENT_DELETE_USER_SESSION,
-                resource = UserAuditResourceType.USER_SESSION,
-                status = AuditStatus.DENIED,
-                metadata = metadata
+            logErrorToAudit(
+                authenticatedRequestContext = authenticatedRequestContext,
+                actionType = UserAuditActionType.MANAGEMENT_DELETE_SESSION,
+                error = authorizeResult.error
             )
             call.respondResult(authorizeResult, appLogger, appErrorParser)
             return
         }
 
-        val userId = call.validatePathParameter(UserApiPaths.USER_ID) { userId ->
-            userId.toUserIdOrThrow()
-        }
         val userSessionId = call.validatePathParameter(UserApiPaths.SESSION_ID) { userSessionId ->
             userSessionId.toUserSessionIdOrThrow()
         }
 
-        val result = managementDeleteUserSessionUseCase(
-            userId = userId,
+        val result = managementDeleteSessionUseCase(
             userSessionId = userSessionId,
             authenticatedRequestContext = authenticatedRequestContext
         )
@@ -238,11 +301,18 @@ class ManagementSessionRouter @Inject constructor(
         call.respondResult(result, appLogger, appErrorParser)
     }
 
-    private fun RouteConfig.deleteAllUserSessionsDocs() {
+    private fun RouteConfig.deleteAllUserSessionsDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         summary = DELETE_ALL_USER_SESSIONS_ROUTE_SUMMARY
-        description = DELETE_ALL_USER_SESSIONS_ROUTE_DESCRIPTION
         operationId = DELETE_ALL_USER_SESSIONS_ROUTE_OPERATION_ID
         tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        description = getFormattedDescription(
+            description = DELETE_ALL_USER_SESSIONS_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.serialName },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+        )
         request {
             pathParameter<String>(UserApiPaths.USER_ID) {
                 description = DELETE_ALL_USER_SESSIONS_ROUTE_PATH_USER_ID_DESCRIPTION
@@ -255,26 +325,23 @@ class ManagementSessionRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.deleteAllUserSessions() {
+    private suspend fun RoutingContext.deleteAllUserSessions(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
 
         val authorizeResult = authenticationProvider.requireUser(
             call = call,
-            allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN),
-            requiredAccountStatus = setOf(UserAccountStatus.ACTIVE)
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         if (authorizeResult is AppResult.Error) {
-            val metadata: Set<AuditEventMetadata> = authorizeResult.error.toDeniedUserAuditEventMetadata() +
-                    authenticatedRequestContext.clientInfo.toAuditMetadata()
-            auditLogger.log(
-                actorId = authenticatedRequestContext.userId.asHexDashString(),
-                actorType = AuditActorType.USER,
-                actorUserRole = authenticatedRequestContext.userRole.serialName,
-                action = UserAuditActionType.MANAGEMENT_DELETE_ALL_USER_SESSIONS,
-                resource = UserAuditResourceType.USER_SESSION,
-                status = AuditStatus.DENIED,
-                metadata = metadata
+            logErrorToAudit(
+                authenticatedRequestContext = authenticatedRequestContext,
+                actionType = UserAuditActionType.MANAGEMENT_DELETE_ALL_USER_SESSIONS,
+                error = authorizeResult.error
             )
             call.respondResult(authorizeResult, appLogger, appErrorParser)
             return
@@ -284,12 +351,31 @@ class ManagementSessionRouter @Inject constructor(
             userId.toUserIdOrThrow()
         }
 
-        val result = managementDeleteAllUserSessionsUseCase(
+        val result = managementDeleteAllSessionsUseCase(
             userId = userId,
             authenticatedRequestContext = authenticatedRequestContext
         )
 
         call.respondResult(result, appLogger, appErrorParser)
+    }
+
+    private fun logErrorToAudit(
+        authenticatedRequestContext: AuthenticatedRequestContext,
+        actionType: AuditActionType,
+        error: AppError
+    ) {
+        val errorData = auditErrorConverter.convert(error)
+        val metadata = authenticatedRequestContext.clientInfo.toAuditMetadata() + errorData.metadata
+
+        auditLogger.log(
+            actorId = authenticatedRequestContext.userId.asHexDashString(),
+            actorType = AuditActorType.USER,
+            actorUserRole = authenticatedRequestContext.userRole.serialName,
+            action = actionType,
+            resource = UserAuditResourceType.SESSION,
+            status = AuditStatus.DENIED,
+            metadata = metadata
+        )
     }
 
     companion object {

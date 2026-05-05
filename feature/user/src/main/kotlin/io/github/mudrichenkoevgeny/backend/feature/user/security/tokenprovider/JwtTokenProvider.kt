@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.util.toJavaInstant
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
@@ -17,10 +18,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
-import java.time.Instant
 import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Instant
 
 /**
  * JWT-based [TokenProvider] implementation.
@@ -51,8 +52,8 @@ class JwtTokenProvider @Inject constructor(
                 .withUserIdSubject(userId)
                 .withSessionIdSubject(sessionId)
                 .withUserRoleSubject(userRole)
-                .issuedAt(Date.from(issuedAt))
-                .expiration(Date.from(expiration))
+                .issuedAt(Date.from(issuedAt.toJavaInstant()))
+                .expiration(Date.from(expiration.toJavaInstant()))
                 .signWith(key)
                 .compact()
 

@@ -16,4 +16,6 @@ interface SystemSettingsManager {
     suspend fun getSettingByKey(key: String): AppResult<SystemSetting?>
     /** Loads all settings. */
     suspend fun getAllSettings(): AppResult<List<SystemSetting>>
+    /** Deletes a setting by key. */
+    suspend fun deleteSetting(key: String): AppResult<Unit>
 }

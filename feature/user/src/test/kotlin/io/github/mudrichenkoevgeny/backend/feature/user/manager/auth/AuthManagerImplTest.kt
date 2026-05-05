@@ -1,157 +1,144 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.auth
 
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfo
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
-import io.github.mudrichenkoevgeny.backend.feature.user.model.useridentifier.UserIdentifier
-import io.github.mudrichenkoevgeny.backend.feature.user.testutil.ExposedTestDb
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.SessionToken
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.time.Instant
+import kotlin.time.Clock
 
 class AuthManagerImplTest {
 
-    private val userManager: UserManager = mockk()
-    private val identifierManager: IdentifierManager = mockk()
-    private val sessionManager: SessionManager = mockk()
+    private val userManager = mockk<UserManager>()
+    private val identifierManager = mockk<IdentifierManager>()
+    private val sessionManager = mockk<SessionManager>()
+    private val passwordHasher = mockk<PasswordHasher>()
+    private val authSettingsProvider = mockk<AuthSettingsProvider>()
+    private val webSocketManager = mockk<WebSocketManager>()
 
-    private val manager = AuthManagerImpl(
-        userManager = userManager,
-        identifierManager = identifierManager,
-        sessionManager = sessionManager
+    private val authManager = AuthManagerImpl(
+        userManager,
+        identifierManager,
+        sessionManager,
+        passwordHasher,
+        authSettingsProvider,
+        webSocketManager
     )
 
-    @Test
-    fun `provideAuthData returns UserForbidden when role not allowed`() = runBlocking {
-        ExposedTestDb.initOnce()
-
-        val user = User(
-            id = USER_ID,
-            role = UserRole.ADMIN,
-            accountStatus = UserAccountStatus.ACTIVE,
-            lastLoginAt = null,
-            lastActiveAt = null,
-            createdAt = Instant.now(),
-            updatedAt = null
-        )
-
-        coEvery { userManager.getUserById(USER_ID) } returns AppResult.Success(user)
-
-        val identifier = UserIdentifier(
-            id = io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId.generate(),
-            userId = USER_ID,
-            userAuthProvider = UserAuthProvider.EMAIL,
-            identifier = IDENTIFIER,
-            passwordHash = null,
-            createdAt = Instant.now(),
-            updatedAt = null
-        )
-
-        val result = manager.provideAuthData(
-            userIdentifier = identifier,
-            clientInfo = CLIENT_INFO,
-            allowedRoles = setOf(UserRole.USER)
-        )
-
-        assertTrue(result is AppResult.Error)
-        assertTrue((result as AppResult.Error).error is UserError.UserForbidden)
+    @BeforeEach
+    fun setup() {
+        Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
+        coEvery { authSettingsProvider.getMaxActiveSessions() } returns 5
     }
 
     @Test
-    fun `provideAuthData returns UserBlocked when account banned`() = runBlocking {
-        ExposedTestDb.initOnce()
+    fun `authenticateExistingUser returns valid AuthData with SessionToken`() = runTest {
+        val userId = UserId.generate()
+        val clientInfo = mockk<ClientInfo>(relaxed = true)
+        val userDetails = createSampleUserDetails(userId)
+        val userIdentifier = createSampleIdentifier(userId)
+        val expectedToken = createSampleSessionToken()
 
-        val user = User(
-            id = USER_ID,
-            role = UserRole.USER,
-            accountStatus = UserAccountStatus.BANNED,
-            lastLoginAt = null,
-            lastActiveAt = null,
-            createdAt = Instant.now(),
-            updatedAt = null
-        )
+        coEvery {
+            identifierManager.getUserIdentifierInternalByProvider(any(), any())
+        } returns AppResult.Success(userIdentifier)
 
-        coEvery { userManager.getUserById(USER_ID) } returns AppResult.Success(user)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+        coEvery { sessionManager.getAllUserSessions(userId) } returns AppResult.Success(emptyList())
 
-        val identifier = UserIdentifier(
-            id = io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId.generate(),
-            userId = USER_ID,
+        coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
+
+        coEvery {
+            sessionManager.createSession(userId, any(), any(), any(), any(), any(), any())
+        } returns AppResult.Success(expectedToken)
+
+        val result = authManager.authenticateExistingUser(
+            clientInfo = clientInfo,
             userAuthProvider = UserAuthProvider.EMAIL,
-            identifier = IDENTIFIER,
-            passwordHash = null,
-            createdAt = Instant.now(),
-            updatedAt = null
+            identifier = "test@test.com",
+            password = "password"
         )
 
-        val result = manager.provideAuthData(
-            userIdentifier = identifier,
-            clientInfo = CLIENT_INFO,
-            allowedRoles = setOf(UserRole.USER)
+        assertTrue(result is AppResult.Success)
+        val data = (result as AppResult.Success).data
+        assertEquals(userId, data.userDetails.id)
+        assertEquals(expectedToken.accessToken, data.sessionToken.accessToken)
+        assertEquals(expectedToken.refreshToken, data.sessionToken.refreshToken)
+    }
+
+    @Test
+    fun `provideAuthData returns Error UserBlocked when status is BANNED`() = runTest {
+        val userId = UserId.generate()
+        val userDetails = createSampleUserDetails(userId).copy(accountStatus = UserAccountStatus.BANNED)
+        val userIdentifier = createSampleIdentifier(userId)
+
+        coEvery {
+            identifierManager.getUserIdentifierInternalByProvider(any(), any())
+        } returns AppResult.Success(userIdentifier)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+
+        coEvery { passwordHasher.isPasswordValid(isNull(), any()) } returns AppResult.Success(true)
+
+        val result = authManager.authenticateExistingUser(
+            mockk(relaxed = true), UserAuthProvider.GOOGLE, "ext-id", null
         )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.UserBlocked)
     }
 
-    @Test
-    fun `getOrCreateUserIdentifier returns existing identifier when present`() = runBlocking {
-        ExposedTestDb.initOnce()
+    private fun createSampleUserDetails(userId: UserId) = UserDetails(
+        id = userId,
+        role = UserRole.USER,
+        accountStatus = UserAccountStatus.ACTIVE,
+        accountStatusBeforeDeletion = null,
+        authorityLevel = 1,
+        permissionCodes = emptySet(),
+        isTotpEnabled = false,
+        createdAt = Clock.System.now(),
+        updatedAt = null,
+        lastLoginAt = null,
+        lastActiveAt = null,
+        scheduledPermanentDeletionAt = null
+    )
 
-        val existing = UserIdentifier(
-            id = io.github.mudrichenkoevgeny.backend.core.common.model.UserIdentifierId.generate(),
-            userId = USER_ID,
-            userAuthProvider = UserAuthProvider.EMAIL,
-            identifier = IDENTIFIER,
-            passwordHash = null,
-            createdAt = Instant.now(),
-            updatedAt = null
-        )
+    private fun createSampleIdentifier(userId: UserId) = UserIdentifierInternal(
+        id = UserIdentifierId.generate(),
+        userId = userId,
+        userAuthProvider = UserAuthProvider.EMAIL,
+        identifier = "test@test.com",
+        externalProviderEmail = null,
+        passwordHash = PasswordHash("hash"),
+        createdAt = Clock.System.now(),
+        updatedAt = null
+    )
 
-        coEvery {
-            identifierManager.getUserIdentifier(
-                userAuthProvider = UserAuthProvider.EMAIL,
-                identifier = IDENTIFIER
-            )
-        } returns AppResult.Success(existing)
-
-        val result = manager.getOrCreateUserIdentifier(
-            userAuthProvider = UserAuthProvider.EMAIL,
-            identifier = IDENTIFIER,
-            password = null,
-            userId = null,
-            userRole = UserRole.USER
-        )
-
-        assertTrue(result is AppResult.Success)
-    }
-
-    private companion object {
-        val USER_ID: UserId = UserId.generate()
-        const val IDENTIFIER = "user@example.com"
-
-        val CLIENT_INFO = ClientInfo(
-            clientType = null,
-            userAgent = null,
-            ipAddress = "127.0.0.1",
-            language = null,
-            host = null,
-            origin = null,
-            deviceId = null,
-            deviceName = null,
-            appVersion = null,
-            operationSystemVersion = null
-        )
-    }
+    private fun createSampleSessionToken() = SessionToken(
+        accessToken = AccessToken("access"),
+        refreshToken = RefreshToken("refresh"),
+        expiresAt = Clock.System.now()
+    )
 }
-

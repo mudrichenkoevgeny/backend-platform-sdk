@@ -17,6 +17,6 @@ docker compose %ENV_FILES% %FILES% up -d
 
 echo.
 echo All services are up. Following app logs:
-docker compose %ENV_FILES% %FILES% logs -f app
+docker compose %ENV_FILES% %FILES% logs -f app-public app-admin
 
 pause

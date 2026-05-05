@@ -7,7 +7,7 @@ import dagger.Module
 import javax.inject.Singleton
 
 /**
- * Wires audit service for fire-and-forget logging.
+ * Wires audit business logic services.
  *
  * Binds [AuditService] to [AuditServiceImpl].
  */

@@ -10,13 +10,15 @@
   "USER_FORBIDDEN": "Доступ к этому ресурсу запрещён.",
   "USER_ROLE_NOT_ALLOWED": "Ваша роль не позволяет выполнить это действие.",
   "USER_MISSING_PERMISSIONS": "У вас нет необходимых прав для выполнения этого действия.",
+  "USER_ILLEGAL_ACCOUNT_STATUS": "Текущий статус аккаунта не позволяет выполнить это действие.",
+  "USER_INSUFFICIENT_AUTHORITY_LEVEL": "Вашего уровня полномочий недостаточно для выполнения этого действия.",
   "USER_NOT_FOUND": "Пользователь не найден.",
   "INVALID_CREDENTIALS": "Неверный email или пароль.",
   "CAN_NOT_DELETE_USER_IDENTIFIER": "Этот способ входа нельзя удалить.",
   "CAN_NOT_CREATE_USER_IDENTIFIER": "Не удалось добавить этот способ входа.",
-  "ALREADY_HAS_USER_IDENTIFIER_WITH_THAT_TYPE": "Этот способ входа уже привязан к вашей учётной записи.",
+  "USER_IDENTIFIER_LIMIT_REACHED": "Достигнут лимит идентификаторов для '{userAuthProvider}' ({maxNumberOfIdentifiers}).",
+  "TOTAL_USER_IDENTIFIERS_LIMIT_REACHED": "Достигнут общий лимит идентификаторов на один аккаунт ({maxNumberOfIdentifiers}).",
   "WRONG_PASSWORD": "Текущий пароль указан неверно.",
   "WRONG_CONFIRMATION_CODE": "Код подтверждения неверен или истёк.",
-  "EXTERNAL_ID_MISMATCH": "Не удалось привязать внешний аккаунт.",
-  "EXTERNAL_TOKEN_INVALID": "Токен внешней аутентификации недействителен."
+  "EXTERNAL_IDENTIFIER_LINKAGE_FAILED": "Не удалось привязать внешний аккаунт."
 }

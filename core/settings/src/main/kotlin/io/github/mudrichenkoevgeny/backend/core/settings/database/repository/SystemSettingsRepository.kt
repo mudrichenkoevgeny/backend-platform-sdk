@@ -32,4 +32,12 @@ interface SystemSettingRepository {
      * @return [AppResult.Success] with a list of settings (possibly empty)
      */
     suspend fun getAllSettings(): AppResult<List<SystemSetting>>
+
+    /**
+     * Deletes a setting row by its unique [key].
+     *
+     * @param key unique setting key
+     * @return [AppResult.Success] if the row was deleted or didn't exist, [AppResult.Error] on DB failure
+     */
+    suspend fun deleteSetting(key: String): AppResult<Unit>
 }

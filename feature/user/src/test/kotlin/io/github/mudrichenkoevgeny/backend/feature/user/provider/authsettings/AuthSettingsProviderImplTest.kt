@@ -1,144 +1,148 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings
 
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SettingType
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthSettings
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AvailableAuthProviders
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.runBlocking
+import io.mockk.coVerifyOrder
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.uuid.Uuid
+
+private const val KEY_AVAILABLE_PROVIDERS = "auth.available_auth_providers"
+private const val KEY_MAX_TOTAL = "auth.max_total_identifiers"
+private const val KEY_MAX_EMAIL = "auth.max_email_identifiers"
+private const val KEY_MAX_PHONE = "auth.max_phone_identifiers"
+private const val KEY_MAX_EXT = "auth.max_identifiers_per_external_provider"
+private const val KEY_MAX_SESSIONS = "auth.max_active_sessions"
+private const val KEY_ACCESS_EXP = "auth.access_token_expiration_seconds"
+private const val KEY_REFRESH_EXP = "auth.refresh_token_expiration_seconds"
+private const val KEY_DELETE_DELAY = "auth.account_deletion_delay_seconds"
 
 class AuthSettingsProviderImplTest {
 
-    private val settingsService: SystemSettingsService = mockk()
-    private val defaultAvailable = AvailableAuthProviders(
+    private val settingsService = mockk<SystemSettingsService>()
+    private val config = mockk<UserConfig>()
+    private val managementSettings = mockk<ManagementAuthSettings>()
+
+    private val availableAuthProviders = AvailableAuthProviders(
         primary = listOf(UserAuthProvider.EMAIL),
         secondary = listOf(UserAuthProvider.GOOGLE)
     )
-    private val provider = AuthSettingsProviderImpl(
-        settingsService = settingsService,
-        authSettings = AuthSettings(availableAuthProviders = defaultAvailable)
-    )
+
+    private lateinit var provider: AuthSettingsProviderImpl
+
+    @BeforeEach
+    fun setUp() {
+        every { config.managementAuthSettings } returns managementSettings
+        every { managementSettings.availableAuthProviders } returns availableAuthProviders
+        every { managementSettings.maxTotalIdentifiers } returns 5
+        every { managementSettings.maxEmailIdentifiers } returns 1
+        every { managementSettings.maxPhoneIdentifiers } returns 1
+        every { managementSettings.maxIdentifiersPerExternalProvider } returns 1
+        every { managementSettings.maxActiveSessions } returns 3
+        every { managementSettings.accessTokenExpirationSeconds } returns 3600
+        every { managementSettings.refreshTokenExpirationSeconds } returns 2592000
+        every { managementSettings.accountDeletionDelaySeconds } returns 604800
+
+        provider = AuthSettingsProviderImpl(settingsService, config)
+    }
 
     @Test
-    fun `initialize registers default available providers setting as JSON`() = runBlocking {
+    fun `should register all defaults during initialization`() = runTest {
         coEvery {
-            settingsService.registerDefault(
-                key = KEY_AVAILABLE_AUTH_PROVIDERS,
-                value = any(),
-                type = SettingType.JSON
-            )
+            settingsService.registerDefault(any(), any(), any())
         } returns AppResult.Success(Unit)
 
         val result = provider.initialize()
 
         assertTrue(result is AppResult.Success)
-
-        val expectedJson = FoundationJson.encodeToString(defaultAvailable)
-        coVerify(exactly = 1) {
-            settingsService.registerDefault(
-                key = KEY_AVAILABLE_AUTH_PROVIDERS,
-                value = expectedJson,
-                type = SettingType.JSON
-            )
+        coVerifyOrder {
+            settingsService.registerDefault(KEY_AVAILABLE_PROVIDERS, any(), SettingType.JSON)
+            settingsService.registerDefault(KEY_MAX_TOTAL, "5", SettingType.INT)
+            settingsService.registerDefault(KEY_MAX_EMAIL, "1", SettingType.INT)
+            settingsService.registerDefault(KEY_MAX_PHONE, "1", SettingType.INT)
+            settingsService.registerDefault(KEY_MAX_EXT, "1", SettingType.INT)
+            settingsService.registerDefault(KEY_MAX_SESSIONS, "3", SettingType.INT)
+            settingsService.registerDefault(KEY_ACCESS_EXP, "3600", SettingType.INT)
+            settingsService.registerDefault(KEY_REFRESH_EXP, "2592000", SettingType.INT)
+            settingsService.registerDefault(KEY_DELETE_DELAY, "604800", SettingType.INT)
         }
     }
 
     @Test
-    fun `getSettings returns value from system settings`() {
-        val storedAvailable = AvailableAuthProviders(
-            primary = listOf(UserAuthProvider.PHONE),
-            secondary = emptyList()
-        )
-
-        every {
-            settingsService.getJson(KEY_AVAILABLE_AUTH_PROVIDERS, any<(String) -> AvailableAuthProviders>())
-        } returns storedAvailable
-
-        val result = provider.getSettings()
-
-        assertTrue(result is AppResult.Success)
-        assertEquals(storedAvailable, (result as AppResult.Success).data.availableAuthProviders)
-    }
-
-    @Test
-    fun `getSettings falls back to empty providers when setting missing`() {
-        every {
-            settingsService.getJson(KEY_AVAILABLE_AUTH_PROVIDERS, any<(String) -> AvailableAuthProviders>())
-        } returns null
-
-        val result = provider.getSettings()
-
-        assertTrue(result is AppResult.Success)
-        val available = (result as AppResult.Success).data.availableAuthProviders
-        assertEquals(emptyList<UserAuthProvider>(), available.primary)
-        assertEquals(emptyList<UserAuthProvider>(), available.secondary)
-    }
-
-    @Test
-    fun `updateAvailableAuthProviders persists JSON and returns unit on success`() = runBlocking {
-        val updateAvailable = AvailableAuthProviders(
-            primary = listOf(UserAuthProvider.EMAIL, UserAuthProvider.GOOGLE),
-            secondary = listOf(UserAuthProvider.PHONE)
-        )
-
-        val expectedJson = FoundationJson.encodeToString(updateAvailable)
-
+    fun `should update all settings successfully`() = runTest {
         coEvery {
-            settingsService.updateSetting(
-                key = KEY_AVAILABLE_AUTH_PROVIDERS,
-                value = expectedJson,
-                type = SettingType.JSON
+            settingsService.updateSetting(any(), any(), any())
+        } answers {
+            AppResult.Success(
+                SystemSetting(
+                    id = Uuid.random(),
+                    key = firstArg(),
+                    value = secondArg(),
+                    type = thirdArg()
+                )
             )
-        } returns AppResult.Success(
-            SystemSetting(
-                key = KEY_AVAILABLE_AUTH_PROVIDERS,
-                value = expectedJson,
-                type = SettingType.JSON
-            )
-        )
+        }
 
-        val result = provider.updateAvailableAuthProviders(updateAvailable)
+        val result = provider.updateManagementAuthSettings(managementSettings)
 
         assertTrue(result is AppResult.Success)
-        assertEquals(Unit, (result as AppResult.Success).data)
+        coVerifyOrder {
+            settingsService.updateSetting(KEY_AVAILABLE_PROVIDERS, any(), SettingType.JSON)
+            settingsService.updateSetting(KEY_MAX_TOTAL, "5", SettingType.INT)
+            settingsService.updateSetting(KEY_MAX_EMAIL, "1", SettingType.INT)
+            settingsService.updateSetting(KEY_MAX_PHONE, "1", SettingType.INT)
+            settingsService.updateSetting(KEY_MAX_EXT, "1", SettingType.INT)
+            settingsService.updateSetting(KEY_MAX_SESSIONS, "3", SettingType.INT)
+            settingsService.updateSetting(KEY_ACCESS_EXP, "3600", SettingType.INT)
+            settingsService.updateSetting(KEY_REFRESH_EXP, "2592000", SettingType.INT)
+            settingsService.updateSetting(KEY_DELETE_DELAY, "604800", SettingType.INT)
+        }
     }
 
     @Test
-    fun `updateAvailableAuthProviders propagates errors from settings service`() = runBlocking {
-        val updateAvailable = AvailableAuthProviders(
-            primary = emptyList(),
-            secondary = emptyList()
-        )
-        val expectedJson = FoundationJson.encodeToString(updateAvailable)
-
-        val error = CommonError.Unknown(message = "db down")
+    fun `should return failure if update fails`() = runTest {
         coEvery {
-            settingsService.updateSetting(
-                key = KEY_AVAILABLE_AUTH_PROVIDERS,
-                value = expectedJson,
-                type = SettingType.JSON
-            )
-        } returns AppResult.Error(error)
+            settingsService.updateSetting(KEY_AVAILABLE_PROVIDERS, any(), any())
+        } returns AppResult.Error(mockk())
 
-        val result = provider.updateAvailableAuthProviders(updateAvailable)
+        val result = provider.updateManagementAuthSettings(managementSettings)
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
     }
 
-    private companion object {
-        const val KEY_AVAILABLE_AUTH_PROVIDERS = "auth.available_auth_providers"
+    @Test
+    fun `should fallback to config when settings service is empty`() {
+        every { settingsService.getJson<AvailableAuthProviders>(any(), any()) } returns null
+        every { settingsService.getInt(any()) } returns null
+
+        val result = provider.getManagementAuthSettings()
+
+        assertEquals(availableAuthProviders, result.availableAuthProviders)
+        assertEquals(5, result.maxTotalIdentifiers)
+        assertEquals(3600, result.accessTokenExpirationSeconds)
+    }
+
+    @Test
+    fun `should prefer service values over config`() {
+        every { settingsService.getJson<AvailableAuthProviders>(KEY_AVAILABLE_PROVIDERS, any()) } returns null
+        every { settingsService.getInt(KEY_MAX_TOTAL) } returns 100
+        every { settingsService.getInt(not(KEY_MAX_TOTAL)) } returns null
+
+        val result = provider.getManagementAuthSettings()
+
+        assertEquals(100, result.maxTotalIdentifiers)
+        assertEquals(3600, result.accessTokenExpirationSeconds)
     }
 }
-

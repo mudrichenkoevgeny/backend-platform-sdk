@@ -1,9 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 
+import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingParamNames
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
@@ -25,56 +25,70 @@ interface UserRepository {
 
     suspend fun deleteUser(userId: UserId): AppResult<Unit>
 
+    /**
+     * Updates user account fields.
+     *
+     * Each parameter uses [UpdateField] to distinguish between:
+     * - [UpdateField.Ignore]: Field will not be included in the update.
+     * - [UpdateField.Set]: Field will be updated to the provided value (including null).
+     *
+     * @param userId unique identifier of the user to update.
+     * @param status new account status.
+     * @param statusBeforeDeletion status to preserve during the deletion process.
+     * @param authorityLevel new authority level.
+     * @param permissionCodes new set of effective permissions.
+     * @param isTotpEnabled TOTP enablement status.
+     * @param lastLoginAt timestamp of the last successful authentication.
+     * @param lastActiveAt timestamp of the last user activity.
+     * @param scheduledPermanentDeletionAt timestamp for the final removal of the account.
+     * @return [AppResult] containing the updated [UserDetails].
+     */
     suspend fun updateUser(
-        user: UserDetails,
-        status: UserAccountStatus? = null,
-        statusBeforeDeletion: UserAccountStatus? = null,
-        permissions: Set<PermissionCode> = setOf(),
-        lastLoginAt: Instant? = null,
-        lastActiveAt: Instant? = null,
-        scheduledPermanentDeletionAt: Instant? = null
+        userId: UserId,
+        status: UpdateField<UserAccountStatus> = UpdateField.Ignore,
+        statusBeforeDeletion: UpdateField<UserAccountStatus> = UpdateField.Ignore,
+        authorityLevel: UpdateField<Int> = UpdateField.Ignore,
+        permissionCodes: UpdateField<Set<PermissionCode>> = UpdateField.Ignore,
+        isTotpEnabled: UpdateField<Boolean> = UpdateField.Ignore,
+        lastLoginAt: UpdateField<Instant> = UpdateField.Ignore,
+        lastActiveAt: UpdateField<Instant> = UpdateField.Ignore,
+        scheduledPermanentDeletionAt: UpdateField<Instant> = UpdateField.Ignore
     ): AppResult<UserDetails>
 
-    suspend fun getUserById(userId: UserId): AppResult<UserDetails?>
+    suspend fun getUserDetailsById(userId: UserId): AppResult<UserDetails?>
 
     /**
      * Returns a page of [UserDetails] rows matching optional filters, ordered by [sortBy] and [sortOrder].
      *
-     * **Pagination** (same semantics as [ListingParamNames.Pagination]): [PageParams.page] is the one-based
-     * page index ([ListingParamNames.Pagination.PAGE_NUMBER]); [PageParams.size] is
-     * [ListingParamNames.Pagination.PAGE_SIZE].
-     *
-     * **Sort** (same semantics as [ListingParamNames.Sort]): [sortBy] is the list `sort_by`
-     * ([UserSortValues.UserSortBy] wire); [sortOrder] is `sort_order` ([SortOrder] wire).
-     *
-     * **Filters** align with the management user list API (user filter axis names / payload fields):
-     * absent parameter means no filter on that axis. Non-null parameters combine as **AND**. Repeating the same
-     * filter key as **OR** is not expressed here; compose that at a higher layer (e.g. HTTP handler) if needed.
-     *
-     * - [role] — [UserDetails.role].
-     * - [accountStatus] — [UserDetails.accountStatus].
-     * - [accountStatusBeforeDeletion] — [UserDetails.accountStatusBeforeDeletion].
-     * - [userPermissionCode] — user has this code in [UserDetails.permissions].
+     * **Filters** align with the management user list API:
+     * Empty list means no filter on that axis. Non-empty categories combine as **AND**,
+     * while values within a single list category combine as **OR** (SQL IN).
      *
      * @param accessFilter Row-level role visibility applied before optional filters.
      * @param pageParams One-based page and page size.
      * @param sortBy Sort field for the listing.
      * @param sortOrder Sort direction.
-     * @param role Filter by role.
-     * @param accountStatus Filter by current account status.
-     * @param accountStatusBeforeDeletion Filter by stored pre-deletion account status.
-     * @param userPermissionCode Filter by presence of this permission in the user's permission set.
+     * @param roles Filter by one or more roles.
+     * @param accountStatuses Filter by one or more account statuses.
+     * @param accountStatusesBeforeDeletion Filter by one or more pre-deletion account statuses.
+     * @param authorityLevelFrom optional inclusive lower bound for authority level.
+     * @param authorityLevelTo optional inclusive upper bound for authority level.
+     * @param permissionCodes list of permission codes that the user MUST possess (ALL of them).
+     * @param isTotpEnabled optional filter by TOTP enablement status.
      * @return [PagedResult] of matching users or an error.
      */
-    suspend fun getUsersList(
-        accessFilter: UserRoleAccessFilter,
+    suspend fun getUsersPageWithAccessFilter(
+        accessFilter: UserRoleAccessFilter = UserRoleAccessFilter(emptySet()),
         pageParams: PageParams,
         sortBy: UserSortValues.UserSortBy = UserSortValues.UserSortBy.CREATED_AT,
         sortOrder: SortOrder = SortOrder.DESC,
-        role: UserRole? = null,
-        accountStatus: UserAccountStatus? = null,
-        accountStatusBeforeDeletion: UserAccountStatus? = null,
-        userPermissionCode: PermissionCode? = null
+        roles: List<UserRole> = emptyList(),
+        accountStatuses: List<UserAccountStatus> = emptyList(),
+        accountStatusesBeforeDeletion: List<UserAccountStatus> = emptyList(),
+        authorityLevelFrom: Int? = null,
+        authorityLevelTo: Int? = null,
+        permissionCodes: Set<PermissionCode> = emptySet(),
+        isTotpEnabled: Boolean? = null
     ): AppResult<PagedResult<UserDetails>>
 
     /**

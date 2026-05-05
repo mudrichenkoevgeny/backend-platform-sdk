@@ -1,213 +1,183 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 
+import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
-import io.github.mudrichenkoevgeny.backend.core.common.model.UserId
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
-import io.github.mudrichenkoevgeny.backend.core.common.listing.sorting.SortDirection
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.User
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserListSort
-import io.github.mudrichenkoevgeny.backend.feature.user.model.user.UserListSortBy
-import io.github.mudrichenkoevgeny.backend.feature.user.testutil.ExposedTestDb
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeEach
+import org.jetbrains.exposed.v1.jdbc.Database
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import java.time.Instant
+import org.junit.jupiter.api.TestInstance
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserRepositoryImplTest {
 
-    private val repository = UserRepositoryImpl()
+    private val dataSource = createTestDataSource("user_repo")
+    private lateinit var repository: UserRepository
 
-    @BeforeEach
-    fun setUp() {
-        ExposedTestDb.initOnce()
-        ExposedTestDb.dropSchema(UsersTable)
-        ExposedTestDb.createSchema(UsersTable)
+    @BeforeAll
+    fun setup() {
+        Database.connect(dataSource)
+        runBlocking {
+            suspendTransaction {
+                SchemaUtils.drop(UsersTable)
+                SchemaUtils.create(UsersTable)
+            }
+        }
+        repository = UserRepositoryImpl()
     }
 
     @Test
-    fun `createUser persists user and returns success`() = runBlocking {
-        val now = Instant.parse(CREATED_AT)
-        val user = User(
-            id = UserId.generate(),
-            role = UserRole.USER,
-            accountStatus = UserAccountStatus.ACTIVE,
-            lastLoginAt = null,
-            lastActiveAt = null,
-            createdAt = now,
-            updatedAt = null
-        )
+    fun `createUser persists and getUserDetailsById returns same user`() = runBlocking {
+        val user = createTestUser(UserId.generate())
 
-        val result = ExposedTestDb.tx { repository.createUser(user) }
+        suspendTransaction { repository.createUser(user) }
+        val result = suspendTransaction { repository.getUserDetailsById(user.id) }
 
-        assertTrue(result is AppResult.Success)
-        assertEquals(user, (result as AppResult.Success).data)
+        val success = result as AppResult.Success
+        assertNotNull(success.data)
+        assertEquals(user.id, success.data!!.id)
     }
 
     @Test
-    fun `getUserById returns user when found`() = runBlocking {
+    fun `updateUser updates all fields and returns updated user`() = runBlocking {
         val userId = UserId.generate()
-        val createdAt = Instant.parse(CREATED_AT)
-        val user = User(
-            id = userId,
+        val user = createTestUser(userId)
+        suspendTransaction { repository.createUser(user) }
+
+        val newLoginAt = Instant.parse(LAST_LOGIN_AT)
+        val newActiveAt = newLoginAt + 1.days
+        val deletionAt = newLoginAt + 30.days
+        val permissions = setOf(PermissionCode("TEST_CODE"))
+
+        val result = suspendTransaction {
+            repository.updateUser(
+                userId = userId,
+                status = UpdateField.Set(UserAccountStatus.BANNED),
+                statusBeforeDeletion = UpdateField.Set(UserAccountStatus.ACTIVE),
+                authorityLevel = UpdateField.Set(10),
+                permissionCodes = UpdateField.Set(permissions),
+                isTotpEnabled = UpdateField.Set(true),
+                lastLoginAt = UpdateField.Set(newLoginAt),
+                lastActiveAt = UpdateField.Set(newActiveAt),
+                scheduledPermanentDeletionAt = UpdateField.Set(deletionAt)
+            )
+        }
+
+        val updated = (result as AppResult.Success).data
+        assertEquals(UserAccountStatus.BANNED, updated.accountStatus)
+        assertEquals(UserAccountStatus.ACTIVE, updated.accountStatusBeforeDeletion)
+        assertEquals(10, updated.authorityLevel)
+        assertEquals(permissions, updated.permissionCodes)
+        assertTrue(updated.isTotpEnabled)
+        assertEquals(newLoginAt, updated.lastLoginAt)
+        assertEquals(newActiveAt, updated.lastActiveAt)
+        assertEquals(deletionAt, updated.scheduledPermanentDeletionAt)
+        assertNotNull(updated.updatedAt)
+    }
+
+    @Test
+    fun `getUsersPageWithAccessFilter applies all provided filters`() = runBlocking {
+        val userId = UserId.generate()
+        val permission = PermissionCode("FILTER_ME")
+        val user = createTestUser(userId).copy(
             role = UserRole.ADMIN,
             accountStatus = UserAccountStatus.ACTIVE,
-            lastLoginAt = null,
-            lastActiveAt = null,
-            createdAt = createdAt,
-            updatedAt = null
+            authorityLevel = 50,
+            permissionCodes = setOf(permission),
+            isTotpEnabled = true
         )
-        ExposedTestDb.tx { repository.createUser(user) }
 
-        val result = ExposedTestDb.tx { repository.getUserById(userId) }
+        suspendTransaction { repository.createUser(user) }
 
-        assertTrue(result is AppResult.Success)
-        assertEquals(user, (result as AppResult.Success).data)
+        val result = suspendTransaction {
+            repository.getUsersPageWithAccessFilter(
+                accessFilter = UserRoleAccessFilter(allowedUserRoles = setOf(UserRole.ADMIN)),
+                pageParams = PageParams(page = 1, size = 10),
+                sortBy = UserSortValues.UserSortBy.CREATED_AT,
+                sortOrder = SortOrder.DESC,
+                roles = listOf(UserRole.ADMIN),
+                accountStatuses = listOf(UserAccountStatus.ACTIVE),
+                accountStatusesBeforeDeletion = emptyList(),
+                authorityLevelFrom = 40,
+                authorityLevelTo = 60,
+                permissionCodes = setOf(permission),
+                isTotpEnabled = true
+            )
+        }
+
+        val success = result as AppResult.Success
+        assertEquals(1, success.data.items.size)
+        assertEquals(userId, success.data.items.first().id)
     }
 
     @Test
-    fun `getUserById returns null when not found`() = runBlocking {
-        val result = ExposedTestDb.tx { repository.getUserById(UserId.generate()) }
+    fun `deleteUsersDueForPermanentDeletion deletes only users before asOf`() = runBlocking {
+        val baseTime = Instant.parse(CREATED_AT)
+        val expired = createTestUser(UserId.generate()).copy(scheduledPermanentDeletionAt = baseTime - 1.days)
+        val notExpired = createTestUser(UserId.generate()).copy(scheduledPermanentDeletionAt = baseTime + 1.days)
 
-        assertTrue(result is AppResult.Success)
+        suspendTransaction {
+            repository.createUser(expired)
+            repository.createUser(notExpired)
+        }
+
+        val deletedResult = suspendTransaction {
+            repository.deleteUsersDueForPermanentDeletion(asOf = baseTime)
+        }
+
+        assertEquals(1, (deletedResult as AppResult.Success).data)
+
+        val checkExpired = suspendTransaction { repository.getUserDetailsById(expired.id) }
+        val checkActive = suspendTransaction { repository.getUserDetailsById(notExpired.id) }
+
+        assertNull((checkExpired as AppResult.Success).data)
+        assertNotNull((checkActive as AppResult.Success).data)
+    }
+
+    @Test
+    fun `deleteUser removes user record`() = runBlocking {
+        val userId = UserId.generate()
+        suspendTransaction { repository.createUser(createTestUser(userId)) }
+
+        suspendTransaction { repository.deleteUser(userId) }
+        val result = suspendTransaction { repository.getUserDetailsById(userId) }
+
         assertNull((result as AppResult.Success).data)
     }
 
-    @Test
-    fun `updateUser updates accountStatus and lastLoginAt`() = runBlocking {
-        val user = User(
-            id = UserId.generate(),
-            role = UserRole.USER,
-            accountStatus = UserAccountStatus.ACTIVE,
-            lastLoginAt = null,
-            lastActiveAt = null,
-            createdAt = Instant.now(),
-            updatedAt = null
-        )
-        ExposedTestDb.tx { repository.createUser(user) }
-        val lastLoginAt = Instant.parse(LAST_LOGIN_AT)
-
-        val result = ExposedTestDb.tx {
-            repository.updateUser(
-                user = user,
-                status = UserAccountStatus.BANNED,
-                lastLoginAt = lastLoginAt,
-                lastActiveAt = null
-            )
-        }
-
-        assertTrue(result is AppResult.Success)
-        val updated = (result as AppResult.Success).data
-        assertEquals(UserAccountStatus.BANNED, updated.accountStatus)
-        assertEquals(lastLoginAt, updated.lastLoginAt)
-    }
-
-    @Test
-    fun `deleteUser removes user`() = runBlocking {
-        val userId = UserId.generate()
-        val user = User(
-            id = userId,
-            role = UserRole.USER,
-            accountStatus = UserAccountStatus.ACTIVE,
-            lastLoginAt = null,
-            lastActiveAt = null,
-            createdAt = Instant.now(),
-            updatedAt = null
-        )
-        ExposedTestDb.tx { repository.createUser(user) }
-
-        val deleteResult = ExposedTestDb.tx { repository.deleteUser(userId) }
-        assertTrue(deleteResult is AppResult.Success)
-
-        val getResult = ExposedTestDb.tx { repository.getUserById(userId) }
-        assertTrue(getResult is AppResult.Success)
-        assertNull((getResult as AppResult.Success).data)
-    }
-
-    @Test
-    fun `getUsersList returns paginated users with optional filters`() = runBlocking {
-        val user1 = User(
-            id = UserId.generate(),
-            role = UserRole.USER,
-            accountStatus = UserAccountStatus.ACTIVE,
-            lastLoginAt = null,
-            lastActiveAt = null,
-            createdAt = Instant.now(),
-            updatedAt = null
-        )
-        val user2 = User(
-            id = UserId.generate(),
-            role = UserRole.ADMIN,
-            accountStatus = UserAccountStatus.ACTIVE,
-            lastLoginAt = null,
-            lastActiveAt = null,
-            createdAt = Instant.now(),
-            updatedAt = null
-        )
-        ExposedTestDb.tx { repository.createUser(user1) }
-        ExposedTestDb.tx { repository.createUser(user2) }
-
-        val result = ExposedTestDb.tx {
-            repository.getUsersList(
-                params = PageParams(page = 1, size = 10),
-                role = null,
-                accountStatus = null
-            )
-        }
-
-        assertTrue(result is AppResult.Success)
-        val paged = (result as AppResult.Success).data
-        assertEquals(2L, paged.totalCount)
-        assertEquals(2, paged.items.size)
-    }
-
-    @Test
-    fun `getUsersList sorts by createdAt ascending with stable id tie-breaker`() = runBlocking {
-        val early = Instant.parse("2026-01-01T10:00:00Z")
-        val late = Instant.parse("2026-01-02T10:00:00Z")
-        val userEarly = User(
-            id = UserId.generate(),
-            role = UserRole.USER,
-            accountStatus = UserAccountStatus.ACTIVE,
-            lastLoginAt = null,
-            lastActiveAt = null,
-            createdAt = early,
-            updatedAt = null
-        )
-        val userLate = User(
-            id = UserId.generate(),
-            role = UserRole.USER,
-            accountStatus = UserAccountStatus.ACTIVE,
-            lastLoginAt = null,
-            lastActiveAt = null,
-            createdAt = late,
-            updatedAt = null
-        )
-        ExposedTestDb.tx { repository.createUser(userLate) }
-        ExposedTestDb.tx { repository.createUser(userEarly) }
-
-        val result = ExposedTestDb.tx {
-            repository.getUsersList(
-                params = PageParams(page = 1, size = 10),
-                role = null,
-                accountStatus = null,
-                sort = UserListSort(UserListSortBy.CREATED_AT, SortDirection.ASC)
-            )
-        }
-
-        assertTrue(result is AppResult.Success)
-        val items = (result as AppResult.Success).data.items
-        assertEquals(userEarly.id, items[0].id)
-        assertEquals(userLate.id, items[1].id)
-    }
+    private fun createTestUser(userId: UserId) = UserDetails(
+        id = userId,
+        role = UserRole.USER,
+        accountStatus = UserAccountStatus.ACTIVE,
+        accountStatusBeforeDeletion = null,
+        authorityLevel = 1,
+        permissionCodes = emptySet(),
+        isTotpEnabled = false,
+        lastLoginAt = null,
+        lastActiveAt = null,
+        createdAt = Instant.parse(CREATED_AT),
+        updatedAt = null,
+        scheduledPermanentDeletionAt = null
+    )
 
     private companion object {
-        const val CREATED_AT = "2026-01-01T12:00:00Z"
+        const val CREATED_AT = "2026-01-01T00:00:00Z"
         const val LAST_LOGIN_AT = "2026-01-02T00:00:00Z"
     }
 }

@@ -9,13 +9,13 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.email.parser.mod
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.parser.model.EmailParserConfigHolder
 import javax.inject.Singleton
 
-@Module
 /**
  * Binds the email address parser used by email provider services.
  *
  * Provides [EmailParserConfig] from [EmailParserConfigHolder] to allow runtime configuration
  * independent of DI wiring.
  */
+@Module
 interface EmailParserModule {
 
     @Binds

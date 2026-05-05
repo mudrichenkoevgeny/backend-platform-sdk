@@ -19,7 +19,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
  * Application-level API for creating and querying audit events.
  *
  * Use this interface to persist events via [createEvent] and to retrieve them
- * by id ([getEventById]) or with filters ([getEventsList]).
+ * by id ([getEventById]) or with filters ([getEventsPage]).
  */
 interface AuditManager {
 
@@ -40,33 +40,32 @@ interface AuditManager {
     /**
      * Returns a paginated list of audit events matching the given filters.
      *
-     * Pagination and sort follow [ListingParamNames]; filters match the management list API axes
-     * (non-null parameters AND-combined; OR for repeated keys is handled outside this layer).
+     * Pagination and sort follow [ListingParamNames]; filters match the management list API axes.
      *
      * @param pageParams One-based page and size ([ListingParamNames.Pagination]).
      * @param sortBy List `sort_by` ([ListingParamNames.Sort.SORT_BY]).
      * @param sortOrder List `sort_order` ([ListingParamNames.Sort.SORT_ORDER]).
-     * @param actorId Actor id filter.
-     * @param actorType Actor type filter.
-     * @param actorUserRole Actor user role filter (equality).
-     * @param action Action filter (persisted wire name).
-     * @param resource Resource type filter (persisted wire name).
-     * @param resourceId Resource id filter.
-     * @param status Status filter.
-     * @param message Case-insensitive substring on message when non-blank.
+     * @param actorIds Actor id filters.
+     * @param actorTypes Actor type filters.
+     * @param actorUserRoles Actor user role filters.
+     * @param actions Action filters.
+     * @param resources Resource type filters.
+     * @param resourceIds Resource id filters.
+     * @param statuses Status filters.
+     * @param messages Message filters (case-insensitive substring).
      */
-    suspend fun getEventsList(
-        userPermissionCodes: Set<PermissionCode>,
+    suspend fun getEventsPage(
+        managementUserPermissionCodes: Set<PermissionCode>,
         pageParams: PageParams,
         sortBy: AuditSortValues.AuditEventSortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
         sortOrder: SortOrder = SortOrder.DESC,
-        actorId: String? = null,
-        actorType: AuditActorType? = null,
-        actorUserRole: String? = null,
-        action: AuditActionType? = null,
-        resource: AuditResourceType? = null,
-        resourceId: String? = null,
-        status: AuditStatus? = null,
-        message: String? = null
+        actorIds: List<String> = emptyList(),
+        actorTypes: List<AuditActorType> = emptyList(),
+        actorUserRoles: List<String> = emptyList(),
+        actions: List<AuditActionType> = emptyList(),
+        resources: List<AuditResourceType> = emptyList(),
+        resourceIds: List<String> = emptyList(),
+        statuses: List<AuditStatus> = emptyList(),
+        messages: List<String> = emptyList()
     ): AppResult<PagedResult<AuditEvent>>
 }

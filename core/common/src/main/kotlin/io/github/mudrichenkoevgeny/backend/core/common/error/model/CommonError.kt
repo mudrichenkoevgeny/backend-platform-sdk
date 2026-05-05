@@ -31,11 +31,7 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.UNKNOWN,
-        secretArgs = buildMap {
-            if (message != null) {
-                put(CommonErrorArgs.MESSAGE, message)
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = message?.let { message -> mapOf(CommonErrorArgs.MESSAGE to message) },
         httpStatusCode = HttpStatusCode.InternalServerError,
         appErrorSeverity = AppErrorSeverity.HIGH
     )
@@ -52,8 +48,7 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.INTERNAL,
-        secretArgs = throwable.message
-            ?.let { message -> mapOf(CommonErrorArgs.MESSAGE to message) },
+        secretArgs = throwable.message?.let { message -> mapOf(CommonErrorArgs.MESSAGE to message) },
         httpStatusCode = HttpStatusCode.InternalServerError,
         appErrorSeverity = AppErrorSeverity.HIGH
     )
@@ -68,11 +63,7 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.INTERNAL,
-        secretArgs = buildMap {
-            if (message != null) {
-                put(CommonErrorArgs.MESSAGE, message)
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = message?.let { message -> mapOf(CommonErrorArgs.MESSAGE to message) },
         httpStatusCode = HttpStatusCode.InternalServerError,
         appErrorSeverity = AppErrorSeverity.HIGH
     )
@@ -87,11 +78,7 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.SERVICE_UNAVAILABLE,
-        secretArgs = buildMap {
-            if (message != null) {
-                put(CommonErrorArgs.MESSAGE, message)
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = message?.let { message -> mapOf(CommonErrorArgs.MESSAGE to message) },
         httpStatusCode = HttpStatusCode.ServiceUnavailable,
         appErrorSeverity = AppErrorSeverity.HIGH
     )
@@ -110,14 +97,10 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.NOT_FOUND,
-        publicArgs = buildMap {
-            put(CommonErrorArgs.RESOURCE, resource)
-        },
-        secretArgs = buildMap {
-            if (identifier != null) {
-                put(CommonErrorArgs.IDENTIFIER, identifier)
-            }
-        }.takeIf { it.isNotEmpty() },
+        publicArgs = mapOf(
+            CommonErrorArgs.RESOURCE to resource
+        ),
+        secretArgs = identifier?.let { identifier -> mapOf(CommonErrorArgs.IDENTIFIER to identifier) },
         httpStatusCode = HttpStatusCode.NotFound,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -138,14 +121,14 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.TOO_MANY_REQUESTS,
-        publicArgs = buildMap {
-            put(CommonErrorArgs.RETRY_AFTER_SECONDS, retryAfterSeconds)
-        },
-        secretArgs = buildMap {
-            put(CommonErrorArgs.RATE_LIMIT_ACTION_CODE, rateLimitActionCode)
-            put(CommonErrorArgs.LIMIT, limit)
-            put(CommonErrorArgs.IDENTIFIER, identifier)
-        },
+        publicArgs = mapOf(
+            CommonErrorArgs.RETRY_AFTER_SECONDS to retryAfterSeconds
+        ),
+        secretArgs = mapOf(
+            CommonErrorArgs.RATE_LIMIT_ACTION_CODE to rateLimitActionCode,
+            CommonErrorArgs.LIMIT to limit,
+            CommonErrorArgs.IDENTIFIER to identifier
+        ),
         httpStatusCode = HttpStatusCode.TooManyRequests,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -160,9 +143,9 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.MISSING_REQUIRED_PARAMETER,
-        publicArgs = buildMap {
-            put(CommonErrorArgs.PARAMETER_NAME, parameterName)
-        }.takeIf { it.isNotEmpty() },
+        publicArgs = mapOf(
+            CommonErrorArgs.PARAMETER_NAME to parameterName
+        ),
         httpStatusCode = HttpStatusCode.BadRequest,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -177,9 +160,9 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.INVALID_PARAMETER_VALUE,
-        publicArgs = buildMap {
-            put(CommonErrorArgs.PARAMETER_NAME, parameterName)
-        }.takeIf { it.isNotEmpty() },
+        publicArgs = mapOf(
+            CommonErrorArgs.PARAMETER_NAME to parameterName
+        ),
         httpStatusCode = HttpStatusCode.BadRequest,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -194,9 +177,9 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.MISSING_REQUIRED_FIELD,
-        publicArgs = buildMap {
-            put(CommonErrorArgs.FIELD_NAME, fieldName)
-        }.takeIf { it.isNotEmpty() },
+        publicArgs = mapOf(
+            CommonErrorArgs.FIELD_NAME to fieldName
+        ),
         httpStatusCode = HttpStatusCode.BadRequest,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -211,9 +194,9 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.BLANK_STRING_FIELD,
-        publicArgs = buildMap {
-            put(CommonErrorArgs.FIELD_NAME, fieldName)
-        }.takeIf { it.isNotEmpty() },
+        publicArgs = mapOf(
+            CommonErrorArgs.FIELD_NAME to fieldName
+        ),
         httpStatusCode = HttpStatusCode.BadRequest,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -228,9 +211,9 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.EMPTY_COLLECTION_FIELD,
-        publicArgs = buildMap {
-            put(CommonErrorArgs.FIELD_NAME, fieldName)
-        }.takeIf { it.isNotEmpty() },
+        publicArgs = mapOf(
+            CommonErrorArgs.FIELD_NAME to fieldName
+        ),
         httpStatusCode = HttpStatusCode.BadRequest,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -245,9 +228,9 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.INVALID_FIELD_VALUE,
-        publicArgs = buildMap {
-            put(CommonErrorArgs.FIELD_NAME, fieldName)
-        }.takeIf { it.isNotEmpty() },
+        publicArgs = mapOf(
+            CommonErrorArgs.FIELD_NAME to fieldName
+        ),
         httpStatusCode = HttpStatusCode.BadRequest,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -262,11 +245,7 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.BAD_REQUEST,
-        secretArgs = buildMap {
-            if (message != null) {
-                put(CommonErrorArgs.MESSAGE, message)
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = message?.let { message -> mapOf(CommonErrorArgs.MESSAGE to message) },
         httpStatusCode = HttpStatusCode.BadRequest,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -281,11 +260,7 @@ sealed class CommonError(
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.INVALID_JSON_BODY,
-        secretArgs = buildMap {
-            if (message != null) {
-                put(CommonErrorArgs.MESSAGE, message)
-            }
-        }.takeIf { it.isNotEmpty() },
+        secretArgs = message?.let { message -> mapOf(CommonErrorArgs.MESSAGE to message) },
         httpStatusCode = HttpStatusCode.BadRequest,
         appErrorSeverity = AppErrorSeverity.LOW
     )

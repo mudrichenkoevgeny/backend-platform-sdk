@@ -6,15 +6,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case: initialize auth settings (e.g. seed or reload from storage).
+ * Synchronizes default authentication settings from static configuration to the dynamic settings storage.
  *
- * Delegates to [AuthSettingsProvider.initialize]. Returns [AppResult.Success] when initialization succeeds or [AppResult.Error] from the provider.
+ * @return [AppResult.Success] if all settings are registered.
  */
 @Singleton
 class SeedAuthSettingsUseCase @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider
 ) {
-    suspend fun execute(): AppResult<Unit> {
+    suspend operator fun invoke(): AppResult<Unit> {
         return authSettingsProvider.initialize()
     }
 }

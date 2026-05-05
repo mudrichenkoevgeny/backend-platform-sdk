@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.toUserIdentifierIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserFilterValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.toUserIdOrThrow
 import io.ktor.server.application.ApplicationCall
 
@@ -33,6 +34,11 @@ fun ApplicationCall.parseSessionsListQueryParams(): SessionListQueryParams {
         }
     }
 
+    val userRoles = getQueryValues(filterNames.USER_ROLE).map { userRole ->
+        UserRole.fromValueOrNull(userRole)
+            ?: throw RequestHandlingException(CommonError.InvalidParameterValue(filterNames.USER_ROLE))
+    }
+
     val identifierIds = getQueryValues(filterNames.IDENTIFIER_ID).map { identifierId ->
         runCatching { identifierId.toUserIdentifierIdOrThrow() }.getOrElse {
             throw RequestHandlingException(CommonError.InvalidParameterValue(filterNames.IDENTIFIER_ID))
@@ -44,11 +50,6 @@ fun ApplicationCall.parseSessionsListQueryParams(): SessionListQueryParams {
             ?: throw RequestHandlingException(CommonError.InvalidParameterValue(filterNames.USER_AUTH_PROVIDER))
     }
 
-    val revokedValues = getQueryValues(filterNames.REVOKED).map { revoked ->
-        revoked.toBooleanStrictOrNull()
-            ?: throw RequestHandlingException(CommonError.InvalidParameterValue(filterNames.REVOKED))
-    }
-
     val clientTypes = getQueryValues(filterNames.CLIENT_TYPE).map { clientType ->
         ClientType.fromValueOrNull(clientType)
             ?: throw RequestHandlingException(CommonError.InvalidParameterValue(filterNames.CLIENT_TYPE))
@@ -57,10 +58,10 @@ fun ApplicationCall.parseSessionsListQueryParams(): SessionListQueryParams {
     return SessionListQueryParams(
         listing = listing,
         userIds = userIds,
+        userRoles = userRoles,
         identifiers = getQueryValues(filterNames.IDENTIFIER),
         identifierIds = identifierIds,
         identifierAuthProviders = identifierAuthProviders,
-        revokedValues = revokedValues,
         clientTypes = clientTypes,
         userAgents = getQueryValues(filterNames.USER_AGENT),
         ipAddresses = getQueryValues(filterNames.IP_ADDRESS),

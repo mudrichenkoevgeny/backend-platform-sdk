@@ -1,24 +1,34 @@
 # feature/settings-api
 
-HTTP routing module for global settings APIs.
+HTTP routing and orchestration for global platform settings and real-time configuration synchronization via WebSockets.
 
 ## What it provides
 
-- `SettingsRouter` as the aggregate router for settings-related HTTP endpoints.
-- Public/open settings routes via `OpenGlobalSettingsRouter`.
-- Management settings routes via `ManagementGlobalSettingsRouter` (JWT-protected).
-- Use cases for reading and updating global settings over HTTP (seeding lives in `core/settings`).
+- **Routing:**
+    - [OpenGlobalSettingsRouter] — public endpoints for reading platform-wide settings available to all clients.
+    - [ManagementGlobalSettingsRouter] — authenticated (STAFF/ADMIN) routes for administrative updates to global configuration.
+- **Orchestration:**
+    - **UpdateGlobalSettings:** [UpdateGlobalSettingsUseCase] for persisting global settings, logging management audit events, and broadcasting updates to all connected clients.
+    - **GetGlobalSettings:** [GetGlobalSettingsUseCase] for retrieving the current effective settings snapshot.
+- **Real-time Sync:** [SettingsWebSocketMessageHandler] — handles settings-related WebSocket frames, acknowledging update events to ensure immediate configuration synchronization across sessions.
+- **Swagger:** [SettingsSwaggerTags] for consistent categorization of global settings endpoints in OpenAPI docs.
 
 ## Usage
 
-- Add a Gradle dependency on the `:feature:settings-api` project (it already depends on `:core:settings`).
-- Include [SettingsModules] from `core/settings` in your Dagger component so system settings and [GlobalSettingsProvider] are wired. This module does not ship a separate Dagger `@Module` aggregate; HTTP routers use `@Inject` and become available once `:feature:settings-api` is on your component’s classpath.
-- Register `SettingsRouter` in your Ktor `routing { }` block.
+### 1. DI Configuration
+Include **[SettingsApiModules]** in your Dagger component.
+- It contributes the [SettingsWebSocketMessageHandler] into the global multibound set of WebSocket handlers.
+- The module requires [SettingsModules] from `core/settings` to be present in the graph to provide [GlobalSettingsProvider] and persistence logic.
 
-## Notes
+### 2. Route Registration
+Inject [OpenGlobalSettingsRouter] and [ManagementGlobalSettingsRouter], then register them within your Ktor `routing { }` block using their `register()` methods.
 
-- This module exposes HTTP APIs only.
-- DB models/providers for settings are located in `core/settings`.
+---
 
-[SettingsModules]: ../core/settings/src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/di/SettingsModules.kt
-[GlobalSettingsProvider]: ../core/settings/src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/global/provider/GlobalSettingsProvider.kt
+[SettingsApiModules]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/settings/api/di/SettingsApiModules.kt
+[OpenGlobalSettingsRouter]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/settings/api/route/open/OpenGlobalSettingsRouter.kt
+[ManagementGlobalSettingsRouter]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/settings/api/route/management/ManagementGlobalSettingsRouter.kt
+[UpdateGlobalSettingsUseCase]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/settings/api/usecase/management/globalsettings/UpdateGlobalSettingsUseCase.kt
+[GetGlobalSettingsUseCase]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/settings/api/usecase/open/globalsettings/GetGlobalSettingsUseCase.kt
+[SettingsWebSocketMessageHandler]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/settings/api/network/websockets/messagehandler/SettingsWebSocketMessageHandler.kt
+[SettingsSwaggerTags]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/feature/settings/api/route/SettingsSwaggerTags.kt

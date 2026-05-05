@@ -11,13 +11,13 @@ import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.di.qualifiers.GoogleWebClientId
 import javax.inject.Singleton
 
-@Module
 /**
  * Binds external auth verifiers used by the feature (e.g. Google).
  *
  * Uses a Dagger set multibinding for [ExternalAuthVerifier] implementations and provides provider
  * specific configuration values such as [GoogleWebClientId].
  */
+@Module
 interface UserExternalAuthVerifierModule {
 
     @Binds

@@ -3,127 +3,121 @@ package io.github.mudrichenkoevgeny.backend.feature.user.scheduled
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserScheduledJobsConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
-import io.mockk.ofType
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import kotlin.time.Duration.Companion.seconds
+
+private const val TEST_INTERVAL_SECONDS = 60
+private const val ZERO_INTERVAL = 0
 
 class UserScheduledJobsImplTest {
 
-    private val dispatcher = StandardTestDispatcher()
+    private val userManager = mockk<UserManager>()
+    private val authSettingsProvider = mockk<AuthSettingsProvider>()
+    private val appLogger = mockk<AppLogger>(relaxed = true)
+
+    private fun createJobs(scope: CoroutineScope) = UserScheduledJobsImpl(
+        userManager = userManager,
+        authSettingsProvider = authSettingsProvider,
+        scope = scope,
+        appLogger = appLogger
+    )
 
     @Test
-    fun `start does not call delete when interval is zero`() = runTest(dispatcher) {
-        val bgScope = CoroutineScope(SupervisorJob() + dispatcher)
-        val userManager = mockk<UserManager>(relaxed = true)
-        val appLogger = mockk<AppLogger>(relaxed = true)
-        val jobs = UserScheduledJobsImpl(
-            userManager = userManager,
-            config = UserScheduledJobsConfig(permanentAccountDeletionPollIntervalMinutes = 0L),
-            scope = bgScope,
-            appLogger = appLogger
-        )
+    fun `should not start loop when interval is zero or negative`() = runTest {
+        every { authSettingsProvider.getAccountDeletionDelaySeconds() } returns ZERO_INTERVAL
+        val jobs = createJobs(backgroundScope)
 
         jobs.start()
-        advanceUntilIdle()
+        advanceTimeBy(1.seconds)
 
-        coVerify(exactly = 0) { userManager.deleteUsersDueForPermanentDeletion() }
+        coVerify(exactly = 0) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
     }
 
     @Test
-    fun `start invokes delete on positive interval`() = runTest(dispatcher) {
-        val bgScope = CoroutineScope(SupervisorJob() + dispatcher)
-        val userManager = mockk<UserManager>()
-        coEvery { userManager.deleteUsersDueForPermanentDeletion() } returns AppResult.Success(0)
-        val appLogger = mockk<AppLogger>(relaxed = true)
-        val jobs = UserScheduledJobsImpl(
-            userManager = userManager,
-            config = UserScheduledJobsConfig(permanentAccountDeletionPollIntervalMinutes = 1L),
-            scope = bgScope,
-            appLogger = appLogger
-        )
+    fun `should invoke delete immediately on start and then after interval`() = runTest {
+        every { authSettingsProvider.getAccountDeletionDelaySeconds() } returns TEST_INTERVAL_SECONDS
+        coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } returns AppResult.Success(1)
+        val jobs = createJobs(backgroundScope)
 
         jobs.start()
-        advanceUntilIdle()
 
-        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletion() }
+        advanceTimeBy(1.seconds)
+        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
+
+        advanceTimeBy(TEST_INTERVAL_SECONDS.seconds)
+        coVerify(exactly = 2) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
     }
 
     @Test
-    fun `second start does not launch a second loop`() = runTest(dispatcher) {
-        val bgScope = CoroutineScope(SupervisorJob() + dispatcher)
-        val userManager = mockk<UserManager>()
-        coEvery { userManager.deleteUsersDueForPermanentDeletion() } returns AppResult.Success(0)
-        val appLogger = mockk<AppLogger>(relaxed = true)
-        val jobs = UserScheduledJobsImpl(
-            userManager = userManager,
-            config = UserScheduledJobsConfig(permanentAccountDeletionPollIntervalMinutes = 1L),
-            scope = bgScope,
-            appLogger = appLogger
-        )
+    fun `should not launch second loop if already active`() = runTest {
+        every { authSettingsProvider.getAccountDeletionDelaySeconds() } returns TEST_INTERVAL_SECONDS
+        coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } returns AppResult.Success(0)
+        val jobs = createJobs(backgroundScope)
 
         jobs.start()
         jobs.start()
-        advanceUntilIdle()
 
-        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletion() }
+        advanceTimeBy(1.seconds)
+        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
     }
 
     @Test
-    fun `start logs error when delete returns Error`() = runTest(dispatcher) {
-        val bgScope = CoroutineScope(SupervisorJob() + dispatcher)
-        val userManager = mockk<UserManager>()
-        val failure = CommonError.Unknown("purge failed")
-        coEvery { userManager.deleteUsersDueForPermanentDeletion() } returns AppResult.Error(failure)
-        val appLogger = mockk<AppLogger>(relaxed = true)
-        val jobs = UserScheduledJobsImpl(
-            userManager = userManager,
-            config = UserScheduledJobsConfig(permanentAccountDeletionPollIntervalMinutes = 1L),
-            scope = bgScope,
-            appLogger = appLogger
-        )
+    fun `should log error when manager returns failure result`() = runTest {
+        val error = CommonError.Internal(Exception("DB error"))
+        every { authSettingsProvider.getAccountDeletionDelaySeconds() } returns TEST_INTERVAL_SECONDS
+        coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } returns AppResult.Error(error)
+        val jobs = createJobs(backgroundScope)
 
         jobs.start()
-        advanceUntilIdle()
+        advanceTimeBy(1.seconds)
 
-        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletion() }
-        verify(exactly = 1) { appLogger.logError(ofType(CommonError.Unknown::class)) }
+        verify { appLogger.logError(error) }
     }
 
     @Test
-    fun `start invokes delete again after interval elapses`() = runTest(dispatcher) {
-        val bgScope = CoroutineScope(SupervisorJob() + dispatcher)
-        val userManager = mockk<UserManager>()
-        coEvery { userManager.deleteUsersDueForPermanentDeletion() } returns AppResult.Success(0)
-        val appLogger = mockk<AppLogger>(relaxed = true)
-        val jobs = UserScheduledJobsImpl(
-            userManager = userManager,
-            config = UserScheduledJobsConfig(permanentAccountDeletionPollIntervalMinutes = 1L),
-            scope = bgScope,
-            appLogger = appLogger
-        )
+    fun `should log internal error when exception is thrown during execution`() = runTest {
+        val exception = RuntimeException("Unexpected")
+        every { authSettingsProvider.getAccountDeletionDelaySeconds() } returns TEST_INTERVAL_SECONDS
+        coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } throws exception
+        val jobs = createJobs(backgroundScope)
 
         jobs.start()
-        advanceUntilIdle()
-        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletion() }
+        advanceTimeBy(1.seconds)
 
-        advanceTimeBy(ONE_MINUTE_MS)
-        advanceUntilIdle()
-
-        coVerify(exactly = 2) { userManager.deleteUsersDueForPermanentDeletion() }
+        verify {
+            appLogger.logError(match { error ->
+                error is CommonError.Internal && error.throwable == exception
+            })
+        }
     }
 
-    private companion object {
-        const val ONE_MINUTE_MS = 60_000L
+    @Test
+    fun `loop should stop when scope is cancelled`() = runTest {
+        every { authSettingsProvider.getAccountDeletionDelaySeconds() } returns TEST_INTERVAL_SECONDS
+        coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } returns AppResult.Success(0)
+
+        val testScope = CoroutineScope(coroutineContext + SupervisorJob())
+        val jobs = createJobs(testScope)
+
+        jobs.start()
+        advanceTimeBy(1.seconds)
+        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
+
+        testScope.cancel()
+        advanceTimeBy(TEST_INTERVAL_SECONDS.seconds)
+
+        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
     }
 }

@@ -12,12 +12,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
  */
 data class AuditEventsListQueryParams(
     val listing: ListingQueryParams<AuditSortValues.AuditEventSortBy>,
-    val actorId: String?,
-    val actorType: AuditActorType?,
-    val actorUserRole: String?,
-    val action: AuditActionType?,
-    val resource: AuditResourceType?,
-    val resourceId: String?,
-    val status: AuditStatus?,
-    val message: String?
+    val actorIds: List<String>,
+    val actorTypes: List<AuditActorType>,
+    val actorUserRoles: List<String>,
+    val actions: List<AuditActionType>,
+    val resources: List<AuditResourceType>,
+    val resourceIds: List<String>,
+    val statuses: List<AuditStatus>,
+    val messages: List<String>
 )

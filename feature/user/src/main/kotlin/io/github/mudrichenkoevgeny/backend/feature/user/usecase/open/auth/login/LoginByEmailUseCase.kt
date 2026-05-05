@@ -1,126 +1,135 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login
 
+import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
-import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
-import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
-import io.github.mudrichenkoevgeny.backend.feature.user.model.auth.AuthData
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
-// todo refactor
-/**
- * Use case: authenticate a user by email and password.
- *
- * Applies rate limiting, resolves the email identifier, validates password via [PasswordHasher],
- * then provides auth data (tokens, user) via [AuthManager]. Audit is logged for success, wrong password, or unregistered email.
- * [execute] takes email, password, and request context;
- * returns [AppResult.Success] with [AuthData] or [AppResult.Error] (e.g. [UserError.InvalidCredentials], rate limit).
- */
 @Singleton
 class LoginByEmailUseCase @Inject constructor(
-    private val passwordHasher: PasswordHasher,
-    private val identifierManager: IdentifierManager,
-    private val authManager: AuthManager,
     private val rateLimiter: RateLimiter,
-    private val auditLogger: AuditLogger
+    private val auditLogger: AuditLogger,
+    private val auditErrorConverter: AuditErrorConverter,
+    private val authManager: AuthManager
 ) {
-    suspend fun execute(
+    /**
+     * Authenticates an existing user using email and password credentials.
+     *
+     * **Allowed Account Statuses:** Any (Public access).
+     *
+     * **Security:**
+     * - Protects against credential stuffing and brute-force attacks via [UserRateLimitAction.LOGIN_ATTEMPT].
+     * - If multifactor authentication (MFA) is enabled for the account, the [authManager] will return
+     *   an error directing the user to complete the TOTP challenge.
+     *
+     * **Workflow:**
+     * 1. Validates rate limits for the provided [email].
+     * 2. Delegates credential verification to [authManager] for [UserAuthProvider.EMAIL].
+     * 3. Logs the security event via [AuditLogger] with [UserAuditActionType.LOGIN_BY_EMAIL].
+     *
+     * @param email The user's email address.
+     * @param password The plaintext password provided for verification.
+     * @param requestContext The context of the public request.
+     * @return [AppResult] containing [AuthData] or an MFA challenge.
+     */
+    suspend operator fun invoke(
         email: String,
         password: String,
         requestContext: RequestContext
     ): AppResult<AuthData> {
-        val metadata: Set<AuditEventMetadata> = requestContext.clientInfo.toAuditMetadata()
+        val auditMetadata = requestContext.clientInfo.toAuditMetadata().toMutableSet()
+        auditMetadata.add(
+            AuditEventMetadata(
+                key = UserAuditMetadataKey.EMAIL_ADDRESS,
+                value = email
+            )
+        )
 
         val rateLimitCheck = rateLimiter.checkRateLimit(
             action = UserRateLimitAction.LOGIN_ATTEMPT,
             identifier = email
         )
-
         if (rateLimitCheck is AppResult.Error) {
-            // todo audit log?
-            return rateLimitCheck
+            return handleError(
+                error = rateLimitCheck.error,
+                baseMetadata = auditMetadata
+            )
         }
 
-        val userIdentifierResult = identifierManager.getUserIdentifier(
-            userAuthProvider = UserAuthProvider.EMAIL,
-            identifier = email
-        )
-
-        val userIdentifier = when (userIdentifierResult) {
-            is AppResult.Success -> userIdentifierResult.data
-            is AppResult.Error -> {
-                // todo audit log?
-                return userIdentifierResult
-            }
-        }
-
-        if (userIdentifier == null) {
-            passwordHasher.isPasswordValidFakeCheck(password)
-            // todo audit log?
-            return AppResult.Error(UserError.InvalidCredentials())
-        }
-
-        val isPasswordValidResult = passwordHasher.isPasswordValid(password, userIdentifier.passwordHash)
-
-        val isPasswordValid = when (isPasswordValidResult) {
-            is AppResult.Success -> isPasswordValidResult.data
-            is AppResult.Error -> {
-                // todo audit log?
-                return isPasswordValidResult
-            }
-        }
-
-        if (!isPasswordValid) {
-            // todo audit log?
-            return AppResult.Error(UserError.InvalidCredentials())
-        }
-
-        val authDataResult = authManager.provideAuthData(
-            userIdentifier = userIdentifier,
+        val authenticateUserResult = authManager.authenticateExistingUser(
             clientInfo = requestContext.clientInfo,
-            allowedRoles = setOf(UserRole.USER)
+            userAuthProvider = UserAuthProvider.EMAIL,
+            identifier = email,
+            password = password
         )
 
-        when (authDataResult) {
+        return when (authenticateUserResult) {
             is AppResult.Success -> {
+                val userDetails = authenticateUserResult.data.userDetails
                 logAudit(
-                    actorId = authDataResult.data.currentUser
+                    status = AuditStatus.SUCCESS,
+                    actorId = userDetails.id.asHexDashString(),
+                    actorUserRole = userDetails.role,
+                    resourceId = userDetails.id.asHexDashString(),
+                    metadata = auditMetadata
                 )
+                authenticateUserResult
             }
-            is AppResult.Error -> {
-
-            }
-
+            is AppResult.Error -> handleError(
+                error = authenticateUserResult.error,
+                baseMetadata = auditMetadata
+            )
         }
+    }
 
-        return authDataResult
+    private fun <T> handleError(
+        error: AppError,
+        actorId: String? = null,
+        actorUserRole: UserRole? = null,
+        resourceId: String? = null,
+        baseMetadata: Set<AuditEventMetadata>
+    ): AppResult<T> {
+        val auditErrorLogData = auditErrorConverter.convert(error)
+        logAudit(
+            actorId = actorId,
+            actorUserRole = actorUserRole,
+            resourceId = resourceId,
+            status = auditErrorLogData.status,
+            metadata = baseMetadata + auditErrorLogData.metadata
+        )
+        return AppResult.Error(error)
     }
 
     private fun logAudit(
         actorId: String? = null,
+        actorUserRole: UserRole? = null,
+        resourceId: String? = null,
         status: AuditStatus,
         metadata: Set<AuditEventMetadata>
     ) {
         auditLogger.log(
-            actorId = requestContext.userId?.asHexDashString(),
+            actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = null,
+            actorUserRole = actorUserRole?.serialName,
             action = UserAuditActionType.LOGIN_BY_EMAIL,
-            resource = UserAuditResourceType.USER_EMAIL,
+            resource = UserAuditResourceType.USER,
+            resourceId = resourceId,
             status = status,
             metadata = metadata
         )
