@@ -13,8 +13,8 @@ dependencies {
         api(project(":core:storage"))
         api(project(":core:events"))
         api(project(":feature:user"))
-        api(project(":feature:security-api"))
-        api(project(":feature:settings-api"))
-        api(project(":feature:audit-api"))
+        api(project(":feature:securityapi"))
+        api(project(":feature:settingsapi"))
+        api(project(":feature:auditapi"))
     }
 }

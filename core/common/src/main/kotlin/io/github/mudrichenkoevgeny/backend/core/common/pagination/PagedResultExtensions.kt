@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.pagination
 
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 
+// todo wait for shared update
 /**
  * Maps each item for API serialization while preserving pagination metadata.
  */

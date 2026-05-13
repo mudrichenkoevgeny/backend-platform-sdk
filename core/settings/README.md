@@ -15,7 +15,7 @@ DB-backed system settings and the **core** global-settings provider used by HTTP
     - System seeding: [SeedGlobalSettingsUseCase] (bootstrap / env defaults into the DB).
 - **DI wiring**: [SettingsModules] aggregates all settings-related Dagger modules.
 
-**HTTP** read/update of global settings (open and management routes) is implemented in **`feature/settings-api`** on top of [GlobalSettingsProvider].
+**HTTP** read/update of global settings (open and management routes) is implemented in **`feature/settingsapi`** on top of [GlobalSettingsProvider].
 
 ## Environment variables
 

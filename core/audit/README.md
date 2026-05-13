@@ -10,7 +10,7 @@ Audit events: persistence, background logging, and shared masking helpers. Domai
 - **[AuditErrorConverter]** — transforms `AppError` into audit-ready data using a chain of **[AuditErrorParser]** implementations.
 - **[AuditDataMasker]** — redacts `resourceId` and metadata values based on `AuditValueSensitivity` (Email, Phone, IP, etc.) before exposing events to external APIs.
 
-Management **HTTP** routes, permission-aware reads, and response mapping are implemented in **`feature:audit-api`**.
+Management **HTTP** routes, permission-aware reads, and response mapping are implemented in **`feature:auditapi`**.
 
 ## Usage
 
@@ -18,7 +18,7 @@ Management **HTTP** routes, permission-aware reads, and response mapping are imp
 - Install **[AuditModules]** in your Dagger component.
 - **Database:** Ensure the audit table exists. The module ships a Flyway migration under `src/main/resources/db/migration/core/audit/`.
 - Inject **[AuditLogger]** or **[AuditService]** for fire-and-forget logging from routes or use cases.
-- For management HTTP APIs over audit data, depend on `feature:audit-api` and install `AuditApiModules` in addition to **[AuditModules]**.
+- For management HTTP APIs over audit data, depend on `feature:auditapi` and install `AuditApiModules` in addition to **[AuditModules]**.
 
 [AuditAccessFilter]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/audit/domain/model/AuditAccessFilter.kt
 [AuditDataMasker]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/audit/mask/AuditDataMasker.kt

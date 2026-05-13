@@ -1,6 +1,6 @@
 # core/security
 
-Security primitives for SDK-based applications: password hashing, MFA management, TOTP processing, and symmetric encryption. **HTTP routes and security “API” use cases** live in **`feature/security-api`**, not in this module.
+Security primitives for SDK-based applications: password hashing, MFA management, TOTP processing, and symmetric encryption. **HTTP routes and security “API” use cases** live in **`feature/securityapi`**, not in this module.
 
 ## What it provides
 

@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.for
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.mapItems
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
@@ -19,6 +20,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthent
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.GetIdentifierUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.GetIdentifiersUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.IdentifierEmailChangePasswordUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
@@ -28,8 +30,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toA
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.toUserIdentifierIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.password.EmailPasswordChangeRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.identifier.SelfManagementIdentifierRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
@@ -46,8 +50,9 @@ import javax.inject.Singleton
  * Management HTTP routes for self-service identifier management and security updates.
  *
  * Registered routes:
- * 1. [SelfManagementIdentifierRoutes.GET_IDENTIFIERS] — retrieves identifiers linked to the current account via [GetIdentifiersUseCase].
- * 2. [SelfManagementIdentifierRoutes.IDENTIFIER_EMAIL_CHANGE_PASSWORD] — handles password updates for email identifiers via [IdentifierEmailChangePasswordUseCase].
+ * 1. [SelfManagementIdentifierRoutes.GET_IDENTIFIER] — retrieves specific identifier details via [GetIdentifierUseCase].
+ * 2. [SelfManagementIdentifierRoutes.GET_IDENTIFIERS] — retrieves identifiers linked to the current account via [GetIdentifiersUseCase].
+ * 3. [SelfManagementIdentifierRoutes.IDENTIFIER_EMAIL_CHANGE_PASSWORD] — handles password updates for email identifiers via [IdentifierEmailChangePasswordUseCase].
  */
 @Singleton
 class SelfManagementIdentifierRouter @Inject constructor(
@@ -56,15 +61,28 @@ class SelfManagementIdentifierRouter @Inject constructor(
     private val appErrorParser: AppErrorParser,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
+    private val getIdentifierUseCase: GetIdentifierUseCase,
     private val getIdentifiersUseCase: GetIdentifiersUseCase,
     private val identifierEmailChangePasswordUseCase: IdentifierEmailChangePasswordUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
+            registerGetIdentifierRoute(this)
             registerGetIdentifiersRoute(this)
             registerIdentifierEmailChangePasswordRoute(this)
         }
+    }
+
+    private fun registerGetIdentifierRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+
+        route.get(
+            path = SelfManagementIdentifierRoutes.GET_IDENTIFIER,
+            builder = { getIdentifierDocs(allowedRoles, allowedAccountStatuses) },
+            body = { getIdentifier(allowedRoles, allowedAccountStatuses) }
+        )
     }
 
     private fun registerGetIdentifiersRoute(route: Route) {
@@ -87,6 +105,60 @@ class SelfManagementIdentifierRouter @Inject constructor(
             builder = { identifierEmailChangePasswordDocs(allowedRoles, allowedAccountStatuses) },
             body = { identifierEmailChangePassword(allowedRoles, allowedAccountStatuses) }
         )
+    }
+
+    private fun RouteConfig.getIdentifierDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        summary = GET_IDENTIFIER_SUMMARY
+        operationId = GET_IDENTIFIER_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.IDENTIFIER)
+        description = getFormattedDescription(
+            description = GET_IDENTIFIER_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.serialName },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+        )
+        request {
+            pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
+                description = GET_IDENTIFIER_PATH_PARAMETER_DESCRIPTION
+            }
+        }
+        response {
+            code(HttpStatusCode.OK) {
+                description = GET_IDENTIFIER_RESPONSE_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.getIdentifier(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        val identifierId = call.validatePathParameter(UserApiPaths.USER_IDENTIFIER_ID) { identifierId ->
+            identifierId.toUserIdentifierIdOrThrow()
+        }
+        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
+        )
+
+        if (authorizeResult is AppResult.Error) {
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
+        val result = getIdentifierUseCase(
+            identifierId = identifierId,
+            authenticatedRequestContext = authenticatedRequestContext
+        )
+
+        call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
+            userIdentifier.toUserIdentifierPayload()
+        }
     }
 
     private fun RouteConfig.getIdentifiersDocs(
@@ -215,6 +287,12 @@ class SelfManagementIdentifierRouter @Inject constructor(
     }
 
     companion object {
+        private const val GET_IDENTIFIER_SUMMARY = "Get specific identifier details"
+        private const val GET_IDENTIFIER_OPERATION_ID = "getSelfManagementIdentifier"
+        private const val GET_IDENTIFIER_DESCRIPTION = "Retrieves specific identifier details linked to the current account."
+        private const val GET_IDENTIFIER_PATH_PARAMETER_DESCRIPTION = "The unique identifier ID"
+        private const val GET_IDENTIFIER_RESPONSE_DESCRIPTION = "Identifier details"
+
         private const val GET_IDENTIFIERS_SUMMARY = "Get current management identifiers"
         private const val GET_IDENTIFIERS_OPERATION_ID = "getSelfManagementIdentifiers"
         private const val GET_IDENTIFIERS_DESCRIPTION = "Returns identifiers linked to the current authenticated management account."

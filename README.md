@@ -17,9 +17,9 @@ A modular foundational SDK for building scalable Kotlin/Ktor microservices. Prov
 | **core/storage** | Object storage abstraction supporting S3 (AWS/MinIO) and Local Filesystem. |
 | **core/events** | Event publishing/subscribing via Kafka or In-Memory bus. |
 | **feature/user** | Advanced IAM: Multi-method auth (Email, Phone, OAuth), JWT/Refresh sessions, 2FA/TOTP, and full user lifecycle. |
-| **feature/audit-api** | HTTP API for audit trail management with permission-aware filtering. |
-| **feature/security-api** | Security policy management with real-time WebSocket synchronization. |
-| **feature/settings-api** | Public and management APIs for global configuration with WebSocket sync. |
+| **feature/auditapi** | HTTP API for audit trail management with permission-aware filtering. |
+| **feature/securityapi** | Security policy management with real-time WebSocket synchronization. |
+| **feature/settingsapi** | Public and management APIs for global configuration with WebSocket sync. |
 
 ## Installation
 
@@ -28,7 +28,7 @@ Use the BOM and add the modules you need:
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation(platform("io.github.mudrichenkoevgeny:backend-platform-sdk-bom:0.0.16"))
+    implementation(platform("io.github.mudrichenkoevgeny:backend-platform-sdk-bom:0.0.17"))
     implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-common")
     implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-database")
     // ... other core modules and backend-platform-sdk-feature-user as required

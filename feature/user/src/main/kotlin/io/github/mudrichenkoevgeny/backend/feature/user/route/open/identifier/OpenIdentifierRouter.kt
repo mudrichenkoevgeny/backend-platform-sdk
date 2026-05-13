@@ -25,6 +25,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.AddUserIdentifierExternalAuthProviderUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.AddUserIdentifierPhoneUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.DeleteUserIdentifierUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.GetIdentifierUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.GetIdentifiersUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.IdentifierEmailChangePasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.SendAddEmailIdentifierConfirmationUseCase
@@ -71,14 +72,15 @@ import javax.inject.Singleton
  * credentials like passwords. All routes are protected by JWT authentication.
  *
  * Registered routes:
- * 1. [OpenIdentifierRoutes.GET_IDENTIFIERS] — lists linked identities via [GetIdentifiersUseCase].
- * 2. [OpenIdentifierRoutes.DELETE_IDENTIFIER] — unlinks a specific identity via [DeleteUserIdentifierUseCase].
- * 3. [OpenIdentifierRoutes.ADD_IDENTIFIER_EMAIL] — links an email via [AddUserIdentifierEmailUseCase].
- * 4. [OpenIdentifierRoutes.ADD_IDENTIFIER_PHONE] — links a phone via [AddUserIdentifierPhoneUseCase].
- * 5. [OpenIdentifierRoutes.ADD_IDENTIFIER_EXTERNAL_AUTH_PROVIDER] — links social/external auth via [AddUserIdentifierExternalAuthProviderUseCase].
- * 6. [OpenIdentifierRoutes.SEND_ADD_EMAIL_IDENTIFIER_CONFIRMATION] — sends email OTP via [SendAddEmailIdentifierConfirmationUseCase].
- * 7. [OpenIdentifierRoutes.SEND_ADD_PHONE_IDENTIFIER_CONFIRMATION] — sends SMS OTP via [SendAddPhoneIdentifierConfirmationUseCase].
- * 8. [OpenIdentifierRoutes.IDENTIFIER_EMAIL_CHANGE_PASSWORD] — updates password for email identities via [IdentifierEmailChangePasswordUseCase].
+ * 1. [OpenIdentifierRoutes.GET_IDENTIFIER] — retrieves specific identifier details via [GetIdentifierUseCase].
+ * 2. [OpenIdentifierRoutes.GET_IDENTIFIERS] — lists linked identities via [GetIdentifiersUseCase].
+ * 3. [OpenIdentifierRoutes.DELETE_IDENTIFIER] — unlinks a specific identity via [DeleteUserIdentifierUseCase].
+ * 4. [OpenIdentifierRoutes.ADD_IDENTIFIER_EMAIL] — links an email via [AddUserIdentifierEmailUseCase].
+ * 5. [OpenIdentifierRoutes.ADD_IDENTIFIER_PHONE] — links a phone via [AddUserIdentifierPhoneUseCase].
+ * 6. [OpenIdentifierRoutes.ADD_IDENTIFIER_EXTERNAL_AUTH_PROVIDER] — links social/external auth via [AddUserIdentifierExternalAuthProviderUseCase].
+ * 7. [OpenIdentifierRoutes.SEND_ADD_EMAIL_IDENTIFIER_CONFIRMATION] — sends email OTP via [SendAddEmailIdentifierConfirmationUseCase].
+ * 8. [OpenIdentifierRoutes.SEND_ADD_PHONE_IDENTIFIER_CONFIRMATION] — sends SMS OTP via [SendAddPhoneIdentifierConfirmationUseCase].
+ * 9. [OpenIdentifierRoutes.IDENTIFIER_EMAIL_CHANGE_PASSWORD] — updates password for email identities via [IdentifierEmailChangePasswordUseCase].
  */
 @Singleton
 class OpenIdentifierRouter @Inject constructor(
@@ -87,6 +89,7 @@ class OpenIdentifierRouter @Inject constructor(
     private val appErrorParser: AppErrorParser,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
+    private val getIdentifierUseCase: GetIdentifierUseCase,
     private val getIdentifiersUseCase: GetIdentifiersUseCase,
     private val deleteUserIdentifierUseCase: DeleteUserIdentifierUseCase,
     private val addUserIdentifierEmailUseCase: AddUserIdentifierEmailUseCase,
@@ -99,6 +102,7 @@ class OpenIdentifierRouter @Inject constructor(
 
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
+            registerGetIdentifierRoute(this)
             registerGetIdentifiersRoute(this)
             registerDeleteIdentifierRoute(this)
             registerAddIdentifierEmailRoute(this)
@@ -108,6 +112,17 @@ class OpenIdentifierRouter @Inject constructor(
             registerSendAddPhoneIdentifierConfirmationRoute(this)
             registerIdentifierEmailChangePasswordRoute(this)
         }
+    }
+
+    private fun registerGetIdentifierRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+
+        route.get(
+            path = OpenIdentifierRoutes.GET_IDENTIFIER,
+            builder = { getIdentifierDocs(allowedRoles, allowedAccountStatuses) },
+            body = { getIdentifier(allowedRoles, allowedAccountStatuses) }
+        )
     }
 
     private fun registerGetIdentifiersRoute(route: Route) {
@@ -196,6 +211,60 @@ class OpenIdentifierRouter @Inject constructor(
             builder = { identifierEmailChangePasswordDocs(allowedRoles, allowedAccountStatuses) },
             body = { identifierEmailChangePassword(allowedRoles, allowedAccountStatuses) }
         )
+    }
+
+    private fun RouteConfig.getIdentifierDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        summary = GET_USER_IDENTIFIER_ROUTE_SUMMARY
+        operationId = GET_USER_IDENTIFIER_ROUTE_OPERATION_ID
+        tags = listOf(UserSwaggerTags.IDENTIFIER)
+        description = getFormattedDescription(
+            description = GET_USER_IDENTIFIER_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.serialName },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+        )
+        request {
+            pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
+                description = GET_USER_IDENTIFIER_ROUTE_PATH_PARAMETER_ID_DESCRIPTION
+            }
+        }
+        response {
+            code(HttpStatusCode.OK) {
+                description = GET_USER_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.getIdentifier(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        val identifierId = call.validatePathParameter(UserApiPaths.USER_IDENTIFIER_ID) { identifierId ->
+            identifierId.toUserIdentifierIdOrThrow()
+        }
+        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
+        )
+
+        if (authorizeResult is AppResult.Error) {
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
+        val result = getIdentifierUseCase(
+            identifierId = identifierId,
+            authenticatedRequestContext = authenticatedRequestContext
+        )
+
+        call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
+            userIdentifier.toUserIdentifierPayload()
+        }
     }
 
     private fun RouteConfig.getIdentifiersDocs(
@@ -677,6 +746,12 @@ class OpenIdentifierRouter @Inject constructor(
     }
 
     companion object {
+        const val GET_USER_IDENTIFIER_ROUTE_SUMMARY = "Get user identifier"
+        const val GET_USER_IDENTIFIER_ROUTE_DESCRIPTION = "Retrieves specific identifier details linked to the current account."
+        const val GET_USER_IDENTIFIER_ROUTE_OPERATION_ID = "getUserIdentifier"
+        const val GET_USER_IDENTIFIER_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The unique identifier ID"
+        const val GET_USER_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION = "Identifier details"
+
         const val GET_USER_IDENTIFIERS_ROUTE_SUMMARY = "Get user identifiers"
         const val GET_USER_IDENTIFIERS_ROUTE_DESCRIPTION = "Returns all authentication identifiers of the current user."
         const val GET_USER_IDENTIFIERS_ROUTE_OPERATION_ID = "getUserIdentifiers"

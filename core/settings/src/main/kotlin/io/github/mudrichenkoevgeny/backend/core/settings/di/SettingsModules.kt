@@ -10,7 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsServi
  * Dagger module aggregator for the settings feature.
  *
  * Includes configuration parsing, repositories/managers/services, and global settings provider.
- * WebSocket handlers for settings are registered from the `feature/settings-api` module (`SettingsApiModules`).
+ * WebSocket handlers for settings are registered from the `feature/settingsapi` module (`SettingsApiModules`).
  */
 @Module(
     includes = [

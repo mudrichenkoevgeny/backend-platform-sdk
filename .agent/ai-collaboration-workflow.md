@@ -36,9 +36,9 @@ Ensure code is placed in the correct module based on the following taxonomy:
 | **Common** | `common`: Ktor bootstrap, Dual-connector, StatusPages. | — |
 | **Data** | `database`: Exposed, Redis Pub/Sub, Migrations. | — |
 | **Observability** | `observability`: OTel, Metrics, Tracing. | — |
-| **Security** | `security`: Hashing, Encryption, MFA primitives. | `security-api`: Security policy routes & sync. |
-| **Settings** | `settings`: DB/Redis settings infrastructure. | `settings-api`: Global config routes & sync. |
-| **Audit** | `audit`: Background logging infrastructure. | `audit-api`: Mgmt routes & filtering. |
+| **Security** | `security`: Hashing, Encryption, MFA primitives. | `securityapi`: Security policy routes & sync. |
+| **Settings** | `settings`: DB/Redis settings infrastructure. | `settingsapi`: Global config routes & sync. |
+| **Audit** | `audit`: Background logging infrastructure. | `auditapi`: Mgmt routes & filtering. |
 | **Storage** | `storage`: S3 (AWS/MinIO) and Local FS abstraction. | — |
 | **Events** | `events`: Kafka or In-Memory bus abstraction. | — |
 | **User** | — | `user`: Auth, JWT, Multi-method sessions. |

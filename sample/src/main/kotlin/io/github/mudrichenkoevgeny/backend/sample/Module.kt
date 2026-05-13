@@ -12,9 +12,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.onPort
 import io.github.mudrichenkoevgeny.backend.core.observability.application.configureObservability
 import io.github.mudrichenkoevgeny.backend.core.observability.metrics.route.installMetricsEndpoint
 import io.github.mudrichenkoevgeny.backend.sample.di.AppComponent
-import io.github.mudrichenkoevgeny.shared.foundation.feature.audit.api.domain.permissions.AuditPermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.feature.security.api.domain.permission.SecurityPermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.feature.settings.api.domain.permission.SettingsPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.auditapi.domain.permissions.AuditPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.domain.permission.SecurityPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.domain.permission.SettingsPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.AuthSettingsPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.SessionPermissionCode

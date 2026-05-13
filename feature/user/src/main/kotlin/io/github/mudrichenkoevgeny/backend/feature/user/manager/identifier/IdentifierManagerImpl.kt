@@ -61,6 +61,12 @@ class IdentifierManagerImpl @Inject constructor(
         userIdentifierRepository.getUserIdentifierInternalById(userIdentifierId)
     }
 
+    override suspend fun getUserIdentifierByIdForSelf(
+        userIdentifierId: UserIdentifierId
+    ): AppResult<UserIdentifier?> = dbQuery {
+        userIdentifierRepository.getUserIdentifierById(userIdentifierId)
+    }
+
     override suspend fun getUserIdentifierByIdForManagement(
         userIdentifierId: UserIdentifierId,
         managementUserId: UserId,

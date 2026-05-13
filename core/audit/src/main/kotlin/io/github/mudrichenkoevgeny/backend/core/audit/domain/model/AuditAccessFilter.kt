@@ -16,7 +16,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
  *   persisted on the event, e.g. foundation `UserRole` wire values).
  * - Those branches are combined with **OR**. If no branch is produced (e.g. both sets empty), the query matches **no rows**.
  *
- * Higher layers (typically `AuditManagerImpl` in `feature/audit-api`) build this from the current user’s permission codes;
+ * Higher layers (typically `AuditManagerImpl` in `feature/auditapi`) build this from the current user’s permission codes;
  * feature modules rarely construct it by hand unless they implement a custom audit listing path.
  */
 data class AuditAccessFilter(

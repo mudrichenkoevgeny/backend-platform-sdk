@@ -19,7 +19,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.met
  *   enum as for [AuditEvent.resourceValueSensitivity]).
  *
  * Masking delegates to [DataMasker] (email, phone, IP, partial/full).
- * Call sites that need “masked vs unmasked” views (for example `feature/audit-api` after permission checks) apply
+ * Call sites that need “masked vs unmasked” views (for example `feature/auditapi` after permission checks) apply
  * [AuditEvent.maskSensitiveData] only when the caller has masked-read permission.
  */
 object AuditDataMasker {

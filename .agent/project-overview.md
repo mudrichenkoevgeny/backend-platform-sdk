@@ -37,8 +37,8 @@ alwaysApply: true
 *Pluggable business logic and API endpoints.*
 
 - **`feature/user`:** Comprehensive IAM (Identity & Access Management). Auth (Email, Phone, OAuth), JWT sessions, and 2FA.
-- **`feature/audit-api`:** Management HTTP endpoints for audit trail with permission-aware filtering.
-- **`feature/security-api` & `feature/settings-api`:** Public and Management APIs for security/settings with real-time WebSocket sync.
+- **`feature/auditapi`:** Management HTTP endpoints for audit trail with permission-aware filtering.
+- **`feature/securityapi` & `feature/settingsapi`:** Public and Management APIs for security/settings with real-time WebSocket sync.
 
 ### Other
 - **`bom`:** Bill of Materials.

@@ -28,9 +28,9 @@ This document is the entry point for architectural and coding standards. These r
 *High-level business logic and HTTP API endpoints.*
 
 - **`feature/user`:** IAM, Multi-method auth (Email, Phone, OAuth), JWT sessions, and 2FA lifecycle.
-- **`feature/audit-api`:** Management API for audit trails with permission-aware filtering.
-- **`feature/security-api`:** Policy management and real-time WebSocket synchronization.
-- **`feature/settings-api`:** Public and Management configuration APIs with inter-service sync.
+- **`feature/auditapi`:** Management API for audit trails with permission-aware filtering.
+- **`feature/securityapi`:** Policy management and real-time WebSocket synchronization.
+- **`feature/settingsapi`:** Public and Management configuration APIs with inter-service sync.
 
 ## Detailed Standards (`.agent/`)
 

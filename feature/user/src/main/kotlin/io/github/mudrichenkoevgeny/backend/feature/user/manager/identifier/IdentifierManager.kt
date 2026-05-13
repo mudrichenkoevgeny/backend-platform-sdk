@@ -30,9 +30,28 @@ interface IdentifierManager {
         identifier: String
     ): AppResult<UserIdentifierInternal?>
 
+    /**
+     * Loads an identifier by its ID for internal system use.
+     * Returns full internal data including sensitive fields like hashed passwords.
+     *
+     * @param userIdentifierId identifier id
+     * @return internal identifier when found, `null` when missing, or an error
+     */
     suspend fun getUserIdentifierByIdForSystem(
         userIdentifierId: UserIdentifierId
     ): AppResult<UserIdentifierInternal?>
+
+    /**
+     * Loads an identifier by its ID for the current user's self-management.
+     * Applies standard masking and excludes sensitive internal fields.
+     *
+     * @param userIdentifierId identifier id
+     * @return masked identifier when found, `null` when missing, or an error
+     */
+    suspend fun getUserIdentifierByIdForSelf(
+        userIdentifierId: UserIdentifierId
+    ): AppResult<UserIdentifier?>
+
     /**
      * Loads an identifier by id with permission-aware masking.
      *

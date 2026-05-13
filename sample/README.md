@@ -25,10 +25,10 @@ in [AppComponent], for example:
 
 - `core:common` (server/ports/cors/etc.)
 - `core:database` (DB URL/credentials, Flyway migration locations, Redis URL)
-- `core:settings` and `feature:settings-api` (global settings seed values and sync)
-- `core:security` and `feature:security-api` (security policies and MFA)
+- `core:settings` and `feature:settingsapi` (global settings seed values and sync)
+- `core:security` and `feature:securityapi` (security policies and MFA)
 - `feature:user` (auth, JWT, and user lifecycle settings)
-- `core:audit` and `feature:audit-api` (audit persistence and management)
+- `core:audit` and `feature:auditapi` (audit persistence and management)
 
 See the README files of those modules for the complete list of required variables.
 
