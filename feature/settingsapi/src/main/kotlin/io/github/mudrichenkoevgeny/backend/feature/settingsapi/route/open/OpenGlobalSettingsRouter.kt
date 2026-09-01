@@ -7,8 +7,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.api.route.SettingsSwaggerTags
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.api.usecase.open.globalsettings.GetGlobalSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.SettingsSwaggerTags
+import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.open.globalsettings.GetGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.network.route.open.globalsettings.OpenGlobalSettingsRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus

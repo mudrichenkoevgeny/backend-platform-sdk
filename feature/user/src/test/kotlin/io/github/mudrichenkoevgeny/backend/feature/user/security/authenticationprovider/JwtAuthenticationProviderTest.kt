@@ -4,9 +4,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorPars
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
-import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
-import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -31,8 +31,8 @@ class JwtAuthenticationProviderTest {
 
     private val securityConfig = mockk<SecurityConfig>()
     private val userConfig = mockk<UserConfig>()
-    private val userRepository = mockk<UserRepository>()
-    private val userSessionRepository = mockk<UserSessionRepository>(relaxed = true)
+    private val userManager = mockk<UserManager>()
+    private val sessionManager = mockk<SessionManager>(relaxed = true)
     private val appErrorParser = mockk<AppErrorParser>()
     private val call = mockk<ApplicationCall>()
 
@@ -43,8 +43,8 @@ class JwtAuthenticationProviderTest {
         provider = JwtAuthenticationProvider(
             securityConfig,
             userConfig,
-            userRepository,
-            userSessionRepository,
+            userManager,
+            sessionManager,
             appErrorParser
         )
         mockkStatic("io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.JwtExtensionsKt")
@@ -61,7 +61,7 @@ class JwtAuthenticationProviderTest {
         val userDetails = createFakeUser(userId, UserRole.USER, UserAccountStatus.ACTIVE)
 
         every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
-        coEvery { userRepository.getUserDetailsById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
 
         val result = provider.requireUser(
             call = call,
@@ -80,7 +80,7 @@ class JwtAuthenticationProviderTest {
         val userDetails = createFakeUser(userId, UserRole.USER, UserAccountStatus.ACTIVE)
 
         every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
-        coEvery { userRepository.getUserDetailsById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
 
         val result = provider.requireUser(
             call = call,
@@ -105,7 +105,7 @@ class JwtAuthenticationProviderTest {
         )
 
         every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
-        coEvery { userRepository.getUserDetailsById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
 
         val result = provider.requireUser(
             call = call,
@@ -124,7 +124,7 @@ class JwtAuthenticationProviderTest {
         val userDetails = createFakeUser(userId, UserRole.USER, UserAccountStatus.BANNED)
 
         every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
-        coEvery { userRepository.getUserDetailsById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
 
         val result = provider.requireUser(
             call = call,
@@ -135,6 +135,24 @@ class JwtAuthenticationProviderTest {
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.UserBlocked)
+    }
+
+    @Test
+    fun `requireUser should return Error when user is not found`() = runTest {
+        val userId = UserId.generate()
+
+        every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(null)
+
+        val result = provider.requireUser(
+            call = call,
+            allowedRoles = setOf(UserRole.USER),
+            allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE),
+            requiredPermissions = emptySet()
+        )
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is UserError.UserNotFound)
     }
 
     private fun createFakeUser(
@@ -152,8 +170,11 @@ class JwtAuthenticationProviderTest {
             authorityLevel = 1,
             permissionCodes = permissions,
             isTotpEnabled = false,
+            lastLoginAt = now,
+            lastActiveAt = now,
             createdAt = now,
-            updatedAt = now
+            updatedAt = now,
+            scheduledPermanentDeletionAt = null
         )
     }
 }

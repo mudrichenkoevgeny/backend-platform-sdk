@@ -9,9 +9,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
-import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
-import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionIdFromCredential
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromCredential
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
@@ -39,8 +39,8 @@ import javax.inject.Singleton
 class JwtAuthenticationProvider @Inject constructor(
     private val securityConfig: SecurityConfig,
     private val userConfig: UserConfig,
-    private val userRepository: UserRepository,
-    private val userSessionRepository: UserSessionRepository,
+    private val userManager: UserManager,
+    private val sessionManager: SessionManager,
     private val appErrorParser: AppErrorParser
 ) : AuthenticationProvider {
 
@@ -68,28 +68,31 @@ class JwtAuthenticationProvider @Inject constructor(
                 validate { credential ->
                     try {
                         val userId = credential.getUserIdFromCredential()
-                        val userResult = userRepository.getUserDetailsById(userId)
-                        return@validate when (userResult) {
+                        val userResult = userManager.getUserByIdForSelf(userId)
+
+                        when (userResult) {
                             is AppResult.Success -> {
+                                if (userResult.data == null) return@validate null
+
                                 val sessionId = credential.getSessionIdFromCredential()
                                 if (sessionId != null) {
-                                    userSessionRepository.updateLastAccessed(sessionId)
+                                    sessionManager.updateLastAccessed(sessionId)
                                 }
                                 JWTPrincipal(credential.payload)
                             }
-                            is AppResult.Error -> JwtValidationError.UserNotFound
+                            is AppResult.Error -> null
                         }
                     } catch (_: JWTDecodeException) {
-                        JwtValidationError.InvalidToken
+                        null
                     } catch (_: TokenExpiredException) {
-                        JwtValidationError.TokenExpired
+                        null
+                    } catch (_: Exception) {
+                        null
                     }
                 }
 
                 challenge { _, _ ->
-                    val appError = (call.authentication.principal<JwtValidationError>())?.toAppError()
-                        ?: UserError.InvalidAccessToken()
-
+                    val appError = UserError.InvalidAccessToken()
                     val apiError = appErrorParser.getApiErrorResponse(appError)
                     call.respond(appError.httpStatusCode, apiError)
                 }
@@ -113,13 +116,13 @@ class JwtAuthenticationProvider @Inject constructor(
             }
         }
 
-        val userResult = userRepository.getUserDetailsById(
+        val userResult = userManager.getUserByIdForSelf(
             userId = userId
         ).mapNotNullOrError(UserError.UserNotFound(userId))
 
         val user = when (userResult) {
             is AppResult.Success -> userResult.data
-            is AppResult.Error -> return AppResult.Error(UserError.UserNotFound(userId))
+            is AppResult.Error -> return userResult
         }
 
         if (user.role !in allowedRoles) {

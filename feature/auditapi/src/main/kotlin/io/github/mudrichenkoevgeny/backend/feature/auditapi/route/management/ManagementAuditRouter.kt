@@ -10,10 +10,10 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
-import io.github.mudrichenkoevgeny.backend.feature.auditapi.api.route.AuditSwaggerTags
-import io.github.mudrichenkoevgeny.backend.feature.auditapi.api.network.query.parseAuditEventsListQueryParams
-import io.github.mudrichenkoevgeny.backend.feature.auditapi.api.usecase.management.auditevent.GetAuditEventUseCase
-import io.github.mudrichenkoevgeny.backend.feature.auditapi.api.usecase.management.auditevent.GetAuditEventsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.auditapi.network.query.parseAuditEventsListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.auditapi.route.AuditSwaggerTags
+import io.github.mudrichenkoevgeny.backend.feature.auditapi.usecase.management.auditevent.GetAuditEventsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.auditapi.usecase.management.auditevent.GetAuditEventUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs

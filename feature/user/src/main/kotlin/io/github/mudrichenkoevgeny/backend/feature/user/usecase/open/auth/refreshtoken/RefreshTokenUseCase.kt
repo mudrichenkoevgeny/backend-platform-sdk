@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.refre
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
@@ -33,12 +33,12 @@ class RefreshTokenUseCase @Inject constructor(
      * 3. Delegates the token rotation and session update logic to [SessionManager].
      *
      * @param refreshToken The current refresh token to be rotated.
-     * @param authenticatedRequestContext The context of the request, including user identity and client info.
+     * @param requestContext The context of the public request.
      * @return [AppResult] containing the new [SessionToken] upon success.
      */
     suspend operator fun invoke(
         refreshToken: RefreshToken,
-        authenticatedRequestContext: AuthenticatedRequestContext
+        requestContext: RequestContext
     ): AppResult<SessionToken> {
         val refreshTokenHashResult = refreshTokenProvider.getRefreshTokenHash(refreshToken)
         val refreshTokenHash = when (refreshTokenHashResult) {
@@ -56,9 +56,8 @@ class RefreshTokenUseCase @Inject constructor(
         }
 
         return sessionManager.refreshSession(
-            userId = authenticatedRequestContext.userId,
             refreshToken = refreshToken,
-            clientInfo = authenticatedRequestContext.clientInfo
+            clientInfo = requestContext.clientInfo
         )
     }
 }

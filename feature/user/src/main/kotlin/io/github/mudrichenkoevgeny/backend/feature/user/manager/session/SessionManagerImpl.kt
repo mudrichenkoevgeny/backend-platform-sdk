@@ -128,7 +128,6 @@ class SessionManagerImpl @Inject constructor(
     }
 
     override suspend fun refreshSession(
-        userId: UserId?,
         refreshToken: RefreshToken,
         clientInfo: ClientInfo
     ): AppResult<SessionToken> = dbQuery {
@@ -140,7 +139,6 @@ class SessionManagerImpl @Inject constructor(
         }
 
         val currentUserSessionResult = userSessionRepository.getUserSessionByHash(
-            userId = userId,
             refreshTokenHash = refreshTokenHash
         )
         val currentUserSession = when (currentUserSessionResult) {
@@ -168,6 +166,10 @@ class SessionManagerImpl @Inject constructor(
             clientInfo = clientInfo,
             lastReauthenticatedAt = currentUserSession.lastReauthenticatedAt
         )
+    }
+
+    override suspend fun updateLastAccessed(userSessionId: UserSessionId): AppResult<Unit> = dbQuery {
+        userSessionRepository.updateLastAccessed(userSessionId)
     }
 
     override suspend fun updateLastReauthenticated(userSessionId: UserSessionId): AppResult<Unit> = dbQuery {

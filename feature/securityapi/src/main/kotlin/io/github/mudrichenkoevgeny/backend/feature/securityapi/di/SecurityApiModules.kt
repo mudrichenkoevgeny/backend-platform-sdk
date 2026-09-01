@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.securityapi.di
 
 import dagger.Module
-import io.github.mudrichenkoevgeny.backend.feature.securityapi.api.di.module.SecurityWebSocketModule
+import io.github.mudrichenkoevgeny.backend.feature.securityapi.di.module.SecurityWebSocketModule
 
 /**
  * Dagger aggregation module for the `core/security` package.

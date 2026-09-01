@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     identifier TEXT NOT NULL,
     identifier_id UUID NOT NULL REFERENCES user_identifiers(id) ON DELETE CASCADE,
     identifier_auth_provider VARCHAR(32) NOT NULL,
-    refresh_token_hash TEXT NOT NULL,
+    refresh_token_hash TEXT NOT NULL UNIQUE,
 
     -- Device Info
     client_type VARCHAR(32),
@@ -25,7 +25,6 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     updated_at TIMESTAMPTZ
 );
 
-CREATE INDEX IF NOT EXISTS idx_user_sessions_refresh_token_hash ON user_sessions(refresh_token_hash);
 CREATE INDEX IF NOT EXISTS idx_user_sessions_identifier ON user_sessions(identifier);
 CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_sessions_device_id ON user_sessions(device_id);

@@ -51,16 +51,22 @@ interface SessionManager {
     /**
      * Refreshes a session token using a refresh token.
      *
-     * @param userId Optional user ID filter (when refresh is performed in an authenticated context).
      * @param refreshToken The refresh token used to authorize the renewal.
      * @param clientInfo Updated client metadata used for session validation.
      * @return [AppResult.Success] with a new [SessionToken] or an error.
      */
     suspend fun refreshSession(
-        userId: UserId?,
         refreshToken: RefreshToken,
         clientInfo: ClientInfo
     ): AppResult<SessionToken>
+
+    /**
+     * Updates the "last accessed" timestamp for a session.
+     *
+     * @param userSessionId The ID of the session to update.
+     * @return [AppResult.Success] containing [Unit] or an error.
+     */
+    suspend fun updateLastAccessed(userSessionId: UserSessionId): AppResult<Unit>
 
     /**
      * Updates the "last reauthenticated" timestamp for a session.

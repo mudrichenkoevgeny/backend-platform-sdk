@@ -194,18 +194,12 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
     }
 
     override suspend fun getUserSessionByHash(
-        userId: UserId?,
         refreshTokenHash: RefreshTokenHash
     ): AppResult<UserSessionInternal?> {
-        val query = UserSessionsTable.selectAll()
-
-        userId?.let { id ->
-            query.andWhere { UserSessionsTable.userId eq id.value }
-        }
-
-        query.andWhere { UserSessionsTable.refreshTokenHash eq refreshTokenHash.value }
-
-        val resultRow = query.singleOrNull()
+        val resultRow = UserSessionsTable
+            .selectAll()
+            .where { UserSessionsTable.refreshTokenHash eq refreshTokenHash.value }
+            .singleOrNull()
 
         return AppResult.Success(resultRow?.toUserSessionInternal())
     }

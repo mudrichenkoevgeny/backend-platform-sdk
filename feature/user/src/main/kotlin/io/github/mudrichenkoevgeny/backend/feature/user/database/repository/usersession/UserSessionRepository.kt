@@ -99,14 +99,12 @@ interface UserSessionRepository {
     suspend fun getUserSessionById(userSessionId: UserSessionId): AppResult<UserSession?>
 
     /**
-     * Loads a session by refresh token hash and an optional user filter.
+     * Loads a session by refresh token hash.
      *
-     * @param userId optional user id filter
      * @param refreshTokenHash refresh token hash
      * @return session when found, `null` when missing, or an error
      */
     suspend fun getUserSessionByHash(
-        userId: UserId?,
         refreshTokenHash: RefreshTokenHash
     ): AppResult<UserSessionInternal?>
 

@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.settingsapi.di.module
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoSet
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.api.network.websockets.messagehandler.SettingsWebSocketMessageHandler
+import io.github.mudrichenkoevgeny.backend.feature.settingsapi.network.websockets.messagehandler.SettingsWebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandler
 
 /**

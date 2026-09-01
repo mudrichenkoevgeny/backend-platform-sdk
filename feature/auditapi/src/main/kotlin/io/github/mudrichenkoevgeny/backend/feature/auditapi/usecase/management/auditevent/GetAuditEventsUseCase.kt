@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.auditapi.usecase.management.
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
-import io.github.mudrichenkoevgeny.backend.feature.auditapi.api.manager.AuditManager
+import io.github.mudrichenkoevgeny.backend.feature.auditapi.manager.AuditManager
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext

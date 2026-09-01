@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.auditapi.network.query
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
-import io.github.mudrichenkoevgeny.backend.feature.auditapi.api.network.model.AuditEventsListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.auditapi.network.model.AuditEventsListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditFilterValues

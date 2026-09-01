@@ -13,9 +13,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.api.route.SettingsSwaggerTags
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.api.usecase.management.globalsettings.UpdateGlobalSettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.api.usecase.open.globalsettings.GetGlobalSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.SettingsSwaggerTags
+import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.management.globalsettings.UpdateGlobalSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.open.globalsettings.GetGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs

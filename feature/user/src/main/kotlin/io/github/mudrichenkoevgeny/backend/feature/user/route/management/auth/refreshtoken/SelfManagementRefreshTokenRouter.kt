@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
-import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.refreshtoken.RefreshTokenUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -79,12 +79,12 @@ class SelfManagementRefreshTokenRouter @Inject constructor(
     }
 
     private suspend fun RoutingContext.refreshToken() {
-        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+        val requestContext = call.getRequestContext()
         val request = call.validateRequest<RefreshTokenPayload>()
 
         val result = refreshTokenUseCase(
             refreshToken = RefreshToken(request.refreshToken),
-            authenticatedRequestContext = authenticatedRequestContext
+            requestContext = requestContext
         )
 
         call.respondResult(result, appLogger, appErrorParser) { sessionToken ->

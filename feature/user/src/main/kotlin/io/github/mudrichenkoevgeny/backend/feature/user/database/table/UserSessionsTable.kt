@@ -32,7 +32,7 @@ object UserSessionsTable : BaseTable("user_sessions") {
         BaseDbConstraints.ENUM_MAX_LENGTH,
         UserAuthProvider::class
     )
-    val refreshTokenHash = text("refresh_token_hash")
+    val refreshTokenHash = text("refresh_token_hash").uniqueIndex()
 
     // Device Info
     val clientType = enumerationByName(

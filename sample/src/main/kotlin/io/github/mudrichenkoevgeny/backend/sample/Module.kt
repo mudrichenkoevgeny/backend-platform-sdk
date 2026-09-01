@@ -99,6 +99,8 @@ fun Application.module(
             setupSwaggerEndpoints()
         }
 
+        appComponent.authenticatedWebSocketRouter().register(this)
+
         when (commonConfig.instanceMode) {
             AppInstanceMode.PUBLIC -> {
                 appComponent.openSecuritySettingsRouter().register(this)

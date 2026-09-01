@@ -2,8 +2,8 @@ package io.github.mudrichenkoevgeny.backend.feature.auditapi.di.module
 
 import dagger.Binds
 import dagger.Module
-import io.github.mudrichenkoevgeny.backend.feature.auditapi.api.manager.AuditManager
-import io.github.mudrichenkoevgeny.backend.feature.auditapi.api.manager.AuditManagerImpl
+import io.github.mudrichenkoevgeny.backend.feature.auditapi.manager.AuditManager
+import io.github.mudrichenkoevgeny.backend.feature.auditapi.manager.AuditManagerImpl
 import javax.inject.Singleton
 
 /**

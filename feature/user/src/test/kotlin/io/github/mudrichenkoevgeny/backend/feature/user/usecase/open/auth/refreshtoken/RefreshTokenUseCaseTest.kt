@@ -5,17 +5,14 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.SessionToken
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -42,7 +39,7 @@ class RefreshTokenUseCaseTest {
     @Test
     fun `returns error when getRefreshTokenHash fails`() = runTest {
         val refreshToken = RefreshToken("refresh-token")
-        val ctx = createAuthenticatedRequestContext()
+        val ctx = createRequestContext()
         val hashError = AppResult.Error(CommonError.Internal(Throwable("hash failed")))
 
         every { refreshTokenProvider.getRefreshTokenHash(refreshToken) } returns hashError
@@ -51,13 +48,13 @@ class RefreshTokenUseCaseTest {
 
         assertEquals(hashError, result)
         coVerify(exactly = 0) { rateLimiter.checkRateLimit(any(), any()) }
-        coVerify(exactly = 0) { sessionManager.refreshSession(any(), any(), any()) }
+        coVerify(exactly = 0) { sessionManager.refreshSession(any(), any()) }
     }
 
     @Test
     fun `returns rate limit error when checkRateLimit fails`() = runTest {
         val refreshToken = RefreshToken("refresh-token")
-        val ctx = createAuthenticatedRequestContext()
+        val ctx = createRequestContext()
         val rateLimitError = AppResult.Error(
             CommonError.TooManyRequests(
                 rateLimitActionCode = UserRateLimitAction.REFRESH_TOKEN.id,
@@ -77,13 +74,13 @@ class RefreshTokenUseCaseTest {
         val result = useCase(refreshToken, ctx)
 
         assertEquals(rateLimitError, result)
-        coVerify(exactly = 0) { sessionManager.refreshSession(any(), any(), any()) }
+        coVerify(exactly = 0) { sessionManager.refreshSession(any(), any()) }
     }
 
     @Test
     fun `successfully refreshes session when all checks pass`() = runTest {
         val refreshToken = RefreshToken("old-refresh-token")
-        val ctx = createAuthenticatedRequestContext()
+        val ctx = createRequestContext()
         val newSessionToken = SessionToken(
             accessToken = AccessToken("new-access"),
             refreshToken = RefreshToken("new-refresh"),
@@ -99,7 +96,6 @@ class RefreshTokenUseCaseTest {
 
         coEvery {
             sessionManager.refreshSession(
-                userId = ctx.userId,
                 refreshToken = refreshToken,
                 clientInfo = ctx.clientInfo
             )
@@ -111,14 +107,14 @@ class RefreshTokenUseCaseTest {
         assertEquals(newSessionToken, (result as AppResult.Success).data)
 
         coVerify(exactly = 1) {
-            sessionManager.refreshSession(ctx.userId, refreshToken, ctx.clientInfo)
+            sessionManager.refreshSession(refreshToken, ctx.clientInfo)
         }
     }
 
     @Test
     fun `returns error when session manager rejects refresh token`() = runTest {
         val refreshToken = RefreshToken("expired-or-invalid")
-        val ctx = createAuthenticatedRequestContext()
+        val ctx = createRequestContext()
         val sessionError = AppResult.Error(UserError.InvalidRefreshToken())
 
         every { refreshTokenProvider.getRefreshTokenHash(refreshToken) } returns AppResult.Success(
@@ -126,7 +122,7 @@ class RefreshTokenUseCaseTest {
         )
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery {
-            sessionManager.refreshSession(any(), any(), any())
+            sessionManager.refreshSession(any(), any())
         } returns sessionError
 
         val result = useCase(refreshToken, ctx)
@@ -134,11 +130,11 @@ class RefreshTokenUseCaseTest {
         assertEquals(sessionError, result)
     }
 
-    private fun createAuthenticatedRequestContext() = AuthenticatedRequestContext(
-        traceId = "trace-id",
-        userId = UserId.generate(),
-        userRole = UserRole.USER,
-        sessionId = UserSessionId.generate(),
+    private fun createRequestContext() = RequestContext(
+        traceId = null,
+        userId = null,
+        userRole = null,
+        sessionId = null,
         clientInfo = ClientInfo()
     )
 

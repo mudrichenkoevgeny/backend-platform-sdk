@@ -138,7 +138,7 @@ class UserSessionRepositoryImplTest {
         val session = createTestSession(userId, identifierId = identifierId).copy(refreshTokenHash = hash)
         suspendTransaction { repository.createUserSession(session) }
 
-        val result = suspendTransaction { repository.getUserSessionByHash(userId, hash) }
+        val result = suspendTransaction { repository.getUserSessionByHash(hash) }
         assertEquals(session.id, (result as AppResult.Success).data?.id)
     }
 

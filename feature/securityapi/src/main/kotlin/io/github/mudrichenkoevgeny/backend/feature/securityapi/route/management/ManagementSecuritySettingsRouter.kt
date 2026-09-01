@@ -12,9 +12,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
-import io.github.mudrichenkoevgeny.backend.feature.securityapi.api.route.SecuritySwaggerTags
-import io.github.mudrichenkoevgeny.backend.feature.securityapi.api.usecase.management.settings.UpdateSecuritySettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.securityapi.api.usecase.open.settings.GetSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.securityapi.route.SecuritySwaggerTags
+import io.github.mudrichenkoevgeny.backend.feature.securityapi.usecase.management.settings.UpdateSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.securityapi.usecase.open.settings.GetSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider

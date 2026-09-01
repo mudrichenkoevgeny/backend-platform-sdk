@@ -7,8 +7,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
-import io.github.mudrichenkoevgeny.backend.feature.securityapi.api.route.SecuritySwaggerTags
-import io.github.mudrichenkoevgeny.backend.feature.securityapi.api.usecase.open.settings.GetSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.securityapi.route.SecuritySwaggerTags
+import io.github.mudrichenkoevgeny.backend.feature.securityapi.usecase.open.settings.GetSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toSecuritySettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.network.route.open.security.settings.OpenSecuritySettingsRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
