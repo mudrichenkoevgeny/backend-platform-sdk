@@ -11,7 +11,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
 /**
  * Query parameters for management user sessions list endpoint.
  */
-data class SessionListQueryParams(
+data class ManagementSessionListQueryParams(
     val listing: ListingQueryParams<UserSortValues.UserSessionSortBy>,
     val userIds: List<UserId>,
     val userRoles: List<UserRole>,

@@ -6,24 +6,28 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.cl
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserFilterValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.ApplicationRequest
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-private const val TEST_USER_ID = "550e8400-e29b-41d4-a716-446655440000"
 private const val TEST_IDENTIFIER_ID = "123e4567-e89b-12d3-a456-426614174000"
 private const val TEST_IDENTIFIER = "test@example.com"
 private const val TEST_IP = "127.0.0.1"
+private const val TEST_USER_AGENT = "Mozilla/5.0"
+private const val TEST_LANGUAGE = "en"
+private const val TEST_DEVICE_ID = "device-123"
+private const val TEST_DEVICE_NAME = "Pixel 8"
+private const val TEST_APP_VERSION = "1.0.0"
+private const val TEST_OS_VERSION = "Android 14"
 private const val INVALID_VAL = "invalid"
-private const val ROLE_KEY = "user_role"
 
-class ApplicationCallSessionQueryParserTest {
+class SelfSessionListQueryParameterExtensionsTest {
 
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()
@@ -38,80 +42,62 @@ class ApplicationCallSessionQueryParserTest {
     fun `should parse valid session query parameters successfully`() {
         setupMockParameters(
             mapOf(
-                filterNames.USER_ID to listOf(TEST_USER_ID),
-                ROLE_KEY to listOf("user"),
                 filterNames.IDENTIFIER_ID to listOf(TEST_IDENTIFIER_ID),
                 filterNames.USER_AUTH_PROVIDER to listOf("google"),
                 filterNames.CLIENT_TYPE to listOf("android"),
                 filterNames.IDENTIFIER to listOf(TEST_IDENTIFIER),
-                filterNames.IP_ADDRESS to listOf(TEST_IP)
+                filterNames.USER_AGENT to listOf(TEST_USER_AGENT),
+                filterNames.IP_ADDRESS to listOf(TEST_IP),
+                filterNames.LANGUAGE to listOf(TEST_LANGUAGE),
+                filterNames.DEVICE_ID to listOf(TEST_DEVICE_ID),
+                filterNames.DEVICE_NAME to listOf(TEST_DEVICE_NAME),
+                filterNames.APP_VERSION to listOf(TEST_APP_VERSION),
+                filterNames.OPERATION_SYSTEM_VERSION to listOf(TEST_OS_VERSION)
             )
         )
 
-        val result = call.parseSessionsListQueryParams()
+        val result = call.parseSelfSessionsListQueryParams()
 
-        assertEquals(TEST_USER_ID, result.userIds.first().value.toString())
-        assertEquals(UserRole.USER, result.userRoles.first())
         assertEquals(TEST_IDENTIFIER_ID, result.identifierIds.first().value.toString())
         assertEquals(UserAuthProvider.GOOGLE, result.identifierAuthProviders.first())
         assertEquals(ClientType.ANDROID, result.clientTypes.first())
         assertEquals(TEST_IDENTIFIER, result.identifiers.first())
+        assertEquals(TEST_USER_AGENT, result.userAgents.first())
         assertEquals(TEST_IP, result.ipAddresses.first())
+        assertEquals(TEST_LANGUAGE, result.languages.first())
+        assertEquals(TEST_DEVICE_ID, result.deviceIds.first())
+        assertEquals(TEST_DEVICE_NAME, result.deviceNames.first())
+        assertEquals(TEST_APP_VERSION, result.appVersions.first())
+        assertEquals(TEST_OS_VERSION, result.operationSystemVersions.first())
         assertEquals(UserSortValues.UserSessionSortBy.CREATED_AT, result.listing.sortBy)
     }
 
     @Test
-    fun `should throw RequestHandlingException when user id is missing`() {
+    fun `should parse empty query parameters successfully`() {
         setupMockParameters(emptyMap())
 
-        val exception = assertThrows<RequestHandlingException> {
-            call.parseSessionsListQueryParams()
-        }
+        val result = call.parseSelfSessionsListQueryParams()
 
-        val error = exception.error as CommonError.MissingRequiredParameter
-        assertEquals(filterNames.USER_ID, error.parameterName)
-    }
-
-    @Test
-    fun `should throw RequestHandlingException when user id is invalid`() {
-        setupMockParameters(mapOf(filterNames.USER_ID to listOf(INVALID_VAL)))
-
-        val exception = assertThrows<RequestHandlingException> {
-            call.parseSessionsListQueryParams()
-        }
-
-        val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.USER_ID, error.parameterName)
-    }
-
-    @Test
-    fun `should throw RequestHandlingException when user role is invalid`() {
-        setupMockParameters(
-            mapOf(
-                filterNames.USER_ID to listOf(TEST_USER_ID),
-                ROLE_KEY to listOf(INVALID_VAL)
-            )
-        )
-
-        val exception = assertThrows<RequestHandlingException> {
-            call.parseSessionsListQueryParams()
-        }
-
-        val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(ROLE_KEY, error.parameterName)
+        assertTrue(result.identifierIds.isEmpty())
+        assertTrue(result.identifierAuthProviders.isEmpty())
+        assertTrue(result.clientTypes.isEmpty())
+        assertTrue(result.identifiers.isEmpty())
+        assertTrue(result.userAgents.isEmpty())
+        assertTrue(result.ipAddresses.isEmpty())
+        assertTrue(result.languages.isEmpty())
+        assertTrue(result.deviceIds.isEmpty())
+        assertTrue(result.deviceNames.isEmpty())
+        assertTrue(result.appVersions.isEmpty())
+        assertTrue(result.operationSystemVersions.isEmpty())
+        assertEquals(UserSortValues.UserSessionSortBy.CREATED_AT, result.listing.sortBy)
     }
 
     @Test
     fun `should throw RequestHandlingException when identifier id is invalid`() {
-        setupMockParameters(
-            mapOf(
-                filterNames.USER_ID to listOf(TEST_USER_ID),
-                filterNames.IDENTIFIER_ID to listOf(INVALID_VAL)
-            )
-        )
+        setupMockParameters(mapOf(filterNames.IDENTIFIER_ID to listOf(INVALID_VAL)))
 
         val exception = assertThrows<RequestHandlingException> {
-            call.parseSessionsListQueryParams()
+            call.parseSelfSessionsListQueryParams()
         }
 
         val error = exception.error as CommonError.InvalidParameterValue
@@ -120,15 +106,10 @@ class ApplicationCallSessionQueryParserTest {
 
     @Test
     fun `should throw RequestHandlingException when auth provider is invalid`() {
-        setupMockParameters(
-            mapOf(
-                filterNames.USER_ID to listOf(TEST_USER_ID),
-                filterNames.USER_AUTH_PROVIDER to listOf(INVALID_VAL)
-            )
-        )
+        setupMockParameters(mapOf(filterNames.USER_AUTH_PROVIDER to listOf(INVALID_VAL)))
 
         val exception = assertThrows<RequestHandlingException> {
-            call.parseSessionsListQueryParams()
+            call.parseSelfSessionsListQueryParams()
         }
 
         val error = exception.error as CommonError.InvalidParameterValue
@@ -137,15 +118,10 @@ class ApplicationCallSessionQueryParserTest {
 
     @Test
     fun `should throw RequestHandlingException when client type is invalid`() {
-        setupMockParameters(
-            mapOf(
-                filterNames.USER_ID to listOf(TEST_USER_ID),
-                filterNames.CLIENT_TYPE to listOf(INVALID_VAL)
-            )
-        )
+        setupMockParameters(mapOf(filterNames.CLIENT_TYPE to listOf(INVALID_VAL)))
 
         val exception = assertThrows<RequestHandlingException> {
-            call.parseSessionsListQueryParams()
+            call.parseSelfSessionsListQueryParams()
         }
 
         val error = exception.error as CommonError.InvalidParameterValue

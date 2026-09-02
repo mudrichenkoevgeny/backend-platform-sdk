@@ -23,7 +23,7 @@ private const val TEST_PERMISSION = "USER_READ"
 private const val TEST_LEVEL = "5"
 private const val INVALID_VAL = "invalid_value"
 
-class UserListQueryParserTest {
+class UserListQueryParameterExtensionsTest {
 
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()

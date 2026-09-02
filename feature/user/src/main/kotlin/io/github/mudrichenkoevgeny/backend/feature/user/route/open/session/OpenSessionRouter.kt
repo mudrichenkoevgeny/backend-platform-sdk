@@ -12,7 +12,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
-import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseSessionsListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseSelfSessionsListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
@@ -238,7 +238,7 @@ class OpenSessionRouter @Inject constructor(
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
-        val queryParams = call.parseSessionsListQueryParams()
+        val queryParams = call.parseSelfSessionsListQueryParams()
 
         val authorizeResult = authenticationProvider.requireUser(
             call = call,

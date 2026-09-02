@@ -4,7 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.getQueryValues
-import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SessionListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementSessionListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.toUserIdentifierIdOrThrow
@@ -17,7 +17,7 @@ import io.ktor.server.application.ApplicationCall
 /**
  * Parses user-session management list query parameters.
  */
-fun ApplicationCall.parseSessionsListQueryParams(): SessionListQueryParams {
+fun ApplicationCall.parseManagementSessionsListQueryParams(): ManagementSessionListQueryParams {
     val listing = parseListingQueryParams(
         defaultSortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
         parseSortByOrNull = UserSortValues.UserSessionSortBy::fromValueOrNull
@@ -55,7 +55,7 @@ fun ApplicationCall.parseSessionsListQueryParams(): SessionListQueryParams {
             ?: throw RequestHandlingException(CommonError.InvalidParameterValue(filterNames.CLIENT_TYPE))
     }
 
-    return SessionListQueryParams(
+    return ManagementSessionListQueryParams(
         listing = listing,
         userIds = userIds,
         userRoles = userRoles,

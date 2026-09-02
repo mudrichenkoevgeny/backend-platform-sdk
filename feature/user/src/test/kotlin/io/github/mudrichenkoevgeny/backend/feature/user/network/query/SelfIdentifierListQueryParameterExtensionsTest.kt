@@ -10,17 +10,16 @@ import io.ktor.server.request.ApplicationRequest
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-private const val TEST_USER_ID = "550e8400-e29b-41d4-a716-446655440000"
 private const val TEST_IDENTIFIER = "test@example.com"
-private const val INVALID_UUID = "invalid-uuid"
 private const val GOOGLE_PROVIDER = "google"
 private const val INVALID_PROVIDER = "unknown"
 
-class ApplicationCallQueryParserTest {
+class SelfIdentifierListQueryParameterExtensionsTest {
 
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()
@@ -35,55 +34,39 @@ class ApplicationCallQueryParserTest {
     fun `should parse valid query parameters successfully`() {
         setupMockParameters(
             mapOf(
-                filterNames.USER_ID to listOf(TEST_USER_ID),
                 filterNames.USER_AUTH_PROVIDER to listOf(GOOGLE_PROVIDER),
                 filterNames.IDENTIFIER to listOf(TEST_IDENTIFIER)
             )
         )
 
-        val result = call.parseIdentifiersListQueryParams()
+        val result = call.parseSelfIdentifiersListQueryParams()
 
-        assertEquals(TEST_USER_ID, result.userIds.first().value.toString())
         assertEquals(UserAuthProvider.GOOGLE, result.userAuthProviders.first())
         assertEquals(TEST_IDENTIFIER, result.identifiers.first())
         assertEquals(UserSortValues.UserIdentifierSortBy.CREATED_AT, result.listing.sortBy)
     }
 
     @Test
-    fun `should throw RequestHandlingException when user id is missing`() {
+    fun `should parse empty query parameters successfully`() {
         setupMockParameters(emptyMap())
 
-        val exception = assertThrows<RequestHandlingException> {
-            call.parseIdentifiersListQueryParams()
-        }
+        val result = call.parseSelfIdentifiersListQueryParams()
 
-        val error = exception.error as CommonError.MissingRequiredParameter
-        assertEquals(filterNames.USER_ID, error.parameterName)
-    }
-
-    @Test
-    fun `should throw RequestHandlingException when user id is invalid`() {
-        setupMockParameters(mapOf(filterNames.USER_ID to listOf(INVALID_UUID)))
-
-        val exception = assertThrows<RequestHandlingException> {
-            call.parseIdentifiersListQueryParams()
-        }
-
-        val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.USER_ID, error.parameterName)
+        assertTrue(result.userAuthProviders.isEmpty())
+        assertTrue(result.identifiers.isEmpty())
+        assertEquals(UserSortValues.UserIdentifierSortBy.CREATED_AT, result.listing.sortBy)
     }
 
     @Test
     fun `should throw RequestHandlingException when auth provider is invalid`() {
         setupMockParameters(
             mapOf(
-                filterNames.USER_ID to listOf(TEST_USER_ID),
                 filterNames.USER_AUTH_PROVIDER to listOf(INVALID_PROVIDER)
             )
         )
 
         val exception = assertThrows<RequestHandlingException> {
-            call.parseIdentifiersListQueryParams()
+            call.parseSelfIdentifiersListQueryParams()
         }
 
         val error = exception.error as CommonError.InvalidParameterValue

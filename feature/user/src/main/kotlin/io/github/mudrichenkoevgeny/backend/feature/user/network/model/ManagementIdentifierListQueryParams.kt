@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
 /**
  * Query parameters for management user identifiers list endpoint.
  */
-data class IdentifierListQueryParams(
+data class ManagementIdentifierListQueryParams(
     val listing: ListingQueryParams<UserSortValues.UserIdentifierSortBy>,
     val userIds: List<UserId>,
     val userAuthProviders: List<UserAuthProvider>,

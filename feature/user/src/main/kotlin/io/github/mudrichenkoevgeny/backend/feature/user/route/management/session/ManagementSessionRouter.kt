@@ -13,7 +13,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
-import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseSessionsListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseManagementSessionsListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
@@ -156,7 +156,7 @@ class ManagementSessionRouter @Inject constructor(
         }
 
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
-        val queryParams = call.parseSessionsListQueryParams()
+        val queryParams = call.parseManagementSessionsListQueryParams()
 
         val result = managementGetSessionsUseCase(
             pageParams = queryParams.listing.pageParams,
