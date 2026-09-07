@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLog
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
@@ -14,8 +15,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.cl
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.PublicAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -44,7 +46,10 @@ class UpdateAuthSettingsUseCaseTest {
     )
 
     private fun sampleManagementSettings() = ManagementAuthSettings(
-        availableAuthProviders = mockk(),
+        availableAuthProviders = AvailableAuthProviders(
+            primary = emptyList(),
+            secondary = emptyList()
+        ),
         maxTotalIdentifiers = 5,
         maxEmailIdentifiers = 2,
         maxPhoneIdentifiers = 2,
@@ -52,7 +57,8 @@ class UpdateAuthSettingsUseCaseTest {
         maxActiveSessions = 10,
         accessTokenExpirationSeconds = 3600,
         refreshTokenExpirationSeconds = 86400,
-        accountDeletionDelaySeconds = 2592000
+        accountDeletionDelaySeconds = 2592000,
+        isRegistrationEnabled = true
     )
 
     private fun authContext(userId: UserId) = AuthenticatedRequestContext(
@@ -75,13 +81,14 @@ class UpdateAuthSettingsUseCaseTest {
         val settings = sampleManagementSettings()
         val userId = UserId.generate()
         val context = authContext(userId)
-        val publicSettings = mockk<PublicAuthSettings>(relaxed = true)
+        val openAuthSettings = mockk<OpenAuthSettings>(relaxed = true)
 
         coEvery {
             authSettingsProvider.updateManagementAuthSettings(settings)
         } returns AppResult.Success(Unit)
 
-        every { authSettingsProvider.getPublicAuthSettings() } returns publicSettings
+        every { authSettingsProvider.getOpenAuthSettings() } returns openAuthSettings
+        every { authSettingsProvider.getManagementAuthSettings() } returns settings
 
         val result = useCase(settings, context)
 
@@ -98,9 +105,18 @@ class UpdateAuthSettingsUseCaseTest {
                 status = AuditStatus.SUCCESS,
                 metadata = any()
             )
-            webSocketManager.sendMessageToAll(match {
-                it.type == UserWebSocketEventTypes.AUTH_SETTINGS_UPDATED
-            })
+            webSocketManager.sendMessageToScope(
+                scope = ApiScope.OPEN,
+                frame = match {
+                    it.type == UserWebSocketEventTypes.OPEN_AUTH_SETTINGS_UPDATED
+                }
+            )
+            webSocketManager.sendMessageToScope(
+                scope = ApiScope.MANAGEMENT,
+                frame = match {
+                    it.type == UserWebSocketEventTypes.MANAGEMENT_AUTH_SETTINGS_UPDATED
+                }
+            )
         }
     }
 
@@ -139,8 +155,9 @@ class UpdateAuthSettingsUseCaseTest {
         }
 
         coVerify(exactly = 0) {
-            authSettingsProvider.getPublicAuthSettings()
-            webSocketManager.sendMessageToAll(any())
+            authSettingsProvider.getOpenAuthSettings()
+            authSettingsProvider.getManagementAuthSettings()
+            webSocketManager.sendMessageToScope(any(), any())
         }
     }
 }

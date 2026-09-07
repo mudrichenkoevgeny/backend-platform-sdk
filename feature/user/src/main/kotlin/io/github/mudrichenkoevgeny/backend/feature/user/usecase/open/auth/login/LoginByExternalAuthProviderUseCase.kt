@@ -76,7 +76,7 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
         }
 
         val externalAuthVerifier = externalAuthVerifiers.find { it.provider == authProvider }
-        val authSettings = authSettingsProvider.getPublicAuthSettings()
+        val authSettings = authSettingsProvider.getOpenAuthSettings()
         val supportedExternalProviders = authSettings.availableAuthProviders.supportedExternalProviders
         val isSupportedAuthProvider = supportedExternalProviders.any { it.userAuthProvider == authProvider }
 

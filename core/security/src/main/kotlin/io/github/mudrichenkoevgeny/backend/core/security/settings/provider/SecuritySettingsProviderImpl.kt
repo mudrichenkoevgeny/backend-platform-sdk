@@ -1,21 +1,23 @@
 package io.github.mudrichenkoevgeny.backend.core.security.settings.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.common.result.flatMapSuccess
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SettingType
+import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.SecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.OpenPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.ManagementSecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.OpenSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.otpconfirmation.toOtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.otpconfirmation.toOtpConfirmationPayload
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.passwordpolicy.toPasswordPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.passwordpolicy.toPasswordPolicyPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.passwordpolicy.toManagementPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.passwordpolicy.toManagementPasswordPolicyPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.otpconfirmation.OtpConfirmationPayload
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.passwordpolicy.PasswordPolicyPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.passwordpolicy.ManagementPasswordPolicyPayload
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,61 +31,91 @@ class SecuritySettingsProviderImpl @Inject constructor(
 ) : SecuritySettingsProvider {
 
     override suspend fun initialize(): AppResult<Unit> {
-        return settingsService.registerDefault(
-            key = KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS,
-            value = "${config.recentAuthenticationValidityInSeconds}",
-            type = SettingType.INT
-        ).flatMapSuccess {
-            settingsService.registerDefault(
+        val defaultSettings = listOf(
+            SystemSetting(
+                key = KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS,
+                value = "${config.recentAuthenticationValidityInSeconds}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
                 key = KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT,
                 value = "${config.recentAuthenticationValidityInSecondsForManagement}",
                 type = SettingType.INT
-            )
-        }.flatMapSuccess {
-            settingsService.registerDefault(
+            ),
+            SystemSetting(
                 key = KEY_PASSWORD_POLICY,
-                value = FoundationJson.encodeToString(config.passwordPolicy.toPasswordPolicyPayload()),
+                value = FoundationJson.encodeToString(config.passwordPolicy.toManagementPasswordPolicyPayload()),
                 type = SettingType.JSON
-            )
-        }.flatMapSuccess {
-            settingsService.registerDefault(
+            ),
+            SystemSetting(
                 key = KEY_OTP_CONFIRMATION,
                 value = FoundationJson.encodeToString(config.otpConfirmation.toOtpConfirmationPayload()),
                 type = SettingType.JSON
-            )
-        }.flatMapSuccess {
-            settingsService.registerDefault(
+            ),
+            SystemSetting(
                 key = KEY_MFA_TOKEN_EXPIRATION_SECONDS,
                 value = "${config.mfaTokenExpirationSeconds}",
                 type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_MAX_REQUESTS_PER_PERIOD,
+                value = "${config.maxRequestsPerPeriod}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_RATE_LIMIT_PERIOD_SECONDS,
+                value = "${config.rateLimitPeriodSeconds}",
+                type = SettingType.INT
             )
-        }
+        )
+        return settingsService.registerDefaults(defaultSettings)
     }
 
-    override fun getSettings(): SecuritySettings {
-        return SecuritySettings(
+    override fun getManagementSecuritySettings(): ManagementSecuritySettings {
+        return ManagementSecuritySettings(
             recentAuthenticationValiditySeconds = getRecentAuthenticationValidityInSeconds(),
             recentAuthenticationValiditySecondsForManagement = getRecentAuthenticationValidityInSecondsForManagement(),
-            passwordPolicy = getPasswordPolicy(),
+            passwordPolicy = getManagementPasswordPolicy(),
             otpConfirmation = getOtpConfirmation(),
-            mfaTokenExpirationSeconds = getMfaTokenExpirationSeconds()
+            mfaTokenExpirationSeconds = getMfaTokenExpirationSeconds(),
+            maxRequestsPerPeriod = getMaxRequestsPerPeriod(),
+            rateLimitPeriodSeconds = getRateLimitPeriodSeconds()
+        )
+    }
+
+    override fun getOpenSecuritySettings(): OpenSecuritySettings {
+        return OpenSecuritySettings(
+            passwordPolicy = getOpenPasswordPolicy(),
+            otpConfirmation = getOtpConfirmation()
         )
     }
 
     override fun getRecentAuthenticationValidityInSeconds(): Int {
-        return settingsService.getLong(KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS)?.toInt()
+        return settingsService.getInt(KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS)
             ?: config.recentAuthenticationValidityInSeconds
     }
 
     override fun getRecentAuthenticationValidityInSecondsForManagement(): Int {
-        return settingsService.getLong(KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT)?.toInt()
+        return settingsService.getInt(KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT)
             ?: config.recentAuthenticationValidityInSecondsForManagement
     }
 
-    override fun getPasswordPolicy(): PasswordPolicy {
+    override fun getManagementPasswordPolicy(): ManagementPasswordPolicy {
         return settingsService.getJson(KEY_PASSWORD_POLICY) { json ->
-            FoundationJson.decodeFromString<PasswordPolicyPayload>(json).toPasswordPolicy()
+            FoundationJson.decodeFromString<ManagementPasswordPolicyPayload>(json).toManagementPasswordPolicy()
         } ?: config.passwordPolicy
+    }
+
+    override fun getOpenPasswordPolicy(): OpenPasswordPolicy {
+        val policy = getManagementPasswordPolicy()
+        return OpenPasswordPolicy(
+            minLength = policy.minLength,
+            requireLetter = policy.requireLetter,
+            requireUpperCase = policy.requireUpperCase,
+            requireLowerCase = policy.requireLowerCase,
+            requireDigit = policy.requireDigit,
+            requireSpecialChar = policy.requireSpecialChar
+        )
     }
 
     override fun getOtpConfirmation(): OtpConfirmation {
@@ -93,40 +125,61 @@ class SecuritySettingsProviderImpl @Inject constructor(
     }
 
     override fun getMfaTokenExpirationSeconds(): Int {
-        return settingsService.getLong(KEY_MFA_TOKEN_EXPIRATION_SECONDS)?.toInt()
+        return settingsService.getInt(KEY_MFA_TOKEN_EXPIRATION_SECONDS)
             ?: config.mfaTokenExpirationSeconds
     }
 
-    override suspend fun updateSecuritySettings(securitySettings: SecuritySettings): AppResult<Unit> {
-        return settingsService.updateSetting(
-            key = KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS,
-            value = "${securitySettings.recentAuthenticationValiditySeconds}",
-            type = SettingType.INT
-        ).flatMapSuccess {
-            settingsService.updateSetting(
+    override fun getMaxRequestsPerPeriod(): Int {
+        return settingsService.getInt(KEY_MAX_REQUESTS_PER_PERIOD)
+            ?: config.maxRequestsPerPeriod
+    }
+
+    override fun getRateLimitPeriodSeconds(): Int {
+        return settingsService.getInt(KEY_RATE_LIMIT_PERIOD_SECONDS)
+            ?: config.rateLimitPeriodSeconds
+    }
+
+    override suspend fun updateManagementSecuritySettings(
+        managementSecuritySettings: ManagementSecuritySettings
+    ): AppResult<Unit> {
+        val settingsToUpdate = listOf(
+            SystemSetting(
+                key = KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS,
+                value = "${managementSecuritySettings.recentAuthenticationValiditySeconds}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
                 key = KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT,
-                value = "${securitySettings.recentAuthenticationValiditySecondsForManagement}",
+                value = "${managementSecuritySettings.recentAuthenticationValiditySecondsForManagement}",
                 type = SettingType.INT
-            )
-        }.flatMapSuccess {
-            settingsService.updateSetting(
+            ),
+            SystemSetting(
                 key = KEY_PASSWORD_POLICY,
-                value = FoundationJson.encodeToString(securitySettings.passwordPolicy.toPasswordPolicyPayload()),
+                value = FoundationJson.encodeToString(managementSecuritySettings.passwordPolicy.toManagementPasswordPolicyPayload()),
                 type = SettingType.JSON
-            )
-        }.flatMapSuccess {
-            settingsService.updateSetting(
+            ),
+            SystemSetting(
                 key = KEY_OTP_CONFIRMATION,
-                value = FoundationJson.encodeToString(securitySettings.otpConfirmation.toOtpConfirmationPayload()),
+                value = FoundationJson.encodeToString(managementSecuritySettings.otpConfirmation.toOtpConfirmationPayload()),
                 type = SettingType.JSON
-            )
-        }.flatMapSuccess {
-            settingsService.updateSetting(
+            ),
+            SystemSetting(
                 key = KEY_MFA_TOKEN_EXPIRATION_SECONDS,
-                value = "${securitySettings.mfaTokenExpirationSeconds}",
+                value = "${managementSecuritySettings.mfaTokenExpirationSeconds}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_MAX_REQUESTS_PER_PERIOD,
+                value = "${managementSecuritySettings.maxRequestsPerPeriod}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_RATE_LIMIT_PERIOD_SECONDS,
+                value = "${managementSecuritySettings.rateLimitPeriodSeconds}",
                 type = SettingType.INT
             )
-        }.mapSuccess { }
+        )
+        return settingsService.updateSettings(settingsToUpdate).mapSuccess { }
     }
 
     private companion object {
@@ -135,5 +188,7 @@ class SecuritySettingsProviderImpl @Inject constructor(
         const val KEY_PASSWORD_POLICY = "security.password_policy"
         const val KEY_OTP_CONFIRMATION = "security.otp_confirmation"
         const val KEY_MFA_TOKEN_EXPIRATION_SECONDS = "security.mfa_token_expiration_seconds"
+        const val KEY_MAX_REQUESTS_PER_PERIOD = "security.max_requests_per_period"
+        const val KEY_RATE_LIMIT_PERIOD_SECONDS = "security.rate_limit_period_seconds"
     }
 }

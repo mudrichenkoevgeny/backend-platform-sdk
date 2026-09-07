@@ -4,12 +4,12 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.configuration.UserConfiguration
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.configuration.OpenUserConfiguration
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GetUserConfigurationUseCase @Inject constructor(
+class GetOpenUserConfigurationUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider,
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val authSettingsProvider: AuthSettingsProvider
@@ -24,14 +24,14 @@ class GetUserConfigurationUseCase @Inject constructor(
      * 2. Collects security-related constraints from [SecuritySettingsProvider].
      * 3. Retrieves available authentication methods and provider settings from [AuthSettingsProvider].
      *
-     * @return [AppResult.Success] containing the aggregated [UserConfiguration].
+     * @return [AppResult.Success] containing the aggregated [OpenUserConfiguration].
      */
-    operator fun invoke(): AppResult<UserConfiguration> {
+    operator fun invoke(): AppResult<OpenUserConfiguration> {
         return AppResult.Success(
-            UserConfiguration(
-                globalSettings = globalSettingsProvider.getSettings(),
-                securitySettings = securitySettingsProvider.getSettings(),
-                authSettings = authSettingsProvider.getPublicAuthSettings()
+            OpenUserConfiguration(
+                openGlobalSettings = globalSettingsProvider.getOpenGlobalSettings(),
+                openSecuritySettings = securitySettingsProvider.getOpenSecuritySettings(),
+                openAuthSettings = authSettingsProvider.getOpenAuthSettings()
             )
         )
     }

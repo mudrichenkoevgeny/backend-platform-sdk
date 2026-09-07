@@ -9,7 +9,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateFieldValue
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.mapItems
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
@@ -30,7 +29,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -39,6 +40,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserDetailsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserDetailsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.create.CreateByEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.UpdateUserRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.user.ManagementUserRoutes
@@ -162,6 +164,7 @@ class ManagementUserRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.OK) {
+                body<UserDetailsPayload>()
                 description = GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -210,6 +213,7 @@ class ManagementUserRouter @Inject constructor(
         )
         response {
             code(HttpStatusCode.OK) {
+                body<PagedResult<UserDetailsPayload>>()
                 description = GET_USERS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -264,8 +268,12 @@ class ManagementUserRouter @Inject constructor(
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
         )
+        request {
+            body<CreateByEmailRequest>()
+        }
         response {
             code(HttpStatusCode.Created) {
+                body<UserDetailsPayload>()
                 description = CREATE_USER_ROUTE_RESPONSE_CREATED_DESCRIPTION
             }
         }
@@ -338,9 +346,11 @@ class ManagementUserRouter @Inject constructor(
             pathParameter<String>(UserApiPaths.USER_ID) {
                 description = UPDATE_USER_ROUTE_PATH_USER_ID_DESCRIPTION
             }
+            body<UpdateUserRequest>()
         }
         response {
             code(HttpStatusCode.OK) {
+                body<UserDetailsPayload>()
                 description = UPDATE_USER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }

@@ -51,6 +51,7 @@ class UserConfigFactoryImpl @Inject constructor(
         val accessTokenExpirationSeconds = envReader.getByKey(UserEnvKeys.ACCESS_TOKEN_EXPIRATION_SECONDS).toInt()
         val refreshTokenExpirationSeconds = envReader.getByKey(UserEnvKeys.REFRESH_TOKEN_EXPIRATION_SECONDS).toInt()
         val accountDeletionDelaySeconds = envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_DELAY_SECONDS).toInt()
+        val isRegistrationEnabled = envReader.getByKeyOrNull(UserEnvKeys.IS_REGISTRATION_ENABLED)?.toBooleanStrictOrNull() ?: true
         val managementAuthSettings = ManagementAuthSettings(
             availableAuthProviders = AvailableAuthProviders(
                 primary = availablePrimaryAuthProviders,
@@ -63,7 +64,8 @@ class UserConfigFactoryImpl @Inject constructor(
             maxActiveSessions = maxActiveSessions,
             accessTokenExpirationSeconds = accessTokenExpirationSeconds,
             refreshTokenExpirationSeconds = refreshTokenExpirationSeconds,
-            accountDeletionDelaySeconds = accountDeletionDelaySeconds
+            accountDeletionDelaySeconds = accountDeletionDelaySeconds,
+            isRegistrationEnabled = isRegistrationEnabled
         )
 
         // Auth Service Google

@@ -6,32 +6,31 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.for
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.SettingsSwaggerTags
+import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.management.globalsettings.GetManagementGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.management.globalsettings.UpdateGlobalSettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.open.globalsettings.GetGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toGlobalSettings
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toGlobalSettingsPayload
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.model.globalsettings.GlobalSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toManagementGlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toManagementGlobalSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.model.globalsettings.ManagementGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.domain.audit.action.SettingsAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.domain.audit.resource.SettingsAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.domain.permission.SettingsPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.network.route.management.globalsettings.ManagementGlobalSettingsRoutes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.network.route.open.globalsettings.OpenGlobalSettingsRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.smiley4.ktoropenapi.config.RouteConfig
@@ -48,8 +47,8 @@ import javax.inject.Singleton
  * Router for administrative management of global system settings.
  *
  * Registered routes:
- * 1. [ManagementGlobalSettingsRoutes.UPDATE_GLOBAL_SETTINGS] — updates settings via [UpdateGlobalSettingsUseCase].
- * 2. [OpenGlobalSettingsRoutes.GET_GLOBAL_SETTINGS] — retrieves settings via [GetGlobalSettingsUseCase].
+ * 1. [ManagementGlobalSettingsRoutes.UPDATE_MANAGEMENT_GLOBAL_SETTINGS] — updates settings via [UpdateGlobalSettingsUseCase].
+ * 2. [ManagementGlobalSettingsRoutes.GET_MANAGEMENT_GLOBAL_SETTINGS] — retrieves settings via [GetManagementGlobalSettingsUseCase].
  */
 @Singleton
 class ManagementGlobalSettingsRouter @Inject constructor(
@@ -59,7 +58,7 @@ class ManagementGlobalSettingsRouter @Inject constructor(
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val updateGlobalSettingsUseCase: UpdateGlobalSettingsUseCase,
-    private val getGlobalSettingsUseCase: GetGlobalSettingsUseCase
+    private val getManagementGlobalSettingsUseCase: GetManagementGlobalSettingsUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
@@ -75,7 +74,7 @@ class ManagementGlobalSettingsRouter @Inject constructor(
         val requiredPermissions = setOf(SettingsPermissionCode.GLOBAL_SETTINGS_UPDATE)
 
         route.put(
-            path = ManagementGlobalSettingsRoutes.UPDATE_GLOBAL_SETTINGS,
+            path = ManagementGlobalSettingsRoutes.UPDATE_MANAGEMENT_GLOBAL_SETTINGS,
             builder = { updateGlobalSettingsDocs(allowedRoles, allowedAccountStatuses, requiredPermissions) },
             body = { updateGlobalSettings(allowedRoles, allowedAccountStatuses, requiredPermissions) }
         )
@@ -86,7 +85,7 @@ class ManagementGlobalSettingsRouter @Inject constructor(
         val allowedAccountStatuses = UserAccountStatus.entries.toSet()
 
         route.get(
-            path = ManagementGlobalSettingsRoutes.GET_GLOBAL_SETTINGS,
+            path = ManagementGlobalSettingsRoutes.GET_MANAGEMENT_GLOBAL_SETTINGS,
             builder = { getGlobalSettingsDocs(allowedRoles, allowedAccountStatuses) },
             body = { getGlobalSettings() }
         )
@@ -110,7 +109,7 @@ class ManagementGlobalSettingsRouter @Inject constructor(
         )
 
         request {
-            body<GlobalSettingsPayload>()
+            body<ManagementGlobalSettingsPayload>()
         }
         response {
             code(HttpStatusCode.NoContent) {
@@ -143,10 +142,10 @@ class ManagementGlobalSettingsRouter @Inject constructor(
             return
         }
 
-        val request = call.validateRequest<GlobalSettingsPayload>()
+        val request = call.validateRequest<ManagementGlobalSettingsPayload>()
 
         val result = updateGlobalSettingsUseCase(
-            globalSettings = request.toGlobalSettings(),
+            managementGlobalSettings = request.toManagementGlobalSettings(),
             authenticatedRequestContext = authenticatedRequestContext
         )
 
@@ -159,7 +158,7 @@ class ManagementGlobalSettingsRouter @Inject constructor(
     ) {
         summary = GET_GLOBAL_SETTINGS_ROUTE_SUMMARY
         operationId = GET_GLOBAL_SETTINGS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.OPEN, SettingsSwaggerTags.GLOBAL_SETTINGS)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT, SettingsSwaggerTags.GLOBAL_SETTINGS)
 
         description = getFormattedDescription(
             description = GET_GLOBAL_SETTINGS_ROUTE_DESCRIPTION,
@@ -170,16 +169,17 @@ class ManagementGlobalSettingsRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
+                body<ManagementGlobalSettingsPayload>()
                 description = GET_GLOBAL_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
 
     private suspend fun RoutingContext.getGlobalSettings() {
-        val result = getGlobalSettingsUseCase()
+        val result = getManagementGlobalSettingsUseCase()
 
         call.respondResult(result, appLogger, appErrorParser) { globalSettings ->
-            globalSettings.toGlobalSettingsPayload()
+            globalSettings.toManagementGlobalSettingsPayload()
         }
     }
 

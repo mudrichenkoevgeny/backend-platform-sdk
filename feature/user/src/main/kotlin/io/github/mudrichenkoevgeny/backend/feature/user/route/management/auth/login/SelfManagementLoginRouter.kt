@@ -17,6 +17,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.data.toAuthDataPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.data.AuthDataPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.auth.login.SelfManagementLoginRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
@@ -98,7 +99,10 @@ class SelfManagementLoginRouter @Inject constructor(
         )
         request { body<LoginByEmailRequest>() }
         response {
-            code(HttpStatusCode.OK) { description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION }
+            code(HttpStatusCode.OK) {
+                body<AuthDataPayload>()
+                description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
         }
     }
 
@@ -130,7 +134,10 @@ class SelfManagementLoginRouter @Inject constructor(
         )
         request { body<VerifyTotpPayload>() }
         response {
-            code(HttpStatusCode.OK) { description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION }
+            code(HttpStatusCode.OK) {
+                body<AuthDataPayload>()
+                description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
         }
     }
 
@@ -163,7 +170,10 @@ class SelfManagementLoginRouter @Inject constructor(
         )
         request { body<VerifyTotpPayload>() }
         response {
-            code(HttpStatusCode.OK) { description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION }
+            code(HttpStatusCode.OK) {
+                body<AuthDataPayload>()
+                description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
         }
     }
 

@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.settings.database.table.SystemSe
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.batchUpsert
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.upsert
@@ -23,6 +24,34 @@ import javax.inject.Singleton
  */
 @Singleton
 class SystemSettingRepositoryImpl @Inject constructor() : SystemSettingRepository {
+
+    override suspend fun saveSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>> {
+        if (settings.isEmpty()) {
+            return AppResult.Success(emptyList())
+        }
+
+        return try {
+            val now = Instant.now()
+
+            SystemSettingsTable.batchUpsert(
+                data = settings,
+                keys = arrayOf(SystemSettingsTable.key)
+            ) { setting ->
+                this[SystemSettingsTable.id] = setting.id
+                this[SystemSettingsTable.key] = setting.key
+                this[SystemSettingsTable.value] = setting.value
+                this[SystemSettingsTable.type] = setting.type
+                this[SystemSettingsTable.description] = setting.description
+                this[SystemSettingsTable.updatedAt] = now
+            }
+
+            AppResult.Success(settings)
+        } catch (e: Exception) {
+            AppResult.Error(
+                CommonError.Database("Database error while saving settings batch: ${e.message}")
+            )
+        }
+    }
 
     override suspend fun saveSetting(setting: SystemSetting): AppResult<SystemSetting> {
         return try {

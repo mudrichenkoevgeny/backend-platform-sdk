@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener
 
+import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
@@ -81,6 +82,7 @@ class UserSessionExpirationListenerTest {
     private fun context(socketId: String): WebSocketSessionContext {
         return WebSocketSessionContext(
             socketSessionId = socketId,
+            apiScope = ApiScope.OPEN,
             userId = null,
             userRole = null,
             clientInfo = null,
@@ -99,4 +101,3 @@ class UserSessionExpirationListenerTest {
         const val DISCONNECT_AFTER_NOTIFY_MS = 2000L
     }
 }
-

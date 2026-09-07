@@ -19,12 +19,14 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.LoginByTotpUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.SendLoginConfirmationToPhoneUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.otpconfirmation.toOtpConfirmationPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.otpconfirmation.OtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.verifytotp.VerifyTotpPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.data.toAuthDataPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiFields
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.data.AuthDataPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByExternalAuthProviderRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByPhoneRequest
@@ -151,7 +153,10 @@ class OpenLoginRouter @Inject constructor(
         )
         request { body<LoginByEmailRequest>() }
         response {
-            code(HttpStatusCode.OK) { description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION }
+            code(HttpStatusCode.OK) {
+                body<AuthDataPayload>()
+                description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
         }
     }
 
@@ -184,7 +189,10 @@ class OpenLoginRouter @Inject constructor(
         )
         request { body<LoginByPhoneRequest>() }
         response {
-            code(HttpStatusCode.OK) { description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION }
+            code(HttpStatusCode.OK) {
+                body<AuthDataPayload>()
+                description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
         }
     }
 
@@ -217,7 +225,10 @@ class OpenLoginRouter @Inject constructor(
         )
         request { body<LoginByExternalAuthProviderRequest>() }
         response {
-            code(HttpStatusCode.OK) { description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION }
+            code(HttpStatusCode.OK) {
+                body<AuthDataPayload>()
+                description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
         }
     }
 
@@ -258,6 +269,7 @@ class OpenLoginRouter @Inject constructor(
         request { body<SendConfirmationToPhoneRequest>() }
         response {
             code(HttpStatusCode.OK) {
+                body<OtpConfirmationPayload>()
                 description = SEND_LOGIN_CONFIRMATION_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -289,8 +301,9 @@ class OpenLoginRouter @Inject constructor(
         )
         request { body<VerifyTotpPayload>() }
         response {
-            code(HttpStatusCode.OK) { description =
-                LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION
+            code(HttpStatusCode.OK) {
+                body<AuthDataPayload>()
+                description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -324,8 +337,9 @@ class OpenLoginRouter @Inject constructor(
         )
         request { body<VerifyTotpPayload>() }
         response {
-            code(HttpStatusCode.OK) { description =
-                LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION
+            code(HttpStatusCode.OK) {
+                body<AuthDataPayload>()
+                description = LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }

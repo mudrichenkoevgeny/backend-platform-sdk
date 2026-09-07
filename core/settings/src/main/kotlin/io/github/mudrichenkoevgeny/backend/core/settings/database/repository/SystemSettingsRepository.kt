@@ -11,6 +11,14 @@ import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
  */
 interface SystemSettingRepository {
     /**
+     * Inserts or updates multiple setting rows.
+     *
+     * @param settings list of settings to persist
+     * @return [AppResult.Success] with the persisted settings or [AppResult.Error]
+     */
+    suspend fun saveSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>>
+
+    /**
      * Inserts or updates a setting row.
      *
      * @param setting setting to persist

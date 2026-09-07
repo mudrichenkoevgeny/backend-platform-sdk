@@ -2,12 +2,13 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manag
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.extractClientInfo
-import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandler
-import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandlerResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateDto
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.extractClientInfo
+import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandler
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandlerResult
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener.WebSocketSessionListener
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.websocket.mergeClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
@@ -15,11 +16,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contrac
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserDetailsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserDetailsPayload
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
@@ -55,6 +56,7 @@ class KtorWebSocketManager @Inject constructor(
 
     override suspend fun register(
         webSocketSession: DefaultWebSocketServerSession,
+        apiScope: ApiScope,
         userId: UserId?,
         userRole: UserRole?,
         userSessionId: UserSessionId?,
@@ -65,6 +67,7 @@ class KtorWebSocketManager @Inject constructor(
 
         val context = WebSocketSessionContext(
             socketSessionId = socketId,
+            apiScope = apiScope,
             userId = userId,
             userRole = userRole,
             userSessionId = userSessionId,
@@ -107,6 +110,14 @@ class KtorWebSocketManager @Inject constructor(
     override suspend fun sendMessageToAll(frame: SocketFrame) {
         webSocketSessionToContext.keys.forEach { session ->
             sendMessageToSession(session, frame)
+        }
+    }
+
+    override suspend fun sendMessageToScope(scope: ApiScope, frame: SocketFrame) {
+        webSocketSessionToContext.forEach { (session, context) ->
+            if (context.apiScope == scope) {
+                sendMessageToSession(session, frame)
+            }
         }
     }
 

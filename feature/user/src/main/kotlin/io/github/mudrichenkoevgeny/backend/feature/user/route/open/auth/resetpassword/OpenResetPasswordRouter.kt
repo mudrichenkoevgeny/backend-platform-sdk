@@ -12,6 +12,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.resetpassword.ResetPasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.resetpassword.SendResetPasswordConfirmationUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.otpconfirmation.toOtpConfirmationPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.otpconfirmation.OtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.password.ResetPasswordRequest
@@ -86,6 +87,7 @@ class OpenResetPasswordRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.OK) {
+                body<OtpConfirmationPayload>()
                 description = SEND_RESET_PASSWORD_CONFIRMATION_RESPONSE_DESCRIPTION
             }
         }

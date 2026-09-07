@@ -29,6 +29,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserDetailsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserDetailsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.open.user.OpenUserRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
@@ -125,6 +126,7 @@ class OpenUserRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
+                body<UserDetailsPayload>()
                 description = GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -173,6 +175,7 @@ class OpenUserRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
+                body<UserDetailsPayload>()
                 description = SCHEDULE_DELETION_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -226,6 +229,7 @@ class OpenUserRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
+                body<UserDetailsPayload>()
                 description = RESTORE_USER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }

@@ -36,19 +36,8 @@ class UserConfigFactoryImplTest {
 
         every { envReader.getByKey(UserEnvKeys.GOOGLE_WEB_CLIENT_ID) } returns GOOGLE_ID
 
-        every { envReader.getByKey(UserEnvKeys.UNIONE_API_KEY_FILE) } returns "unione.key"
-        every { envReader.readSecret("unione.key") } returns ""
-        every { envReader.getByKey(UserEnvKeys.UNIONE_URL) } returns ""
-        every { envReader.getByKey(UserEnvKeys.UNIONE_FROM_EMAIL) } returns ""
-        every { envReader.getByKey(UserEnvKeys.UNIONE_FROM_NAME) } returns ""
-        every { envReader.getByKey(UserEnvKeys.UNIONE_TRACK_DOMAIN) } returns ""
-        every { envReader.getByKey(UserEnvKeys.UNIONE_API_SEND) } returns ""
-
-        every { envReader.getByKey(UserEnvKeys.RESEND_API_KEY_FILE) } returns "resend.key"
-        every { envReader.readSecret("resend.key") } returns ""
-        every { envReader.getByKey(UserEnvKeys.RESEND_URL) } returns ""
-        every { envReader.getByKey(UserEnvKeys.RESEND_FROM_EMAIL) } returns ""
-        every { envReader.getByKey(UserEnvKeys.RESEND_FROM_NAME) } returns ""
+        every { envReader.getByKeyOrNull(UserEnvKeys.UNIONE_API_KEY_FILE) } returns null
+        every { envReader.getByKeyOrNull(UserEnvKeys.RESEND_API_KEY_FILE) } returns null
 
         val config = factory.create()
 
@@ -70,7 +59,7 @@ class UserConfigFactoryImplTest {
 
         every { envReader.getByKey(UserEnvKeys.GOOGLE_WEB_CLIENT_ID) } returns GOOGLE_ID
 
-        every { envReader.getByKey(UserEnvKeys.UNIONE_API_KEY_FILE) } returns "unione.key"
+        every { envReader.getByKeyOrNull(UserEnvKeys.UNIONE_API_KEY_FILE) } returns "unione.key"
         every { envReader.readSecret("unione.key") } returns U_KEY
         every { envReader.getByKey(UserEnvKeys.UNIONE_URL) } returns U_URL
         every { envReader.getByKey(UserEnvKeys.UNIONE_FROM_EMAIL) } returns "noreply@example.com"
@@ -78,7 +67,7 @@ class UserConfigFactoryImplTest {
         every { envReader.getByKey(UserEnvKeys.UNIONE_TRACK_DOMAIN) } returns "track.example.com"
         every { envReader.getByKey(UserEnvKeys.UNIONE_API_SEND) } returns "/send"
 
-        every { envReader.getByKey(UserEnvKeys.RESEND_API_KEY_FILE) } returns "resend.key"
+        every { envReader.getByKeyOrNull(UserEnvKeys.RESEND_API_KEY_FILE) } returns "resend.key"
         every { envReader.readSecret("resend.key") } returns R_KEY
         every { envReader.getByKey(UserEnvKeys.RESEND_URL) } returns R_URL
         every { envReader.getByKey(UserEnvKeys.RESEND_FROM_EMAIL) } returns "noreply@example.com"
@@ -113,5 +102,6 @@ class UserConfigFactoryImplTest {
         every { envReader.getByKey(UserEnvKeys.ACCESS_TOKEN_EXPIRATION_SECONDS) } returns "3600"
         every { envReader.getByKey(UserEnvKeys.REFRESH_TOKEN_EXPIRATION_SECONDS) } returns "86400"
         every { envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_DELAY_SECONDS) } returns "3600"
+        every { envReader.getByKeyOrNull(UserEnvKeys.IS_REGISTRATION_ENABLED) } returns null
     }
 }

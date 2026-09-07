@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
@@ -12,7 +13,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.GlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.ManagementGlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.OpenGlobalSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.contract.SettingsWebSocketEventTypes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.domain.audit.action.SettingsAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.domain.audit.resource.SettingsAuditResourceType
@@ -42,10 +44,15 @@ class UpdateGlobalSettingsUseCaseTest {
         webSocketManager
     )
 
-    private fun sampleSettings() = GlobalSettings(
+    private fun sampleSettings() = ManagementGlobalSettings(
         privacyPolicyUrl = "https://example.com/privacy",
         termsOfServiceUrl = "https://example.com/terms",
-        contactSupportEmail = "support@example.com"
+        contactSupportEmail = "support@example.com",
+        maintenanceUntilEpochMillis = null,
+        minSupportedAppVersions = emptyMap(),
+        isTracingEnabled = false,
+        isMetricsEnabled = false,
+        isVerboseLoggingEnabled = false
     )
 
     private fun authContext(userId: UserId) = AuthenticatedRequestContext(
@@ -68,15 +75,18 @@ class UpdateGlobalSettingsUseCaseTest {
         val settings = sampleSettings()
         val userId = UserId.generate()
         val context = authContext(userId)
+        val openGlobalSettings = mockk<OpenGlobalSettings>(relaxed = true)
 
-        coEvery { globalSettingsProvider.updateGlobalSettings(settings) } returns AppResult.Success(Unit)
+        coEvery { globalSettingsProvider.updateManagementGlobalSettings(settings) } returns AppResult.Success(Unit)
+        every { globalSettingsProvider.getOpenGlobalSettings() } returns openGlobalSettings
+        every { globalSettingsProvider.getManagementGlobalSettings() } returns settings
 
         val result = useCase(settings, context)
 
         assertEquals(AppResult.Success(Unit), result)
 
         coVerify(exactly = 1) {
-            globalSettingsProvider.updateGlobalSettings(settings)
+            globalSettingsProvider.updateManagementGlobalSettings(settings)
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
@@ -86,9 +96,18 @@ class UpdateGlobalSettingsUseCaseTest {
                 status = AuditStatus.SUCCESS,
                 metadata = any()
             )
-            webSocketManager.sendMessageToAll(match {
-                it.type == SettingsWebSocketEventTypes.GLOBAL_SETTINGS_UPDATED
-            })
+            webSocketManager.sendMessageToScope(
+                scope = ApiScope.OPEN,
+                frame = match {
+                    it.type == SettingsWebSocketEventTypes.OPEN_GLOBAL_SETTINGS_UPDATED
+                }
+            )
+            webSocketManager.sendMessageToScope(
+                scope = ApiScope.MANAGEMENT,
+                frame = match {
+                    it.type == SettingsWebSocketEventTypes.MANAGEMENT_GLOBAL_SETTINGS_UPDATED
+                }
+            )
         }
     }
 
@@ -100,7 +119,7 @@ class UpdateGlobalSettingsUseCaseTest {
         val error = CommonError.Internal(RuntimeException("Database error"))
         val errorLogData = AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
-        coEvery { globalSettingsProvider.updateGlobalSettings(settings) } returns AppResult.Error(error)
+        coEvery { globalSettingsProvider.updateManagementGlobalSettings(settings) } returns AppResult.Error(error)
         every { auditErrorConverter.convert(error) } returns errorLogData
 
         val result = useCase(settings, context)
@@ -120,7 +139,9 @@ class UpdateGlobalSettingsUseCaseTest {
             )
         }
         coVerify(exactly = 0) {
-            webSocketManager.sendMessageToAll(any())
+            globalSettingsProvider.getOpenGlobalSettings()
+            globalSettingsProvider.getManagementGlobalSettings()
+            webSocketManager.sendMessageToScope(any(), any())
         }
     }
 }

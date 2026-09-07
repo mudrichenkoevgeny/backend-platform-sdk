@@ -10,6 +10,8 @@ import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
  * context/transaction boundary.
  */
 interface SystemSettingsManager {
+    /** Saves (upserts) multiple settings in a batch. */
+    suspend fun saveSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>>
     /** Saves (upserts) a setting. */
     suspend fun saveSetting(setting: SystemSetting): AppResult<SystemSetting>
     /** Loads a setting by key. */

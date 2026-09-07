@@ -15,6 +15,7 @@ import io.github.mudrichenkoevgeny.backend.core.events.di.EventsModules
 import io.github.mudrichenkoevgeny.backend.core.observability.di.ObservabilityModules
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
 import io.github.mudrichenkoevgeny.backend.core.security.di.SecurityModules
+import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.system.settings.SeedSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.core.settings.di.SettingsModules
 import io.github.mudrichenkoevgeny.backend.core.storage.di.StorageModules
@@ -28,7 +29,9 @@ import io.github.mudrichenkoevgeny.backend.feature.securityapi.route.open.OpenSe
 import io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.management.ManagementGlobalSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.open.OpenGlobalSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.di.UserModules
-import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.AuthenticatedWebSocketRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.BaseAuthenticatedWebSocketRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.ManagementWebSocketRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.OpenWebSocketRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.ManagementCoreUserRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.OpenCoreUserRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.scheduled.UserScheduledJobs
@@ -101,6 +104,7 @@ interface AppComponent {
     fun managementGlobalSettingsRouter(): ManagementGlobalSettingsRouter
 
     // security
+    fun securitySettingsProvider(): SecuritySettingsProvider
     fun seedSecuritySettingsUseCase(): SeedSecuritySettingsUseCase
     fun openSecuritySettingsRouter(): OpenSecuritySettingsRouter
     fun managementSecuritySettingsRouter(): ManagementSecuritySettingsRouter
@@ -111,7 +115,8 @@ interface AppComponent {
     fun seedAuthSettingsUseCase(): SeedAuthSettingsUseCase
     fun openCoreUserRouter(): OpenCoreUserRouter
     fun managementCoreUserRouter(): ManagementCoreUserRouter
-    fun authenticatedWebSocketRouter(): AuthenticatedWebSocketRouter
+    fun openWebSocketRouter(): OpenWebSocketRouter
+    fun managementWebSocketRouter(): ManagementWebSocketRouter
     fun userScheduledJobs(): UserScheduledJobs
 
     // app

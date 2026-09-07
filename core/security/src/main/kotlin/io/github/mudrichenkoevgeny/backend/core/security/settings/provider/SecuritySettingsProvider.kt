@@ -2,16 +2,18 @@ package io.github.mudrichenkoevgeny.backend.core.security.settings.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.SecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.OpenPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.ManagementSecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.OpenSecuritySettings
 
 /**
  * Provides access to persisted security settings (e.g. via the system settings storage).
  *
  * The provider is expected to:
  * - seed defaults on application startup ([initialize])
- * - serve an effective [SecuritySettings] snapshot ([getSettings])
- * - provide a non-null password policy for validation flows ([getPasswordPolicy])
+ * - serve an effective [ManagementSecuritySettings] snapshot ([getManagementSecuritySettings])
+ * - provide a non-null password policy for validation flows ([getManagementPasswordPolicy])
  */
 interface SecuritySettingsProvider {
     /**
@@ -20,9 +22,14 @@ interface SecuritySettingsProvider {
     suspend fun initialize(): AppResult<Unit>
 
     /**
-     * Returns current effective settings.
+     * Returns current effective management settings.
      */
-    fun getSettings(): SecuritySettings
+    fun getManagementSecuritySettings(): ManagementSecuritySettings
+
+    /**
+     * Returns current effective open security settings.
+     */
+    fun getOpenSecuritySettings(): OpenSecuritySettings
 
     /**
      * Returns the validity window (in seconds) for recent re-authentication in self-service flows.
@@ -35,11 +42,16 @@ interface SecuritySettingsProvider {
     fun getRecentAuthenticationValidityInSecondsForManagement(): Int
 
     /**
-     * Returns the effective password policy.
+     * Returns the effective management password policy.
      *
      * This method is intended for validation flows where a password policy must always be present.
      */
-    fun getPasswordPolicy(): PasswordPolicy
+    fun getManagementPasswordPolicy(): ManagementPasswordPolicy
+
+    /**
+     * Returns the effective open password policy.
+     */
+    fun getOpenPasswordPolicy(): OpenPasswordPolicy
 
     /**
      * Returns the effective OTP configuration.
@@ -52,7 +64,17 @@ interface SecuritySettingsProvider {
     fun getMfaTokenExpirationSeconds(): Int
 
     /**
+     * Returns the maximum number of requests allowed per rate limit period.
+     */
+    fun getMaxRequestsPerPeriod(): Int
+
+    /**
+     * Returns the rate limit time window in seconds.
+     */
+    fun getRateLimitPeriodSeconds(): Int
+
+    /**
      * Updates the stored security settings including password policy, OTP, and expiration windows.
      */
-    suspend fun updateSecuritySettings(securitySettings: SecuritySettings): AppResult<Unit>
+    suspend fun updateManagementSecuritySettings(managementSecuritySettings: ManagementSecuritySettings): AppResult<Unit>
 }

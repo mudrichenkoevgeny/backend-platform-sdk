@@ -165,6 +165,42 @@ class SystemSettingsServiceImplTest {
     }
 
     @Test
+    fun `registerDefaults batch saves missing keys`() = runTest {
+        val existing = SystemSetting(key = "k1", value = "v1", type = SettingType.STRING)
+        val newSetting = SystemSetting(key = "k2", value = "v2", type = SettingType.STRING)
+        val manager = RecordingManager(
+            getAllSettingsResult = AppResult.Success(listOf(existing))
+        )
+        val service = SystemSettingsServiceImpl(manager, redisManager, scope)
+        service.initialize()
+
+        val result = service.registerDefaults(listOf(existing, newSetting))
+
+        assertTrue(result is AppResult.Success)
+        assertEquals(1, manager.saveCalls.size)
+        assertEquals("k2", manager.saveCalls.single().key)
+        assertEquals("v2", service.getString("k2"))
+    }
+
+    @Test
+    fun `updateSettings batch updates all keys`() = runTest {
+        val s1 = SystemSetting(key = "k1", value = "v1", type = SettingType.STRING)
+        val s2 = SystemSetting(key = "k2", value = "v2", type = SettingType.STRING)
+        val manager = RecordingManager(
+            getAllSettingsResult = AppResult.Success(emptyList())
+        )
+        val service = SystemSettingsServiceImpl(manager, redisManager, scope)
+        service.initialize()
+
+        val result = service.updateSettings(listOf(s1, s2))
+
+        assertTrue(result is AppResult.Success)
+        assertEquals(2, manager.saveCalls.size)
+        assertEquals("v1", service.getString("k1"))
+        assertEquals("v2", service.getString("k2"))
+    }
+
+    @Test
     fun `deleteSetting removes from cache and manager`() = runTest {
         val existing = SystemSetting(key = "k", value = "v", type = SettingType.STRING)
         val manager = RecordingManager(
@@ -188,6 +224,11 @@ class SystemSettingsServiceImplTest {
     ) : SystemSettingsManager {
         val saveCalls = mutableListOf<SystemSetting>()
         val deleteCalls = mutableListOf<String>()
+
+        override suspend fun saveSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>> {
+            saveCalls += settings
+            return AppResult.Success(settings)
+        }
 
         override suspend fun saveSetting(setting: SystemSetting): AppResult<SystemSetting> {
             saveCalls += setting

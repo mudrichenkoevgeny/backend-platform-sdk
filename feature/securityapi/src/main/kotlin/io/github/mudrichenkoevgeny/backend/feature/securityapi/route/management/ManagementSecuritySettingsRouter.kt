@@ -6,15 +6,15 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.for
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.securityapi.route.SecuritySwaggerTags
+import io.github.mudrichenkoevgeny.backend.feature.securityapi.usecase.management.settings.GetManagementSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.securityapi.usecase.management.settings.UpdateSecuritySettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.securityapi.usecase.open.settings.GetSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
@@ -24,14 +24,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toSecuritySettings
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toSecuritySettingsPayload
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.securitysettings.SecuritySettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toManagementSecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toManagementSecuritySettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.securitysettings.ManagementSecuritySettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.domain.audit.action.SecurityAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.domain.audit.resource.SecurityAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.domain.permission.SecurityPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.network.route.management.security.settings.ManagementSecuritySettingsRoutes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.network.route.open.security.settings.OpenSecuritySettingsRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.smiley4.ktoropenapi.config.RouteConfig
@@ -48,8 +47,8 @@ import javax.inject.Singleton
  * Router for administrative management of security-related system settings.
  *
  * Registered routes:
- * 1. [ManagementSecuritySettingsRoutes.UPDATE_SECURITY_SETTINGS] — updates settings via [UpdateSecuritySettingsUseCase].
- * 2. [OpenSecuritySettingsRoutes.GET_SECURITY_SETTINGS] — retrieves settings via [GetSecuritySettingsUseCase].
+ * 1. [ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS] — updates settings via [UpdateSecuritySettingsUseCase].
+ * 2. [ManagementSecuritySettingsRoutes.GET_MANAGEMENT_SECURITY_SETTINGS] — retrieves settings via [GetManagementSecuritySettingsUseCase].
  */
 @Singleton
 class ManagementSecuritySettingsRouter @Inject constructor(
@@ -59,7 +58,7 @@ class ManagementSecuritySettingsRouter @Inject constructor(
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val updateSecuritySettingsUseCase: UpdateSecuritySettingsUseCase,
-    private val getSecuritySettingsUseCase: GetSecuritySettingsUseCase
+    private val getManagementSecuritySettingsUseCase: GetManagementSecuritySettingsUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
@@ -75,7 +74,7 @@ class ManagementSecuritySettingsRouter @Inject constructor(
         val requiredPermissions = setOf(SecurityPermissionCode.SECURITY_SETTINGS_UPDATE)
 
         route.put(
-            path = ManagementSecuritySettingsRoutes.UPDATE_SECURITY_SETTINGS,
+            path = ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS,
             builder = { updateSecuritySettingsDocs(allowedRoles, allowedAccountStatuses, requiredPermissions) },
             body = { updateSecuritySettings(allowedRoles, allowedAccountStatuses, requiredPermissions) }
         )
@@ -86,7 +85,7 @@ class ManagementSecuritySettingsRouter @Inject constructor(
         val allowedAccountStatuses = UserAccountStatus.entries.toSet()
 
         route.get(
-            path = ManagementSecuritySettingsRoutes.GET_SECURITY_SETTINGS,
+            path = ManagementSecuritySettingsRoutes.GET_MANAGEMENT_SECURITY_SETTINGS,
             builder = { getSecuritySettingsDocs(allowedRoles, allowedAccountStatuses) },
             body = { getSecuritySettings() }
         )
@@ -110,7 +109,7 @@ class ManagementSecuritySettingsRouter @Inject constructor(
         )
 
         request {
-            body<SecuritySettingsPayload>()
+            body<ManagementSecuritySettingsPayload>()
         }
         response {
             code(HttpStatusCode.NoContent) {
@@ -142,10 +141,10 @@ class ManagementSecuritySettingsRouter @Inject constructor(
             return
         }
 
-        val request = call.validateRequest<SecuritySettingsPayload>()
+        val request = call.validateRequest<ManagementSecuritySettingsPayload>()
 
         val result = updateSecuritySettingsUseCase(
-            securitySettings = request.toSecuritySettings(),
+            managementSecuritySettings = request.toManagementSecuritySettings(),
             authenticatedRequestContext = authenticatedRequestContext
         )
 
@@ -158,7 +157,7 @@ class ManagementSecuritySettingsRouter @Inject constructor(
     ) {
         summary = GET_SECURITY_SETTINGS_ROUTE_SUMMARY
         operationId = GET_SECURITY_SETTINGS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.OPEN, SecuritySwaggerTags.SECURITY_SETTINGS)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT, SecuritySwaggerTags.SECURITY_SETTINGS)
 
         description = getFormattedDescription(
             description = GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
@@ -169,16 +168,17 @@ class ManagementSecuritySettingsRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
+                body<ManagementSecuritySettingsPayload>()
                 description = GET_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
 
     private suspend fun RoutingContext.getSecuritySettings() {
-        val result = getSecuritySettingsUseCase()
+        val result = getManagementSecuritySettingsUseCase()
 
         call.respondResult(result, appLogger, appErrorParser) { securitySettings ->
-            securitySettings.toSecuritySettingsPayload()
+            securitySettings.toManagementSecuritySettingsPayload()
         }
     }
 

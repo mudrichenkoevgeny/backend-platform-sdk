@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppInstanceM
  * Aggregated configuration for the core application runtime.
  *
  * Values are typically populated from environment variables by [CommonConfigFactoryImpl] and
- * describe basic service metadata, network configuration and global rate limiting.
+ * describe basic service metadata and network configuration.
  *
  * @param environment logical application environment.
  * @param instanceMode functional role of this specific application instance.
@@ -19,8 +19,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppInstanceM
  * @param ktorManagementPort management/health port exposed by Ktor.
  * @param serverUrl public base URL used in generated links and documentation.
  * @param allowedOrigins list of origins allowed by CORS.
- * @param rateLimit maximum number of requests per [rateLimitPeriodSeconds].
- * @param rateLimitPeriodSeconds period in seconds for calculating rate limits.
  */
 data class CommonConfig(
     val environment: AppEnvironment,
@@ -31,7 +29,5 @@ data class CommonConfig(
     val ktorServerPort: Int,
     val ktorManagementPort: Int,
     val serverUrl: String,
-    val allowedOrigins: List<String>,
-    val rateLimit: Int,
-    val rateLimitPeriodSeconds: Int
+    val allowedOrigins: List<String>
 )

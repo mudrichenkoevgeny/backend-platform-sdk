@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.security.config.model
 
 import io.github.mudrichenkoevgeny.backend.core.security.config.factory.SecurityConfigFactory
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
 
 /**
  * Runtime security configuration resolved at application startup.
@@ -21,13 +21,22 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
  * overrides it.
  * @property otpConfirmation Global parameters for handling one-time confirmation codes.
  * @property mfaTokenExpirationSeconds Lifetime (in seconds) of the temporary MFA challenge token (mfaToken).
+ * @property maxRequestsPerPeriod Maximum number of requests allowed per rate limit window.
+ * @property rateLimitPeriodSeconds Rate limit time window duration in seconds.
  */
 data class SecurityConfig(
     val authRealm: String,
     val totpEncryptionSecret: String,
     val recentAuthenticationValidityInSeconds: Int,
     val recentAuthenticationValidityInSecondsForManagement: Int,
-    val passwordPolicy: PasswordPolicy,
+    val passwordPolicy: ManagementPasswordPolicy,
     val otpConfirmation: OtpConfirmation,
-    val mfaTokenExpirationSeconds: Int
-)
+    val mfaTokenExpirationSeconds: Int,
+    val maxRequestsPerPeriod: Int = DEFAULT_MAX_REQUESTS_PER_PERIOD,
+    val rateLimitPeriodSeconds: Int = DEFAULT_RATE_LIMIT_PERIOD_SECONDS
+) {
+    companion object {
+        const val DEFAULT_MAX_REQUESTS_PER_PERIOD = 100
+        const val DEFAULT_RATE_LIMIT_PERIOD_SECONDS = 60
+    }
+}

@@ -19,14 +19,11 @@ class KtorServerFactoryTest {
             ktorServerPort = 8080,
             ktorManagementPort = 8081,
             serverUrl = "http://localhost:8080",
-            allowedOrigins = listOf("*"),
-            rateLimit = 100,
-            rateLimitPeriodSeconds = 60
+            allowedOrigins = listOf("*")
         )
 
-        val server = KtorServer.create(config) { /* empty module for test */ }
+        val server = KtorServer.create(config) { }
 
         assertNotNull(server)
     }
 }
-

@@ -127,7 +127,9 @@ class ResendEmailService @Inject constructor(
     ): AppResult<Unit> {
         val locale = language ?: defaultLanguage
         val template = emailParser.getTemplate(templateKey, args, locale)
-            ?: return AppResult.Error(CommonError.ServiceUnavailable("Email template not found: $templateKey"))
+            ?: return AppResult.Error(
+                CommonError.ServiceUnavailable("Email template not found: $templateKey")
+            )
         return executeSend(email, template.subject, template.body)
     }
 

@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.settingsapi.network.websockets.messagehandler
 
+import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandlerResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
@@ -13,25 +14,33 @@ import org.junit.jupiter.api.Test
 class SettingsWebSocketMessageHandlerTest {
 
     @Test
-    fun `handle returns Handled for GLOBAL_SETTINGS_UPDATED`() {
+    fun `handle returns Handled for global settings updated event types`() {
         val handler = SettingsWebSocketMessageHandler()
-        val frame = mockk<SocketFrame>()
-        every { frame.type } returns SettingsWebSocketEventTypes.GLOBAL_SETTINGS_UPDATED
+        val eventTypes = listOf(
+            SettingsWebSocketEventTypes.OPEN_GLOBAL_SETTINGS_UPDATED,
+            SettingsWebSocketEventTypes.MANAGEMENT_GLOBAL_SETTINGS_UPDATED
+        )
 
-        val result = runBlocking {
-            handler.handle(
-                frame = frame,
-                webSocketSessionContext = WebSocketSessionContext(
-                    socketSessionId = "s",
-                    clientInfo = null,
-                    userId = null,
-                    userRole = null,
-                    userSessionId = null
+        eventTypes.forEach { type ->
+            val frame = mockk<SocketFrame>()
+            every { frame.type } returns type
+
+            val result = runBlocking {
+                handler.handle(
+                    frame = frame,
+                    webSocketSessionContext = WebSocketSessionContext(
+                        socketSessionId = "s",
+                        apiScope = ApiScope.OPEN,
+                        clientInfo = null,
+                        userId = null,
+                        userRole = null,
+                        userSessionId = null
+                    )
                 )
-            )
-        }
+            }
 
-        assertTrue(result is WebSocketMessageHandlerResult.Handled)
+            assertTrue(result is WebSocketMessageHandlerResult.Handled)
+        }
     }
 
     @Test
@@ -45,6 +54,7 @@ class SettingsWebSocketMessageHandlerTest {
                 frame = frame,
                 webSocketSessionContext = WebSocketSessionContext(
                     socketSessionId = "s",
+                    apiScope = ApiScope.OPEN,
                     clientInfo = null,
                     userId = null,
                     userRole = null,
@@ -56,4 +66,3 @@ class SettingsWebSocketMessageHandlerTest {
         assertTrue(result is WebSocketMessageHandlerResult.NotHandled)
     }
 }
-

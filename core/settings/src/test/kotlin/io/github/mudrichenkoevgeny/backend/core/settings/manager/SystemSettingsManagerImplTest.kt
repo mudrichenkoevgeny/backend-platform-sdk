@@ -18,6 +18,20 @@ class SystemSettingsManagerImplTest {
     private val manager = SystemSettingsManagerImpl(repository)
 
     @Test
+    fun `saveSettings delegates to repository`() = runBlocking {
+        val settings = listOf(
+            SystemSetting(Uuid.random(), "k1", "v1", SettingType.STRING),
+            SystemSetting(Uuid.random(), "k2", "v2", SettingType.STRING)
+        )
+        coEvery { repository.saveSettings(settings) } returns AppResult.Success(settings)
+
+        val result = manager.saveSettings(settings)
+
+        assertTrue(result is AppResult.Success)
+        assertEquals(settings, (result as AppResult.Success).data)
+    }
+
+    @Test
     fun `saveSetting delegates to repository`() = runBlocking {
         val setting = SystemSetting(
             id = Uuid.random(),

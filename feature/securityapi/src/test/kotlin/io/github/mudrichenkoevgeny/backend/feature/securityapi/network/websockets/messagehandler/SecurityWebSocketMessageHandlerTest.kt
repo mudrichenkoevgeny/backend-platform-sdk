@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.securityapi.network.websockets.messagehandler
 
+import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandlerResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
@@ -17,25 +18,33 @@ class SecurityWebSocketMessageHandlerTest {
     }
 
     @Test
-    fun `handle returns Handled for SECURITY_SETTINGS_UPDATED`() {
+    fun `handle returns Handled for security settings updated event types`() {
         val handler = SecurityWebSocketMessageHandler()
-        val frame = mockk<SocketFrame>()
-        every { frame.type } returns SecurityWebSocketEventTypes.SECURITY_SETTINGS_UPDATED
+        val eventTypes = listOf(
+            SecurityWebSocketEventTypes.OPEN_SECURITY_SETTINGS_UPDATED,
+            SecurityWebSocketEventTypes.MANAGEMENT_SECURITY_SETTINGS_UPDATED
+        )
 
-        val result = runBlocking {
-            handler.handle(
-                frame = frame,
-                webSocketSessionContext = WebSocketSessionContext(
-                    socketSessionId = SOCKET_SESSION_ID,
-                    clientInfo = null,
-                    userId = null,
-                    userRole = null,
-                    userSessionId = null
+        eventTypes.forEach { type ->
+            val frame = mockk<SocketFrame>()
+            every { frame.type } returns type
+
+            val result = runBlocking {
+                handler.handle(
+                    frame = frame,
+                    webSocketSessionContext = WebSocketSessionContext(
+                        socketSessionId = SOCKET_SESSION_ID,
+                        apiScope = ApiScope.OPEN,
+                        clientInfo = null,
+                        userId = null,
+                        userRole = null,
+                        userSessionId = null
+                    )
                 )
-            )
-        }
+            }
 
-        assertTrue(result is WebSocketMessageHandlerResult.Handled)
+            assertTrue(result is WebSocketMessageHandlerResult.Handled)
+        }
     }
 
     @Test
@@ -49,6 +58,7 @@ class SecurityWebSocketMessageHandlerTest {
                 frame = frame,
                 webSocketSessionContext = WebSocketSessionContext(
                     socketSessionId = SOCKET_SESSION_ID,
+                    apiScope = ApiScope.OPEN,
                     clientInfo = null,
                     userId = null,
                     userRole = null,

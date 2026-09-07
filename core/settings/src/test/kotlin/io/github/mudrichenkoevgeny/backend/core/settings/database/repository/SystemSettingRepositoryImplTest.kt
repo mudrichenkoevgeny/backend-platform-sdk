@@ -87,6 +87,31 @@ class SystemSettingRepositoryImplTest {
     }
 
     @Test
+    fun `saveSettings batch persists all settings`() = runBlocking {
+        val s1 = SystemSetting(
+            key = "batch.key.1",
+            value = "val1",
+            type = SettingType.STRING
+        )
+        val s2 = SystemSetting(
+            key = "batch.key.2",
+            value = "val2",
+            type = SettingType.STRING
+        )
+
+        val saveResult = suspendTransaction { repository.saveSettings(listOf(s1, s2)) }
+        assertTrue(saveResult is AppResult.Success)
+
+        val check1 = suspendTransaction { repository.getSettingByKey("batch.key.1") } as AppResult.Success
+        val check2 = suspendTransaction { repository.getSettingByKey("batch.key.2") } as AppResult.Success
+
+        assertNotNull(check1.data)
+        assertNotNull(check2.data)
+        assertEquals("val1", check1.data!!.value)
+        assertEquals("val2", check2.data!!.value)
+    }
+
+    @Test
     fun `getAllSettings returns all persisted settings`() = runBlocking {
         val setting1 = SystemSetting(
             key = "key.1",

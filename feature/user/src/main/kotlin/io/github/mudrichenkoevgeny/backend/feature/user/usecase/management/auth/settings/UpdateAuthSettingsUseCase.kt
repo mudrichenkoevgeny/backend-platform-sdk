@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
@@ -18,13 +19,21 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.settings.toAuthSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.settings.toManagementAuthSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.settings.toOpenAuthSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.settings.PublicAuthSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.settings.ManagementAuthSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.settings.OpenAuthSettingsPayload
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
+/**
+ * Use case for updating authentication settings from a management context.
+ *
+ * On successful persistence, notifies connected WebSocket clients in open and management scopes
+ * with [UserWebSocketEventTypes.OPEN_AUTH_SETTINGS_UPDATED] and [UserWebSocketEventTypes.MANAGEMENT_AUTH_SETTINGS_UPDATED] frames.
+ */
 @Singleton
 class UpdateAuthSettingsUseCase @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider,
@@ -44,9 +53,10 @@ class UpdateAuthSettingsUseCase @Inject constructor(
      * **Workflow:**
      * 1. Persists the new authentication settings via [authSettingsProvider].
      * 2. Logs the modification via [AuditLogger] with [UserAuditActionType.MANAGEMENT_UPDATE_AUTH_SETTINGS].
-     * 3. Retrieves the updated public portion of the settings.
-     * 4. Broadcasts a [UserWebSocketEventTypes.AUTH_SETTINGS_UPDATED] frame to all connected clients
-     *    via [webSocketManager] to ensure real-time synchronization of system auth policies.
+     * 3. Retrieves the updated open and management settings snapshots.
+     * 4. Broadcasts a [UserWebSocketEventTypes.OPEN_AUTH_SETTINGS_UPDATED] frame to open-scope clients
+     *    and a [UserWebSocketEventTypes.MANAGEMENT_AUTH_SETTINGS_UPDATED] frame to management-scope clients
+     *    via [webSocketManager] for real-time policy synchronization.
      *
      * @param managementAuthSettings The new configuration for global authentication settings.
      * @param authenticatedRequestContext The context of the authenticated management request.
@@ -78,15 +88,32 @@ class UpdateAuthSettingsUseCase @Inject constructor(
             metadata = auditMetadata
         )
 
-        val publicAuthSettingPayload = authSettingsProvider.getPublicAuthSettings().toAuthSettingsPayload()
-        webSocketManager.sendMessageToAll(
-            SocketFrame(
+        val timestamp = System.currentTimeMillis()
+
+        val publicAuthSettingPayload = authSettingsProvider.getOpenAuthSettings().toOpenAuthSettingsPayload()
+        webSocketManager.sendMessageToScope(
+            scope = ApiScope.OPEN,
+            frame = SocketFrame(
                 id = Uuid.random().toHexDashString(),
-                type = UserWebSocketEventTypes.AUTH_SETTINGS_UPDATED,
-                timestamp = System.currentTimeMillis(),
+                type = UserWebSocketEventTypes.OPEN_AUTH_SETTINGS_UPDATED,
+                timestamp = timestamp,
                 payload = FoundationJson.encodeToJsonElement(
-                    PublicAuthSettingsPayload.serializer(),
+                    OpenAuthSettingsPayload.serializer(),
                     publicAuthSettingPayload
+                )
+            )
+        )
+
+        val managementAuthSettingPayload = authSettingsProvider.getManagementAuthSettings().toManagementAuthSettingsPayload()
+        webSocketManager.sendMessageToScope(
+            scope = ApiScope.MANAGEMENT,
+            frame = SocketFrame(
+                id = Uuid.random().toHexDashString(),
+                type = UserWebSocketEventTypes.MANAGEMENT_AUTH_SETTINGS_UPDATED,
+                timestamp = timestamp,
+                payload = FoundationJson.encodeToJsonElement(
+                    ManagementAuthSettingsPayload.serializer(),
+                    managementAuthSettingPayload
                 )
             )
         )

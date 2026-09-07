@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordp
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicyValidatorResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicy.validator.PasswordPolicyValidator
@@ -22,7 +22,7 @@ class ValidatePasswordUseCaseTest {
     private val passwordPolicyValidator = PasswordPolicyValidatorImpl()
     private lateinit var useCase: ValidatePasswordUseCase
 
-    private val defaultPolicy = PasswordPolicy(
+    private val defaultPolicy = ManagementPasswordPolicy(
         minLength = 8,
         requireDigit = true,
         requireUpperCase = true,
@@ -40,18 +40,18 @@ class ValidatePasswordUseCaseTest {
 
     @Test
     fun `invoke returns success when password satisfies all policy rules`() {
-        every { securitySettingsProvider.getPasswordPolicy() } returns defaultPolicy
+        every { securitySettingsProvider.getManagementPasswordPolicy() } returns defaultPolicy
 
         val result = useCase("StrongPass123")
 
         assertEquals(AppResult.Success(Unit), result)
-        verify(exactly = 1) { securitySettingsProvider.getPasswordPolicy() }
+        verify(exactly = 1) { securitySettingsProvider.getManagementPasswordPolicy() }
     }
 
     @Test
     fun `invoke returns error when password is too short`() {
         val policy = defaultPolicy.copy(minLength = 10)
-        every { securitySettingsProvider.getPasswordPolicy() } returns policy
+        every { securitySettingsProvider.getManagementPasswordPolicy() } returns policy
 
         val result = useCase("Short1")
 
@@ -66,7 +66,7 @@ class ValidatePasswordUseCaseTest {
     @Test
     fun `invoke returns error when password misses required character types`() {
         val policy = defaultPolicy.copy(requireUpperCase = true, requireDigit = true)
-        every { securitySettingsProvider.getPasswordPolicy() } returns policy
+        every { securitySettingsProvider.getManagementPasswordPolicy() } returns policy
 
         val result = useCase("onlylower")
 
@@ -84,8 +84,8 @@ class ValidatePasswordUseCaseTest {
         val mockedValidator = mockk<PasswordPolicyValidator>()
         val customUseCase = ValidatePasswordUseCase(securitySettingsProvider, mockedValidator)
 
-        every { securitySettingsProvider.getPasswordPolicy() } returns defaultPolicy
-        every { mockedValidator.validate(any(), any()) } returns
+        every { securitySettingsProvider.getManagementPasswordPolicy() } returns defaultPolicy
+        every { mockedValidator.validate(any<ManagementPasswordPolicy>(), any<String>()) } returns
                 PasswordPolicyValidatorResult.Fail(
                     reasons = emptyList(),
                     passwordPolicy = defaultPolicy

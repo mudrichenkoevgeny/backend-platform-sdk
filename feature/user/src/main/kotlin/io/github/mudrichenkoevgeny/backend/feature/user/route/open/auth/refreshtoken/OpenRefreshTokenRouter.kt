@@ -15,6 +15,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.token.toSessionTokenPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.token.RefreshTokenPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.token.SessionTokenPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.open.auth.refreshtoken.OpenRefreshTokenRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.post
@@ -67,6 +68,7 @@ class OpenRefreshTokenRouter @Inject constructor(
         request { body<RefreshTokenPayload>() }
         response {
             code(HttpStatusCode.OK) {
+                body<SessionTokenPayload>()
                 description = REFRESH_TOKEN_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }

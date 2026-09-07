@@ -7,10 +7,11 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.settings.GetAuthSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.settings.GetOpenAuthSettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.settings.toAuthSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.settings.toOpenAuthSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.settings.OpenAuthSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.open.auth.settings.OpenAuthSettingsRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
@@ -24,13 +25,13 @@ import javax.inject.Singleton
  * Public authentication settings routes providing system-wide auth configurations.
  *
  * Registered routes:
- * 1. [OpenAuthSettingsRoutes.GET_AUTH_SETTINGS] — retrieves global authentication configurations (e.g., enabled providers) via [GetAuthSettingsUseCase].
+ * 1. [OpenAuthSettingsRoutes.GET_OPEN_AUTH_SETTINGS] — retrieves global authentication configurations (e.g., enabled providers) via [GetOpenAuthSettingsUseCase].
  */
 @Singleton
 class OpenAuthSettingsRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
-    private val getAuthSettingsUseCase: GetAuthSettingsUseCase
+    private val getOpenAuthSettingsUseCase: GetOpenAuthSettingsUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
@@ -42,7 +43,7 @@ class OpenAuthSettingsRouter @Inject constructor(
         val allowedAccountStatuses = UserAccountStatus.entries.toSet()
 
         route.get(
-            path = OpenAuthSettingsRoutes.GET_AUTH_SETTINGS,
+            path = OpenAuthSettingsRoutes.GET_OPEN_AUTH_SETTINGS,
             builder = { getAuthSettingsDocs(allowedRoles, allowedAccountStatuses) },
             body = { getAuthSettings() }
         )
@@ -65,16 +66,17 @@ class OpenAuthSettingsRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
+                body<OpenAuthSettingsPayload>()
                 description = GET_AUTH_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
 
     private suspend fun RoutingContext.getAuthSettings() {
-        val result = getAuthSettingsUseCase()
+        val result = getOpenAuthSettingsUseCase()
 
         call.respondResult(result, appLogger, appErrorParser) { authSettings ->
-            authSettings.toAuthSettingsPayload()
+            authSettings.toOpenAuthSettingsPayload()
         }
     }
 

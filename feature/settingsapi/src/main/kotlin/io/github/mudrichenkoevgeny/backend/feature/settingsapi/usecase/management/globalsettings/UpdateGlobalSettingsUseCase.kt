@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
@@ -13,10 +14,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.GlobalSettings
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toGlobalSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.ManagementGlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toManagementGlobalSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toOpenGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.contract.SettingsWebSocketEventTypes
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.model.globalsettings.GlobalSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.model.globalsettings.ManagementGlobalSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.model.globalsettings.OpenGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.domain.audit.action.SettingsAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.domain.audit.resource.SettingsAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -28,8 +31,8 @@ import kotlin.uuid.Uuid
 /**
  * Use case for updating global settings from a management context.
  *
- * On successful persistence, notifies all connected WebSocket clients (including public sessions)
- * with [SettingsWebSocketEventTypes.GLOBAL_SETTINGS_UPDATED] and the updated [GlobalSettingsPayload].
+ * On successful persistence, notifies connected WebSocket clients in open and management scopes
+ * with [SettingsWebSocketEventTypes.OPEN_GLOBAL_SETTINGS_UPDATED] and [SettingsWebSocketEventTypes.MANAGEMENT_GLOBAL_SETTINGS_UPDATED] frames.
  */
 @Singleton
 class UpdateGlobalSettingsUseCase @Inject constructor(
@@ -48,24 +51,26 @@ class UpdateGlobalSettingsUseCase @Inject constructor(
      * - Restricts modifications to fully active accounts to prevent unauthorized system-wide changes.
      *
      * **Workflow:**
-     * 1. Persists the updated [GlobalSettings] via [globalSettingsProvider].
+     * 1. Persists the updated [ManagementGlobalSettings] via [globalSettingsProvider].
      * 2. Logs the administrative action via [AuditLogger] with [SettingsAuditActionType.MANAGEMENT_UPDATE_GLOBAL_SETTINGS].
-     * 3. Broadcasts a [SettingsWebSocketEventTypes.GLOBAL_SETTINGS_UPDATED] frame with the new payload
-     *    to all connected clients via [webSocketManager] for real-time synchronization.
+     * 3. Retrieves the updated open and management global settings snapshots.
+     * 4. Broadcasts an [SettingsWebSocketEventTypes.OPEN_GLOBAL_SETTINGS_UPDATED] frame to open-scope clients
+     *    and a [SettingsWebSocketEventTypes.MANAGEMENT_GLOBAL_SETTINGS_UPDATED] frame to management-scope clients
+     *    via [webSocketManager] for real-time synchronization.
      *
-     * @param globalSettings The new platform-wide configuration settings.
+     * @param managementGlobalSettings The new platform-wide configuration settings.
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] indicating success or the specific [AppError].
      */
     suspend operator fun invoke(
-        globalSettings: GlobalSettings,
+        managementGlobalSettings: ManagementGlobalSettings,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
         val auditActorUserRole = authenticatedRequestContext.userRole
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata()
 
-        val updateGlobalSettingsResult = globalSettingsProvider.updateGlobalSettings(globalSettings)
+        val updateGlobalSettingsResult = globalSettingsProvider.updateManagementGlobalSettings(managementGlobalSettings)
 
         if (updateGlobalSettingsResult is AppResult.Error) {
             return handleError(
@@ -83,15 +88,32 @@ class UpdateGlobalSettingsUseCase @Inject constructor(
             metadata = auditMetadata
         )
 
-        val globalSettingsPayload = globalSettings.toGlobalSettingsPayload()
-        webSocketManager.sendMessageToAll(
-            SocketFrame(
+        val timestamp = System.currentTimeMillis()
+
+        val openGlobalSettingsPayload = globalSettingsProvider.getOpenGlobalSettings().toOpenGlobalSettingsPayload()
+        webSocketManager.sendMessageToScope(
+            scope = ApiScope.OPEN,
+            frame = SocketFrame(
                 id = Uuid.random().toHexDashString(),
-                type = SettingsWebSocketEventTypes.GLOBAL_SETTINGS_UPDATED,
-                timestamp = System.currentTimeMillis(),
+                type = SettingsWebSocketEventTypes.OPEN_GLOBAL_SETTINGS_UPDATED,
+                timestamp = timestamp,
                 payload = FoundationJson.encodeToJsonElement(
-                    GlobalSettingsPayload.serializer(),
-                    globalSettingsPayload
+                    OpenGlobalSettingsPayload.serializer(),
+                    openGlobalSettingsPayload
+                )
+            )
+        )
+
+        val managementGlobalSettingsPayload = globalSettingsProvider.getManagementGlobalSettings().toManagementGlobalSettingsPayload()
+        webSocketManager.sendMessageToScope(
+            scope = ApiScope.MANAGEMENT,
+            frame = SocketFrame(
+                id = Uuid.random().toHexDashString(),
+                type = SettingsWebSocketEventTypes.MANAGEMENT_GLOBAL_SETTINGS_UPDATED,
+                timestamp = timestamp,
+                payload = FoundationJson.encodeToJsonElement(
+                    ManagementGlobalSettingsPayload.serializer(),
+                    managementGlobalSettingsPayload
                 )
             )
         )

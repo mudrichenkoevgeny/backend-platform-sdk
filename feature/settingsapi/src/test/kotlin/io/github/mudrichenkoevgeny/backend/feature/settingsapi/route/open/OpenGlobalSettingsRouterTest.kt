@@ -1,11 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.open
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.open.OpenGlobalSettingsRouter
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.open.globalsettings.GetGlobalSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.open.globalsettings.GetOpenGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.GlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.OpenGlobalSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.network.route.open.globalsettings.OpenGlobalSettingsRoutes
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
@@ -19,32 +18,34 @@ import org.junit.jupiter.api.Test
 
 class OpenGlobalSettingsRouterTest : BaseRouterTest() {
 
-    private val getGlobalSettingsUseCase = mockk<GetGlobalSettingsUseCase>()
+    private val getOpenGlobalSettingsUseCase = mockk<GetOpenGlobalSettingsUseCase>()
 
     private val router = OpenGlobalSettingsRouter(
         appLogger = appLogger,
         appErrorParser = appErrorParser,
-        getGlobalSettingsUseCase = getGlobalSettingsUseCase
+        getOpenGlobalSettingsUseCase = getOpenGlobalSettingsUseCase
     )
 
     @BeforeEach
     fun setUp() {
-        clearMocks(getGlobalSettingsUseCase)
+        clearMocks(getOpenGlobalSettingsUseCase)
     }
 
-    private fun sampleSettings() = GlobalSettings(
+    private fun sampleSettings() = OpenGlobalSettings(
         privacyPolicyUrl = "https://example.com/privacy",
         termsOfServiceUrl = "https://example.com/terms",
-        contactSupportEmail = "support@example.com"
+        contactSupportEmail = "support@example.com",
+        maintenanceUntilEpochMillis = null,
+        minSupportedAppVersions = emptyMap()
     )
 
     @Test
     fun `get global settings - success`() = testApplication {
         setupOpenTestEnvironment(router)
         val settings = sampleSettings()
-        coEvery { getGlobalSettingsUseCase() } returns AppResult.Success(settings)
+        coEvery { getOpenGlobalSettingsUseCase() } returns AppResult.Success(settings)
 
-        val response = client.get(OpenGlobalSettingsRoutes.GET_GLOBAL_SETTINGS)
+        val response = client.get(OpenGlobalSettingsRoutes.GET_OPEN_GLOBAL_SETTINGS)
 
         assertEquals(HttpStatusCode.OK, response.status)
     }

@@ -2,12 +2,12 @@ package io.github.mudrichenkoevgeny.backend.feature.securityapi.usecase.open.set
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.SecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.OpenSecuritySettings
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GetSecuritySettingsUseCase @Inject constructor(
+class GetOpenSecuritySettingsUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider
 ) {
     /**
@@ -18,14 +18,14 @@ class GetSecuritySettingsUseCase @Inject constructor(
      *
      * **Security:**
      * - No authentication required.
-     * - Provides security parameters .
+     * - Provides open security parameters.
      *
      * **Workflow:**
-     * 1. Fetches the current effective security settings via [securitySettingsProvider].
+     * 1. Fetches the current effective open security settings via [securitySettingsProvider].
      *
-     * @return [AppResult] containing the [SecuritySettings].
+     * @return [AppResult] containing the [OpenSecuritySettings].
      */
-    operator fun invoke(): AppResult<SecuritySettings> {
-        return AppResult.Success(securitySettingsProvider.getSettings())
+    operator fun invoke(): AppResult<OpenSecuritySettings> {
+        return AppResult.Success(securitySettingsProvider.getOpenSecuritySettings())
     }
 }

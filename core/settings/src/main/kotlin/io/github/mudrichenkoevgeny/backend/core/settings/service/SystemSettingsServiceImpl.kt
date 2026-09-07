@@ -65,6 +65,23 @@ class SystemSettingsServiceImpl @Inject constructor(
         }
     }
 
+    override suspend fun registerDefaults(settings: List<SystemSetting>): AppResult<Unit> {
+        val missingSettings = settings.filter { !cache.containsKey(it.key) }
+        if (missingSettings.isEmpty()) {
+            return AppResult.Success(Unit)
+        }
+
+        val result = systemSettingsManager.saveSettings(missingSettings)
+        return when (result) {
+            is AppResult.Success -> {
+                result.data.forEach { cache[it.key] = it }
+                broadcastUpdate()
+                AppResult.Success(Unit)
+            }
+            is AppResult.Error -> AppResult.Error(result.error)
+        }
+    }
+
     override suspend fun registerDefault(key: String, value: String, type: SettingType): AppResult<Unit> {
         if (cache.containsKey(key)) {
             return AppResult.Success(Unit)
@@ -104,6 +121,27 @@ class SystemSettingsServiceImpl @Inject constructor(
             deserializer(rawValue)
         } catch (_: Exception) {
             null
+        }
+    }
+
+    override suspend fun updateSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>> {
+        if (settings.isEmpty()) {
+            return AppResult.Success(emptyList())
+        }
+
+        val settingsToSave = settings.map { setting ->
+            val existing = cache[setting.key]
+            existing?.copy(value = setting.value) ?: setting
+        }
+
+        val result = systemSettingsManager.saveSettings(settingsToSave)
+        return when (result) {
+            is AppResult.Success -> {
+                result.data.forEach { cache[it.key] = it }
+                broadcastUpdate()
+                AppResult.Success(result.data)
+            }
+            is AppResult.Error -> AppResult.Error(result.error)
         }
     }
 

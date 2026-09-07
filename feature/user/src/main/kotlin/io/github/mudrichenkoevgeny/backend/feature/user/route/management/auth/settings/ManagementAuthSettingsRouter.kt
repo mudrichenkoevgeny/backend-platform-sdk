@@ -47,8 +47,8 @@ import javax.inject.Singleton
  * Management HTTP routes for reading and updating authentication security policies.
  *
  * Registered routes:
- * 1. [ManagementAuthSettingsRoutes.GET_AUTH_SETTINGS_MANAGEMENT] — retrieves configuration via [GetManagementAuthSettingsUseCase].
- * 2. [ManagementAuthSettingsRoutes.UPDATE_AUTH_SETTINGS] — updates security policies via [UpdateAuthSettingsUseCase].
+ * 1. [ManagementAuthSettingsRoutes.GET_MANAGEMENT_AUTH_SETTINGS] — retrieves configuration via [GetManagementAuthSettingsUseCase].
+ * 2. [ManagementAuthSettingsRoutes.UPDATE_MANAGEMENT_AUTH_SETTINGS] — updates security policies via [UpdateAuthSettingsUseCase].
  */
 @Singleton
 class ManagementAuthSettingsRouter @Inject constructor(
@@ -73,9 +73,9 @@ class ManagementAuthSettingsRouter @Inject constructor(
         val allowedAccountStatuses = UserAccountStatus.entries.toSet()
 
         route.get(
-            path = ManagementAuthSettingsRoutes.GET_AUTH_SETTINGS_MANAGEMENT,
+            path = ManagementAuthSettingsRoutes.GET_MANAGEMENT_AUTH_SETTINGS,
             builder = { getAuthSettingsManagementDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getAuthSettingsManagement(allowedRoles, allowedAccountStatuses) }
+            body = { getAuthSettingsManagement() }
         )
     }
 
@@ -85,7 +85,7 @@ class ManagementAuthSettingsRouter @Inject constructor(
         val requiredPermissions = setOf(AuthSettingsPermissionCode.AUTH_SETTINGS_UPDATE)
 
         route.put(
-            path = ManagementAuthSettingsRoutes.UPDATE_AUTH_SETTINGS,
+            path = ManagementAuthSettingsRoutes.UPDATE_MANAGEMENT_AUTH_SETTINGS,
             builder = { updateAuthSettingsDocs(allowedRoles, allowedAccountStatuses, requiredPermissions) },
             body = { updateAuthSettings(allowedRoles, allowedAccountStatuses, requiredPermissions) }
         )
@@ -108,26 +108,13 @@ class ManagementAuthSettingsRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
+                body<ManagementAuthSettingsPayload>()
                 description = GET_AUTH_SETTINGS_MANAGEMENT_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
 
-    private suspend fun RoutingContext.getAuthSettingsManagement(
-        allowedRoles: Set<UserRole>,
-        allowedAccountStatuses: Set<UserAccountStatus>
-    ) {
-        val authorizeResult = authenticationProvider.requireUser(
-            call = call,
-            allowedRoles = allowedRoles,
-            allowedAccountStatuses = allowedAccountStatuses
-        )
-
-        if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
-            return
-        }
-
+    private suspend fun RoutingContext.getAuthSettingsManagement() {
         val result = getManagementAuthSettingsUseCase()
         call.respondResult(result, appLogger, appErrorParser) { management ->
             management.toManagementAuthSettingsPayload()

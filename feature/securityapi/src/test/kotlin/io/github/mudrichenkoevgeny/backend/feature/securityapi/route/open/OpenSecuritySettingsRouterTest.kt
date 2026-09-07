@@ -1,12 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.feature.securityapi.route.open
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.securityapi.usecase.open.settings.GetSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.securityapi.usecase.open.settings.GetOpenSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.SecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.OpenPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.OpenSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.network.route.open.security.settings.OpenSecuritySettingsRoutes
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
@@ -20,46 +20,42 @@ import org.junit.jupiter.api.Test
 
 class OpenSecuritySettingsRouterTest : BaseRouterTest() {
 
-    private val getSecuritySettingsUseCase = mockk<GetSecuritySettingsUseCase>()
+    private val getOpenSecuritySettingsUseCase = mockk<GetOpenSecuritySettingsUseCase>()
 
     private val router = OpenSecuritySettingsRouter(
         appLogger = appLogger,
         appErrorParser = appErrorParser,
-        getSecuritySettingsUseCase = getSecuritySettingsUseCase
+        getOpenSecuritySettingsUseCase = getOpenSecuritySettingsUseCase
     )
 
     @BeforeEach
     fun setUp() {
-        clearMocks(getSecuritySettingsUseCase)
+        clearMocks(getOpenSecuritySettingsUseCase)
     }
 
-    private fun sampleSettings() = SecuritySettings(
-        recentAuthenticationValiditySeconds = 300,
-        recentAuthenticationValiditySecondsForManagement = 60,
-        passwordPolicy = PasswordPolicy(
+    private fun sampleSettings() = OpenSecuritySettings(
+        passwordPolicy = OpenPasswordPolicy(
             minLength = 8,
             requireLetter = true,
             requireUpperCase = false,
             requireLowerCase = false,
             requireDigit = false,
-            requireSpecialChar = false,
-            commonPasswords = emptySet()
+            requireSpecialChar = false
         ),
         otpConfirmation = OtpConfirmation(
             retryAfterSeconds = 60,
             numberOfSymbols = 6,
             expirationSeconds = 300
-        ),
-        mfaTokenExpirationSeconds = 600
+        )
     )
 
     @Test
     fun `get security settings - success`() = testApplication {
         setupOpenTestEnvironment(router)
         val settings = sampleSettings()
-        coEvery { getSecuritySettingsUseCase() } returns AppResult.Success(settings)
+        coEvery { getOpenSecuritySettingsUseCase() } returns AppResult.Success(settings)
 
-        val response = client.get(OpenSecuritySettingsRoutes.GET_SECURITY_SETTINGS)
+        val response = client.get(OpenSecuritySettingsRoutes.GET_OPEN_SECURITY_SETTINGS)
 
         assertEquals(HttpStatusCode.OK, response.status)
     }

@@ -16,6 +16,10 @@ class SystemSettingsManagerImpl @Inject constructor(
     private val repository: SystemSettingRepository
 ) : SystemSettingsManager {
 
+    override suspend fun saveSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>> = dbQuery {
+        repository.saveSettings(settings)
+    }
+
     override suspend fun saveSetting(setting: SystemSetting): AppResult<SystemSetting> = dbQuery {
         repository.saveSetting(setting)
     }

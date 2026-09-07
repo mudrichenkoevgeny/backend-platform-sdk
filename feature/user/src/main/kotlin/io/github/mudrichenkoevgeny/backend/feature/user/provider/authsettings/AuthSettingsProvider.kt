@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.PublicAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
 
 /**
  * Provides persisted authentication settings for the user feature.
@@ -11,7 +11,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
  * The provider is expected to:
  * - seed defaults on application startup ([initialize])
  * - expose a management snapshot ([getManagementAuthSettings])
- * - expose a public snapshot ([getPublicAuthSettings])
+ * - expose a public snapshot ([getOpenAuthSettings])
  * - persist updates from management flows ([updateManagementAuthSettings])
  */
 interface AuthSettingsProvider {
@@ -28,7 +28,7 @@ interface AuthSettingsProvider {
     /**
      * Returns settings safe to expose to unauthenticated clients.
      */
-    fun getPublicAuthSettings(): PublicAuthSettings
+    fun getOpenAuthSettings(): OpenAuthSettings
 
     /**
      * Returns the list of enabled authentication providers.
@@ -75,6 +75,11 @@ interface AuthSettingsProvider {
      * and its permanent removal from the system.
      */
     fun getAccountDeletionDelaySeconds(): Int
+
+    /**
+     * Returns whether new user registrations are currently permitted.
+     */
+    fun getIsRegistrationEnabled(): Boolean
 
     /**
      * Persists management auth settings.

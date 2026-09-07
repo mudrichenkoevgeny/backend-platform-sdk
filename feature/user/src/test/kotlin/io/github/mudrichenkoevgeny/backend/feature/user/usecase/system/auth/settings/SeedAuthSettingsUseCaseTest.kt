@@ -4,7 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.PublicAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -31,7 +31,7 @@ class SeedAuthSettingsUseCaseTest {
         }
 
         override fun getManagementAuthSettings(): ManagementAuthSettings = error("Not used")
-        override fun getPublicAuthSettings(): PublicAuthSettings = error("Not used")
+        override fun getOpenAuthSettings(): OpenAuthSettings = error("Not used")
         override fun getAvailableAuthProviders(): AvailableAuthProviders = error("Not used")
         override fun getMaxTotalIdentifiers(): Int = 0
         override fun getMaxEmailIdentifiers(): Int = 0
@@ -41,6 +41,7 @@ class SeedAuthSettingsUseCaseTest {
         override fun getAccessTokenExpirationSeconds(): Int = 0
         override fun getRefreshTokenExpirationSeconds(): Int = 0
         override fun getAccountDeletionDelaySeconds(): Int = 0
+        override fun getIsRegistrationEnabled(): Boolean = true
 
         override suspend fun updateManagementAuthSettings(
             managementAuthSettings: ManagementAuthSettings

@@ -15,6 +15,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.GetUse
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserDetailsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserDetailsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.user.SelfManagementUserRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
@@ -72,6 +73,7 @@ class SelfManagementUserRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
+                body<UserDetailsPayload>()
                 description = GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }

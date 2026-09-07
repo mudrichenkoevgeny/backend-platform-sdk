@@ -12,9 +12,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.register.RegisterByEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.register.SendRegistrationConfirmationToEmailUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.otpconfirmation.toOtpConfirmationPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.otpconfirmation.OtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.data.toAuthDataPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.data.AuthDataPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.register.RegisterByEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.open.auth.register.OpenRegisterRoutes
@@ -83,6 +85,7 @@ class OpenRegisterRouter @Inject constructor(
         request { body<RegisterByEmailRequest>() }
         response {
             code(HttpStatusCode.OK) {
+                body<AuthDataPayload>()
                 description = REGISTER_BY_EMAIL_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -119,6 +122,7 @@ class OpenRegisterRouter @Inject constructor(
         request { body<SendConfirmationToEmailRequest>() }
         response {
             code(HttpStatusCode.OK) {
+                body<OtpConfirmationPayload>()
                 description = SEND_REGISTER_CONFIRMATION_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }

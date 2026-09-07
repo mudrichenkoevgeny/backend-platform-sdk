@@ -1,7 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.core.settings.global.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.GlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.ManagementGlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.OpenGlobalSettings
 
 /**
  * Provides access to global settings that are safe to expose to clients.
@@ -16,9 +18,14 @@ interface GlobalSettingsProvider {
     suspend fun initialize(): AppResult<Unit>
 
     /**
-     * Returns the current global settings snapshot.
+     * Returns current open global settings snapshot.
      */
-    fun getSettings(): GlobalSettings
+    fun getOpenGlobalSettings(): OpenGlobalSettings
+
+    /**
+     * Returns current management global settings snapshot.
+     */
+    fun getManagementGlobalSettings(): ManagementGlobalSettings
 
     /**
      * Returns the URL of the privacy policy page.
@@ -36,7 +43,27 @@ interface GlobalSettingsProvider {
     fun getContactSupportEmail(): String?
 
     /**
+     * Returns minimum supported app versions mapped by client type.
+     */
+    fun getMinSupportedAppVersions(): Map<ClientType, String>
+
+    /**
+     * Returns whether distributed tracing is enabled.
+     */
+    fun getIsTracingEnabled(): Boolean
+
+    /**
+     * Returns whether performance metrics collection is enabled.
+     */
+    fun getIsMetricsEnabled(): Boolean
+
+    /**
+     * Returns whether verbose logging is enabled.
+     */
+    fun getIsVerboseLoggingEnabled(): Boolean
+
+    /**
      * Updates all global settings fields in the persistent storage.
      */
-    suspend fun updateGlobalSettings(globalSettings: GlobalSettings): AppResult<Unit>
+    suspend fun updateManagementGlobalSettings(managementGlobalSettings: ManagementGlobalSettings): AppResult<Unit>
 }

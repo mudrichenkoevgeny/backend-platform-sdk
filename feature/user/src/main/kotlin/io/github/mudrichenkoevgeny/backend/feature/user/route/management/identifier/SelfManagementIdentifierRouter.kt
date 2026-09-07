@@ -8,7 +8,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorPars
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.mapItems
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
@@ -27,6 +26,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -34,6 +35,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.i
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.identifier.UserIdentifierPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.password.EmailPasswordChangeRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.identifier.SelfManagementIdentifierRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
@@ -126,6 +128,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.OK) {
+                body<UserIdentifierPayload>()
                 description = GET_IDENTIFIER_RESPONSE_DESCRIPTION
             }
         }
@@ -175,6 +178,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
         )
         response {
             code(HttpStatusCode.OK) {
+                body<PagedResult<UserIdentifierPayload>>()
                 description = GET_IDENTIFIERS_RESPONSE_DESCRIPTION
             }
         }
@@ -227,6 +231,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
         request { body<EmailPasswordChangeRequest>() }
         response {
             code(HttpStatusCode.OK) {
+                body<UserIdentifierPayload>()
                 description = CHANGE_PASSWORD_RESPONSE_DESCRIPTION
             }
         }

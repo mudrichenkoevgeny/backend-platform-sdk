@@ -11,7 +11,7 @@ import javax.inject.Singleton
 /**
  * Security module WebSocket handler.
  *
- * Currently, it only acknowledges [SecurityWebSocketEventTypes.SECURITY_SETTINGS_UPDATED] frames and
+ * Currently, it acknowledges security settings update frames and
  * marks them as handled. All other frames are ignored so they can be processed by other handlers.
  */
 @Singleton
@@ -21,7 +21,8 @@ class SecurityWebSocketMessageHandler @Inject constructor() : WebSocketMessageHa
         webSocketSessionContext: WebSocketSessionContext
     ): WebSocketMessageHandlerResult {
         return when (frame.type) {
-            SecurityWebSocketEventTypes.SECURITY_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
+            SecurityWebSocketEventTypes.OPEN_SECURITY_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
+            SecurityWebSocketEventTypes.MANAGEMENT_SECURITY_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
             else -> WebSocketMessageHandlerResult.NotHandled
         }
     }

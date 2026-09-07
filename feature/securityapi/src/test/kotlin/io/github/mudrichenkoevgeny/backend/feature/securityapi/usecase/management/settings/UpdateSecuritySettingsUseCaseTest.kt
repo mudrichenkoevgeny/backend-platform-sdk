@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
@@ -13,8 +14,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.SecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.ManagementSecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.OpenSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.contract.SecurityWebSocketEventTypes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.domain.audit.action.SecurityAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.domain.audit.resource.SecurityAuditResourceType
@@ -44,10 +46,10 @@ class UpdateSecuritySettingsUseCaseTest {
         webSocketManager
     )
 
-    private fun sampleSettings() = SecuritySettings(
+    private fun sampleSettings() = ManagementSecuritySettings(
         recentAuthenticationValiditySeconds = 300,
         recentAuthenticationValiditySecondsForManagement = 60,
-        passwordPolicy = PasswordPolicy(
+        passwordPolicy = ManagementPasswordPolicy(
             minLength = 10,
             requireLetter = true,
             requireUpperCase = true,
@@ -61,7 +63,9 @@ class UpdateSecuritySettingsUseCaseTest {
             numberOfSymbols = 6,
             expirationSeconds = 300
         ),
-        mfaTokenExpirationSeconds = 600
+        mfaTokenExpirationSeconds = 600,
+        maxRequestsPerPeriod = 100,
+        rateLimitPeriodSeconds = 60
     )
 
     private fun authContext(userId: UserId) = AuthenticatedRequestContext(
@@ -84,15 +88,18 @@ class UpdateSecuritySettingsUseCaseTest {
         val settings = sampleSettings()
         val userId = UserId.generate()
         val context = authContext(userId)
+        val openSecuritySettings = mockk<OpenSecuritySettings>(relaxed = true)
 
-        coEvery { securitySettingsProvider.updateSecuritySettings(settings) } returns AppResult.Success(Unit)
+        coEvery { securitySettingsProvider.updateManagementSecuritySettings(settings) } returns AppResult.Success(Unit)
+        every { securitySettingsProvider.getOpenSecuritySettings() } returns openSecuritySettings
+        every { securitySettingsProvider.getManagementSecuritySettings() } returns settings
 
         val result = useCase(settings, context)
 
         assertEquals(AppResult.Success(Unit), result)
 
         coVerify(exactly = 1) {
-            securitySettingsProvider.updateSecuritySettings(settings)
+            securitySettingsProvider.updateManagementSecuritySettings(settings)
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
@@ -102,9 +109,18 @@ class UpdateSecuritySettingsUseCaseTest {
                 status = AuditStatus.SUCCESS,
                 metadata = any()
             )
-            webSocketManager.sendMessageToAll(match {
-                it.type == SecurityWebSocketEventTypes.SECURITY_SETTINGS_UPDATED
-            })
+            webSocketManager.sendMessageToScope(
+                scope = ApiScope.OPEN,
+                frame = match {
+                    it.type == SecurityWebSocketEventTypes.OPEN_SECURITY_SETTINGS_UPDATED
+                }
+            )
+            webSocketManager.sendMessageToScope(
+                scope = ApiScope.MANAGEMENT,
+                frame = match {
+                    it.type == SecurityWebSocketEventTypes.MANAGEMENT_SECURITY_SETTINGS_UPDATED
+                }
+            )
         }
     }
 
@@ -117,7 +133,7 @@ class UpdateSecuritySettingsUseCaseTest {
         val error = CommonError.Internal(exception)
         val errorLogData = AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
-        coEvery { securitySettingsProvider.updateSecuritySettings(settings) } returns AppResult.Error(error)
+        coEvery { securitySettingsProvider.updateManagementSecuritySettings(settings) } returns AppResult.Error(error)
         every { auditErrorConverter.convert(error) } returns errorLogData
 
         val result = useCase(settings, context)
@@ -137,7 +153,9 @@ class UpdateSecuritySettingsUseCaseTest {
             )
         }
         coVerify(exactly = 0) {
-            webSocketManager.sendMessageToAll(any())
+            securitySettingsProvider.getOpenSecuritySettings()
+            securitySettingsProvider.getManagementSecuritySettings()
+            webSocketManager.sendMessageToScope(any(), any())
         }
     }
 }

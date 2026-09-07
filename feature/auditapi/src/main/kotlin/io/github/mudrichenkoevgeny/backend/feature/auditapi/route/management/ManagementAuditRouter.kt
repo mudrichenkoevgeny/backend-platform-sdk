@@ -3,7 +3,6 @@ package io.github.mudrichenkoevgeny.backend.feature.auditapi.route.management
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.mapItems
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
@@ -22,6 +21,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.eve
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CompositeAuditResourceTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.contract.AuditApiPaths
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.model.event.AuditEventPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.feature.auditapi.network.route.management.ManagementAuditRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -98,6 +100,7 @@ class ManagementAuditRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
+                body<PagedResult<AuditEventPayload>>()
                 description = GET_AUDIT_EVENTS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -169,6 +172,7 @@ class ManagementAuditRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.OK) {
+                body<AuditEventPayload>()
                 description = GET_AUDIT_EVENT_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }

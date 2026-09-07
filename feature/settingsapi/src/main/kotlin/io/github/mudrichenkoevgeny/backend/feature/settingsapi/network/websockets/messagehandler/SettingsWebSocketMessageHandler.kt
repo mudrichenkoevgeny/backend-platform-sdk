@@ -11,7 +11,7 @@ import javax.inject.Singleton
 /**
  * WebSocket frame handler for settings-related event types.
  *
- * The handler currently acknowledges events published by the settings feature and marks them as
+ * The handler acknowledges events published by the settings feature and marks them as
  * handled to prevent "unknown event" processing in the common WebSocket pipeline.
  */
 @Singleton
@@ -21,7 +21,8 @@ class SettingsWebSocketMessageHandler @Inject constructor() : WebSocketMessageHa
         webSocketSessionContext: WebSocketSessionContext
     ): WebSocketMessageHandlerResult {
         return when (frame.type) {
-            SettingsWebSocketEventTypes.GLOBAL_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
+            SettingsWebSocketEventTypes.OPEN_GLOBAL_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
+            SettingsWebSocketEventTypes.MANAGEMENT_GLOBAL_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
             else -> WebSocketMessageHandlerResult.NotHandled
         }
     }

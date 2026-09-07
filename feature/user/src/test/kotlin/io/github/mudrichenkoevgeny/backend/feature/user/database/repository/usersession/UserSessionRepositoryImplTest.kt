@@ -242,7 +242,7 @@ class UserSessionRepositoryImplTest {
         identifier = "test@example.com",
         identifierId = identifierId,
         identifierAuthProvider = UserAuthProvider.EMAIL,
-        refreshTokenHash = RefreshTokenHash("hash"),
+        refreshTokenHash = RefreshTokenHash("hash_" + sessionId.asHexDashString()),
         deviceInfo = ClientDeviceInfo(
             deviceId = null,
             deviceName = "Test Device",

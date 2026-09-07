@@ -22,6 +22,14 @@ interface SystemSettingsService {
     suspend fun initialize(): AppResult<Unit>
 
     /**
+     * Persists default values for missing settings in a batch.
+     *
+     * @param settings list of default settings to register
+     * @return [AppResult.Success] if persisted, or [AppResult.Error]
+     */
+    suspend fun registerDefaults(settings: List<SystemSetting>): AppResult<Unit>
+
+    /**
      * Persists a default value for [key] if it is missing from the cache.
      *
      * @param key unique setting key
@@ -49,6 +57,14 @@ interface SystemSettingsService {
      * @return deserialized value or `null` if missing or parsing failed
      */
     fun <T> getJson(key: String, deserializer: (String) -> T): T?
+
+    /**
+     * Inserts or updates multiple settings in a batch and refreshes cache entries.
+     *
+     * @param settings list of settings to store
+     * @return [AppResult.Success] with stored settings, or [AppResult.Error]
+     */
+    suspend fun updateSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>>
 
     /**
      * Inserts or updates a setting and refreshes the cache entry.

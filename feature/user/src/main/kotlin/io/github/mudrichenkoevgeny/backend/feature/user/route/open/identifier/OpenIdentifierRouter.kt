@@ -12,7 +12,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.mapItems
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseSelfIdentifiersListQueryParams
@@ -35,7 +34,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.otpconfirmation.toOtpConfirmationPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.otpconfirmation.OtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
@@ -46,6 +48,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.identifier.UserIdentifierPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToPhoneRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.password.EmailPasswordChangeRequest
@@ -232,6 +235,7 @@ class OpenIdentifierRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.OK) {
+                body<UserIdentifierPayload>()
                 description = GET_USER_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -281,6 +285,7 @@ class OpenIdentifierRouter @Inject constructor(
         )
         response {
             code(HttpStatusCode.OK) {
+                body<PagedResult<UserIdentifierPayload>>()
                 description = GET_USER_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -391,6 +396,7 @@ class OpenIdentifierRouter @Inject constructor(
         request { body<AddUserIdentifierEmailRequest>() }
         response {
             code(HttpStatusCode.OK) {
+                body<UserIdentifierPayload>()
                 description = ADD_IDENTIFIER_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -453,6 +459,7 @@ class OpenIdentifierRouter @Inject constructor(
         request { body<AddUserIdentifierPhoneRequest>() }
         response {
             code(HttpStatusCode.OK) {
+                body<UserIdentifierPayload>()
                 description = ADD_IDENTIFIER_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -514,6 +521,7 @@ class OpenIdentifierRouter @Inject constructor(
         request { body<AddUserIdentifierExternalAuthProviderRequest>() }
         response {
             code(HttpStatusCode.OK) {
+                body<UserIdentifierPayload>()
                 description = ADD_IDENTIFIER_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -582,6 +590,7 @@ class OpenIdentifierRouter @Inject constructor(
         request { body<SendConfirmationToEmailRequest>() }
         response {
             code(HttpStatusCode.OK) {
+                body<OtpConfirmationPayload>()
                 description = CONFIRMATION_SENT_DESCRIPTION
             }
         }
@@ -629,6 +638,7 @@ class OpenIdentifierRouter @Inject constructor(
         request { body<SendConfirmationToPhoneRequest>() }
         response {
             code(HttpStatusCode.OK) {
+                body<OtpConfirmationPayload>()
                 description = CONFIRMATION_SENT_DESCRIPTION
             }
         }
@@ -676,6 +686,7 @@ class OpenIdentifierRouter @Inject constructor(
         request { body<EmailPasswordChangeRequest>() }
         response {
             code(HttpStatusCode.OK) {
+                body<UserIdentifierPayload>()
                 description = IDENTIFIER_EMAIL_CHANGE_PASSWORD_RESPONSE_DESCRIPTION
             }
         }

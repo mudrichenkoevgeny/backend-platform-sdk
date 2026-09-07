@@ -131,7 +131,9 @@ class UniOneEmailService @Inject constructor(
     ): AppResult<Unit> {
         val locale = language ?: defaultLanguage
         val template = emailParser.getTemplate(templateKey, args, locale)
-            ?: return AppResult.Error(CommonError.ServiceUnavailable("Email template not found: $templateKey"))
+            ?: return AppResult.Error(
+                CommonError.ServiceUnavailable("Email template not found: $templateKey")
+            )
 
         return executeSend(email, template.subject, template.body)
     }
@@ -164,7 +166,9 @@ class UniOneEmailService @Inject constructor(
             } else {
                 val errorBody = response.bodySafe<UniOneErrorResponse>()
                 val errorMessage = errorBody?.let { "Code ${it.code}: ${it.message}" } ?: "Unknown UniOne error"
-                AppResult.Error(CommonError.ServiceUnavailable(errorMessage))
+                AppResult.Error(
+                    CommonError.ServiceUnavailable(errorMessage)
+                )
             }
         } catch (e: Exception) {
             AppResult.Error(CommonError.Internal(e))

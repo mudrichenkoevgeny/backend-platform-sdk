@@ -53,7 +53,7 @@ services:
         GRADLE_IMAGE: ${GRADLE_IMAGE}
         JRE_IMAGE: ${JRE_IMAGE}
     ports:
-      - "${ADMIN_APP_PORT}:${ADMIN_APP_PORT}"
+      - "${ADMIN_APP_PORT}:${APP_PORT}"
     depends_on:
       db:
         condition: service_healthy

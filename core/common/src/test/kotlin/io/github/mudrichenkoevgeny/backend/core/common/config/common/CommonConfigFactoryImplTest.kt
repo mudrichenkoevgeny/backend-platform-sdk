@@ -22,8 +22,6 @@ class CommonConfigFactoryImplTest {
         private const val KTOR_PORT = "8080"
         private const val KTOR_MANAGEMENT_PORT = "8081"
         private const val ALLOWED_ORIGIN = "http://localhost:3000"
-        private const val RATE_LIMIT = "100"
-        private const val RATE_LIMIT_PERIOD = "60"
         private const val APP_NAME = "test-app"
         private const val APP_VERSION = "1.0.0"
     }
@@ -45,9 +43,6 @@ class CommonConfigFactoryImplTest {
 
         every { envReader.getByKeyOrNull(CommonEnvKeys.ALLOWED_ORIGINS) } returns ALLOWED_ORIGIN
 
-        every { envReader.getByKey(CommonEnvKeys.RATE_LIMIT) } returns RATE_LIMIT
-        every { envReader.getByKey(CommonEnvKeys.RATE_LIMIT_PERIOD_SECONDS) } returns RATE_LIMIT_PERIOD
-
         val factory = CommonConfigFactoryImpl(envReader, appInfo)
 
         val config: CommonConfig = factory.create()
@@ -61,7 +56,5 @@ class CommonConfigFactoryImplTest {
         assertEquals(KTOR_MANAGEMENT_PORT.toInt(), config.ktorManagementPort)
         assertEquals(SERVER_URL, config.serverUrl)
         assertEquals(listOf(ALLOWED_ORIGIN), config.allowedOrigins)
-        assertEquals(RATE_LIMIT.toInt(), config.rateLimit)
-        assertEquals(RATE_LIMIT_PERIOD.toInt(), config.rateLimitPeriodSeconds)
     }
 }

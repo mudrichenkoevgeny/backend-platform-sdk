@@ -8,8 +8,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.SettingsSwaggerTags
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.open.globalsettings.GetGlobalSettingsUseCase
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toGlobalSettingsPayload
+import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.open.globalsettings.GetOpenGlobalSettingsUseCase
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toOpenGlobalSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.model.globalsettings.OpenGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.network.route.open.globalsettings.OpenGlobalSettingsRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -25,13 +26,13 @@ import javax.inject.Singleton
  * Router for public access to system-wide configuration.
  *
  * Registered routes:
- * 1. [OpenGlobalSettingsRoutes.GET_GLOBAL_SETTINGS] — retrieves global settings via [GetGlobalSettingsUseCase].
+ * 1. [OpenGlobalSettingsRoutes.GET_OPEN_GLOBAL_SETTINGS] — retrieves global settings via [GetOpenGlobalSettingsUseCase].
  */
 @Singleton
 class OpenGlobalSettingsRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
-    private val getGlobalSettingsUseCase: GetGlobalSettingsUseCase
+    private val getOpenGlobalSettingsUseCase: GetOpenGlobalSettingsUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
@@ -43,7 +44,7 @@ class OpenGlobalSettingsRouter @Inject constructor(
         val allowedAccountStatuses = UserAccountStatus.entries.toSet()
 
         route.get(
-            path = OpenGlobalSettingsRoutes.GET_GLOBAL_SETTINGS,
+            path = OpenGlobalSettingsRoutes.GET_OPEN_GLOBAL_SETTINGS,
             builder = { getGlobalSettingsDocs(allowedRoles, allowedAccountStatuses) },
             body = { getGlobalSettings() }
         )
@@ -66,16 +67,17 @@ class OpenGlobalSettingsRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
+                body<OpenGlobalSettingsPayload>()
                 description = GET_GLOBAL_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
 
     private suspend fun RoutingContext.getGlobalSettings() {
-        val result = getGlobalSettingsUseCase()
+        val result = getOpenGlobalSettingsUseCase()
 
         call.respondResult(result, appLogger, appErrorParser) { globalSettings ->
-            globalSettings.toGlobalSettingsPayload()
+            globalSettings.toOpenGlobalSettingsPayload()
         }
     }
 

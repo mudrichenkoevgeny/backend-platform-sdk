@@ -2,10 +2,10 @@ package io.github.mudrichenkoevgeny.backend.core.common.config.common.factory
 
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.envkeys.CommonEnvKeys
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.AppInfo
-import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironment
-import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.CommonConfig
+import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.getStringList
+import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironment
 import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppInstanceMode
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,8 +32,6 @@ class CommonConfigFactoryImpl @Inject constructor(
         val ktorPort = envReader.getByKey(CommonEnvKeys.KTOR_SERVER_PORT).toInt()
         val ktorManagementPort = envReader.getByKey(CommonEnvKeys.KTOR_MANAGEMENT_PORT).toInt()
         val allowedOrigins = envReader.getStringList(CommonEnvKeys.ALLOWED_ORIGINS)
-        val rateLimit = envReader.getByKey(CommonEnvKeys.RATE_LIMIT).toInt()
-        val rateLimitPeriodSeconds = envReader.getByKey(CommonEnvKeys.RATE_LIMIT_PERIOD_SECONDS).toInt()
 
         return CommonConfig(
             environment = environment,
@@ -44,9 +42,7 @@ class CommonConfigFactoryImpl @Inject constructor(
             ktorServerPort = ktorPort,
             ktorManagementPort = ktorManagementPort,
             serverUrl = serverUrl,
-            allowedOrigins = allowedOrigins,
-            rateLimit = rateLimit,
-            rateLimitPeriodSeconds = rateLimitPeriodSeconds
+            allowedOrigins = allowedOrigins
         )
     }
 }

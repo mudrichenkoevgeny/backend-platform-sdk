@@ -18,7 +18,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.cl
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.PublicAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.ExternalAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -63,14 +63,14 @@ class LoginByExternalAuthProviderUseCaseTest {
         val externalProvider = mockk<ExternalAuthProvider> {
             every { userAuthProvider } returns provider
         }
-        val publicSettings = mockk<PublicAuthSettings> {
+        val openSettings = mockk<OpenAuthSettings> {
             every { availableAuthProviders.supportedExternalProviders } returns if (supported) {
                 setOf(externalProvider)
             } else {
                 emptySet()
             }
         }
-        every { authSettingsProvider.getPublicAuthSettings() } returns publicSettings
+        every { authSettingsProvider.getOpenAuthSettings() } returns openSettings
     }
 
     @Test

@@ -1,46 +1,88 @@
 package io.github.mudrichenkoevgeny.backend.core.settings.global.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.common.result.flatMapSuccess
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
-import io.github.mudrichenkoevgeny.backend.core.settings.config.model.SettingsConfig
+import io.github.mudrichenkoevgeny.backend.core.settings.config.model.GlobalSettingsConfig
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SettingType
+import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.GlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.ManagementGlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.OpenGlobalSettings
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * [GlobalSettingsProvider] implementation backed by [SystemSettingsService].
+ */
 @Singleton
 class GlobalSettingsProviderImpl @Inject constructor(
     private val settingsService: SystemSettingsService,
-    private val config: SettingsConfig
+    private val config: GlobalSettingsConfig
 ) : GlobalSettingsProvider {
 
     override suspend fun initialize(): AppResult<Unit> {
-        return settingsService.registerDefault(
-            key = KEY_PRIVACY_POLICY,
-            value = config.privacyPolicyUrl.orEmpty(),
-            type = SettingType.STRING
-        ).flatMapSuccess {
-            settingsService.registerDefault(
+        val defaultSettings = listOf(
+            SystemSetting(
+                key = KEY_PRIVACY_POLICY,
+                value = config.privacyPolicyUrl.orEmpty(),
+                type = SettingType.STRING
+            ),
+            SystemSetting(
                 key = KEY_TERMS_OF_SERVICE,
                 value = config.termsOfServiceUrl.orEmpty(),
                 type = SettingType.STRING
-            )
-        }.flatMapSuccess {
-            settingsService.registerDefault(
+            ),
+            SystemSetting(
                 key = KEY_SUPPORT_EMAIL,
                 value = config.contactSupportEmail.orEmpty(),
                 type = SettingType.STRING
+            ),
+            SystemSetting(
+                key = KEY_MIN_SUPPORTED_APP_VERSIONS,
+                value = FoundationJson.encodeToString(config.minSupportedAppVersions),
+                type = SettingType.JSON
+            ),
+            SystemSetting(
+                key = KEY_IS_TRACING_ENABLED,
+                value = "${config.isTracingEnabled}",
+                type = SettingType.BOOLEAN
+            ),
+            SystemSetting(
+                key = KEY_IS_METRICS_ENABLED,
+                value = "${config.isMetricsEnabled}",
+                type = SettingType.BOOLEAN
+            ),
+            SystemSetting(
+                key = KEY_IS_VERBOSE_LOGGING_ENABLED,
+                value = "${config.isVerboseLoggingEnabled}",
+                type = SettingType.BOOLEAN
             )
-        }
+        )
+        return settingsService.registerDefaults(defaultSettings)
     }
 
-    override fun getSettings(): GlobalSettings {
-        return GlobalSettings(
+    override fun getOpenGlobalSettings(): OpenGlobalSettings {
+        return OpenGlobalSettings(
             privacyPolicyUrl = getPrivacyPolicyUrl(),
             termsOfServiceUrl = getTermsOfServiceUrl(),
-            contactSupportEmail = getContactSupportEmail()
+            contactSupportEmail = getContactSupportEmail(),
+            maintenanceUntilEpochMillis = null,
+            minSupportedAppVersions = getMinSupportedAppVersions()
+        )
+    }
+
+    override fun getManagementGlobalSettings(): ManagementGlobalSettings {
+        return ManagementGlobalSettings(
+            privacyPolicyUrl = getPrivacyPolicyUrl(),
+            termsOfServiceUrl = getTermsOfServiceUrl(),
+            contactSupportEmail = getContactSupportEmail(),
+            maintenanceUntilEpochMillis = null,
+            minSupportedAppVersions = getMinSupportedAppVersions(),
+            isTracingEnabled = getIsTracingEnabled(),
+            isMetricsEnabled = getIsMetricsEnabled(),
+            isVerboseLoggingEnabled = getIsVerboseLoggingEnabled()
         )
     }
 
@@ -56,29 +98,74 @@ class GlobalSettingsProviderImpl @Inject constructor(
         return settingsService.getString(KEY_SUPPORT_EMAIL) ?: config.contactSupportEmail
     }
 
-    override suspend fun updateGlobalSettings(globalSettings: GlobalSettings): AppResult<Unit> {
-        return settingsService.updateSetting(
-            key = KEY_PRIVACY_POLICY,
-            value = globalSettings.privacyPolicyUrl.orEmpty(),
-            type = SettingType.STRING
-        ).flatMapSuccess {
-            settingsService.updateSetting(
+    override fun getMinSupportedAppVersions(): Map<ClientType, String> {
+        return settingsService.getJson(KEY_MIN_SUPPORTED_APP_VERSIONS) { json ->
+            FoundationJson.decodeFromString<Map<ClientType, String>>(json)
+        } ?: config.minSupportedAppVersions
+    }
+
+    override fun getIsTracingEnabled(): Boolean {
+        return settingsService.getBoolean(KEY_IS_TRACING_ENABLED) ?: config.isTracingEnabled
+    }
+
+    override fun getIsMetricsEnabled(): Boolean {
+        return settingsService.getBoolean(KEY_IS_METRICS_ENABLED) ?: config.isMetricsEnabled
+    }
+
+    override fun getIsVerboseLoggingEnabled(): Boolean {
+        return settingsService.getBoolean(KEY_IS_VERBOSE_LOGGING_ENABLED) ?: config.isVerboseLoggingEnabled
+    }
+
+    override suspend fun updateManagementGlobalSettings(
+        managementGlobalSettings: ManagementGlobalSettings
+    ): AppResult<Unit> {
+        val settingsToUpdate = listOf(
+            SystemSetting(
+                key = KEY_PRIVACY_POLICY,
+                value = managementGlobalSettings.privacyPolicyUrl.orEmpty(),
+                type = SettingType.STRING
+            ),
+            SystemSetting(
                 key = KEY_TERMS_OF_SERVICE,
-                value = globalSettings.termsOfServiceUrl.orEmpty(),
+                value = managementGlobalSettings.termsOfServiceUrl.orEmpty(),
                 type = SettingType.STRING
-            )
-        }.flatMapSuccess {
-            settingsService.updateSetting(
+            ),
+            SystemSetting(
                 key = KEY_SUPPORT_EMAIL,
-                value = globalSettings.contactSupportEmail.orEmpty(),
+                value = managementGlobalSettings.contactSupportEmail.orEmpty(),
                 type = SettingType.STRING
+            ),
+            SystemSetting(
+                key = KEY_MIN_SUPPORTED_APP_VERSIONS,
+                value = FoundationJson.encodeToString(managementGlobalSettings.minSupportedAppVersions),
+                type = SettingType.JSON
+            ),
+            SystemSetting(
+                key = KEY_IS_TRACING_ENABLED,
+                value = "${managementGlobalSettings.isTracingEnabled}",
+                type = SettingType.BOOLEAN
+            ),
+            SystemSetting(
+                key = KEY_IS_METRICS_ENABLED,
+                value = "${managementGlobalSettings.isMetricsEnabled}",
+                type = SettingType.BOOLEAN
+            ),
+            SystemSetting(
+                key = KEY_IS_VERBOSE_LOGGING_ENABLED,
+                value = "${managementGlobalSettings.isVerboseLoggingEnabled}",
+                type = SettingType.BOOLEAN
             )
-        }.mapSuccess { }
+        )
+        return settingsService.updateSettings(settingsToUpdate).mapSuccess { }
     }
 
     private companion object {
         const val KEY_PRIVACY_POLICY = "global.privacy_policy_url"
         const val KEY_TERMS_OF_SERVICE = "global.terms_of_service_url"
         const val KEY_SUPPORT_EMAIL = "global.contact_support_email"
+        const val KEY_MIN_SUPPORTED_APP_VERSIONS = "global.min_supported_app_versions"
+        const val KEY_IS_TRACING_ENABLED = "global.is_tracing_enabled"
+        const val KEY_IS_METRICS_ENABLED = "global.is_metrics_enabled"
+        const val KEY_IS_VERBOSE_LOGGING_ENABLED = "global.is_verbose_logging_enabled"
     }
 }

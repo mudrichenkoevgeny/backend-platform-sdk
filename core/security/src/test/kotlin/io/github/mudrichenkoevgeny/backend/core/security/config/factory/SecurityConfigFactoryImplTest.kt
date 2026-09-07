@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.security.config.factory
 
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.security.config.envkeys.SecurityEnvKeys
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -44,7 +44,7 @@ class SecurityConfigFactoryImplTest {
         assertEquals(15, config.recentAuthenticationValidityInSeconds)
         assertEquals(45, config.recentAuthenticationValidityInSecondsForManagement)
 
-        assertEquals(PasswordPolicy.DEFAULT_MIN_LENGTH, config.passwordPolicy.minLength)
+        assertEquals(ManagementPasswordPolicy.DEFAULT_MIN_LENGTH, config.passwordPolicy.minLength)
         assertTrue(config.passwordPolicy.requireLetter)
         assertFalse(config.passwordPolicy.requireUpperCase)
 
@@ -54,6 +54,8 @@ class SecurityConfigFactoryImplTest {
 
     @Test
     fun `create parses password policy values from env`() {
+        every { envReader.getByKeyOrNull(any()) } returns null
+
         every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS) } returns "60"
         every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT) } returns "90"
 

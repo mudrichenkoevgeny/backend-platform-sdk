@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler
 
+import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
@@ -16,7 +17,8 @@ class UserWebSocketMessageHandlerTest {
         val knownTypes = listOf(
             UserWebSocketEventTypes.UNAUTHORIZED,
             UserWebSocketEventTypes.SESSION_DELETED,
-            UserWebSocketEventTypes.AUTH_SETTINGS_UPDATED,
+            UserWebSocketEventTypes.OPEN_AUTH_SETTINGS_UPDATED,
+            UserWebSocketEventTypes.MANAGEMENT_AUTH_SETTINGS_UPDATED,
             UserWebSocketEventTypes.USER_UPDATED
         )
 
@@ -47,6 +49,7 @@ class UserWebSocketMessageHandlerTest {
     private fun context(): WebSocketSessionContext {
         return WebSocketSessionContext(
             socketSessionId = SOCKET_ID,
+            apiScope = ApiScope.OPEN,
             clientInfo = null,
             userId = null,
             userRole = null,
@@ -62,4 +65,3 @@ class UserWebSocketMessageHandlerTest {
         const val UNKNOWN_TYPE = "unknown"
     }
 }
-

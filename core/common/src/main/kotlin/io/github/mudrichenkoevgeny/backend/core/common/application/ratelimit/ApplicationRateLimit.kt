@@ -6,10 +6,9 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.ratelimit.RateLimit
 import io.ktor.server.request.httpMethod
-import kotlin.time.Duration.Companion.seconds
 
 /**
- * Configures a global rate limit for all incoming requests.
+ * Configures a global rate limit for all incoming requests with static values.
  *
  * - Uses the Ktor [RateLimit] plugin in global mode.
  * - Applies [rateLimit] requests per [rateLimitPeriodSeconds] seconds.
@@ -20,12 +19,32 @@ fun Application.configureGlobalRateLimit(
     rateLimit: Int,
     rateLimitPeriodSeconds: Int
 ) {
+    configureGlobalRateLimit(
+        getMaxRequestsPerPeriod = { rateLimit },
+        getRateLimitPeriodSeconds = { rateLimitPeriodSeconds }
+    )
+}
+
+/**
+ * Configures a global rate limit for all incoming requests with dynamic suppliers.
+ *
+ * Automatically detects changes in [getMaxRequestsPerPeriod] and [getRateLimitPeriodSeconds]
+ * when settings are updated at runtime.
+ */
+fun Application.configureGlobalRateLimit(
+    getMaxRequestsPerPeriod: () -> Int,
+    getRateLimitPeriodSeconds: () -> Int
+) {
+    val dynamicRateLimiter = DynamicRateLimiter(
+        getMaxRequestsPerPeriod = getMaxRequestsPerPeriod,
+        getRateLimitPeriodSeconds = getRateLimitPeriodSeconds
+    )
+
     install(RateLimit) {
         global {
-            rateLimiter(
-                limit = rateLimit,
-                refillPeriod = rateLimitPeriodSeconds.seconds
-            )
+            rateLimiter { _, key ->
+                dynamicRateLimiter.getLimiterForKey(key)
+            }
 
             requestKey { call ->
                 if (call.request.httpMethod == HttpMethod.Options) {

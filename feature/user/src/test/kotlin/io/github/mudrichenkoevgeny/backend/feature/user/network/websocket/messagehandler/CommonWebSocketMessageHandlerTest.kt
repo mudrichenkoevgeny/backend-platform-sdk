@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
@@ -22,6 +23,7 @@ class CommonWebSocketMessageHandlerTest {
     private val handler = CommonWebSocketMessageHandler()
     private val dummyContext = WebSocketSessionContext(
         socketSessionId = "socket-1",
+        apiScope = ApiScope.OPEN,
         clientInfo = null,
         userId = null,
         userRole = null,

@@ -8,8 +8,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.securityapi.route.SecuritySwaggerTags
-import io.github.mudrichenkoevgeny.backend.feature.securityapi.usecase.open.settings.GetSecuritySettingsUseCase
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toSecuritySettingsPayload
+import io.github.mudrichenkoevgeny.backend.feature.securityapi.usecase.open.settings.GetOpenSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toOpenSecuritySettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.securitysettings.OpenSecuritySettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.network.route.open.security.settings.OpenSecuritySettingsRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -25,13 +26,13 @@ import javax.inject.Singleton
  * Router for public access to security-related configuration.
  *
  * Registered routes:
- * 1. [OpenSecuritySettingsRoutes.GET_SECURITY_SETTINGS] — retrieves security settings via [GetSecuritySettingsUseCase].
+ * 1. [OpenSecuritySettingsRoutes.GET_OPEN_SECURITY_SETTINGS] — retrieves security settings via [GetOpenSecuritySettingsUseCase].
  */
 @Singleton
 class OpenSecuritySettingsRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
-    private val getSecuritySettingsUseCase: GetSecuritySettingsUseCase
+    private val getOpenSecuritySettingsUseCase: GetOpenSecuritySettingsUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
@@ -43,7 +44,7 @@ class OpenSecuritySettingsRouter @Inject constructor(
         val allowedAccountStatuses = UserAccountStatus.entries.toSet()
 
         route.get(
-            path = OpenSecuritySettingsRoutes.GET_SECURITY_SETTINGS,
+            path = OpenSecuritySettingsRoutes.GET_OPEN_SECURITY_SETTINGS,
             builder = { getSecuritySettingsDocs(allowedRoles, allowedAccountStatuses) },
             body = { getSecuritySettings() }
         )
@@ -66,16 +67,17 @@ class OpenSecuritySettingsRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
+                body<OpenSecuritySettingsPayload>()
                 description = GET_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
 
     private suspend fun RoutingContext.getSecuritySettings() {
-        val result = getSecuritySettingsUseCase()
+        val result = getOpenSecuritySettingsUseCase()
 
         call.respondResult(result, appLogger, appErrorParser) { securitySettings ->
-            securitySettings.toSecuritySettingsPayload()
+            securitySettings.toOpenSecuritySettingsPayload()
         }
     }
 
