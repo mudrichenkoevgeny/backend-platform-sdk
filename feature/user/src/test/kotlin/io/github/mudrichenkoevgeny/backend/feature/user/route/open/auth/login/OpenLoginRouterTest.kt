@@ -149,7 +149,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
 
         val response = jsonClient.post(OpenLoginRoutes.LOGIN_BY_EXTERNAL_AUTH_PROVIDER) {
             contentType(ContentType.Application.Json)
-            setBody(LoginByExternalAuthProviderRequest(authProvider = "google", token = "external-token"))
+            setBody(LoginByExternalAuthProviderRequest(authProvider = "google", externalProviderToken = "external-token"))
         }
 
         assertEquals(HttpStatusCode.OK, response.status)

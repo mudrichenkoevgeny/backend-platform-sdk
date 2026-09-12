@@ -37,7 +37,8 @@ class SeedAuthSettingsUseCaseTest {
         override fun getMaxEmailIdentifiers(): Int = 0
         override fun getMaxPhoneIdentifiers(): Int = 0
         override fun getMaxIdentifiersPerExternalProvider(): Int = 0
-        override fun getMaxActiveSessions(): Int = 0
+        override fun getMaxActiveSessionsForOpenUser(): Int = 0
+        override fun getMaxActiveSessionsForManagementUser(): Int = 0
         override fun getAccessTokenExpirationSeconds(): Int = 0
         override fun getRefreshTokenExpirationSeconds(): Int = 0
         override fun getAccountDeletionDelaySeconds(): Int = 0

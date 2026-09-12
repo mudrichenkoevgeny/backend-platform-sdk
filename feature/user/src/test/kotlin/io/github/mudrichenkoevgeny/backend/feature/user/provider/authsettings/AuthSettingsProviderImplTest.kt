@@ -37,7 +37,8 @@ class AuthSettingsProviderImplTest {
         every { managementSettings.maxEmailIdentifiers } returns 1
         every { managementSettings.maxPhoneIdentifiers } returns 1
         every { managementSettings.maxIdentifiersPerExternalProvider } returns 1
-        every { managementSettings.maxActiveSessions } returns 3
+        every { managementSettings.maxActiveSessionsForOpenUser } returns 3
+        every { managementSettings.maxActiveSessionsForManagementUser } returns 3
         every { managementSettings.accessTokenExpirationSeconds } returns 3600
         every { managementSettings.refreshTokenExpirationSeconds } returns 2592000
         every { managementSettings.accountDeletionDelaySeconds } returns 604800
@@ -57,7 +58,7 @@ class AuthSettingsProviderImplTest {
         assertTrue(result is AppResult.Success)
         coVerify(exactly = 1) {
             settingsService.registerDefaults(match { list ->
-                list.size == 10
+                list.size == 11
             })
         }
     }
@@ -73,7 +74,7 @@ class AuthSettingsProviderImplTest {
         assertTrue(result is AppResult.Success)
         coVerify(exactly = 1) {
             settingsService.updateSettings(match { list ->
-                list.size == 10
+                list.size == 11
             })
         }
     }

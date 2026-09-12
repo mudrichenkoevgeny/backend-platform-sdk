@@ -28,7 +28,7 @@ sealed class UserError(
     /**
      * Access token is missing, malformed, or signature invalid.
      */
-    class InvalidAccessToken() : UserError(
+    class InvalidAccessToken : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_ACCESS_TOKEN,
         httpStatusCode = HttpStatusCode.Unauthorized,
@@ -38,7 +38,7 @@ sealed class UserError(
     /**
      * Access token has expired; client should refresh or re-authenticate.
      */
-    class AccessTokenExpired() : UserError(
+    class AccessTokenExpired : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.ACCESS_TOKEN_EXPIRED,
         httpStatusCode = HttpStatusCode.Unauthorized,
@@ -48,7 +48,7 @@ sealed class UserError(
     /**
      * Refresh token is missing or invalid.
      */
-    class InvalidRefreshToken() : UserError(
+    class InvalidRefreshToken : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_REFRESH_TOKEN,
         httpStatusCode = HttpStatusCode.Unauthorized,
@@ -58,7 +58,7 @@ sealed class UserError(
     /**
      * Session is invalid or no longer exists (e.g. logged out elsewhere).
      */
-    class InvalidSession() : UserError(
+    class InvalidSession : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_SESSION,
         httpStatusCode = HttpStatusCode.Unauthorized,
@@ -218,7 +218,7 @@ sealed class UserError(
     /**
      * Login failed: email or password incorrect (or account not found for email).
      */
-    class InvalidCredentials() : UserError(
+    class InvalidCredentials : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_CREDENTIALS,
         httpStatusCode = HttpStatusCode.NotFound,
@@ -228,7 +228,7 @@ sealed class UserError(
     /**
      * Cannot remove this sign-in method (e.g. last identifier, or policy forbids it).
      */
-    class CannotDeleteUserIdentifier() : UserError(
+    class CannotDeleteUserIdentifier : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.CAN_NOT_DELETE_USER_IDENTIFIER,
         httpStatusCode = HttpStatusCode.Conflict,
@@ -238,7 +238,7 @@ sealed class UserError(
     /**
      * Cannot add this sign-in method (e.g. already linked elsewhere, or provider error).
      */
-    class CannotCreateUserIdentifier() : UserError(
+    class CannotCreateUserIdentifier : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.CAN_NOT_CREATE_USER_IDENTIFIER,
         httpStatusCode = HttpStatusCode.Conflict,
@@ -285,7 +285,7 @@ sealed class UserError(
     /**
      * Current password is incorrect (e.g. when changing password).
      */
-    class WrongPassword() : UserError(
+    class WrongPassword : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.WRONG_PASSWORD,
         httpStatusCode = HttpStatusCode.Forbidden,
@@ -295,7 +295,7 @@ sealed class UserError(
     /**
      * Email/phone verification or reset code is wrong or expired.
      */
-    class WrongConfirmationCode() : UserError(
+    class WrongConfirmationCode : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.WRONG_CONFIRMATION_CODE,
         httpStatusCode = HttpStatusCode.UnprocessableEntity,
@@ -314,6 +314,16 @@ sealed class UserError(
         code = UserErrorCodes.EXTERNAL_IDENTIFIER_LINKAGE_FAILED,
         secretArgs = message?.let { mapOf(CommonErrorArgs.MESSAGE to it) },
         httpStatusCode = HttpStatusCode.Conflict,
+        appErrorSeverity = AppErrorSeverity.MEDIUM
+    )
+
+    /**
+     * User registration is currently disabled.
+     */
+    class RegistrationDisabled : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.REGISTRATION_DISABLED,
+        httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
 }

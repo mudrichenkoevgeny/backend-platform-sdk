@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpo
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
@@ -28,6 +29,7 @@ import javax.inject.Singleton
 @Singleton
 class RegisterByEmailUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
+    private val authSettingsProvider: AuthSettingsProvider,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val otpService: OtpService,
@@ -45,11 +47,12 @@ class RegisterByEmailUseCase @Inject constructor(
      * - Protects against registration floods via [UserRateLimitAction.REGISTRATION_ATTEMPT].
      *
      * **Workflow:**
-     * 1. Checks rate limits for the provided email.
-     * 2. Validates the [password] against the system's security policy.
-     * 3. Verifies the [confirmationCode] for the [UserOtpVerificationType.EMAIL_VERIFICATION] type.
-     * 4. Delegates user creation and initial authentication to [AuthManager].
-     * 5. Logs the security event via [AuditLogger] with [UserAuditActionType.REGISTER_BY_EMAIL].
+     * 1. Checks if user registration is enabled in system settings.
+     * 2. Checks rate limits for the provided email.
+     * 3. Validates the [password] against the system's security policy.
+     * 4. Verifies the [confirmationCode] for the [UserOtpVerificationType.EMAIL_VERIFICATION] type.
+     * 5. Delegates user creation and initial authentication to [AuthManager].
+     * 6. Logs the security event via [AuditLogger] with [UserAuditActionType.REGISTER_BY_EMAIL].
      *
      * @param email The email address being registered.
      * @param password The password for the new account.
@@ -70,6 +73,13 @@ class RegisterByEmailUseCase @Inject constructor(
                 value = email
             )
         )
+
+        if (!authSettingsProvider.getIsRegistrationEnabled()) {
+            return handleError(
+                error = UserError.RegistrationDisabled(),
+                baseMetadata = auditMetadata
+            )
+        }
 
         val rateLimitCheck = rateLimiter.checkRateLimit(
             action = UserRateLimitAction.REGISTRATION_ATTEMPT,

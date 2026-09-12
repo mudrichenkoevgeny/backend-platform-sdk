@@ -47,8 +47,8 @@ class UpdateSecuritySettingsUseCaseTest {
     )
 
     private fun sampleSettings() = ManagementSecuritySettings(
-        recentAuthenticationValiditySeconds = 300,
-        recentAuthenticationValiditySecondsForManagement = 60,
+        recentAuthenticationValiditySecondsForOpenUser = 300,
+        recentAuthenticationValiditySecondsForManagementUser = 60,
         passwordPolicy = ManagementPasswordPolicy(
             minLength = 10,
             requireLetter = true,

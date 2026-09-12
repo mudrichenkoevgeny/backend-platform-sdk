@@ -20,5 +20,6 @@
   "TOTAL_USER_IDENTIFIERS_LIMIT_REACHED": "Достигнут общий лимит идентификаторов на один аккаунт ({maxNumberOfIdentifiers}).",
   "WRONG_PASSWORD": "Текущий пароль указан неверно.",
   "WRONG_CONFIRMATION_CODE": "Код подтверждения неверен или истёк.",
-  "EXTERNAL_IDENTIFIER_LINKAGE_FAILED": "Не удалось привязать внешний аккаунт."
+  "EXTERNAL_IDENTIFIER_LINKAGE_FAILED": "Не удалось привязать внешний аккаунт.",
+  "REGISTRATION_DISABLED": "Регистрация пользователей отключена."
 }

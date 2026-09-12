@@ -73,8 +73,8 @@ class SecuritySettingsProviderImpl @Inject constructor(
 
     override fun getManagementSecuritySettings(): ManagementSecuritySettings {
         return ManagementSecuritySettings(
-            recentAuthenticationValiditySeconds = getRecentAuthenticationValidityInSeconds(),
-            recentAuthenticationValiditySecondsForManagement = getRecentAuthenticationValidityInSecondsForManagement(),
+            recentAuthenticationValiditySecondsForOpenUser = getRecentAuthenticationValidityInSeconds(),
+            recentAuthenticationValiditySecondsForManagementUser = getRecentAuthenticationValidityInSecondsForManagement(),
             passwordPolicy = getManagementPasswordPolicy(),
             otpConfirmation = getOtpConfirmation(),
             mfaTokenExpirationSeconds = getMfaTokenExpirationSeconds(),
@@ -145,12 +145,12 @@ class SecuritySettingsProviderImpl @Inject constructor(
         val settingsToUpdate = listOf(
             SystemSetting(
                 key = KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS,
-                value = "${managementSecuritySettings.recentAuthenticationValiditySeconds}",
+                value = "${managementSecuritySettings.recentAuthenticationValiditySecondsForOpenUser}",
                 type = SettingType.INT
             ),
             SystemSetting(
                 key = KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT,
-                value = "${managementSecuritySettings.recentAuthenticationValiditySecondsForManagement}",
+                value = "${managementSecuritySettings.recentAuthenticationValiditySecondsForManagementUser}",
                 type = SettingType.INT
             ),
             SystemSetting(

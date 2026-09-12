@@ -244,7 +244,7 @@ class OpenLoginRouter @Inject constructor(
 
         val result = loginByExternalAuthProviderUseCase(
             authProvider = authProvider,
-            token = request.token,
+            token = request.externalProviderToken,
             requestContext = call.getRequestContext()
         )
 

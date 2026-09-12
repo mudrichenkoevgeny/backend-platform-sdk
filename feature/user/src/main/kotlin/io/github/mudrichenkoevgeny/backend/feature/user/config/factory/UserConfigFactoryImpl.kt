@@ -47,7 +47,8 @@ class UserConfigFactoryImpl @Inject constructor(
         val maxEmailIdentifiers = envReader.getByKey(UserEnvKeys.MAX_EMAIL_IDENTIFIERS).toInt()
         val maxPhoneIdentifiers = envReader.getByKey(UserEnvKeys.MAX_PHONE_IDENTIFIERS).toInt()
         val maxIdentifiersPerExternalProvider = envReader.getByKey(UserEnvKeys.MAX_IDENTIFIERS_PER_EXTERNAL_PROVIDER).toInt()
-        val maxActiveSessions = envReader.getByKey(UserEnvKeys.MAX_ACTIVE_SESSIONS).toInt()
+        val maxActiveSessionsForOpenUser = envReader.getByKey(UserEnvKeys.MAX_ACTIVE_SESSIONS_FOR_OPEN_USER).toInt()
+        val maxActiveSessionsForManagementUser = envReader.getByKey(UserEnvKeys.MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER).toInt()
         val accessTokenExpirationSeconds = envReader.getByKey(UserEnvKeys.ACCESS_TOKEN_EXPIRATION_SECONDS).toInt()
         val refreshTokenExpirationSeconds = envReader.getByKey(UserEnvKeys.REFRESH_TOKEN_EXPIRATION_SECONDS).toInt()
         val accountDeletionDelaySeconds = envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_DELAY_SECONDS).toInt()
@@ -61,7 +62,8 @@ class UserConfigFactoryImpl @Inject constructor(
             maxEmailIdentifiers = maxEmailIdentifiers,
             maxPhoneIdentifiers = maxPhoneIdentifiers,
             maxIdentifiersPerExternalProvider = maxIdentifiersPerExternalProvider,
-            maxActiveSessions = maxActiveSessions,
+            maxActiveSessionsForOpenUser = maxActiveSessionsForOpenUser,
+            maxActiveSessionsForManagementUser = maxActiveSessionsForManagementUser,
             accessTokenExpirationSeconds = accessTokenExpirationSeconds,
             refreshTokenExpirationSeconds = refreshTokenExpirationSeconds,
             accountDeletionDelaySeconds = accountDeletionDelaySeconds,

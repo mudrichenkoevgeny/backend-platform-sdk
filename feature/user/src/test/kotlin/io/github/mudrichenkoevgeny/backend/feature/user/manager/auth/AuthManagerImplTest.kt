@@ -51,7 +51,8 @@ class AuthManagerImplTest {
     @BeforeEach
     fun setup() {
         Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
-        coEvery { authSettingsProvider.getMaxActiveSessions() } returns 5
+        coEvery { authSettingsProvider.getMaxActiveSessionsForOpenUser() } returns 5
+        coEvery { authSettingsProvider.getMaxActiveSessionsForManagementUser() } returns 3
     }
 
     @Test

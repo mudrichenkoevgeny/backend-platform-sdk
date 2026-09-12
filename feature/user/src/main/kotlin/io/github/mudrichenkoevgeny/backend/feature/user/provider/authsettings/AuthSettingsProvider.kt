@@ -56,9 +56,14 @@ interface AuthSettingsProvider {
     fun getMaxIdentifiersPerExternalProvider(): Int
 
     /**
-     * Returns the maximum number of active sessions allowed per account.
+     * Returns the maximum number of active sessions allowed per open user account.
      */
-    fun getMaxActiveSessions(): Int
+    fun getMaxActiveSessionsForOpenUser(): Int
+
+    /**
+     * Returns the maximum number of active sessions allowed per management user account.
+     */
+    fun getMaxActiveSessionsForManagementUser(): Int
 
     /**
      * Returns the validity window for new access tokens in seconds.

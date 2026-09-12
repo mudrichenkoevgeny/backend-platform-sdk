@@ -260,6 +260,9 @@ class AuthManagerImpl @Inject constructor(
         val userId = if (resolvedUserId != null) {
             resolvedUserId
         } else {
+            if (!authSettingsProvider.getIsRegistrationEnabled()) {
+                return AppResult.Error(UserError.RegistrationDisabled())
+            }
             val userResult = userManager.getOrCreateUser(
                 userId = null,
                 role = roleForUserCreation,
@@ -434,7 +437,12 @@ class AuthManagerImpl @Inject constructor(
             is AppResult.Error -> return userSessionsResult
         }
 
-        if (userSessions.size >= authSettingsProvider.getMaxActiveSessions()) {
+        val maxActiveSessions = when (user.role) {
+            UserRole.USER -> authSettingsProvider.getMaxActiveSessionsForOpenUser()
+            UserRole.STAFF, UserRole.ADMIN -> authSettingsProvider.getMaxActiveSessionsForManagementUser()
+        }
+
+        if (userSessions.size >= maxActiveSessions) {
             val deletedSessionResult = sessionManager.deleteLeastRecentlyUsedUserSession(user.id)
             if (deletedSessionResult is AppResult.Success) {
                 webSocketManager.sendMessageToUserSession(

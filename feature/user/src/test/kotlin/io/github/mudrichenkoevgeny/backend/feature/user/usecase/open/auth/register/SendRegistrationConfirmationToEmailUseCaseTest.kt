@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
@@ -17,6 +18,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -26,12 +28,14 @@ import org.junit.jupiter.api.Test
 class SendRegistrationConfirmationToEmailUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
+    private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val identifierManager = mockk<IdentifierManager>()
     private val otpService = mockk<OtpService>()
     private val emailService = mockk<EmailService>()
 
     private val useCase = SendRegistrationConfirmationToEmailUseCase(
         rateLimiter = rateLimiter,
+        authSettingsProvider = authSettingsProvider,
         identifierManager = identifierManager,
         otpService = otpService,
         emailService = emailService
@@ -51,6 +55,7 @@ class SendRegistrationConfirmationToEmailUseCaseTest {
         val otpConfirmation = mockk<OtpConfirmation>()
         val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = otpConfirmation)
 
+        every { authSettingsProvider.getIsRegistrationEnabled() } returns true
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_EMAIL, TEST_EMAIL) } returns AppResult.Success(Unit)
         coEvery { identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.EMAIL, TEST_EMAIL) } returns AppResult.Success(null)
         coEvery { otpService.getOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_VERIFICATION) } returns AppResult.Success(otpData)
@@ -69,6 +74,7 @@ class SendRegistrationConfirmationToEmailUseCaseTest {
         val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = otpConfirmation)
         val existingIdentifier = mockk<UserIdentifierInternal>()
 
+        every { authSettingsProvider.getIsRegistrationEnabled() } returns true
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { identifierManager.getUserIdentifierInternalByProvider(any(), any()) } returns AppResult.Success(existingIdentifier)
         coEvery { otpService.getOtp(any(), any()) } returns AppResult.Success(otpData)
@@ -82,10 +88,24 @@ class SendRegistrationConfirmationToEmailUseCaseTest {
     }
 
     @Test
+    fun `returns error when registration is disabled`() = runTest {
+        val context = createRequestContext()
+
+        every { authSettingsProvider.getIsRegistrationEnabled() } returns false
+
+        val result = useCase(TEST_EMAIL, context)
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is UserError.RegistrationDisabled)
+        coVerify(exactly = 0) { rateLimiter.checkRateLimit(any(), any()) }
+    }
+
+    @Test
     fun `returns error when rate limit exceeded`() = runTest {
         val context = createRequestContext()
         val error = UserError.InvalidCredentials()
 
+        every { authSettingsProvider.getIsRegistrationEnabled() } returns true
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(error)
 
         val result = useCase(TEST_EMAIL, context)
@@ -99,6 +119,7 @@ class SendRegistrationConfirmationToEmailUseCaseTest {
         val context = createRequestContext()
         val error = CommonError.Internal(Throwable())
 
+        every { authSettingsProvider.getIsRegistrationEnabled() } returns true
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { identifierManager.getUserIdentifierInternalByProvider(any(), any()) } returns AppResult.Success(null)
         coEvery { otpService.getOtp(any(), any()) } returns AppResult.Error(error)

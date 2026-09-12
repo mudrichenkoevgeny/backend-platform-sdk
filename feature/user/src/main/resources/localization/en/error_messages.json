@@ -20,5 +20,6 @@
   "TOTAL_USER_IDENTIFIERS_LIMIT_REACHED": "The maximum total limit of {maxNumberOfIdentifiers} identifiers per account has been reached.",
   "WRONG_PASSWORD": "The current password is incorrect.",
   "WRONG_CONFIRMATION_CODE": "The confirmation code is incorrect or has expired.",
-  "EXTERNAL_IDENTIFIER_LINKAGE_FAILED": "External account could not be linked."
+  "EXTERNAL_IDENTIFIER_LINKAGE_FAILED": "External account could not be linked.",
+  "REGISTRATION_DISABLED": "User registration is currently disabled."
 }

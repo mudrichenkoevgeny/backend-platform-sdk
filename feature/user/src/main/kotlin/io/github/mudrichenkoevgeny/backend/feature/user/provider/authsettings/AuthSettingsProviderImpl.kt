@@ -52,8 +52,13 @@ class AuthSettingsProviderImpl @Inject constructor(
                 type = SettingType.INT
             ),
             SystemSetting(
-                key = KEY_MAX_ACTIVE_SESSIONS,
-                value = "${defaults.maxActiveSessions}",
+                key = KEY_MAX_ACTIVE_SESSIONS_FOR_OPEN_USER,
+                value = "${defaults.maxActiveSessionsForOpenUser}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER,
+                value = "${defaults.maxActiveSessionsForManagementUser}",
                 type = SettingType.INT
             ),
             SystemSetting(
@@ -87,7 +92,8 @@ class AuthSettingsProviderImpl @Inject constructor(
             maxEmailIdentifiers = getMaxEmailIdentifiers(),
             maxPhoneIdentifiers = getMaxPhoneIdentifiers(),
             maxIdentifiersPerExternalProvider = getMaxIdentifiersPerExternalProvider(),
-            maxActiveSessions = getMaxActiveSessions(),
+            maxActiveSessionsForOpenUser = getMaxActiveSessionsForOpenUser(),
+            maxActiveSessionsForManagementUser = getMaxActiveSessionsForManagementUser(),
             accessTokenExpirationSeconds = getAccessTokenExpirationSeconds(),
             refreshTokenExpirationSeconds = getRefreshTokenExpirationSeconds(),
             accountDeletionDelaySeconds = getAccountDeletionDelaySeconds(),
@@ -132,9 +138,14 @@ class AuthSettingsProviderImpl @Inject constructor(
             ?: config.managementAuthSettings.maxIdentifiersPerExternalProvider
     }
 
-    override fun getMaxActiveSessions(): Int {
-        return settingsService.getInt(KEY_MAX_ACTIVE_SESSIONS)
-            ?: config.managementAuthSettings.maxActiveSessions
+    override fun getMaxActiveSessionsForOpenUser(): Int {
+        return settingsService.getInt(KEY_MAX_ACTIVE_SESSIONS_FOR_OPEN_USER)
+            ?: config.managementAuthSettings.maxActiveSessionsForOpenUser
+    }
+
+    override fun getMaxActiveSessionsForManagementUser(): Int {
+        return settingsService.getInt(KEY_MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER)
+            ?: config.managementAuthSettings.maxActiveSessionsForManagementUser
     }
 
     override fun getAccessTokenExpirationSeconds(): Int {
@@ -187,8 +198,13 @@ class AuthSettingsProviderImpl @Inject constructor(
                 type = SettingType.INT
             ),
             SystemSetting(
-                key = KEY_MAX_ACTIVE_SESSIONS,
-                value = "${managementAuthSettings.maxActiveSessions}",
+                key = KEY_MAX_ACTIVE_SESSIONS_FOR_OPEN_USER,
+                value = "${managementAuthSettings.maxActiveSessionsForOpenUser}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER,
+                value = "${managementAuthSettings.maxActiveSessionsForManagementUser}",
                 type = SettingType.INT
             ),
             SystemSetting(
@@ -221,7 +237,8 @@ class AuthSettingsProviderImpl @Inject constructor(
         const val KEY_MAX_EMAIL_IDENTIFIERS = "auth.max_email_identifiers"
         const val KEY_MAX_PHONE_IDENTIFIERS = "auth.max_phone_identifiers"
         const val KEY_MAX_IDENTIFIERS_PER_EXTERNAL_PROVIDER = "auth.max_identifiers_per_external_provider"
-        const val KEY_MAX_ACTIVE_SESSIONS = "auth.max_active_sessions"
+        const val KEY_MAX_ACTIVE_SESSIONS_FOR_OPEN_USER = "auth.max_active_sessions_for_open_user"
+        const val KEY_MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER = "auth.max_active_sessions_for_management_user"
         const val KEY_ACCESS_TOKEN_EXPIRATION_SECONDS = "auth.access_token_expiration_seconds"
         const val KEY_REFRESH_TOKEN_EXPIRATION_SECONDS = "auth.refresh_token_expiration_seconds"
         const val KEY_ACCOUNT_DELETION_DELAY_SECONDS = "auth.account_deletion_delay_seconds"

@@ -27,6 +27,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.Test
 class RegisterByEmailUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
+    private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val auditErrorConverter = mockk<AuditErrorConverter>()
     private val otpService = mockk<OtpService>()
@@ -42,6 +44,7 @@ class RegisterByEmailUseCaseTest {
 
     private val useCase = RegisterByEmailUseCase(
         rateLimiter = rateLimiter,
+        authSettingsProvider = authSettingsProvider,
         auditLogger = auditLogger,
         auditErrorConverter = auditErrorConverter,
         otpService = otpService,
@@ -69,6 +72,7 @@ class RegisterByEmailUseCaseTest {
             every { this@mockk.userDetails } returns userDetails
         }
 
+        every { authSettingsProvider.getIsRegistrationEnabled() } returns true
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.REGISTRATION_ATTEMPT, TEST_EMAIL) } returns AppResult.Success(Unit)
         coEvery { validatePasswordUseCase(TEST_PASSWORD) } returns AppResult.Success(Unit)
         coEvery { otpService.verifyOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_VERIFICATION, TEST_CODE) } returns AppResult.Success(true)
@@ -96,11 +100,27 @@ class RegisterByEmailUseCaseTest {
     }
 
     @Test
+    fun `returns error when registration is disabled`() = runTest {
+        val context = createRequestContext()
+        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
+
+        every { authSettingsProvider.getIsRegistrationEnabled() } returns false
+        every { auditErrorConverter.convert(any<UserError.RegistrationDisabled>()) } returns errorLogData
+
+        val result = useCase(TEST_EMAIL, TEST_PASSWORD, TEST_CODE, context)
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is UserError.RegistrationDisabled)
+        coVerify(exactly = 0) { rateLimiter.checkRateLimit(any(), any()) }
+    }
+
+    @Test
     fun `returns error when password policy validation fails`() = runTest {
         val context = createRequestContext()
         val error = UserError.InvalidCredentials()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
+        every { authSettingsProvider.getIsRegistrationEnabled() } returns true
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { validatePasswordUseCase(any()) } returns AppResult.Error(error)
         every { auditErrorConverter.convert(error) } returns errorLogData
@@ -125,6 +145,7 @@ class RegisterByEmailUseCaseTest {
         val context = createRequestContext()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
+        every { authSettingsProvider.getIsRegistrationEnabled() } returns true
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         coEvery { otpService.verifyOtp(any(), any(), any()) } returns AppResult.Success(false)
@@ -151,6 +172,7 @@ class RegisterByEmailUseCaseTest {
         val error = UserError.InvalidCredentials()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
+        every { authSettingsProvider.getIsRegistrationEnabled() } returns true
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(error)
         every { auditErrorConverter.convert(error) } returns errorLogData
 

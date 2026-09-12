@@ -73,7 +73,8 @@ class SecuritySettingsProviderImplTest {
 
         val result = provider.getManagementSecuritySettings()
 
-        assertEquals(99, result.recentAuthenticationValiditySeconds)
+        assertEquals(99, result.recentAuthenticationValiditySecondsForOpenUser)
+        assertEquals(120, result.recentAuthenticationValiditySecondsForManagementUser)
         assertEquals(storedPolicy, result.passwordPolicy)
         assertEquals(storedOtp, result.otpConfirmation)
         assertEquals(200, result.maxRequestsPerPeriod)
@@ -88,8 +89,8 @@ class SecuritySettingsProviderImplTest {
 
         val result = provider.getManagementSecuritySettings()
 
-        assertEquals(30, result.recentAuthenticationValiditySeconds)
-        assertEquals(60, result.recentAuthenticationValiditySecondsForManagement)
+        assertEquals(30, result.recentAuthenticationValiditySecondsForOpenUser)
+        assertEquals(60, result.recentAuthenticationValiditySecondsForManagementUser)
         assertEquals(defaultPolicy, result.passwordPolicy)
     }
 
@@ -115,8 +116,8 @@ class SecuritySettingsProviderImplTest {
     @Test
     fun `updateManagementSecuritySettings returns success when all updates succeed`() = runTest {
         val newSettings = ManagementSecuritySettings(
-            recentAuthenticationValiditySeconds = 45,
-            recentAuthenticationValiditySecondsForManagement = 90,
+            recentAuthenticationValiditySecondsForOpenUser = 45,
+            recentAuthenticationValiditySecondsForManagementUser = 90,
             passwordPolicy = ManagementPasswordPolicy(minLength = 25),
             otpConfirmation = defaultOtpConfirmation,
             mfaTokenExpirationSeconds = 180,

@@ -4,8 +4,10 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirmationData
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
@@ -17,6 +19,7 @@ import javax.inject.Singleton
 @Singleton
 class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
+    private val authSettingsProvider: AuthSettingsProvider,
     private val identifierManager: IdentifierManager,
     private val otpService: OtpService,
     private val emailService: EmailService
@@ -32,11 +35,12 @@ class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
      * - Enforces rate limiting on [UserRateLimitAction.SEND_OTP_EMAIL].
      *
      * **Workflow:**
-     * 1. Checks rate limits for the target email address.
-     * 2. Checks if the [email] is already associated with an existing [UserAuthProvider.EMAIL] identifier.
-     * 3. Generates a new OTP via [OtpService] for the [UserOtpVerificationType.EMAIL_VERIFICATION] type.
-     * 4. If the email is new, sends a registration verification code via [EmailService].
-     * 5. If the email exists, sends a security notification via [EmailService] informing the user of the attempt.
+     * 1. Checks if user registration is enabled in system settings.
+     * 2. Checks rate limits for the target email address.
+     * 3. Checks if the [email] is already associated with an existing [UserAuthProvider.EMAIL] identifier.
+     * 4. Generates a new OTP via [OtpService] for the [UserOtpVerificationType.EMAIL_VERIFICATION] type.
+     * 5. If the email is new, sends a registration verification code via [EmailService].
+     * 6. If the email exists, sends a security notification via [EmailService] informing the user of the attempt.
      *
      * @param email The email address to be registered.
      * @param requestContext The context of the request, used for localization and device info.
@@ -46,6 +50,10 @@ class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
         email: String,
         requestContext: RequestContext
     ): AppResult<OtpConfirmation> {
+        if (!authSettingsProvider.getIsRegistrationEnabled()) {
+            return AppResult.Error(UserError.RegistrationDisabled())
+        }
+
         val rateLimitCheck = rateLimiter.checkRateLimit(
             action = UserRateLimitAction.SEND_OTP_EMAIL,
             identifier = email

@@ -14,8 +14,8 @@ import org.junit.jupiter.api.Test
 class GetManagementSecuritySettingsUseCaseTest {
 
     private fun sampleSettings(): ManagementSecuritySettings = ManagementSecuritySettings(
-        recentAuthenticationValiditySeconds = 300,
-        recentAuthenticationValiditySecondsForManagement = 60,
+        recentAuthenticationValiditySecondsForOpenUser = 300,
+        recentAuthenticationValiditySecondsForManagementUser = 60,
         passwordPolicy = ManagementPasswordPolicy(
             minLength = 12,
             requireLetter = true,
