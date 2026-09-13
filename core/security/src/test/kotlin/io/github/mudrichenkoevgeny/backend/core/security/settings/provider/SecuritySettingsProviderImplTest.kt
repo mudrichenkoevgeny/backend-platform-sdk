@@ -84,8 +84,7 @@ class SecuritySettingsProviderImplTest {
     @Test
     fun `getManagementSecuritySettings falls back to config when keys missing`() {
         every { settingsService.getInt(any()) } returns null
-        stubGetJsonPasswordPolicyReturnsNull()
-        stubGetJsonOtpConfirmationReturnsNull()
+        every { settingsService.getJson<Any>(any(), any()) } returns null
 
         val result = provider.getManagementSecuritySettings()
 
@@ -120,6 +119,9 @@ class SecuritySettingsProviderImplTest {
             recentAuthenticationValiditySecondsForManagementUser = 90,
             passwordPolicy = ManagementPasswordPolicy(minLength = 25),
             otpConfirmation = defaultOtpConfirmation,
+            accountLockoutPolicy = SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY,
+            openIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
+            managementIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
             mfaTokenExpirationSeconds = 180,
             maxRequestsPerPeriod = 150,
             rateLimitPeriodSeconds = 90

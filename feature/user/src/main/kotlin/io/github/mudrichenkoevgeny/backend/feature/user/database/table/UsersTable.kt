@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.database.table
 import io.github.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
 import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import kotlinx.serialization.serializer
@@ -30,6 +31,8 @@ object UsersTable : BaseTable("users") {
         serializer<Set<String>>()
     )
     val isTotpEnabled = bool("is_totp_enabled").default(false)
+    val accountLockoutType = enumerationByName("account_lockout_type", BaseDbConstraints.ENUM_MAX_LENGTH, AccountLockoutType::class).default(AccountLockoutType.NONE)
+    val temporaryLockoutUntil = timestamp("temporary_lockout_until").nullable()
     val lastLoginAt = timestamp("last_login_at").nullable()
     val lastActiveAt = timestamp("last_active_at").nullable()
     val scheduledPermanentDeletionAt = timestamp("scheduled_permanent_deletion_at").nullable()

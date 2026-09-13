@@ -11,6 +11,13 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 interface PhoneService {
     /** Sends a verification code to confirm phone ownership. */
     suspend fun sendVerificationCode(phoneNumber: String, code: String, language: String?): AppResult<Unit>
+
+    /** Sends a verification code for unlock account flow. */
+    suspend fun sendUnlockAccountVerificationCode(phoneNumber: String, code: String, language: String?): AppResult<Unit>
+
     /** Notifies that the phone number is already registered (security notification). */
     suspend fun sendAlreadyRegisteredPhoneNumber(phoneNumber: String, ipAddress: String?, deviceName: String?, language: String?): AppResult<Unit>
+
+    /** Simulate a successful SMS send. */
+    suspend fun fakeSendSMS(): AppResult<Unit>
 }

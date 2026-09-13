@@ -21,5 +21,6 @@
   "WRONG_PASSWORD": "The current password is incorrect.",
   "WRONG_CONFIRMATION_CODE": "The confirmation code is incorrect or has expired.",
   "EXTERNAL_IDENTIFIER_LINKAGE_FAILED": "External account could not be linked.",
-  "REGISTRATION_DISABLED": "User registration is currently disabled."
+  "REGISTRATION_DISABLED": "User registration is currently disabled.",
+  "SELF_SERVICE_UNLOCK_DISABLED": "Self-service account unlock is currently disabled."
 }

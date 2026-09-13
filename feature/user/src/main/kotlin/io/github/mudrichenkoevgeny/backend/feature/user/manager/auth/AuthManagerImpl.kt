@@ -1,17 +1,20 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.auth
 
+import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
@@ -46,7 +49,8 @@ class AuthManagerImpl @Inject constructor(
     private val sessionManager: SessionManager,
     private val passwordHasher: PasswordHasher,
     private val authSettingsProvider: AuthSettingsProvider,
-    private val webSocketManager: WebSocketManager
+    private val webSocketManager: WebSocketManager,
+    private val userRepository: UserRepository
 ) : AuthManager {
 
     override suspend fun authenticateOrCreateUser(
@@ -431,6 +435,29 @@ class AuthManagerImpl @Inject constructor(
             return AppResult.Error(UserError.UserBlocked(user.id))
         }
 
+        if (user.lockoutType == AccountLockoutType.PERMANENT) {
+            return AppResult.Error(UserError.UserBlocked(userId = user.id))
+        }
+
+        if (user.lockoutType == AccountLockoutType.TEMPORARY) {
+            val now = Clock.System.now()
+            val temporaryLockoutUntil = user.temporaryLockoutUntil
+            if (temporaryLockoutUntil != null && now < temporaryLockoutUntil) {
+                return AppResult.Error(
+                    UserError.UserBlocked(
+                        userId = user.id,
+                        blockedUntil = temporaryLockoutUntil
+                    )
+                )
+            } else if (temporaryLockoutUntil != null && now >= temporaryLockoutUntil) {
+                userRepository.updateUser(
+                    userId = user.id,
+                    accountLockoutType = UpdateField.Set(AccountLockoutType.NONE),
+                    temporaryLockoutUntil = UpdateField.Set(null)
+                )
+            }
+        }
+
         val userSessionsResult = sessionManager.getAllUserSessions(user.id)
         val userSessions = when (userSessionsResult) {
             is AppResult.Success -> userSessionsResult.data
@@ -449,7 +476,9 @@ class AuthManagerImpl @Inject constructor(
                     userSessionId = deletedSessionResult.data,
                     frame = SocketFrame(
                         type = UserWebSocketEventTypes.SESSION_DELETED,
-                        timestamp = Clock.System.now().toEpochMilliseconds()
+                        timestamp = Clock.System.now().toEpochMilliseconds(),
+                        payload = null,
+                        metadata = emptyMap()
                     )
                 )
             }

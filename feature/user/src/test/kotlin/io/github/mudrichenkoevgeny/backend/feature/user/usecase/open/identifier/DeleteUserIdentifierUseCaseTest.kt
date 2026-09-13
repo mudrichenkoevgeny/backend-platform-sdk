@@ -118,8 +118,8 @@ class DeleteUserIdentifierUseCaseTest {
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = idToDelete.asHexDashString(),
                 status = AuditStatus.SUCCESS,
-                message = null,
-                metadata = any()
+                metadata = any(),
+                message = null
             )
         }
     }

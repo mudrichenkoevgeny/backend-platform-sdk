@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAcc
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -38,6 +39,8 @@ interface UserRepository {
      * @param authorityLevel new authority level.
      * @param permissionCodes new set of effective permissions.
      * @param isTotpEnabled TOTP enablement status.
+     * @param accountLockoutType account lockout type.
+     * @param temporaryLockoutUntil timestamp when temporary lockout expires.
      * @param lastLoginAt timestamp of the last successful authentication.
      * @param lastActiveAt timestamp of the last user activity.
      * @param scheduledPermanentDeletionAt timestamp for the final removal of the account.
@@ -50,6 +53,8 @@ interface UserRepository {
         authorityLevel: UpdateField<Int> = UpdateField.Ignore,
         permissionCodes: UpdateField<Set<PermissionCode>> = UpdateField.Ignore,
         isTotpEnabled: UpdateField<Boolean> = UpdateField.Ignore,
+        accountLockoutType: UpdateField<AccountLockoutType> = UpdateField.Ignore,
+        temporaryLockoutUntil: UpdateField<Instant> = UpdateField.Ignore,
         lastLoginAt: UpdateField<Instant> = UpdateField.Ignore,
         lastActiveAt: UpdateField<Instant> = UpdateField.Ignore,
         scheduledPermanentDeletionAt: UpdateField<Instant> = UpdateField.Ignore

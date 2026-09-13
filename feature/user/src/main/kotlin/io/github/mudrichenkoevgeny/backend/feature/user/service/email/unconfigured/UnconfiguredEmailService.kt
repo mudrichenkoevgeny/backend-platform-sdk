@@ -25,6 +25,12 @@ class UnconfiguredEmailService @Inject constructor() : EmailService {
     override suspend fun sendResetPasswordVerificationCode(email: String, code: String, language: String?): AppResult<Unit> =
         AppResult.Error(error)
 
+    override suspend fun sendUnlockAccountVerificationCode(
+        email: String,
+        code: String,
+        language: String?
+    ): AppResult<Unit> = AppResult.Error(error)
+
     override suspend fun sendAlreadyRegisteredEmail(
         email: String,
         ipAddress: String?,

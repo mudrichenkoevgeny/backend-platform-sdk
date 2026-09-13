@@ -7,6 +7,10 @@
     "subject": "Password Reset Request",
     "body": "<div style=\"font-family: sans-serif;\"><h2>Reset code: {code}</h2><p>If you didn't request a password reset, please ignore this email.</p></div>"
   },
+  "unlock_account_code": {
+    "subject": "Unlock Account Code",
+    "body": "<div style=\"font-family: sans-serif;\"><h2>Unlock code: {code}</h2><p>Enter this code to unlock your account.</p></div>"
+  },
   "already_registered": {
     "subject": "Registration Attempt",
     "body": "<div style=\"font-family: sans-serif;\"><p>You already have an account. If this wasn't you, please contact support.</p><p>IP: {ipAddress}, Device: {deviceName}</p></div>"

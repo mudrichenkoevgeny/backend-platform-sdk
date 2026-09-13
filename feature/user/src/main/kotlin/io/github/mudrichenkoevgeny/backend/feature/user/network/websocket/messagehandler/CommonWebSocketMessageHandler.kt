@@ -37,6 +37,8 @@ class CommonWebSocketMessageHandler @Inject constructor() : WebSocketMessageHand
             SocketFrame(
                 id = Uuid.random().toHexDashString(),
                 type = CommonWebSocketEventTypes.PONG,
+                payload = null,
+                metadata = emptyMap(),
                 timestamp = System.currentTimeMillis()
             )
         )
@@ -59,6 +61,8 @@ class CommonWebSocketMessageHandler @Inject constructor() : WebSocketMessageHand
             socketFrame = SocketFrame(
                 id = Uuid.random().toHexDashString(),
                 type = CommonWebSocketEventTypes.INITIALIZED_SUCCESS,
+                payload = null,
+                metadata = emptyMap(),
                 timestamp = System.currentTimeMillis()
             ),
             payload = payload

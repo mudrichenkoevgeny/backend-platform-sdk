@@ -96,8 +96,8 @@ class LoginByPhoneUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
                 status = AuditStatus.SUCCESS,
-                message = null, // Тот самый message
-                metadata = match { meta -> meta.any { it.value == TEST_PHONE } }
+                metadata = match { meta -> meta.any { it.value == TEST_PHONE } },
+                message = null,
             )
         }
     }
@@ -126,8 +126,8 @@ class LoginByPhoneUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = null,
                 status = AuditStatus.FAILED,
-                message = null,
-                metadata = any()
+                metadata = any(),
+                message = null
             )
         }
     }
@@ -147,12 +147,12 @@ class LoginByPhoneUseCaseTest {
 
         coVerify(exactly = 1) {
             auditLogger.log(
-                status = AuditStatus.FAILED,
-                action = UserAuditActionType.LOGIN_BY_PHONE,
-                message = null,
-                metadata = any(),
                 actorType = AuditActorType.USER,
-                resource = UserAuditResourceType.USER
+                action = UserAuditActionType.LOGIN_BY_PHONE,
+                resource = UserAuditResourceType.USER,
+                status = AuditStatus.FAILED,
+                metadata = any(),
+                message = null
             )
         }
     }
@@ -176,12 +176,12 @@ class LoginByPhoneUseCaseTest {
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {
             auditLogger.log(
-                status = AuditStatus.DENIED,
-                action = UserAuditActionType.LOGIN_BY_PHONE,
-                message = null,
-                metadata = any(),
                 actorType = AuditActorType.USER,
-                resource = UserAuditResourceType.USER
+                action = UserAuditActionType.LOGIN_BY_PHONE,
+                resource = UserAuditResourceType.USER,
+                status = AuditStatus.DENIED,
+                metadata = any(),
+                message = null
             )
         }
     }

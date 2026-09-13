@@ -549,7 +549,7 @@ class OpenIdentifierRouter @Inject constructor(
                 extraMetadata = setOf(
                     AuditEventMetadata(
                         key = UserAuditMetadataKey.EXTERNAL_ID,
-                        value = request.token
+                        value = request.externalProviderToken
                     )
                 )
             )
@@ -566,7 +566,7 @@ class OpenIdentifierRouter @Inject constructor(
 
         val result = addUserIdentifierExternalAuthProviderUseCase(
             authProvider = authProvider,
-            token = request.token,
+            token = request.externalProviderToken,
             authenticatedRequestContext = authenticatedRequestContext
         )
 

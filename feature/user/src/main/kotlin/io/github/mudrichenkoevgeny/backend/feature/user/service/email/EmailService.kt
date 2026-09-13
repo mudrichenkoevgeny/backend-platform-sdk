@@ -15,6 +15,9 @@ interface EmailService {
     /** Sends a verification code for password reset flow. */
     suspend fun sendResetPasswordVerificationCode(email: String, code: String, language: String?): AppResult<Unit>
 
+    /** Sends a verification code for unlock account flow. */
+    suspend fun sendUnlockAccountVerificationCode(email: String, code: String, language: String?): AppResult<Unit>
+
     /** Notifies that the email is already registered (security notification). */
     suspend fun sendAlreadyRegisteredEmail(email: String, ipAddress: String?, deviceName: String?, language: String?): AppResult<Unit>
 

@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.securityapi.usecase.management.settings
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
@@ -30,6 +31,9 @@ class GetManagementSecuritySettingsUseCaseTest {
             numberOfSymbols = 6,
             expirationSeconds = 300
         ),
+        accountLockoutPolicy = SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY,
+        openIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
+        managementIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
         mfaTokenExpirationSeconds = 600,
         maxRequestsPerPeriod = 100,
         rateLimitPeriodSeconds = 60

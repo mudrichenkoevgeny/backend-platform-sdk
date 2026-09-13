@@ -98,8 +98,8 @@ class LoginByTotpUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
                 status = AuditStatus.SUCCESS,
-                message = null, // Фикс: добавлен message
-                metadata = any()
+                metadata = any(),
+                message = null,
             )
         }
     }
@@ -135,8 +135,8 @@ class LoginByTotpUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
                 status = AuditStatus.FAILED,
-                message = null, // Фикс: добавлен message
-                metadata = any()
+                metadata = any(),
+                message = null,
             )
         }
     }
@@ -163,8 +163,8 @@ class LoginByTotpUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = null,
                 status = AuditStatus.FAILED,
-                message = null, // Фикс: добавлен message
-                metadata = any()
+                metadata = any(),
+                message = null,
             )
         }
     }

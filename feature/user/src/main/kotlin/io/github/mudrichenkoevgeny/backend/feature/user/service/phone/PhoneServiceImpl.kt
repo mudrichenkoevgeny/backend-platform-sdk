@@ -19,6 +19,18 @@ class PhoneServiceImpl @Inject constructor() : PhoneService {
         return AppResult.Error(CommonError.ServiceUnavailable())
     }
 
+    override suspend fun sendUnlockAccountVerificationCode(
+        phoneNumber: String,
+        code: String,
+        language: String?
+    ): AppResult<Unit> {
+        return AppResult.Error(CommonError.ServiceUnavailable())
+    }
+
+    override suspend fun fakeSendSMS(): AppResult<Unit> {
+        return AppResult.Error(CommonError.ServiceUnavailable())
+    }
+
     override suspend fun sendAlreadyRegisteredPhoneNumber(
         phoneNumber: String,
         ipAddress: String?,

@@ -33,8 +33,8 @@ class AuditLoggerImplTest {
             resource = TestAuditResource(RESOURCE),
             resourceId = RESOURCE_ID,
             status = AuditStatus.FAILED,
-            message = MESSAGE,
-            metadata = metadata
+            metadata = metadata,
+            message = MESSAGE
         )
 
         verify(exactly = 1) { auditService.log(capture(eventSlot)) }

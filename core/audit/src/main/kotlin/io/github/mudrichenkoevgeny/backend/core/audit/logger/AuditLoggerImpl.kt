@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -26,9 +27,10 @@ class AuditLoggerImpl @Inject constructor(
         action: AuditActionType,
         resource: AuditResourceType,
         resourceId: String?,
+        resourceValueSensitivity: AuditValueSensitivity,
         status: AuditStatus,
-        message: String?,
-        metadata: Set<AuditEventMetadata>
+        metadata: Set<AuditEventMetadata>,
+        message: String?
     ) {
         auditService.log(
             AuditEvent(
@@ -38,6 +40,7 @@ class AuditLoggerImpl @Inject constructor(
                 action = action,
                 resource = resource,
                 resourceId = resourceId,
+                resourceValueSensitivity = resourceValueSensitivity,
                 status = status,
                 metadata = metadata,
                 message = message,

@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS users (
     authority_level INTEGER NOT NULL DEFAULT 0,
     permission_codes JSONB NOT NULL DEFAULT '[]'::jsonb,
     is_totp_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    account_lockout_type VARCHAR(32) NOT NULL DEFAULT 'NONE',
+    temporary_lockout_until TIMESTAMPTZ,
     last_login_at TIMESTAMPTZ,
     last_active_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

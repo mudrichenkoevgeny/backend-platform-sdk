@@ -14,4 +14,10 @@ object UserOtpVerificationType {
 
     /** Used for password recovery flows via email. */
     val EMAIL_PASSWORD_RESET = OtpVerificationType("email_password_reset")
+
+    /** Used for account unlock flows via email. */
+    val EMAIL_UNLOCK = OtpVerificationType("email_unlock")
+
+    /** Used for account unlock flows via phone. */
+    val PHONE_UNLOCK = OtpVerificationType("phone_unlock")
 }

@@ -168,6 +168,16 @@ interface UserManager {
     ): AppResult<Unit>
 
     /**
+     * Unlocks a temporarily locked user account.
+     *
+     * @param userId The ID of the user to unlock.
+     * @return [AppResult.Success] with the updated [UserDetails] or an error.
+     */
+    suspend fun unlockUserAccount(
+        userId: UserId
+    ): AppResult<UserDetails>
+
+    /**
      * Identifies and removes users whose scheduled permanent deletion timestamp has passed.
      *
      * Intended for use by background system tasks.

@@ -9,6 +9,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorCodes
 import io.ktor.http.HttpStatusCode
+import kotlin.time.Instant
 
 /**
  * User and authentication feature errors: tokens, sessions, credentials, and account state.
@@ -69,13 +70,20 @@ sealed class UserError(
      * User account has been blocked and cannot perform the action.
      *
      * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
+     * @param blockedUntil Optional timestamp when temporary lockout expires; sent in [publicArgs].
      */
     class UserBlocked(
-        val userId: UserId? = null
+        val userId: UserId? = null,
+        val blockedUntil: Instant? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_BLOCKED,
-        secretArgs = userId?.let { userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()) },
+        secretArgs = userId?.let {
+            userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString())
+        },
+        publicArgs = blockedUntil?.let {
+            mapOf(UserErrorArgs.BLOCKED_UNTIL to it.toEpochMilliseconds().toString())
+        },
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.LOW
     )
@@ -323,6 +331,16 @@ sealed class UserError(
     class RegistrationDisabled : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.REGISTRATION_DISABLED,
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.MEDIUM
+    )
+
+    /**
+     * Self-service account unlock is currently disabled by security policy.
+     */
+    class SelfServiceUnlockDisabled : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.SELF_SERVICE_UNLOCK_DISABLED,
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )

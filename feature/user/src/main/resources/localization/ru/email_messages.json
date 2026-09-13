@@ -7,6 +7,10 @@
     "subject": "Восстановление доступа",
     "body": "<div style=\"font-family: sans-serif;\"><h2>Код сброса пароля: {code}</h2><p>Если вы не запрашивали сброс, просто проигнорируйте это письмо.</p></div>"
   },
+  "unlock_account_code": {
+    "subject": "Код разблокировки аккаунта",
+    "body": "<div style=\"font-family: sans-serif;\"><h2>Код разблокировки: {code}</h2><p>Введите этот код для разблокировки вашего аккаунта.</p></div>"
+  },
   "already_registered": {
     "subject": "Попытка повторной регистрации",
     "body": "<div style=\"font-family: sans-serif;\"><p>Вы уже зарегистрированы в нашей системе. Если это были не вы, обратитесь в поддержку.</p><p>IP: {ipAddress}, Устройство: {deviceName}</p></div>"

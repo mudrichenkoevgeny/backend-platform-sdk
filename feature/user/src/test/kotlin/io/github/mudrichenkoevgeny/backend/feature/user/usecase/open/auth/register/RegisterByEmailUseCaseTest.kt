@@ -93,8 +93,8 @@ class RegisterByEmailUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
                 status = AuditStatus.SUCCESS,
-                message = null,
-                metadata = match { meta -> meta.any { it.value == TEST_EMAIL } }
+                metadata = match { meta -> meta.any { it.value == TEST_EMAIL } },
+                message = null
             )
         }
     }
@@ -130,12 +130,12 @@ class RegisterByEmailUseCaseTest {
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {
             auditLogger.log(
-                action = UserAuditActionType.REGISTER_BY_EMAIL,
-                status = AuditStatus.FAILED,
-                message = null,
                 actorType = AuditActorType.USER,
+                action = UserAuditActionType.REGISTER_BY_EMAIL,
                 resource = UserAuditResourceType.USER,
-                metadata = any()
+                status = AuditStatus.FAILED,
+                metadata = any(),
+                message = null
             )
         }
     }
@@ -156,12 +156,12 @@ class RegisterByEmailUseCaseTest {
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {
             auditLogger.log(
-                status = AuditStatus.FAILED,
-                action = UserAuditActionType.REGISTER_BY_EMAIL,
-                message = null,
                 actorType = AuditActorType.USER,
+                action = UserAuditActionType.REGISTER_BY_EMAIL,
                 resource = UserAuditResourceType.USER,
-                metadata = any()
+                status = AuditStatus.FAILED,
+                metadata = any(),
+                message = null
             )
         }
     }

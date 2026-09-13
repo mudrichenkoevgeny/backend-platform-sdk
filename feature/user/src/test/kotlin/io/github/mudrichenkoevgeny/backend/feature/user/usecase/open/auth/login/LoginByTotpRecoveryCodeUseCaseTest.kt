@@ -94,12 +94,12 @@ class LoginByTotpRecoveryCodeUseCaseTest {
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
                 actorUserRole = UserRole.USER.serialName,
-                action = UserAuditActionType.LOGIN_BY_TOTP_RECOVERY_CODE, // action на месте
+                action = UserAuditActionType.LOGIN_BY_TOTP_RECOVERY_CODE,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
                 status = AuditStatus.SUCCESS,
-                message = null,
-                metadata = any()
+                metadata = any(),
+                message = null
             )
         }
     }
@@ -135,8 +135,8 @@ class LoginByTotpRecoveryCodeUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
                 status = AuditStatus.FAILED,
-                message = null,
-                metadata = any()
+                metadata = any(),
+                message = null
             )
         }
         coVerify(exactly = 0) { mfaService.consumeChallenge(any()) }
@@ -157,10 +157,10 @@ class LoginByTotpRecoveryCodeUseCaseTest {
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {
             auditLogger.log(
-                action = UserAuditActionType.LOGIN_BY_TOTP_RECOVERY_CODE,
-                status = AuditStatus.FAILED,
                 actorType = AuditActorType.USER,
+                action = UserAuditActionType.LOGIN_BY_TOTP_RECOVERY_CODE,
                 resource = UserAuditResourceType.USER,
+                status = AuditStatus.FAILED,
                 metadata = any()
             )
         }

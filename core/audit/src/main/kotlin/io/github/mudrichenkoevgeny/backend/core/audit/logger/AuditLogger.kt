@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.audit.logger
 import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -22,8 +23,9 @@ interface AuditLogger {
         action: AuditActionType,
         resource: AuditResourceType,
         resourceId: String? = null,
+        resourceValueSensitivity: AuditValueSensitivity = AuditValueSensitivity.NON_SENSITIVE,
         status: AuditStatus,
-        message: String? = null,
-        metadata: Set<AuditEventMetadata> = emptySet()
+        metadata: Set<AuditEventMetadata> = emptySet(),
+        message: String? = null
     )
 }

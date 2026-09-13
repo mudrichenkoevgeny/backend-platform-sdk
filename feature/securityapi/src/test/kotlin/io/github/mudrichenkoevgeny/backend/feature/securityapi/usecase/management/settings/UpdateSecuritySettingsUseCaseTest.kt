@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
+import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
@@ -63,6 +64,9 @@ class UpdateSecuritySettingsUseCaseTest {
             numberOfSymbols = 6,
             expirationSeconds = 300
         ),
+        accountLockoutPolicy = SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY,
+        openIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
+        managementIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
         mfaTokenExpirationSeconds = 600,
         maxRequestsPerPeriod = 100,
         rateLimitPeriodSeconds = 60

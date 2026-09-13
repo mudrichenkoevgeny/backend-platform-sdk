@@ -13,6 +13,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.Au
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -57,6 +58,8 @@ class UserManagerImpl @Inject constructor(
             authorityLevel = authorityLevel,
             permissionCodes = permissions,
             isTotpEnabled = false,
+            lockoutType = AccountLockoutType.NONE,
+            temporaryLockoutUntil = null,
             lastLoginAt = now,
             lastActiveAt = now,
             createdAt = now,
@@ -200,6 +203,14 @@ class UserManagerImpl @Inject constructor(
 
     override suspend fun deleteUserForManagement(userId: UserId): AppResult<Unit> = dbQuery {
         userRepository.deleteUser(userId)
+    }
+
+    override suspend fun unlockUserAccount(userId: UserId): AppResult<UserDetails> = dbQuery {
+        userRepository.updateUser(
+            userId = userId,
+            accountLockoutType = UpdateField.Set(AccountLockoutType.NONE),
+            temporaryLockoutUntil = UpdateField.Set(null)
+        )
     }
 
     override suspend fun deleteUsersDueForPermanentDeletionForSystem(): AppResult<Int> = dbQuery {

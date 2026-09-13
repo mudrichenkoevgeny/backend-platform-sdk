@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.management.auth.lo
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.auth.refreshtoken.SelfManagementRefreshTokenRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.auth.resetpassword.SelfManagementResetPasswordRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.auth.settings.ManagementAuthSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.auth.unlock.SelfManagementUnlockRouter
 import io.ktor.server.routing.Route
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -17,18 +18,21 @@ import javax.inject.Singleton
  * 2. [SelfManagementRefreshTokenRouter] — handles session token renewal.
  * 3. [SelfManagementResetPasswordRouter] — handles account recovery and password resets.
  * 4. [ManagementAuthSettingsRouter] — handles authentication policy management.
+ * 5. [SelfManagementUnlockRouter] — handles account unlock flows.
  */
 @Singleton
 class ManagementAuthRouter @Inject constructor(
     private val selfManagementLoginRouter: SelfManagementLoginRouter,
     private val selfManagementRefreshTokenRouter: SelfManagementRefreshTokenRouter,
     private val selfManagementResetPasswordRouter: SelfManagementResetPasswordRouter,
-    private val managementAuthSettingsRouter: ManagementAuthSettingsRouter
+    private val managementAuthSettingsRouter: ManagementAuthSettingsRouter,
+    private val selfManagementUnlockRouter: SelfManagementUnlockRouter
 ) : BaseRouter {
     override fun register(route: Route) {
         selfManagementLoginRouter.register(route)
         selfManagementRefreshTokenRouter.register(route)
         selfManagementResetPasswordRouter.register(route)
         managementAuthSettingsRouter.register(route)
+        selfManagementUnlockRouter.register(route)
     }
 }

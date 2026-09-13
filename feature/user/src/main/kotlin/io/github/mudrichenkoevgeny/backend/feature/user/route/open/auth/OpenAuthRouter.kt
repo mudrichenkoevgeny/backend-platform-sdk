@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.refresht
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.register.OpenRegisterRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.resetpassword.OpenResetPasswordRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.settings.OpenAuthSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.unlock.OpenUnlockRouter
 import io.ktor.server.routing.Route
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,6 +20,7 @@ import javax.inject.Singleton
  * 3. User registration and confirmation flows ([OpenRegisterRouter]).
  * 4. Password recovery and reset mechanisms ([OpenResetPasswordRouter]).
  * 5. Publicly accessible authentication settings and metadata ([OpenAuthSettingsRouter]).
+ * 6. Self-service account unlock flows ([OpenUnlockRouter]).
  */
 @Singleton
 class OpenAuthRouter @Inject constructor(
@@ -26,7 +28,8 @@ class OpenAuthRouter @Inject constructor(
     private val openLoginRouter: OpenLoginRouter,
     private val openRegisterRouter: OpenRegisterRouter,
     private val openResetPasswordRouter: OpenResetPasswordRouter,
-    private val openAuthSettingsRouter: OpenAuthSettingsRouter
+    private val openAuthSettingsRouter: OpenAuthSettingsRouter,
+    private val openUnlockRouter: OpenUnlockRouter
 ) : BaseRouter {
     override fun register(route: Route) {
         openRefreshTokenRouter.register(route)
@@ -34,5 +37,6 @@ class OpenAuthRouter @Inject constructor(
         openRegisterRouter.register(route)
         openResetPasswordRouter.register(route)
         openAuthSettingsRouter.register(route)
+        openUnlockRouter.register(route)
     }
 }

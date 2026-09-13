@@ -21,5 +21,6 @@
   "WRONG_PASSWORD": "Текущий пароль указан неверно.",
   "WRONG_CONFIRMATION_CODE": "Код подтверждения неверен или истёк.",
   "EXTERNAL_IDENTIFIER_LINKAGE_FAILED": "Не удалось привязать внешний аккаунт.",
-  "REGISTRATION_DISABLED": "Регистрация пользователей отключена."
+  "REGISTRATION_DISABLED": "Регистрация пользователей отключена.",
+  "SELF_SERVICE_UNLOCK_DISABLED": "Самостоятельная разблокировка аккаунта отключена."
 }

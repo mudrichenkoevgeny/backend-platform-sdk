@@ -1,5 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.service.email.naming
 
+import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
+import io.github.mudrichenkoevgeny.backend.feature.user.service.email.parser.EmailParser
+
 /**
  * Stable email template identifiers used by [EmailService] implementations.
  *
@@ -10,6 +13,8 @@ object EmailTemplateKeys {
     const val VERIFICATION_CODE = "verification_code"
     /** Reset password verification code template. */
     const val RESET_PASSWORD_CODE = "reset_password_code"
+    /** Account unlock verification code template. */
+    const val UNLOCK_ACCOUNT_CODE = "unlock_account_code"
     /** Security notification: email already registered. */
     const val ALREADY_REGISTERED = "already_registered"
     /** Welcome email after registration. */

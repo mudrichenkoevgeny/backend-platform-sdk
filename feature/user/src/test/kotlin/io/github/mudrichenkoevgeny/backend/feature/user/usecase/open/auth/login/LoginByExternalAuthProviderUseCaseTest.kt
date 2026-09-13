@@ -118,10 +118,10 @@ class LoginByExternalAuthProviderUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
                 status = AuditStatus.SUCCESS,
-                message = null,
                 metadata = match { meta ->
                     meta.any { it.value == EXTERNAL_ID } && meta.any { it.value == EXTERNAL_EMAIL }
-                }
+                },
+                message = null
             )
         }
     }

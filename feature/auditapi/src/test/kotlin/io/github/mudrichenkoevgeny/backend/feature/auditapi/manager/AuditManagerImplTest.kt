@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -55,6 +56,7 @@ class AuditManagerImplTest {
             override fun parseOrThrow(value: String): AuditResourceType = throw UnsupportedOperationException()
         },
         resourceId = null,
+        resourceValueSensitivity = AuditValueSensitivity.NON_SENSITIVE,
         status = AuditStatus.SUCCESS,
         metadata = emptySet(),
         message = null,

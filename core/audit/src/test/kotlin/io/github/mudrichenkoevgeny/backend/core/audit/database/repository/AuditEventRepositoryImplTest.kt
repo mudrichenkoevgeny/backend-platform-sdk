@@ -13,6 +13,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -159,10 +160,15 @@ class AuditEventRepositoryImplTest {
     fun `getEventsList filters by messages using ILIKE`() = runBlocking {
         val message = "Sensitive data leak"
         val event = AuditEvent(
+            actorId = null,
             actorType = AuditActorType.SYSTEM,
+            actorUserRole = null,
             action = RepositoryTestAuditAction("alert"),
             resource = RepositoryTestAuditResource("security"),
+            resourceId = null,
+            resourceValueSensitivity = AuditValueSensitivity.NON_SENSITIVE,
             status = AuditStatus.FAILED,
+            metadata = emptySet(),
             message = message,
             createdAt = Clock.System.now()
         )

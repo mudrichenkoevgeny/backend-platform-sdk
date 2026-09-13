@@ -91,6 +91,9 @@ class SecurityConfigFactoryImpl @Inject constructor(
             recentAuthenticationValidityInSecondsForManagement = recentAuthenticationValidityInSecondsForManagement,
             passwordPolicy = passwordPolicy,
             otpConfirmation = otpConfirmation,
+            accountLockoutPolicy = SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY,
+            openIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
+            managementIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
             mfaTokenExpirationSeconds = mfaTokenExpirationSeconds,
             maxRequestsPerPeriod = maxRequestsPerPeriod,
             rateLimitPeriodSeconds = rateLimitPeriodSeconds

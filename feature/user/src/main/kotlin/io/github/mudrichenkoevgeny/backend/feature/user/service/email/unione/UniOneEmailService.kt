@@ -60,6 +60,19 @@ class UniOneEmailService @Inject constructor(
         )
     }
 
+    override suspend fun sendUnlockAccountVerificationCode(
+        email: String,
+        code: String,
+        language: String?
+    ): AppResult<Unit> {
+        return executeTemplatedSend(
+            email = email,
+            templateKey = EmailTemplateKeys.UNLOCK_ACCOUNT_CODE,
+            args = mapOf(EmailTemplateArgs.CODE to code),
+            language = language
+        )
+    }
+
     override suspend fun sendAlreadyRegisteredEmail(
         email: String,
         ipAddress: String?,

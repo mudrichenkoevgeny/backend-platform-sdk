@@ -142,8 +142,8 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = identifierId.asHexDashString(),
                 status = AuditStatus.SUCCESS,
+                metadata = any(),
                 message = null,
-                metadata = any()
             )
         }
     }
@@ -175,8 +175,8 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = null,
                 status = AuditStatus.FAILED,
+                metadata = any(),
                 message = null,
-                metadata = any()
             )
         }
     }

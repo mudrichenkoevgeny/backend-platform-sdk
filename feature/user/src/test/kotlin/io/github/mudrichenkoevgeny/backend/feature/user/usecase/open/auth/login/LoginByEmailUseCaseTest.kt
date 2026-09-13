@@ -91,8 +91,8 @@ class LoginByEmailUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
                 status = AuditStatus.SUCCESS,
-                message = null,
-                metadata = match { meta -> meta.any { it.value == TEST_EMAIL } }
+                metadata = match { meta -> meta.any { it.value == TEST_EMAIL } },
+                message = null
             )
         }
     }
@@ -121,8 +121,8 @@ class LoginByEmailUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = null,
                 status = AuditStatus.FAILED,
-                message = null,
-                metadata = any()
+                metadata = any(),
+                message = null
             )
         }
     }
@@ -152,8 +152,8 @@ class LoginByEmailUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = null,
                 status = AuditStatus.FAILED,
-                message = null,
-                metadata = any()
+                metadata = any(),
+                message = null
             )
         }
     }

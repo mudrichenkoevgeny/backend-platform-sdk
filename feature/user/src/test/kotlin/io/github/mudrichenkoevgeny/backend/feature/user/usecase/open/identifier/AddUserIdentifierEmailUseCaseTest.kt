@@ -155,8 +155,8 @@ class AddUserIdentifierEmailUseCaseTest {
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = null,
                 status = AuditStatus.FAILED,
-                message = null,
-                metadata = any()
+                metadata = any(),
+                message = null
             )
         }
     }

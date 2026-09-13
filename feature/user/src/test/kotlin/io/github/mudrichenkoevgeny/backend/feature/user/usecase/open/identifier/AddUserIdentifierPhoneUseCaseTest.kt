@@ -109,8 +109,8 @@ class AddUserIdentifierPhoneUseCaseTest {
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = identifierId.asHexDashString(),
                 status = AuditStatus.SUCCESS,
-                message = null,
-                metadata = any()
+                metadata = any(),
+                message = null
             )
         }
     }
@@ -145,8 +145,8 @@ class AddUserIdentifierPhoneUseCaseTest {
                 actorUserRole = context.userRole.serialName,
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = null,
-                message = null,
-                metadata = any()
+                metadata = any(),
+                message = null
             )
         }
     }

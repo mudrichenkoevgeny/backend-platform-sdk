@@ -1,6 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.security.settings.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.iprestriction.IpRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.OpenPasswordPolicy
@@ -57,6 +59,21 @@ interface SecuritySettingsProvider {
      * Returns the effective OTP configuration.
      */
     fun getOtpConfirmation(): OtpConfirmation
+
+    /**
+     * Returns the effective account lockout policy.
+     */
+    fun getAccountLockoutPolicy(): AccountLockoutPolicy
+
+    /**
+     * Returns the effective open IP restriction policy.
+     */
+    fun getOpenIpRestrictionPolicy(): IpRestrictionPolicy
+
+    /**
+     * Returns the effective management IP restriction policy.
+     */
+    fun getManagementIpRestrictionPolicy(): IpRestrictionPolicy
 
     /**
      * Returns the expiration time (in seconds) for temporary MFA challenge tokens.

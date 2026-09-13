@@ -90,8 +90,8 @@ class ResetPasswordUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
                 status = AuditStatus.SUCCESS,
-                message = null,
-                metadata = any()
+                metadata = any(),
+                message = null
             )
         }
     }
@@ -121,8 +121,8 @@ class ResetPasswordUseCaseTest {
                 resource = UserAuditResourceType.USER,
                 resourceId = null,
                 status = AuditStatus.FAILED,
-                message = null,
-                metadata = any()
+                metadata = any(),
+                message = null
             )
         }
     }

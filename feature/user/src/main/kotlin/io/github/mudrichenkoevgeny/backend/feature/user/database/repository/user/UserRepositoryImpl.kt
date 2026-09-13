@@ -18,6 +18,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -60,6 +61,8 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             row[authorityLevel] = user.authorityLevel
             row[permissionCodes] = user.permissionCodes.map { it.value }.toSet()
             row[isTotpEnabled] = user.isTotpEnabled
+            row[accountLockoutType] = user.lockoutType
+            row[temporaryLockoutUntil] = user.temporaryLockoutUntil?.toJavaInstant()
             row[lastLoginAt] = user.lastLoginAt?.toJavaInstant()
             row[lastActiveAt] = user.lastActiveAt?.toJavaInstant()
             row[createdAt] = user.createdAt.toJavaInstant()
@@ -88,6 +91,8 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         authorityLevel: UpdateField<Int>,
         permissionCodes: UpdateField<Set<PermissionCode>>,
         isTotpEnabled: UpdateField<Boolean>,
+        accountLockoutType: UpdateField<AccountLockoutType>,
+        temporaryLockoutUntil: UpdateField<KotlinInstant>,
         lastLoginAt: UpdateField<KotlinInstant>,
         lastActiveAt: UpdateField<KotlinInstant>,
         scheduledPermanentDeletionAt: UpdateField<KotlinInstant>
@@ -130,6 +135,16 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
 
             isTotpEnabledToSet?.let { enabled ->
                 updateStatement[UsersTable.isTotpEnabled] = enabled
+            }
+
+            accountLockoutType.onSet { type ->
+                if (type != null) {
+                    updateStatement[UsersTable.accountLockoutType] = type
+                }
+            }
+
+            temporaryLockoutUntil.onSet { until ->
+                updateStatement[UsersTable.temporaryLockoutUntil] = until?.toJavaInstant()
             }
 
             lastLoginAt.onSet { lastLoginAt ->
@@ -261,6 +276,8 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             authorityLevel = this[UsersTable.authorityLevel],
             permissionCodes = this[UsersTable.permissionCodes].map { PermissionCode(it) }.toSet(),
             isTotpEnabled = this[UsersTable.isTotpEnabled],
+            lockoutType = this[UsersTable.accountLockoutType],
+            temporaryLockoutUntil = this[UsersTable.temporaryLockoutUntil]?.toKotlinInstant(),
             lastLoginAt = this[UsersTable.lastLoginAt]?.toKotlinInstant(),
             lastActiveAt = this[UsersTable.lastActiveAt]?.toKotlinInstant(),
             createdAt = this[UsersTable.createdAt].toKotlinInstant(),
