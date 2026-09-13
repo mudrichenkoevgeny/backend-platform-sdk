@@ -103,6 +103,7 @@ class UserConfigFactoryImplTest {
         every { envReader.getByKey(UserEnvKeys.ACCESS_TOKEN_EXPIRATION_SECONDS) } returns "3600"
         every { envReader.getByKey(UserEnvKeys.REFRESH_TOKEN_EXPIRATION_SECONDS) } returns "86400"
         every { envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_DELAY_SECONDS) } returns "3600"
+        every { envReader.getByKeyOrNull(UserEnvKeys.ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS) } returns "60"
         every { envReader.getByKeyOrNull(UserEnvKeys.IS_REGISTRATION_ENABLED) } returns null
     }
 }

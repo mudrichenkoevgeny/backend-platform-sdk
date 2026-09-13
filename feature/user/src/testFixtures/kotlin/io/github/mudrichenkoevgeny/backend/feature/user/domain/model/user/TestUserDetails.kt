@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user
 
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
@@ -21,6 +22,11 @@ fun createTestUserDetails(
     authorityLevel = authorityLevel,
     permissionCodes = permissionCodes,
     isTotpEnabled = false,
+    lastLoginAt = null,
+    lastActiveAt = null,
     createdAt = Clock.System.now(),
-    updatedAt = null
+    updatedAt = null,
+    scheduledPermanentDeletionAt = null,
+    lockoutType = AccountLockoutType.NONE,
+    temporaryLockoutUntil = null
 )

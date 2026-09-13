@@ -185,4 +185,13 @@ interface UserManager {
      * @return [AppResult.Success] with the count of deleted rows or an error.
      */
     suspend fun deleteUsersDueForPermanentDeletionForSystem(): AppResult<Int>
+
+    /**
+     * Identifies and unlocks user accounts whose temporary lockout timestamp has passed.
+     *
+     * Intended for use by background system tasks.
+     *
+     * @return [AppResult.Success] with the count of unlocked accounts or an error.
+     */
+    suspend fun unlockExpiredAccountLockoutsForSystem(): AppResult<Int>
 }

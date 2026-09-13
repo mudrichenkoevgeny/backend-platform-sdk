@@ -13,7 +13,7 @@ import javax.inject.Singleton
  * (paths and locales from [AppErrorParserConfig]), caches them, and resolves messages by code and locale.
  */
 @Singleton
-class AppErrorParserImpl @Inject constructor(
+class CommonErrorParser @Inject constructor(
     appErrorParserConfig: AppErrorParserConfig
 ) : AppErrorParser {
 
@@ -30,18 +30,19 @@ class AppErrorParserImpl @Inject constructor(
                 val resourceName = "$path/$locale/${appErrorParserConfig.resourceFileName}" +
                         ".${appErrorParserConfig.resourceFileExtension}"
 
-                val resourceStream = classLoader.getResourceAsStream(resourceName) ?: continue
-
-                resourceStream.use { stream ->
-                    val text = stream.bufferedReader().readText().trim()
-
-                    if (text.isEmpty() || text == "{}" || text == "null") {
-                        return@use
-                    }
-
+                val resources = classLoader.getResources(resourceName)
+                for (url in resources) {
                     try {
-                        val parsed: Map<String, String> = json.decodeFromString(text)
-                        localeMessages.putAll(parsed)
+                        url.openStream().use { stream ->
+                            val text = stream.bufferedReader().readText().trim()
+
+                            if (text.isEmpty() || text == "{}" || text == "null") {
+                                return@use
+                            }
+
+                            val parsed: Map<String, String> = json.decodeFromString(text)
+                            localeMessages.putAll(parsed)
+                        }
                     } catch (_: Exception) { }
                 }
             }

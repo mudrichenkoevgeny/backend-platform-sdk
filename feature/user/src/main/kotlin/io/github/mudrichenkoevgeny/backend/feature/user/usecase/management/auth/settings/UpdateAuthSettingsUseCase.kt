@@ -100,7 +100,8 @@ class UpdateAuthSettingsUseCase @Inject constructor(
                 payload = FoundationJson.encodeToJsonElement(
                     OpenAuthSettingsPayload.serializer(),
                     publicAuthSettingPayload
-                )
+                ),
+                metadata = emptyMap()
             )
         )
 
@@ -114,7 +115,8 @@ class UpdateAuthSettingsUseCase @Inject constructor(
                 payload = FoundationJson.encodeToJsonElement(
                     ManagementAuthSettingsPayload.serializer(),
                     managementAuthSettingPayload
-                )
+                ),
+                metadata = emptyMap()
             )
         )
 

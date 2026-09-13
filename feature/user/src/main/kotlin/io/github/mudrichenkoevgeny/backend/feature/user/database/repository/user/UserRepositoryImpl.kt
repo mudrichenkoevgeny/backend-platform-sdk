@@ -267,6 +267,19 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         return AppResult.Success(deletedCount)
     }
 
+    override suspend fun getExpiredTemporaryLockouts(asOf: KotlinInstant): AppResult<List<UserId>> {
+        val asOfJavaInstant = asOf.toJavaInstant()
+        val userIds = UsersTable
+            .selectAll()
+            .where {
+                (UsersTable.accountLockoutType eq AccountLockoutType.TEMPORARY) and
+                    (UsersTable.temporaryLockoutUntil.isNotNull()) and
+                    (UsersTable.temporaryLockoutUntil lessEq asOfJavaInstant)
+            }
+            .map { UserId(it[UsersTable.id].value) }
+        return AppResult.Success(userIds)
+    }
+
     private fun ResultRow.toUserDetails(): UserDetails {
         return UserDetails(
             id = UserId(this[UsersTable.id].value),

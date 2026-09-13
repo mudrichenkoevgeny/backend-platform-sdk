@@ -77,6 +77,8 @@ class LogoutUseCase @Inject constructor(
             frame = SocketFrame(
                 id = Uuid.random().toHexDashString(),
                 type = UserWebSocketEventTypes.SESSION_DELETED,
+                payload = null,
+                metadata = emptyMap(),
                 timestamp = Clock.System.now().toEpochMilliseconds()
             )
         )

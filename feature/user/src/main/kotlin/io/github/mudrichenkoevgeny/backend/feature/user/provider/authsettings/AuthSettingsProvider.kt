@@ -82,6 +82,11 @@ interface AuthSettingsProvider {
     fun getAccountDeletionDelaySeconds(): Int
 
     /**
+     * Returns the interval in seconds between background checks for expired account lockouts.
+     */
+    fun getAccountLockoutCheckIntervalSeconds(): Int
+
+    /**
      * Returns whether new user registrations are currently permitted.
      */
     fun getIsRegistrationEnabled(): Boolean

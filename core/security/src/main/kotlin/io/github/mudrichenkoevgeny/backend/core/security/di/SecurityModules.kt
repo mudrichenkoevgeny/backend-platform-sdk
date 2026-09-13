@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecuritySetti
 import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityAuditErrorParserModule
 import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityServicesModule
 import io.github.mudrichenkoevgeny.backend.core.security.di.module.TotpCryptoProcessorModule
+import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityAppErrorParserModule
 
 /**
  * Dagger aggregation module for the `core/security` package.
@@ -35,7 +36,8 @@ import io.github.mudrichenkoevgeny.backend.core.security.di.module.TotpCryptoPro
         SecurityAuditErrorParserModule::class,
         SecurityServicesModule::class,
         AesCryptorModule::class,
-        TotpCryptoProcessorModule::class
+        TotpCryptoProcessorModule::class,
+        SecurityAppErrorParserModule::class
     ]
 )
 interface SecurityModules

@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.F
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.emailrestriction.EmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.settings.toAvailableAuthProvidersPayload
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -77,6 +78,11 @@ class AuthSettingsProviderImpl @Inject constructor(
                 type = SettingType.INT
             ),
             SystemSetting(
+                key = KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS,
+                value = "${config.accountLockoutCheckIntervalSeconds}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
                 key = KEY_IS_REGISTRATION_ENABLED,
                 value = "${defaults.isRegistrationEnabled}",
                 type = SettingType.BOOLEAN
@@ -97,7 +103,19 @@ class AuthSettingsProviderImpl @Inject constructor(
             accessTokenExpirationSeconds = getAccessTokenExpirationSeconds(),
             refreshTokenExpirationSeconds = getRefreshTokenExpirationSeconds(),
             accountDeletionDelaySeconds = getAccountDeletionDelaySeconds(),
-            isRegistrationEnabled = getIsRegistrationEnabled()
+            isRegistrationEnabled = getIsRegistrationEnabled(),
+            openEmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
+                isBlacklistEnabled = false,
+                blacklist = emptyList(),
+                isWhitelistEnabled = false,
+                whitelist = emptyList()
+            ),
+            managementEmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
+                isBlacklistEnabled = false,
+                blacklist = emptyList(),
+                isWhitelistEnabled = false,
+                whitelist = emptyList()
+            )
         )
     }
 
@@ -161,6 +179,11 @@ class AuthSettingsProviderImpl @Inject constructor(
     override fun getAccountDeletionDelaySeconds(): Int {
         return settingsService.getInt(KEY_ACCOUNT_DELETION_DELAY_SECONDS)
             ?: config.managementAuthSettings.accountDeletionDelaySeconds
+    }
+
+    override fun getAccountLockoutCheckIntervalSeconds(): Int {
+        return settingsService.getInt(KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS)
+            ?: config.accountLockoutCheckIntervalSeconds
     }
 
     override fun getIsRegistrationEnabled(): Boolean {
@@ -242,6 +265,7 @@ class AuthSettingsProviderImpl @Inject constructor(
         const val KEY_ACCESS_TOKEN_EXPIRATION_SECONDS = "auth.access_token_expiration_seconds"
         const val KEY_REFRESH_TOKEN_EXPIRATION_SECONDS = "auth.refresh_token_expiration_seconds"
         const val KEY_ACCOUNT_DELETION_DELAY_SECONDS = "auth.account_deletion_delay_seconds"
+        const val KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS = "auth.account_lockout_check_interval_seconds"
         const val KEY_IS_REGISTRATION_ENABLED = "auth.is_registration_enabled"
     }
 }

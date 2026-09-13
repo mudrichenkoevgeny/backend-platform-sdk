@@ -16,44 +16,80 @@ import javax.inject.Singleton
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Runs [UserManager.deleteUsersDueForPermanentDeletionForSystem] on a fixed delay while the background scope stays active.
+ * Runs background maintenance jobs for the user feature:
+ * 1. [UserManager.deleteUsersDueForPermanentDeletionForSystem] on a configurable interval.
+ * 2. [UserManager.unlockExpiredAccountLockoutsForSystem] on a configurable interval.
  */
 @Singleton
 class UserScheduledJobsImpl @Inject constructor(
     private val userManager: UserManager,
     private val authSettingsProvider: AuthSettingsProvider,
     @param:BackgroundScope private val scope: CoroutineScope,
-    private val appLogger: AppLogger
+    private val appLogger: AppLogger,
 ) : UserScheduledJobs {
 
     @Volatile
-    private var loopJob: Job? = null
+    private var accountDeletionJob: Job? = null
+
+    @Volatile
+    private var accountLockoutCheckJob: Job? = null
 
     private val loopLock = Any()
 
     override fun start() {
-        val intervalSeconds = authSettingsProvider.getAccountDeletionDelaySeconds()
-        if (intervalSeconds <= 0L) {
+        synchronized(loopLock) {
+            startAccountDeletionJob()
+            startAccountLockoutCheckJob()
+        }
+    }
+
+    private fun startAccountDeletionJob() {
+        if (accountDeletionJob?.isActive == true) {
             return
         }
 
-        synchronized(loopLock) {
-            if (loopJob?.isActive == true) {
-                return
-            }
-            loopJob = scope.launch {
-                while (isActive) {
-                    try {
-                        val deleteUsersResult = userManager.deleteUsersDueForPermanentDeletionForSystem()
-                        if (deleteUsersResult is AppResult.Error) {
-                            appLogger.logError(deleteUsersResult.error)
-                        }
-                    } catch (t: Throwable) {
-                        appLogger.logError(CommonError.Internal(t))
+        accountDeletionJob = scope.launch {
+            while (isActive) {
+                try {
+                    val deleteUsersResult = userManager.deleteUsersDueForPermanentDeletionForSystem()
+                    if (deleteUsersResult is AppResult.Error) {
+                        appLogger.logError(deleteUsersResult.error)
                     }
-                    delay(intervalSeconds.seconds)
+                } catch (t: Throwable) {
+                    appLogger.logError(CommonError.Internal(t))
                 }
+
+                val intervalSeconds = authSettingsProvider.getAccountDeletionDelaySeconds()
+                val delaySeconds = if (intervalSeconds > 0) intervalSeconds else DEFAULT_CHECK_INTERVAL_SECONDS
+                delay(delaySeconds.seconds)
             }
         }
+    }
+
+    private fun startAccountLockoutCheckJob() {
+        if (accountLockoutCheckJob?.isActive == true) {
+            return
+        }
+
+        accountLockoutCheckJob = scope.launch {
+            while (isActive) {
+                try {
+                    val unlockResult = userManager.unlockExpiredAccountLockoutsForSystem()
+                    if (unlockResult is AppResult.Error) {
+                        appLogger.logError(unlockResult.error)
+                    }
+                } catch (t: Throwable) {
+                    appLogger.logError(CommonError.Internal(t))
+                }
+
+                val intervalSeconds = authSettingsProvider.getAccountLockoutCheckIntervalSeconds()
+                val delaySeconds = if (intervalSeconds > 0) intervalSeconds else DEFAULT_CHECK_INTERVAL_SECONDS
+                delay(delaySeconds.seconds)
+            }
+        }
+    }
+
+    private companion object {
+        const val DEFAULT_CHECK_INTERVAL_SECONDS = 60
     }
 }

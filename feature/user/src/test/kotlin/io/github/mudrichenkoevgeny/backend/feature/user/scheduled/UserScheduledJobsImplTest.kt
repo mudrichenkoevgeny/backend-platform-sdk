@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.seconds
 
 private const val TEST_INTERVAL_SECONDS = 60
-private const val ZERO_INTERVAL = 0
 
 class UserScheduledJobsImplTest {
 
@@ -35,35 +34,30 @@ class UserScheduledJobsImplTest {
     )
 
     @Test
-    fun `should not start loop when interval is zero or negative`() = runTest {
-        every { authSettingsProvider.getAccountDeletionDelaySeconds() } returns ZERO_INTERVAL
-        val jobs = createJobs(backgroundScope)
-
-        jobs.start()
-        advanceTimeBy(1.seconds)
-
-        coVerify(exactly = 0) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
-    }
-
-    @Test
-    fun `should invoke delete immediately on start and then after interval`() = runTest {
+    fun `should invoke delete and unlock immediately on start and then after interval`() = runTest {
         every { authSettingsProvider.getAccountDeletionDelaySeconds() } returns TEST_INTERVAL_SECONDS
+        every { authSettingsProvider.getAccountLockoutCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
         coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } returns AppResult.Success(1)
+        coEvery { userManager.unlockExpiredAccountLockoutsForSystem() } returns AppResult.Success(2)
         val jobs = createJobs(backgroundScope)
 
         jobs.start()
 
         advanceTimeBy(1.seconds)
         coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
+        coVerify(exactly = 1) { userManager.unlockExpiredAccountLockoutsForSystem() }
 
         advanceTimeBy(TEST_INTERVAL_SECONDS.seconds)
         coVerify(exactly = 2) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
+        coVerify(exactly = 2) { userManager.unlockExpiredAccountLockoutsForSystem() }
     }
 
     @Test
-    fun `should not launch second loop if already active`() = runTest {
+    fun `should not launch second loops if already active`() = runTest {
         every { authSettingsProvider.getAccountDeletionDelaySeconds() } returns TEST_INTERVAL_SECONDS
+        every { authSettingsProvider.getAccountLockoutCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
         coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } returns AppResult.Success(0)
+        coEvery { userManager.unlockExpiredAccountLockoutsForSystem() } returns AppResult.Success(0)
         val jobs = createJobs(backgroundScope)
 
         jobs.start()
@@ -71,26 +65,31 @@ class UserScheduledJobsImplTest {
 
         advanceTimeBy(1.seconds)
         coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
+        coVerify(exactly = 1) { userManager.unlockExpiredAccountLockoutsForSystem() }
     }
 
     @Test
     fun `should log error when manager returns failure result`() = runTest {
         val error = CommonError.Internal(Exception("DB error"))
         every { authSettingsProvider.getAccountDeletionDelaySeconds() } returns TEST_INTERVAL_SECONDS
+        every { authSettingsProvider.getAccountLockoutCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
         coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } returns AppResult.Error(error)
+        coEvery { userManager.unlockExpiredAccountLockoutsForSystem() } returns AppResult.Error(error)
         val jobs = createJobs(backgroundScope)
 
         jobs.start()
         advanceTimeBy(1.seconds)
 
-        verify { appLogger.logError(error) }
+        verify(atLeast = 1) { appLogger.logError(error) }
     }
 
     @Test
     fun `should log internal error when exception is thrown during execution`() = runTest {
         val exception = RuntimeException("Unexpected")
         every { authSettingsProvider.getAccountDeletionDelaySeconds() } returns TEST_INTERVAL_SECONDS
+        every { authSettingsProvider.getAccountLockoutCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
         coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } throws exception
+        coEvery { userManager.unlockExpiredAccountLockoutsForSystem() } returns AppResult.Success(0)
         val jobs = createJobs(backgroundScope)
 
         jobs.start()
@@ -104,9 +103,11 @@ class UserScheduledJobsImplTest {
     }
 
     @Test
-    fun `loop should stop when scope is cancelled`() = runTest {
+    fun `loops should stop when scope is cancelled`() = runTest {
         every { authSettingsProvider.getAccountDeletionDelaySeconds() } returns TEST_INTERVAL_SECONDS
+        every { authSettingsProvider.getAccountLockoutCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
         coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } returns AppResult.Success(0)
+        coEvery { userManager.unlockExpiredAccountLockoutsForSystem() } returns AppResult.Success(0)
 
         val testScope = CoroutineScope(coroutineContext + SupervisorJob())
         val jobs = createJobs(testScope)
@@ -114,10 +115,12 @@ class UserScheduledJobsImplTest {
         jobs.start()
         advanceTimeBy(1.seconds)
         coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
+        coVerify(exactly = 1) { userManager.unlockExpiredAccountLockoutsForSystem() }
 
         testScope.cancel()
         advanceTimeBy(TEST_INTERVAL_SECONDS.seconds)
 
         coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
+        coVerify(exactly = 1) { userManager.unlockExpiredAccountLockoutsForSystem() }
     }
 }

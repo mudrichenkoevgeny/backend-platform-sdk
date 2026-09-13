@@ -16,6 +16,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionI
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromCredential
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
@@ -28,6 +29,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Clock
 
 /**
  * JWT-based implementation of [AuthenticationProvider] for Ktor.
@@ -125,6 +127,23 @@ class JwtAuthenticationProvider @Inject constructor(
             is AppResult.Error -> return userResult
         }
 
+        if (user.lockoutType == AccountLockoutType.PERMANENT) {
+            return AppResult.Error(UserError.UserBlocked(userId = userId))
+        }
+
+        if (user.lockoutType == AccountLockoutType.TEMPORARY) {
+            val now = Clock.System.now()
+            val temporaryLockoutUntil = user.temporaryLockoutUntil
+            if (temporaryLockoutUntil != null && now < temporaryLockoutUntil) {
+                return AppResult.Error(
+                    UserError.UserBlocked(
+                        userId = userId,
+                        blockedUntil = temporaryLockoutUntil
+                    )
+                )
+            }
+        }
+
         if (user.role !in allowedRoles) {
             return AppResult.Error(UserError.UserRoleNotAllowed(userId))
         }
@@ -134,7 +153,10 @@ class JwtAuthenticationProvider @Inject constructor(
                 when (user.accountStatus) {
                     UserAccountStatus.ACTIVE -> UserError.UserForbidden(userId)
                     UserAccountStatus.READ_ONLY -> UserError.UserReadOnly(userId)
-                    UserAccountStatus.BANNED -> UserError.UserBlocked(userId)
+                    UserAccountStatus.BANNED -> UserError.UserBlocked(
+                        userId = userId,
+                        blockedUntil = user.temporaryLockoutUntil
+                    )
                     UserAccountStatus.SECURITY_HOLD -> UserError.UserSecurityHold(userId)
                     UserAccountStatus.PENDING_DELETION -> UserError.UserPendingDeletion(userId)
                 }

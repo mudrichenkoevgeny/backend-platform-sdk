@@ -1,13 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.auth
 
-import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
-import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -49,8 +47,7 @@ class AuthManagerImpl @Inject constructor(
     private val sessionManager: SessionManager,
     private val passwordHasher: PasswordHasher,
     private val authSettingsProvider: AuthSettingsProvider,
-    private val webSocketManager: WebSocketManager,
-    private val userRepository: UserRepository
+    private val webSocketManager: WebSocketManager
 ) : AuthManager {
 
     override suspend fun authenticateOrCreateUser(
@@ -431,8 +428,24 @@ class AuthManagerImpl @Inject constructor(
             }
         }
 
-        if (user.accountStatus == UserAccountStatus.BANNED || user.accountStatus == UserAccountStatus.SECURITY_HOLD) {
-            return AppResult.Error(UserError.UserBlocked(user.id))
+        when (user.accountStatus) {
+            UserAccountStatus.BANNED -> {
+                return AppResult.Error(
+                    UserError.UserBlocked(
+                        userId = user.id,
+                        blockedUntil = user.temporaryLockoutUntil
+                    )
+                )
+            }
+            UserAccountStatus.SECURITY_HOLD -> {
+                return AppResult.Error(UserError.UserSecurityHold(userId = user.id))
+            }
+            UserAccountStatus.PENDING_DELETION -> {
+                return AppResult.Error(UserError.UserPendingDeletion(userId = user.id))
+            }
+            UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY -> {
+                // Allowed to authenticate
+            }
         }
 
         if (user.lockoutType == AccountLockoutType.PERMANENT) {
@@ -450,11 +463,7 @@ class AuthManagerImpl @Inject constructor(
                     )
                 )
             } else if (temporaryLockoutUntil != null && now >= temporaryLockoutUntil) {
-                userRepository.updateUser(
-                    userId = user.id,
-                    accountLockoutType = UpdateField.Set(AccountLockoutType.NONE),
-                    temporaryLockoutUntil = UpdateField.Set(null)
-                )
+                userManager.unlockUserAccount(user.id)
             }
         }
 

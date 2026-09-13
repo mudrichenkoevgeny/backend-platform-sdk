@@ -50,7 +50,8 @@ class ApplicationStatusPagesTest {
         val apiError = ApiErrorResponse(
             id = "",
             code = expectedError.code,
-            message = "Field is missing"
+            message = "Field is missing",
+            args = emptyMap()
         )
         every { appLogger.logError(expectedError) } just runs
         coEvery { appErrorParser.getApiErrorResponse(expectedError) } returns apiError
@@ -75,7 +76,8 @@ class ApplicationStatusPagesTest {
         val apiError = ApiErrorResponse(
             id = "",
             code = CommonError.InvalidJsonBody(null).code,
-            message = "Invalid JSON"
+            message = "Invalid JSON",
+            args = emptyMap()
         )
         every { appLogger.logError(any<CommonError.InvalidJsonBody>()) } just Runs
         coEvery { appErrorParser.getApiErrorResponse(any<CommonError.InvalidJsonBody>()) } returns apiError
@@ -106,7 +108,8 @@ class ApplicationStatusPagesTest {
         val apiError = ApiErrorResponse(
             id = "",
             code = CommonError.BadRequest(null).code,
-            message = "Bad request"
+            message = "Bad request",
+            args = emptyMap()
         )
         every { appLogger.logError(any<CommonError.BadRequest>()) } just runs
         coEvery { appErrorParser.getApiErrorResponse(any<CommonError.BadRequest>()) } returns apiError
@@ -131,7 +134,8 @@ class ApplicationStatusPagesTest {
         val apiError = ApiErrorResponse(
             id = "",
             code = CommonError.Internal(RuntimeException("boom")).code,
-            message = "Internal error"
+            message = "Internal error",
+            args = emptyMap()
         )
         every { appLogger.logError(any<CommonError.Internal>()) } just runs
         coEvery { appErrorParser.getApiErrorResponse(any<CommonError.Internal>()) } returns apiError

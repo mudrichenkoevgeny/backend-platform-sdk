@@ -217,6 +217,23 @@ class UserManagerImpl @Inject constructor(
         userRepository.deleteUsersDueForPermanentDeletion(Clock.System.now())
     }
 
+    override suspend fun unlockExpiredAccountLockoutsForSystem(): AppResult<Int> = dbQuery {
+        val expiredUsersResult = userRepository.getExpiredTemporaryLockouts(Clock.System.now())
+        val userIds = when (expiredUsersResult) {
+            is AppResult.Success -> expiredUsersResult.data
+            is AppResult.Error -> return@dbQuery expiredUsersResult
+        }
+
+        var unlockedCount = 0
+        for (userId in userIds) {
+            val unlockResult = unlockUserAccount(userId)
+            if (unlockResult is AppResult.Success) {
+                unlockedCount++
+            }
+        }
+        AppResult.Success(unlockedCount)
+    }
+
     private fun buildAccessFilter(userPermissionCodes: Set<PermissionCode>): UserRoleAccessFilter {
         val allowedUserRoles = mutableSetOf<UserRole>()
 

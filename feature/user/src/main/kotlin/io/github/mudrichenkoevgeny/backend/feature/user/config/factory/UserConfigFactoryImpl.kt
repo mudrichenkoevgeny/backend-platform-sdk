@@ -11,6 +11,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.mod
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.emailrestriction.EmailRestrictionPolicy
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -67,7 +68,19 @@ class UserConfigFactoryImpl @Inject constructor(
             accessTokenExpirationSeconds = accessTokenExpirationSeconds,
             refreshTokenExpirationSeconds = refreshTokenExpirationSeconds,
             accountDeletionDelaySeconds = accountDeletionDelaySeconds,
-            isRegistrationEnabled = isRegistrationEnabled
+            isRegistrationEnabled = isRegistrationEnabled,
+            openEmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
+                isBlacklistEnabled = false,
+                blacklist = emptyList(),
+                isWhitelistEnabled = false,
+                whitelist = emptyList()
+            ),
+            managementEmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
+                isBlacklistEnabled = false,
+                blacklist = emptyList(),
+                isWhitelistEnabled = false,
+                whitelist = emptyList()
+            )
         )
 
         // Auth Service Google
@@ -102,13 +115,16 @@ class UserConfigFactoryImpl @Inject constructor(
             null
         }
 
+        val accountLockoutCheckIntervalSeconds = envReader.getByKeyOrNull(UserEnvKeys.ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS)?.toIntOrNull() ?: 60
+
         return UserConfig(
             jwtSecret = jwtSecret,
             adminAccountsList = adminList.admins,
             managementAuthSettings = managementAuthSettings,
             googleWebClientId = googleWebClientId,
             uniOneConfig = uniOneConfig,
-            resendConfig = resendConfig
+            resendConfig = resendConfig,
+            accountLockoutCheckIntervalSeconds = accountLockoutCheckIntervalSeconds
         )
     }
 }

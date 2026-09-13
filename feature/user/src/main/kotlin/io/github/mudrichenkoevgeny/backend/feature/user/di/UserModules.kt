@@ -12,6 +12,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserAuditError
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserExternalAuthVerifierModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserScheduledJobsModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserWebSocketModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserAppErrorParserModule
 
 /**
  * Aggregates all Dagger modules required by the user feature.
@@ -31,7 +32,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserWebSocketM
         UserWebSocketModule::class,
         EmailParserModule::class,
         UserAuditErrorParserModule::class,
-        UserScheduledJobsModule::class
+        UserScheduledJobsModule::class,
+        UserAppErrorParserModule::class
     ]
 )
 interface UserModules

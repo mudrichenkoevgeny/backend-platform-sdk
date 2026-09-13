@@ -53,6 +53,8 @@ class UserSessionExpirationListener @Inject constructor(
                 SocketFrame(
                     id = Uuid.random().toHexDashString(),
                     type = UserWebSocketEventTypes.UNAUTHORIZED,
+                    payload = null,
+                    metadata = emptyMap(),
                     timestamp = System.currentTimeMillis()
                 )
             )

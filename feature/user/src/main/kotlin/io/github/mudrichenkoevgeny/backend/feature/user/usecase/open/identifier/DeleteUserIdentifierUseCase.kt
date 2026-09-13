@@ -195,6 +195,8 @@ class DeleteUserIdentifierUseCase @Inject constructor(
                         userSessionId = session.id,
                         frame = SocketFrame(
                             type = UserWebSocketEventTypes.SESSION_DELETED,
+                            payload = null,
+                            metadata = emptyMap(),
                             timestamp = Clock.System.now().toEpochMilliseconds()
                         )
                     )

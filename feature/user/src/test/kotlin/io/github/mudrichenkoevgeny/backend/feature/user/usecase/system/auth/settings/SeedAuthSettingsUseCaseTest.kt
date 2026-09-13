@@ -42,6 +42,7 @@ class SeedAuthSettingsUseCaseTest {
         override fun getAccessTokenExpirationSeconds(): Int = 0
         override fun getRefreshTokenExpirationSeconds(): Int = 0
         override fun getAccountDeletionDelaySeconds(): Int = 0
+        override fun getAccountLockoutCheckDelaySeconds(): Int = 0
         override fun getIsRegistrationEnabled(): Boolean = true
 
         override suspend fun updateManagementAuthSettings(

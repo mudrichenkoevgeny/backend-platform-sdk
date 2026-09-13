@@ -10,7 +10,7 @@ import io.ktor.server.response.respond
 /**
  * Sends an HTTP response based on the given [AppResult].
  *
- * Behaviour:
+ * Behavior:
  * - For [AppResult.Success]:
  *   - If `T` is `Unit`, responds with `204 No Content`.
  *   - Otherwise responds with `200 OK` and the body from [AppResult.Success.data].
@@ -44,7 +44,7 @@ suspend inline fun <reified T : Any> ApplicationCall.respondResult(
 /**
  * Sends an HTTP response based on the given [AppResult].
  *
- * Behaviour:
+ * Behavior:
  * - For [AppResult.Success]:
  *   - If `T` is `Unit`, responds with `204 No Content`.
  *   - Otherwise responds with `200 OK` and the body produced by [mapper].

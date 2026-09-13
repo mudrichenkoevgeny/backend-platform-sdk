@@ -13,9 +13,9 @@ import org.junit.jupiter.api.Test
  * Tests for [AppErrorParserImpl] using test resources under `localization/en` and `localization/ru`.
  * Expected messages are loaded from the same JSON files the parser uses, so no message strings are hardcoded.
  */
-class AppErrorParserImplTest {
+class CommonErrorParserTest {
 
-    private val parser = AppErrorParserImpl(
+    private val parser = CommonErrorParser(
         AppErrorParserConfig(
             resourcePaths = listOf(LOCALIZATION_RESOURCE_PATH),
             supportedLocales = setOf(LOCALE_EN, LOCALE_RU)
@@ -121,7 +121,7 @@ class AppErrorParserImplTest {
 
     @Test
     fun `when no resources loaded returns UNKNOWN_ERROR_MESSAGE`() {
-        val emptyParser = AppErrorParserImpl(
+        val emptyParser = CommonErrorParser(
             AppErrorParserConfig(
                 resourcePaths = listOf("nonexistent_path"),
                 supportedLocales = setOf(LOCALE_EN)
@@ -160,7 +160,7 @@ class AppErrorParserImplTest {
 
         private fun loadTestMessages(locale: String): Map<String, String> {
             val resourceName = "$LOCALIZATION_RESOURCE_PATH/$locale/error_messages.json"
-            val stream = AppErrorParserImplTest::class.java.classLoader.getResourceAsStream(resourceName)
+            val stream = CommonErrorParserTest::class.java.classLoader.getResourceAsStream(resourceName)
                 ?: return emptyMap()
             return stream.use {
                 val text = it.bufferedReader().readText().trim()

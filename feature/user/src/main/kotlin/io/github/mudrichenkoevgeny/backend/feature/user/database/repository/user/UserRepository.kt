@@ -108,4 +108,12 @@ interface UserRepository {
      * @return Count of deleted rows, or an error when persistence fails.
      */
     suspend fun deleteUsersDueForPermanentDeletion(asOf: Instant): AppResult<Int>
+
+    /**
+     * Finds users with an active temporary lockout whose [UserDetails.temporaryLockoutUntil] has passed relative to [asOf].
+     *
+     * @param asOf Upper bound instant for lockout expiration (inclusive).
+     * @return List of matching [UserId]s, or an error.
+     */
+    suspend fun getExpiredTemporaryLockouts(asOf: Instant): AppResult<List<UserId>>
 }

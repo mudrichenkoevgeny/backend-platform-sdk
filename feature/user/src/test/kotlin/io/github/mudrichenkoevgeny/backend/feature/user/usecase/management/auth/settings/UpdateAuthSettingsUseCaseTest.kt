@@ -18,6 +18,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.emailrestriction.EmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -59,7 +60,19 @@ class UpdateAuthSettingsUseCaseTest {
         accessTokenExpirationSeconds = 3600,
         refreshTokenExpirationSeconds = 86400,
         accountDeletionDelaySeconds = 2592000,
-        isRegistrationEnabled = true
+        isRegistrationEnabled = true,
+        openEmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
+            isBlacklistEnabled = false,
+            blacklist = emptyList(),
+            isWhitelistEnabled = false,
+            whitelist = emptyList()
+        ),
+        managementEmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
+            isBlacklistEnabled = false,
+            blacklist = emptyList(),
+            isWhitelistEnabled = false,
+            whitelist = emptyList()
+        )
     )
 
     private fun authContext(userId: UserId) = AuthenticatedRequestContext(

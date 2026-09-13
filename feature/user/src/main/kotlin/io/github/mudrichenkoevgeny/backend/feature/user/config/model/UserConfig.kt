@@ -17,6 +17,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.mod
  * @param googleWebClientId optional Google web client id used to verify Google tokens
  * @param uniOneConfig optional UniOne email provider config (null when not configured)
  * @param resendConfig optional Resend email provider config (null when not configured)
+ * @param accountLockoutCheckIntervalSeconds interval in seconds for background lockout expiration checks
  */
 data class UserConfig(
     val jwtSecret: String,
@@ -24,5 +25,6 @@ data class UserConfig(
     val managementAuthSettings: ManagementAuthSettings,
     val googleWebClientId: String?,
     val uniOneConfig: UniOneConfig?,
-    val resendConfig: ResendConfig?
+    val resendConfig: ResendConfig?,
+    val accountLockoutCheckIntervalSeconds: Int,
 )

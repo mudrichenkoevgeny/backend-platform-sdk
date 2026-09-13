@@ -75,6 +75,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
         accountStatus: UserAccountStatus? = null,
         authorityLevel: Int? = null,
         permissionCodes: Set<PermissionCode>? = null,
+        // todo after shared lib update add lockoutType and temporaryLockoutUntil params
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<UserDetails> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
@@ -281,6 +282,8 @@ class ManagementUpdateUserUseCase @Inject constructor(
                         userSessionId = session.id,
                         frame = SocketFrame(
                             type = UserWebSocketEventTypes.USER_UPDATED,
+                            payload = null,
+                            metadata = emptyMap(),
                             timestamp = Clock.System.now().toEpochMilliseconds()
                         )
                     )
