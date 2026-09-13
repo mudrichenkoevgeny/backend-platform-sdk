@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.use
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserIdentifiersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserSessionsTable
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
@@ -235,29 +236,15 @@ class UserSessionRepositoryImplTest {
         userId: UserId,
         sessionId: UserSessionId = UserSessionId.generate(),
         identifierId: UserIdentifierId = UserIdentifierId.generate()
-    ) = UserSessionInternal(
+    ) = createTestUserSessionInternal(
         id = sessionId,
         userId = userId,
-        userRole = UserRole.USER,
-        identifier = "test@example.com",
         identifierId = identifierId,
-        identifierAuthProvider = UserAuthProvider.EMAIL,
         refreshTokenHash = RefreshTokenHash("hash_" + sessionId.asHexDashString()),
-        deviceInfo = ClientDeviceInfo(
-            deviceId = null,
-            deviceName = "Test Device",
-            clientType = ClientType.WEB,
-            language = "en",
-            appVersion = "1.0",
-            operationSystemVersion = "Win 11"
-        ),
-        userAgent = "Mozilla/5.0",
-        ipAddress = "127.0.0.1",
         expiresAt = Instant.parse(BASE_TIME) + 30.days,
         lastAccessedAt = Instant.parse(BASE_TIME),
         lastReauthenticatedAt = Instant.parse(BASE_TIME),
-        createdAt = Instant.parse(BASE_TIME),
-        updatedAt = null
+        createdAt = Instant.parse(BASE_TIME)
     )
 
     private companion object {

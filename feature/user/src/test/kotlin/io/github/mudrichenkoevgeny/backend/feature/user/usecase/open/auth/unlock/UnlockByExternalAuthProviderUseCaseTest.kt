@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.auth.model.ExternalAuthP
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
@@ -56,17 +56,9 @@ class UnlockByExternalAuthProviderUseCaseTest {
         userManager = userManager
     )
 
-    private fun createRequestContext() = RequestContext(
-        traceId = null,
-        userId = null,
-        userRole = null,
-        sessionId = null,
-        clientInfo = mockk(relaxed = true)
-    )
-
     @Test
     fun `successfully unlocks user account by external auth provider token`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val userId = UserId.generate()
         val lockoutPolicy = mockk<AccountLockoutPolicy> {
             every { isSelfServiceUnlockEnabled } returns true

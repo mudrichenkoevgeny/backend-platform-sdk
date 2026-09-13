@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -223,18 +224,13 @@ class UserManagerImplTest {
         uId: UserId,
         role: UserRole = UserRole.USER,
         status: UserAccountStatus = UserAccountStatus.ACTIVE
-    ) = UserDetails(
+    ) = createTestUserDetails(
         id = uId,
         role = role,
         accountStatus = status,
         accountStatusBeforeDeletion = status,
         authorityLevel = 1,
-        permissionCodes = emptySet(),
-        isTotpEnabled = false,
         lastLoginAt = Clock.System.now(),
-        lastActiveAt = Clock.System.now(),
-        createdAt = Clock.System.now(),
-        updatedAt = null,
-        scheduledPermanentDeletionAt = null
+        lastActiveAt = Clock.System.now()
     )
 }

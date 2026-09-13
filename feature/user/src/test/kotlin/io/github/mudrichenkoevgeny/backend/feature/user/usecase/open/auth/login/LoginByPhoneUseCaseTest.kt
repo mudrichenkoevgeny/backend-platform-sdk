@@ -8,12 +8,11 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
@@ -46,17 +45,9 @@ class LoginByPhoneUseCaseTest {
         authManager = authManager
     )
 
-    private fun createRequestContext() = RequestContext(
-        traceId = null,
-        userId = null,
-        userRole = null,
-        sessionId = null,
-        clientInfo = ClientInfo()
-    )
-
     @Test
     fun `successfully authenticates by phone and logs audit`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val userId = UserId.generate()
         val userDetails = mockk<UserDetails> {
             every { id } returns userId
@@ -104,7 +95,7 @@ class LoginByPhoneUseCaseTest {
 
     @Test
     fun `returns error when rate limit exceeded`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val error = UserError.InvalidCredentials()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
@@ -134,7 +125,7 @@ class LoginByPhoneUseCaseTest {
 
     @Test
     fun `returns error when OTP code is incorrect`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
@@ -159,7 +150,7 @@ class LoginByPhoneUseCaseTest {
 
     @Test
     fun `returns error when auth manager fails`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val authError = UserError.UserBlocked()
         val errorLogData = AuditErrorLogData(status = AuditStatus.DENIED, metadata = emptySet())
 

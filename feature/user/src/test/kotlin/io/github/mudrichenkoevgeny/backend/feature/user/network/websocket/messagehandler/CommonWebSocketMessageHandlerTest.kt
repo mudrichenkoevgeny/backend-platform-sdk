@@ -36,7 +36,8 @@ class CommonWebSocketMessageHandlerTest {
             id = Uuid.random().toHexDashString(),
             type = CommonWebSocketEventTypes.PING,
             timestamp = System.currentTimeMillis(),
-            payload = null
+            payload = null,
+            metadata = emptyMap()
         )
 
         val result = handler.handle(frame, dummyContext)
@@ -124,7 +125,8 @@ class CommonWebSocketMessageHandlerTest {
             id = Uuid.random().toHexDashString(),
             type = type,
             timestamp = System.currentTimeMillis(),
-            payload = payload
+            payload = payload,
+            metadata = emptyMap()
         )
 
     private fun runSuspend(block: suspend () -> Unit) {

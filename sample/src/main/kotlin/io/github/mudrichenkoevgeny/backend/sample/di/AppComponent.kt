@@ -10,7 +10,10 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.ini
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheckerManager
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import io.github.mudrichenkoevgeny.backend.core.database.di.DatabaseModules
+import io.github.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManager
+import io.github.mudrichenkoevgeny.backend.core.database.migrator.DatabaseMigrator
 import io.github.mudrichenkoevgeny.backend.core.events.di.EventsModules
 import io.github.mudrichenkoevgeny.backend.core.observability.di.ObservabilityModules
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
@@ -29,7 +32,6 @@ import io.github.mudrichenkoevgeny.backend.feature.securityapi.route.open.OpenSe
 import io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.management.ManagementGlobalSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.open.OpenGlobalSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.di.UserModules
-import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.BaseAuthenticatedWebSocketRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.ManagementWebSocketRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.OpenWebSocketRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.ManagementCoreUserRouter
@@ -42,6 +44,7 @@ import io.github.mudrichenkoevgeny.backend.sample.appbootstrap.AppBootstrap
 import io.github.mudrichenkoevgeny.backend.sample.lifecycle.AppShutdownHook
 import kotlinx.coroutines.CoroutineScope
 import javax.inject.Singleton
+import javax.sql.DataSource
 
 /**
  * Dagger application component for the sample host app.
@@ -94,6 +97,12 @@ interface AppComponent {
     // observability
     fun telemetryProvider(): TelemetryProvider
     fun swaggerInitializer(): SwaggerInitializer
+
+    // database
+    fun databaseManager(): DatabaseManager
+    fun databaseMigrator(): DatabaseMigrator
+    fun databaseConfig(): DatabaseConfig
+    fun dataSource(): DataSource
 
     // audit
     fun managementAuditRouter(): ManagementAuditRouter

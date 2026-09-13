@@ -185,7 +185,7 @@ class OpenUnlockRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(result, appLogger, appErrorParser, successStatus = HttpStatusCode.OK)
     }
 
     private fun RouteConfig.sendUnlockPhoneConfirmationDocs(
@@ -253,7 +253,7 @@ class OpenUnlockRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(result, appLogger, appErrorParser, successStatus = HttpStatusCode.OK)
     }
 
     private fun RouteConfig.unlockByExternalProviderDocs(
@@ -293,7 +293,7 @@ class OpenUnlockRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(result, appLogger, appErrorParser, successStatus = HttpStatusCode.OK)
     }
 
     companion object {

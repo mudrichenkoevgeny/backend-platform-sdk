@@ -9,12 +9,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.auth.model.ExternalAuthP
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
@@ -51,14 +50,6 @@ class LoginByExternalAuthProviderUseCaseTest {
         authManager = authManager
     )
 
-    private fun createRequestContext() = RequestContext(
-        traceId = null,
-        userId = null,
-        userRole = null,
-        sessionId = null,
-        clientInfo = ClientInfo()
-    )
-
     private fun mockProviderSupport(provider: UserAuthProvider, supported: Boolean) {
         val externalProvider = mockk<ExternalAuthProvider> {
             every { userAuthProvider } returns provider
@@ -75,7 +66,7 @@ class LoginByExternalAuthProviderUseCaseTest {
 
     @Test
     fun `successfully authenticates via external provider and logs audit`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val userId = UserId.generate()
         val provider = UserAuthProvider.GOOGLE
         val userDetails = mockk<UserDetails> {
@@ -128,7 +119,7 @@ class LoginByExternalAuthProviderUseCaseTest {
 
     @Test
     fun `returns error when rate limit is exceeded`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val error = UserError.InvalidCredentials()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
@@ -151,7 +142,7 @@ class LoginByExternalAuthProviderUseCaseTest {
 
     @Test
     fun `returns error when provider is not supported in settings`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val provider = UserAuthProvider.APPLE
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
@@ -176,7 +167,7 @@ class LoginByExternalAuthProviderUseCaseTest {
 
     @Test
     fun `returns error when external verification fails`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val provider = UserAuthProvider.GOOGLE
         val authError = UserError.InvalidCredentials()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())

@@ -1,7 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.mask
 
-import io.github.mudrichenkoevgeny.backend.core.audit.RepositoryTestAuditAction
-import io.github.mudrichenkoevgeny.backend.core.audit.RepositoryTestAuditResource
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.action.RepositoryTestAuditAction
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEvent
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.resource.RepositoryTestAuditResource
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
@@ -12,7 +13,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import kotlin.time.Clock
 
 class AuditDataMaskerTest {
 
@@ -111,11 +111,10 @@ class AuditDataMaskerTest {
         assertEquals(emptySet<AuditEventMetadata>(), masked.metadata)
     }
 
-    private fun baseEvent(): AuditEvent = AuditEvent(
+    private fun baseEvent(): AuditEvent = createTestAuditEvent(
         actorType = AuditActorType.SYSTEM,
         action = RepositoryTestAuditAction("mask_test_action"),
         resource = RepositoryTestAuditResource("mask_test_resource"),
-        status = AuditStatus.SUCCESS,
-        createdAt = Clock.System.now()
+        status = AuditStatus.SUCCESS
     )
 }

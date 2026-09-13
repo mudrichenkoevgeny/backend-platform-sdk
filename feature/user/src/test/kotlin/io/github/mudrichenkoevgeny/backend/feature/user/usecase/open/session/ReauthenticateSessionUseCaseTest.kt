@@ -12,11 +12,10 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChalleng
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -49,14 +48,6 @@ class ReauthenticateSessionUseCaseTest {
         totpManager = totpManager
     )
 
-    private fun createAuthContext(userId: UserId = UserId.generate(), sessionId: UserSessionId = UserSessionId.generate()) = AuthenticatedRequestContext(
-        traceId = null,
-        userId = userId,
-        userRole = UserRole.USER,
-        sessionId = sessionId,
-        clientInfo = ClientInfo()
-    )
-
     private val mfaToken = "mfa-token"
     private val totpCode = "123456"
 
@@ -64,7 +55,7 @@ class ReauthenticateSessionUseCaseTest {
     fun `successfully reauthenticates session`() = runTest {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
-        val context = createAuthContext(userId, sessionId)
+        val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
 
         val mfaChallengeData = MfaChallengeData(
             token = mfaToken,
@@ -103,7 +94,7 @@ class ReauthenticateSessionUseCaseTest {
     fun `returns error when rate limit exceeded`() = runTest {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
-        val context = createAuthContext(userId, sessionId)
+        val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
         val error = mockk<AppError>()
 
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
@@ -130,7 +121,7 @@ class ReauthenticateSessionUseCaseTest {
     fun `returns error when mfa challenge is for different user`() = runTest {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
-        val context = createAuthContext(userId, sessionId)
+        val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
 
         val wrongMfaChallengeData = MfaChallengeData(
             token = mfaToken,
@@ -167,7 +158,7 @@ class ReauthenticateSessionUseCaseTest {
     fun `returns error when totp verification fails`() = runTest {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
-        val context = createAuthContext(userId, sessionId)
+        val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
 
         val mfaChallengeData = MfaChallengeData(
             token = mfaToken,
@@ -206,7 +197,7 @@ class ReauthenticateSessionUseCaseTest {
     fun `returns error when session update fails`() = runTest {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
-        val context = createAuthContext(userId, sessionId)
+        val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
 
         val mfaChallengeData = MfaChallengeData(
             token = mfaToken,

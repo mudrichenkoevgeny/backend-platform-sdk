@@ -7,8 +7,10 @@ import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.Tot
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usertotpsettings.UserTotpSettingsRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.model.totp.UserTotpSettings
+import io.github.mudrichenkoevgeny.backend.feature.user.model.totp.createTestUserTotpSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
@@ -168,22 +170,17 @@ class TotpManagerImplTest {
         assertTrue(result is AppResult.Success)
     }
 
-    private fun createSampleSettings(uId: UserId, isConfirmed: Boolean) = UserTotpSettings(
+    private fun createSampleSettings(uId: UserId, isConfirmed: Boolean) = createTestUserTotpSettings(
         userId = uId,
         encryptedSecret = EncryptedString("secret"),
-        isConfirmed = isConfirmed,
-        encryptedRecoveryCodes = null,
-        lastUsedAt = null
+        isConfirmed = isConfirmed
     )
 
-    private fun createSampleUserDetails(uId: UserId) = UserDetails(
+    private fun createSampleUserDetails(uId: UserId) = createTestUserDetails(
         id = uId,
         role = UserRole.USER,
         accountStatus = UserAccountStatus.ACTIVE,
-        accountStatusBeforeDeletion = null,
         authorityLevel = 1,
-        permissionCodes = emptySet(),
-        isTotpEnabled = true,
-        createdAt = Clock.System.now()
+        isTotpEnabled = true
     )
 }

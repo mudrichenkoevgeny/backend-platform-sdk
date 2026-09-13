@@ -10,12 +10,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
@@ -59,21 +58,13 @@ class ManagementDeleteIdentifierUseCaseTest {
         authenticationChallengeService = authenticationChallengeService
     )
 
-    private fun createAuthContext(managerId: UserId) = AuthenticatedRequestContext(
-        traceId = null,
-        userId = managerId,
-        userRole = UserRole.ADMIN,
-        sessionId = UserSessionId.generate(),
-        clientInfo = ClientInfo()
-    )
-
     @Test
     fun `successfully deletes identifier and notifies associated sessions`() = runTest {
         val managerId = UserId.generate()
         val targetUserId = UserId.generate()
         val targetIdentifierId = UserIdentifierId.generate()
         val targetSessionId = UserSessionId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
 
         val managerDetails = mockk<UserDetails> {
             every { id } returns managerId
@@ -133,7 +124,7 @@ class ManagementDeleteIdentifierUseCaseTest {
     fun `returns error when attempting to delete self identifier`() = runTest {
         val managerId = UserId.generate()
         val targetIdentifierId = UserIdentifierId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
 
         val managerDetails = mockk<UserDetails> {
             every { id } returns managerId
@@ -160,7 +151,7 @@ class ManagementDeleteIdentifierUseCaseTest {
         val managerId = UserId.generate()
         val targetUserId = UserId.generate()
         val targetIdentifierId = UserIdentifierId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
 
         val managerDetails = mockk<UserDetails> {
             every { id } returns managerId
@@ -194,7 +185,7 @@ class ManagementDeleteIdentifierUseCaseTest {
         val managerId = UserId.generate()
         val targetUserId = UserId.generate()
         val targetIdentifierId = UserIdentifierId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
 
         val managerDetails = mockk<UserDetails> {
             every { id } returns managerId
@@ -233,7 +224,7 @@ class ManagementDeleteIdentifierUseCaseTest {
     fun `returns error when rate limit is exceeded`() = runTest {
         val managerId = UserId.generate()
         val targetIdentifierId = UserIdentifierId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
         val limitError = mockk<AppError>()
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(limitError)

@@ -1,12 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.logger
 
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.action.TestAuditAction
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.resource.TestAuditResource
 import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CommonAuditMetadataKey
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.mockk.mockk
 import io.mockk.slot
@@ -60,24 +60,4 @@ class AuditLoggerImplTest {
         const val ROLE = "user"
         const val MESSAGE = "msg"
     }
-}
-
-private data class TestAuditAction(
-    override val serialName: String
-) : AuditActionType {
-    override fun parseOrNull(value: String): AuditActionType? =
-        if (value == serialName) this else null
-
-    override fun parseOrThrow(value: String): AuditActionType =
-        parseOrNull(value) ?: throw IllegalArgumentException("Invalid audit action: '$value'")
-}
-
-private data class TestAuditResource(
-    override val serialName: String
-) : AuditResourceType {
-    override fun parseOrNull(value: String): AuditResourceType? =
-        if (value == serialName) this else null
-
-    override fun parseOrThrow(value: String): AuditResourceType =
-        parseOrNull(value) ?: throw IllegalArgumentException("Invalid audit resource: '$value'")
 }

@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.open
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.settings.config.model.createTestOpenGlobalSettings
 import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.open.globalsettings.GetOpenGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
@@ -31,12 +32,10 @@ class OpenGlobalSettingsRouterTest : BaseRouterTest() {
         clearMocks(getOpenGlobalSettingsUseCase)
     }
 
-    private fun sampleSettings() = OpenGlobalSettings(
+    private fun sampleSettings() = createTestOpenGlobalSettings(
         privacyPolicyUrl = "https://example.com/privacy",
         termsOfServiceUrl = "https://example.com/terms",
-        contactSupportEmail = "support@example.com",
-        maintenanceUntilEpochMillis = null,
-        minSupportedAppVersions = emptyMap()
+        contactSupportEmail = "support@example.com"
     )
 
     @Test

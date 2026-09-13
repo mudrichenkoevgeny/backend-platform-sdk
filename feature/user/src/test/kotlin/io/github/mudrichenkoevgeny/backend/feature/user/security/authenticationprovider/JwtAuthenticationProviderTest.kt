@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorPars
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -162,19 +163,16 @@ class JwtAuthenticationProviderTest {
         permissions: Set<PermissionCode> = emptySet()
     ): UserDetails {
         val now = Clock.System.now()
-        return UserDetails(
+        return createTestUserDetails(
             id = userId,
             role = role,
             accountStatus = status,
-            accountStatusBeforeDeletion = null,
             authorityLevel = 1,
             permissionCodes = permissions,
-            isTotpEnabled = false,
             lastLoginAt = now,
             lastActiveAt = now,
             createdAt = now,
-            updatedAt = now,
-            scheduledPermanentDeletionAt = null
+            updatedAt = now
         )
     }
 }

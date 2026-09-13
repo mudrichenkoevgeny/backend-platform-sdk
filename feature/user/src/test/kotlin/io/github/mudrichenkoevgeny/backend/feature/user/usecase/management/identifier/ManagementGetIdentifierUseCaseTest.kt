@@ -5,14 +5,11 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
@@ -34,18 +31,10 @@ class ManagementGetIdentifierUseCaseTest {
         identifierManager = identifierManager
     )
 
-    private fun createAuthContext(userId: UserId = UserId.generate()) = AuthenticatedRequestContext(
-        traceId = null,
-        userId = userId,
-        userRole = UserRole.ADMIN,
-        sessionId = UserSessionId.generate(),
-        clientInfo = ClientInfo()
-    )
-
     @Test
     fun `successfully retrieves identifier for management`() = runTest {
         val managerId = UserId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
         val targetIdentifierId = UserIdentifierId.generate()
         val permissions = setOf(PermissionCode("management.view"))
 
@@ -73,7 +62,7 @@ class ManagementGetIdentifierUseCaseTest {
     @Test
     fun `returns error when management user status is illegal`() = runTest {
         val managerId = UserId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
         val targetIdentifierId = UserIdentifierId.generate()
 
         val managerDetails = mockk<UserDetails> {
@@ -91,7 +80,7 @@ class ManagementGetIdentifierUseCaseTest {
     @Test
     fun `returns error when management user not found`() = runTest {
         val managerId = UserId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
         val targetIdentifierId = UserIdentifierId.generate()
 
         coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(null)
@@ -104,7 +93,7 @@ class ManagementGetIdentifierUseCaseTest {
     @Test
     fun `returns error when identifier is missing`() = runTest {
         val managerId = UserId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
         val targetIdentifierId = UserIdentifierId.generate()
         val permissions = setOf(PermissionCode("management.view"))
 

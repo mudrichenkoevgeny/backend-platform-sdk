@@ -6,6 +6,8 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChalleng
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.client.createTestClientInfo
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
@@ -104,15 +106,12 @@ class AuthenticationChallengeServiceImplTest {
         assertEquals(expectedError, (result as AppResult.Error).error)
     }
 
-    private fun createUserDetails(role: UserRole, id: UserId = UserId.generate()) = UserDetails(
+    private fun createUserDetails(role: UserRole, id: UserId = UserId.generate()) = createTestUserDetails(
         id = id,
         role = role,
         accountStatus = UserAccountStatus.ACTIVE,
-        accountStatusBeforeDeletion = null,
         authorityLevel = 1,
-        permissionCodes = emptySet(),
-        isTotpEnabled = true,
-        createdAt = Clock.System.now()
+        isTotpEnabled = true
     )
 
     private fun createUserSession(
@@ -128,7 +127,7 @@ class AuthenticationChallengeServiceImplTest {
         identifierId = identifierId,
         identifierAuthProvider = UserAuthProvider.EMAIL,
         refreshTokenHash = RefreshTokenHash("hash"),
-        deviceInfo = ClientDeviceInfo(),
+        deviceInfo = createTestClientInfo().deviceInfo,
         userAgent = null,
         ipAddress = null,
         expiresAt = Clock.System.now() + 1.hours,

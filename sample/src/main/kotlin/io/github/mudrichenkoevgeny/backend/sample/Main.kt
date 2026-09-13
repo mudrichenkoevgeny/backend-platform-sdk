@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathR
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorParserConfig
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorParserConfigHolder
 import io.github.mudrichenkoevgeny.backend.core.common.server.KtorServer
+import io.github.mudrichenkoevgeny.backend.core.database.cli.DatabaseCliArgs
 import io.github.mudrichenkoevgeny.backend.sample.appbootstrap.AppBootstrap
 import io.github.mudrichenkoevgeny.backend.sample.di.AppComponent
 import io.github.mudrichenkoevgeny.backend.sample.di.DaggerAppComponent
@@ -13,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import java.util.TimeZone
+import kotlin.system.exitProcess
 
 /**
  * Sample application entry point.
@@ -24,11 +26,12 @@ import java.util.TimeZone
  * - set UTC as a default timezone
  * - configure global holders ([PathResolverConfigHolder], [AppErrorParserConfigHolder])
  * - build the Dagger [AppComponent]
+ * - if [DatabaseCliArgs.MIGRATE_ONLY] is passed in args, run Flyway migrations and exit
  * - run [AppBootstrap]
  * - start [KtorServer] with [module]
  * - register graceful shutdown via [AppShutdownHook]
  */
-fun main() {
+fun main(args: Array<String>) {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
 
     PathResolverConfigHolder.set(PathResolverConfig())
@@ -39,6 +42,14 @@ fun main() {
     val appComponent = DaggerAppComponent.factory().create(
         backgroundScope = backgroundScope
     )
+
+    if (DatabaseCliArgs.MIGRATE_ONLY in args) {
+        appComponent.databaseMigrator().migrate(
+            dataSource = appComponent.dataSource(),
+            resources = appComponent.databaseConfig().migrationPaths
+        )
+        exitProcess(0)
+    }
 
     appComponent.appBootstrap().initialize()
 

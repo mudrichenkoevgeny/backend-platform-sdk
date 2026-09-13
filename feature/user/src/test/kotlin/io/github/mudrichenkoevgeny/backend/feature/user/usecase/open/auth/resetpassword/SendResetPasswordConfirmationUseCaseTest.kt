@@ -7,11 +7,10 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirma
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
@@ -37,17 +36,9 @@ class SendResetPasswordConfirmationUseCaseTest {
         emailService = emailService
     )
 
-    private fun createRequestContext() = RequestContext(
-        traceId = null,
-        userId = null,
-        userRole = null,
-        sessionId = null,
-        clientInfo = ClientInfo()
-    )
-
     @Test
     fun `successfully sends real email when user exists`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val otpConfirmation = mockk<OtpConfirmation>()
         val otpData = OtpConfirmationData(
             code = TEST_CODE,
@@ -79,7 +70,7 @@ class SendResetPasswordConfirmationUseCaseTest {
 
     @Test
     fun `successfully sends fake email when user does not exist`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val otpConfirmation = mockk<OtpConfirmation>()
         val otpData = OtpConfirmationData(
             code = TEST_CODE,
@@ -106,7 +97,7 @@ class SendResetPasswordConfirmationUseCaseTest {
 
     @Test
     fun `returns error when rate limit exceeded`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val error = UserError.InvalidCredentials()
 
         coEvery {
@@ -122,7 +113,7 @@ class SendResetPasswordConfirmationUseCaseTest {
 
     @Test
     fun `returns error when email service fails on real send`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val otpData = OtpConfirmationData(
             code = TEST_CODE,
             otpConfirmation = mockk()

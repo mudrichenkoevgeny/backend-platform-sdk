@@ -13,7 +13,7 @@ import javax.sql.DataSource
  * Default [DatabaseManager] implementation.
  *
  * Connects via [Database.connect] on the injected [DataSource], runs [DatabaseMigrator.migrate] with
- * [DatabaseConfig.migrationPaths], then returns the Exposed [Database]. On failure logs via [AppLogger] and rethrows.
+ * [DatabaseConfig.migrationPaths] if [DatabaseConfig.isMigrationEnabled] is true, then returns the Exposed [Database]. On failure logs via [AppLogger] and rethrows.
  * [shutdown] closes the DataSource if it is [AutoCloseable].
  */
 @Singleton
@@ -28,7 +28,9 @@ class DatabaseManagerImpl @Inject constructor(
         return try {
             val database = Database.connect(dataSource)
 
-            databaseMigrator.migrate(dataSource, databaseConfig.migrationPaths)
+            if (databaseConfig.isMigrationEnabled) {
+                databaseMigrator.migrate(dataSource, databaseConfig.migrationPaths)
+            }
 
             database
         } catch (t: Throwable) {

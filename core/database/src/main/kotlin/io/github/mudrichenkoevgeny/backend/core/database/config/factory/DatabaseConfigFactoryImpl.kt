@@ -31,6 +31,10 @@ class DatabaseConfigFactoryImpl @Inject constructor(
             ?.split(",")
             ?: DatabaseConfig.defaultMigrationPaths
 
+        val isMigrationEnabled = envReader.getByKeyOrNull(DatabaseEnvKeys.DB_MIGRATE_ON_STARTUP)
+            ?.toBoolean()
+            ?: true
+
         val redisUrl = envReader.readSecret(redisUrlFile)
         val redisTimeoutSeconds = envReader.getByKey(DatabaseEnvKeys.REDIS_TIMEOUT_SECONDS).toLong()
 
@@ -39,6 +43,7 @@ class DatabaseConfigFactoryImpl @Inject constructor(
             dbUser = dbUser,
             dbPassword = dbPassword,
             migrationPaths = migrationPaths,
+            isMigrationEnabled = isMigrationEnabled,
             redisUrl = redisUrl,
             redisTimeoutSeconds = redisTimeoutSeconds
         )

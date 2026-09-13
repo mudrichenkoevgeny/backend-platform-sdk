@@ -3,12 +3,9 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -24,14 +21,8 @@ class GetUserUseCaseTest {
         userManager = userManager
     )
 
-    private val userId = UserId.generate()
-    private val context = AuthenticatedRequestContext(
-        traceId = null,
-        userId = userId,
-        userRole = UserRole.USER,
-        sessionId = UserSessionId.generate(),
-        clientInfo = ClientInfo()
-    )
+    private val context = createTestAuthenticatedRequestContext(userRole = UserRole.USER)
+    private val userId = context.userId
 
     @Test
     fun `successfully returns user details`() = runTest {

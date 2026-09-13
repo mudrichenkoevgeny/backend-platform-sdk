@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.use
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserIdentifiersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
@@ -184,15 +185,12 @@ class UserIdentifierRepositoryImplTest {
         userId: UserId,
         value: String = "test@example.com",
         provider: UserAuthProvider = UserAuthProvider.EMAIL
-    ) = UserIdentifierInternal(
-        id = UserIdentifierId.generate(),
+    ) = createTestUserIdentifierInternal(
         userId = userId,
         userAuthProvider = provider,
         identifier = value,
-        externalProviderEmail = null,
         passwordHash = PasswordHash("hash"),
-        createdAt = Instant.parse(CREATED_AT),
-        updatedAt = null
+        createdAt = Instant.parse(CREATED_AT)
     )
 
     private companion object {

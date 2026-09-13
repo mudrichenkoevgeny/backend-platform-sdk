@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.common.error.parser
 
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorParserConfig
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
@@ -10,18 +11,27 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 /**
- * Tests for [AppErrorParserImpl] using test resources under `localization/en` and `localization/ru`.
- * Expected messages are loaded from the same JSON files the parser uses, so no message strings are hardcoded.
+ * Unit tests for [CommonErrorParser].
+ *
+ * Verifies error message loading from JSON localization files (`localization/en` and `localization/ru`).
+ * Ensures template placeholders are substituted correctly with provided arguments.
+ * Validates locale normalization and fallback behavior.
+ * Confirms default responses when codes or resources are missing.
+ *
+ * Expected messages are dynamically loaded from JSON files rather than hardcoded in assertions.
  */
 class CommonErrorParserTest {
 
     private val parser = CommonErrorParser(
         AppErrorParserConfig(
             resourcePaths = listOf(LOCALIZATION_RESOURCE_PATH),
-            supportedLocales = setOf(LOCALE_EN, LOCALE_RU)
+            supportedLocales = setOf(LOCALE_EN, LOCALE_RU),
         )
     )
 
+    /**
+     * Verifies that [CommonErrorParser.getApiErrorResponse] resolves the English message for a known error code without arguments.
+     */
     @Test
     fun `getApiErrorResponse by code returns English message when no args`() {
         val errorId = ErrorId.generate()
@@ -37,6 +47,9 @@ class CommonErrorParserTest {
         assertEquals(emptyMap<String, String>(), response.args)
     }
 
+    /**
+     * Verifies that [CommonErrorParser.getApiErrorResponse] resolves the Russian localized message when requested.
+     */
     @Test
     fun `getApiErrorResponse by code returns Russian message when no args`() {
         val response = parser.getApiErrorResponse(
@@ -48,6 +61,9 @@ class CommonErrorParserTest {
         assertEquals(messagesRu[CommonErrorCodes.UNKNOWN], response.message)
     }
 
+    /**
+     * Verifies that placeholders (e.g. `{fieldName}`) in English message templates are substituted with provided arguments.
+     */
     @Test
     fun `getApiErrorResponse replaces placeholder with arg value`() {
         val template = messagesEn[CommonErrorCodes.MISSING_REQUIRED_FIELD]!!
@@ -62,6 +78,9 @@ class CommonErrorParserTest {
         assertEquals(mapOf(CommonErrorArgs.FIELD_NAME to TEST_FIELD_VALUE), response.args)
     }
 
+    /**
+     * Verifies that placeholders in Russian message templates are substituted with provided arguments.
+     */
     @Test
     fun `getApiErrorResponse replaces placeholder for Russian locale`() {
         val template = messagesRu[CommonErrorCodes.MISSING_REQUIRED_FIELD]!!
@@ -75,6 +94,9 @@ class CommonErrorParserTest {
         assertEquals(expectedMessage, response.message)
     }
 
+    /**
+     * Verifies that [CommonErrorParser.getApiErrorResponse] falls back to the default locale when an unsupported locale is requested.
+     */
     @Test
     fun `getApiErrorResponse falls back to default locale when requested locale missing`() {
         val response = parser.getApiErrorResponse(
@@ -86,6 +108,9 @@ class CommonErrorParserTest {
         assertEquals(messagesEn[CommonErrorCodes.UNKNOWN], response.message)
     }
 
+    /**
+     * Verifies that [CommonErrorParser.getApiErrorResponse] returns [UNKNOWN_ERROR_MESSAGE] when an error code is not present in localization files.
+     */
     @Test
     fun `getApiErrorResponse returns UNKNOWN_ERROR_MESSAGE when code not in localization`() {
         val response = parser.getApiErrorResponse(
@@ -97,6 +122,9 @@ class CommonErrorParserTest {
         assertEquals(UNKNOWN_ERROR_MESSAGE, response.message)
     }
 
+    /**
+     * Verifies that passing an [AppError] instance extracts its error ID, code, and public arguments to build the response message.
+     */
     @Test
     fun `getApiErrorResponse from AppError uses code publicArgs and errorId`() {
         val appError = CommonError.MissingRequiredField(TEST_FIELD_VALUE)
@@ -109,6 +137,9 @@ class CommonErrorParserTest {
         assertEquals(mapOf(CommonErrorArgs.FIELD_NAME to TEST_FIELD_VALUE), response.args)
     }
 
+    /**
+     * Verifies that an [AppError] without public arguments produces a static localized message with empty arguments in response.
+     */
     @Test
     fun `getApiErrorResponse from AppError without publicArgs returns static message`() {
         val appError = CommonError.Unknown()
@@ -119,6 +150,9 @@ class CommonErrorParserTest {
         assertEquals(emptyMap<String, String>(), response.args)
     }
 
+    /**
+     * Verifies that when localization resources fail to load, [CommonErrorParser] safely returns [UNKNOWN_ERROR_MESSAGE].
+     */
     @Test
     fun `when no resources loaded returns UNKNOWN_ERROR_MESSAGE`() {
         val emptyParser = CommonErrorParser(
@@ -136,6 +170,9 @@ class CommonErrorParserTest {
         assertEquals(UNKNOWN_ERROR_MESSAGE, response.message)
     }
 
+    /**
+     * Verifies that locale strings containing uppercase characters (e.g., `"EN"`) are normalized to lowercase (`"en"`).
+     */
     @Test
     fun `locale is normalized to lowercase`() {
         val response = parser.getApiErrorResponse(

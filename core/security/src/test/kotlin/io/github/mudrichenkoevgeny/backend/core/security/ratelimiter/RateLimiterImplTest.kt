@@ -4,7 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
-import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateLimitAction
+import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.TestRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.CommonErrorArgs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -64,14 +64,5 @@ class RateLimiterImplTest {
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error as CommonError.TooManyRequests
         assertEquals(action.windowSeconds, error.publicArgs?.get(CommonErrorArgs.RETRY_AFTER_SECONDS))
-    }
-
-    private enum class TestRateLimitAction(
-        override val id: String,
-        override val limit: Int,
-        override val windowSeconds: Int
-    ) : RateLimitAction {
-        LOGIN_ATTEMPT("login", limit = 5, windowSeconds = 60),
-        PASSWORD_CHANGE("password_change", limit = 3, windowSeconds = 300)
     }
 }

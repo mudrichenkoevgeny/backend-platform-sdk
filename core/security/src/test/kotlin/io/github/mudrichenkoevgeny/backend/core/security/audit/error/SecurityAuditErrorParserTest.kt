@@ -2,6 +2,8 @@ package io.github.mudrichenkoevgeny.backend.core.security.audit.error
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CommonAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.metadata.SecurityAuditMetadataDeniedReasonValues
@@ -113,8 +115,8 @@ class SecurityAuditErrorParserTest {
     }
 
     private fun assertMetadataContains(
-        metadata: Set<io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata>?,
-        key: io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditMetadataKey,
+        metadata: Set<AuditEventMetadata>?,
+        key: AuditMetadataKey,
         value: String
     ) {
         val entry = metadata?.find { it.key == key }

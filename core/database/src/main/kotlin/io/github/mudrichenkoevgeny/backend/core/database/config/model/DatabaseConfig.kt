@@ -7,6 +7,7 @@ package io.github.mudrichenkoevgeny.backend.core.database.config.model
  * @param dbUser Database username.
  * @param dbPassword Database password.
  * @param migrationPaths Classpath locations for Flyway migrations (e.g. `classpath:db/migration`). Defaults to [defaultMigrationPaths] in companion.
+ * @param isMigrationEnabled Flag indicating whether database migrations should run automatically during startup.
  * @param redisUrl Redis connection URL.
  * @param redisTimeoutSeconds Redis connection timeout in seconds.
  */
@@ -15,6 +16,7 @@ data class DatabaseConfig(
     val dbUser: String,
     val dbPassword: String,
     val migrationPaths: List<String> = defaultMigrationPaths,
+    val isMigrationEnabled: Boolean = true,
     val redisUrl: String,
     val redisTimeoutSeconds: Long
 ) {

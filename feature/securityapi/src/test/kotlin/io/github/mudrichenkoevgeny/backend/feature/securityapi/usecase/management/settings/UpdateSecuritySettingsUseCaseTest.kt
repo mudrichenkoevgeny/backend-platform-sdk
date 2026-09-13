@@ -6,23 +6,17 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
-import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
+import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestManagementSecuritySettings
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.ManagementSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.OpenSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.contract.SecurityWebSocketEventTypes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.domain.audit.action.SecurityAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.domain.audit.resource.SecurityAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -47,51 +41,11 @@ class UpdateSecuritySettingsUseCaseTest {
         webSocketManager
     )
 
-    private fun sampleSettings() = ManagementSecuritySettings(
-        recentAuthenticationValiditySecondsForOpenUser = 300,
-        recentAuthenticationValiditySecondsForManagementUser = 60,
-        passwordPolicy = ManagementPasswordPolicy(
-            minLength = 10,
-            requireLetter = true,
-            requireUpperCase = true,
-            requireLowerCase = true,
-            requireDigit = true,
-            requireSpecialChar = true,
-            commonPasswords = emptySet()
-        ),
-        otpConfirmation = OtpConfirmation(
-            retryAfterSeconds = 60,
-            numberOfSymbols = 6,
-            expirationSeconds = 300
-        ),
-        accountLockoutPolicy = SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY,
-        openIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
-        managementIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
-        mfaTokenExpirationSeconds = 600,
-        maxRequestsPerPeriod = 100,
-        rateLimitPeriodSeconds = 60
-    )
-
-    private fun authContext(userId: UserId) = AuthenticatedRequestContext(
-        traceId = null,
-        userId = userId,
-        userRole = UserRole.ADMIN,
-        sessionId = UserSessionId.generate(),
-        clientInfo = ClientInfo(
-            deviceInfo = ClientDeviceInfo(null, null, null, null, null, null),
-            userAgent = "test-agent",
-            ipAddress = "127.0.0.1",
-            host = null,
-            origin = null,
-            apiVersion = null
-        )
-    )
-
     @Test
     fun `successfully updates settings, logs audit and broadcasts via websocket`() = runTest {
-        val settings = sampleSettings()
+        val settings = createTestManagementSecuritySettings()
         val userId = UserId.generate()
-        val context = authContext(userId)
+        val context = createTestAuthenticatedRequestContext(userId = userId)
         val openSecuritySettings = mockk<OpenSecuritySettings>(relaxed = true)
 
         coEvery { securitySettingsProvider.updateManagementSecuritySettings(settings) } returns AppResult.Success(Unit)
@@ -130,11 +84,10 @@ class UpdateSecuritySettingsUseCaseTest {
 
     @Test
     fun `handles error, logs failure audit and does not broadcast`() = runTest {
-        val settings = sampleSettings()
+        val settings = createTestManagementSecuritySettings()
         val userId = UserId.generate()
-        val context = authContext(userId)
-        val exception = RuntimeException("Update failed")
-        val error = CommonError.Internal(exception)
+        val context = createTestAuthenticatedRequestContext(userId = userId)
+        val error = CommonError.Internal(RuntimeException("Database error"))
         val errorLogData = AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         coEvery { securitySettingsProvider.updateManagementSecuritySettings(settings) } returns AppResult.Error(error)

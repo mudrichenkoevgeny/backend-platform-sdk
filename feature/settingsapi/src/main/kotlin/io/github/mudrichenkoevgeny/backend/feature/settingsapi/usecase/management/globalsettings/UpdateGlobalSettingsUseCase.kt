@@ -100,7 +100,8 @@ class UpdateGlobalSettingsUseCase @Inject constructor(
                 payload = FoundationJson.encodeToJsonElement(
                     OpenGlobalSettingsPayload.serializer(),
                     openGlobalSettingsPayload
-                )
+                ),
+                metadata = emptyMap()
             )
         )
 
@@ -114,7 +115,8 @@ class UpdateGlobalSettingsUseCase @Inject constructor(
                 payload = FoundationJson.encodeToJsonElement(
                     ManagementGlobalSettingsPayload.serializer(),
                     managementGlobalSettingsPayload
-                )
+                ),
+                metadata = emptyMap()
             )
         )
 

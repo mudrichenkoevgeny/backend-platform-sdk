@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.java.library)
+    `java-test-fixtures`
 }
 
 dependencies {
@@ -59,6 +60,7 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.ktor.server.test.host)
+    testFixturesApi(libs.mockk)
     compileOnly(libs.h2database)
 }
 

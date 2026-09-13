@@ -1,17 +1,17 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.database.repository
 
-import io.github.mudrichenkoevgeny.backend.core.audit.compositeAuditActionTypeParserForRepositoryTests
-import io.github.mudrichenkoevgeny.backend.core.audit.compositeAuditResourceTypeParserForRepositoryTests
 import io.github.mudrichenkoevgeny.backend.core.audit.database.table.AuditEventsTable
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditAccessFilter
-import io.github.mudrichenkoevgeny.backend.core.audit.RepositoryTestAuditAction
-import io.github.mudrichenkoevgeny.backend.core.audit.RepositoryTestAuditResource
-import io.github.mudrichenkoevgeny.backend.core.audit.compositeAuditMetadataKeyParserForRepositoryTests
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.action.RepositoryTestAuditAction
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEvent
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.resource.RepositoryTestAuditResource
+import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditActionTypeParserForRepositoryTests
+import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditMetadataKeyParserForRepositoryTests
+import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditResourceTypeParserForRepositoryTests
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -27,7 +27,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.util.UUID
-import kotlin.time.Clock
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuditEventRepositoryImplTest {
@@ -52,12 +51,11 @@ class AuditEventRepositoryImplTest {
 
     @Test
     fun `createEvent persists and getEventById returns same event`() = runBlocking {
-        val event = AuditEvent(
+        val event = createTestAuditEvent(
             actorType = AuditActorType.SYSTEM,
             action = RepositoryTestAuditAction("login"),
             resource = RepositoryTestAuditResource("session"),
-            status = AuditStatus.SUCCESS,
-            createdAt = Clock.System.now()
+            status = AuditStatus.SUCCESS
         )
 
         suspendTransaction { repository.createEvent(event) }
@@ -83,12 +81,11 @@ class AuditEventRepositoryImplTest {
 
     @Test
     fun `getEventsList applies access filter for system actor`() = runBlocking {
-        val event = AuditEvent(
+        val event = createTestAuditEvent(
             actorType = AuditActorType.SYSTEM,
             action = RepositoryTestAuditAction("list_sys"),
             resource = RepositoryTestAuditResource("r"),
-            status = AuditStatus.SUCCESS,
-            createdAt = Clock.System.now()
+            status = AuditStatus.SUCCESS
         )
         suspendTransaction { repository.createEvent(event) }
 
@@ -108,12 +105,11 @@ class AuditEventRepositoryImplTest {
     fun `getEventsList returns no rows when access filter is empty`() = runBlocking {
         suspendTransaction {
             repository.createEvent(
-                AuditEvent(
+                createTestAuditEvent(
                     actorType = AuditActorType.SYSTEM,
                     action = RepositoryTestAuditAction("invisible"),
                     resource = RepositoryTestAuditResource("x"),
-                    status = AuditStatus.SUCCESS,
-                    createdAt = Clock.System.now()
+                    status = AuditStatus.SUCCESS
                 )
             )
         }
@@ -133,13 +129,12 @@ class AuditEventRepositoryImplTest {
     @Test
     fun `getEventsList filters by actorIds`() = runBlocking {
         val actorId = UUID.randomUUID().toString()
-        val event = AuditEvent(
+        val event = createTestAuditEvent(
             actorId = actorId,
             actorType = AuditActorType.SYSTEM,
             action = RepositoryTestAuditAction("by_actor"),
             resource = RepositoryTestAuditResource("res"),
-            status = AuditStatus.SUCCESS,
-            createdAt = Clock.System.now()
+            status = AuditStatus.SUCCESS
         )
         suspendTransaction { repository.createEvent(event) }
 
@@ -159,18 +154,14 @@ class AuditEventRepositoryImplTest {
     @Test
     fun `getEventsList filters by messages using ILIKE`() = runBlocking {
         val message = "Sensitive data leak"
-        val event = AuditEvent(
+        val event = createTestAuditEvent(
             actorId = null,
             actorType = AuditActorType.SYSTEM,
-            actorUserRole = null,
             action = RepositoryTestAuditAction("alert"),
             resource = RepositoryTestAuditResource("security"),
-            resourceId = null,
             resourceValueSensitivity = AuditValueSensitivity.NON_SENSITIVE,
             status = AuditStatus.FAILED,
-            metadata = emptySet(),
-            message = message,
-            createdAt = Clock.System.now()
+            message = message
         )
         suspendTransaction { repository.createEvent(event) }
 

@@ -7,7 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
@@ -40,17 +40,9 @@ class SendUnlockConfirmationToEmailUseCaseTest {
         emailService = emailService
     )
 
-    private fun createRequestContext() = RequestContext(
-        traceId = null,
-        userId = null,
-        userRole = null,
-        sessionId = null,
-        clientInfo = mockk(relaxed = true)
-    )
-
     @Test
     fun `successfully triggers unlock email flow when user exists`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val otpConfirmation = mockk<OtpConfirmation>()
         val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = otpConfirmation)
         val lockoutPolicy = mockk<AccountLockoutPolicy> {
@@ -72,7 +64,7 @@ class SendUnlockConfirmationToEmailUseCaseTest {
 
     @Test
     fun `sends unlock code when user is not found`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val otpConfirmation = mockk<OtpConfirmation>()
         val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = otpConfirmation)
         val lockoutPolicy = mockk<AccountLockoutPolicy> {
@@ -94,7 +86,7 @@ class SendUnlockConfirmationToEmailUseCaseTest {
 
     @Test
     fun `returns error when self service unlock is disabled`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val lockoutPolicy = mockk<AccountLockoutPolicy> {
             every { isSelfServiceUnlockEnabled } returns false
         }

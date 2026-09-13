@@ -5,8 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
@@ -14,8 +13,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
@@ -37,18 +34,10 @@ class ManagementGetIdentifiersUseCaseTest {
         identifierManager = identifierManager
     )
 
-    private fun createAuthContext(userId: UserId = UserId.generate()) = AuthenticatedRequestContext(
-        traceId = null,
-        userId = userId,
-        userRole = UserRole.ADMIN,
-        sessionId = UserSessionId.generate(),
-        clientInfo = ClientInfo()
-    )
-
     @Test
     fun `successfully retrieves paged identifiers`() = runTest {
         val managerId = UserId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
         val pageParams = PageParams(page = 1, size = 10)
         val permissions = setOf(PermissionCode("test.permission"))
 
@@ -88,7 +77,7 @@ class ManagementGetIdentifiersUseCaseTest {
     @Test
     fun `returns error when management user is not active`() = runTest {
         val managerId = UserId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
 
         val managerDetails = mockk<UserDetails> {
             every { accountStatus } returns UserAccountStatus.BANNED
@@ -113,7 +102,7 @@ class ManagementGetIdentifiersUseCaseTest {
     @Test
     fun `returns error when management user not found`() = runTest {
         val managerId = UserId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
 
         coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(null)
 
@@ -133,7 +122,7 @@ class ManagementGetIdentifiersUseCaseTest {
     @Test
     fun `passes all filters and sort options to identifier manager`() = runTest {
         val managerId = UserId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
         val filterUserIds = listOf(UserId.generate())
         val filterProviders = listOf(UserAuthProvider.EMAIL)
         val filterStrings = listOf("test")

@@ -7,6 +7,8 @@ import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.Password
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifier
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
@@ -160,25 +162,16 @@ class IdentifierManagerImplTest {
         assertEquals("user@test.com", data.items.first().identifier)
     }
 
-    private fun createSampleIdentifier(id: UserIdentifierId, uId: UserId, value: String = "test") = UserIdentifier(
+    private fun createSampleIdentifier(id: UserIdentifierId, uId: UserId, value: String = "test") = createTestUserIdentifier(
         id = id,
         userId = uId,
-        userAuthProvider = UserAuthProvider.EMAIL,
-        identifier = value,
-        externalProviderEmail = null,
-        isSensitiveValuesMasked = false,
-        createdAt = Clock.System.now(),
-        updatedAt = null
+        identifier = value
     )
 
-    private fun createSampleUserDetails(uId: UserId, role: UserRole) = UserDetails(
+    private fun createSampleUserDetails(uId: UserId, role: UserRole) = createTestUserDetails(
         id = uId,
         role = role,
         accountStatus = UserAccountStatus.ACTIVE,
-        accountStatusBeforeDeletion = null,
-        authorityLevel = 1,
-        permissionCodes = emptySet(),
-        isTotpEnabled = false,
-        createdAt = Clock.System.now()
+        authorityLevel = 1
     )
 }

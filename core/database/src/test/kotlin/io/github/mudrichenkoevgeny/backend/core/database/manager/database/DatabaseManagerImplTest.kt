@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.database.manager.database
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
+import io.github.mudrichenkoevgeny.backend.core.database.datasource.TestCloseableDataSource
 import io.github.mudrichenkoevgeny.backend.core.database.migrator.DatabaseMigrator
 import io.mockk.every
 import io.mockk.mockk
@@ -11,9 +12,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.io.PrintWriter
-import java.sql.Connection
-import java.util.logging.Logger
 import javax.sql.DataSource
 
 class DatabaseManagerImplTest {
@@ -93,22 +91,5 @@ class DatabaseManagerImplTest {
         manager.shutdown()
 
         assertTrue(dataSource.closeCalled)
-    }
-
-    private class TestCloseableDataSource : DataSource, AutoCloseable {
-        var closeCalled = false
-
-        override fun getConnection(): Connection = throw UnsupportedOperationException()
-        override fun getConnection(username: String?, password: String?): Connection = throw UnsupportedOperationException()
-        override fun getLogWriter(): PrintWriter = throw UnsupportedOperationException()
-        override fun setLogWriter(out: PrintWriter?) {}
-        override fun getLoginTimeout(): Int = 0
-        override fun setLoginTimeout(seconds: Int) {}
-        override fun getParentLogger(): Logger = throw UnsupportedOperationException()
-        override fun <T : Any> unwrap(iface: Class<T>): T = throw UnsupportedOperationException()
-        override fun isWrapperFor(iface: Class<*>): Boolean = false
-        override fun close() {
-            closeCalled = true
-        }
     }
 }

@@ -1,4 +1,45 @@
 services:
+  db-migrator:
+    build:
+      context: ../../
+      dockerfile: sample/deploy/docker/app/Dockerfile
+      args:
+        APP_PORT: ${KTOR_SERVER_PORT}
+        GRADLE_IMAGE: ${GRADLE_IMAGE}
+        JRE_IMAGE: ${JRE_IMAGE}
+    command: ["--migrate-only"]
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./env/.versions.env
+    environment:
+      INSTANCE_MODE: PUBLIC
+      APP_PORT: ${KTOR_SERVER_PORT}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+      OTEL_SERVICE_NAME: ${APP_NAME}-migrator
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+      SECRETS_DIR: /app/sample/deploy/secrets
+      DB_MIGRATE_ON_STARTUP: "true"
+    secrets:
+      - DB_USER
+      - DB_PASSWORD
+      - REDIS_URL
+      - JWT_SECRET
+      - TOTP_ENCRYPTION_SECRET
+      - ADMIN_ACCOUNTS_JSON
+      - UNIONE_API_KEY
+      - RESEND_API_KEY
+      - S3_ACCESS_KEY
+      - S3_SECRET_KEY
+    volumes:
+      - ${LOG_PATH}:/app/logs
+      - ./secrets:/app/sample/deploy/secrets
+      - gradle_cache:/root/.gradle
+    networks:
+      - app-network
+
   app-public:
     build:
       context: ../../
@@ -12,6 +53,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      db-migrator:
+        condition: service_completed_successfully
       minio:
         condition: service_healthy
       otel-collector:
@@ -26,6 +69,7 @@ services:
       OTEL_SERVICE_NAME: ${APP_NAME}-public
       KAFKA_BOOTSTRAP_SERVERS: kafka:9094
       SECRETS_DIR: /app/sample/deploy/secrets
+      DB_MIGRATE_ON_STARTUP: "false"
     secrets:
       - DB_USER
       - DB_PASSWORD
@@ -57,6 +101,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      db-migrator:
+        condition: service_completed_successfully
       minio:
         condition: service_healthy
       otel-collector:
@@ -71,6 +117,7 @@ services:
       OTEL_SERVICE_NAME: ${APP_NAME}-admin
       KAFKA_BOOTSTRAP_SERVERS: kafka:9094
       SECRETS_DIR: /app/sample/deploy/secrets
+      DB_MIGRATE_ON_STARTUP: "false"
     secrets:
       - DB_USER
       - DB_PASSWORD
@@ -203,7 +250,7 @@ services:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@localhost:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://9094'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://${KAFKA_HOST:-localhost}:9092,EXTERNAL://kafka:9094'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'

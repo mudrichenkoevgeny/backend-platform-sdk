@@ -6,20 +6,18 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
+import io.github.mudrichenkoevgeny.backend.core.settings.config.model.createTestManagementGlobalSettings
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.ManagementGlobalSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.OpenGlobalSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.contract.SettingsWebSocketEventTypes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.domain.audit.action.SettingsAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.domain.audit.resource.SettingsAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -44,37 +42,17 @@ class UpdateGlobalSettingsUseCaseTest {
         webSocketManager
     )
 
-    private fun sampleSettings() = ManagementGlobalSettings(
+    private fun sampleSettings() = createTestManagementGlobalSettings(
         privacyPolicyUrl = "https://example.com/privacy",
         termsOfServiceUrl = "https://example.com/terms",
-        contactSupportEmail = "support@example.com",
-        maintenanceUntilEpochMillis = null,
-        minSupportedAppVersions = emptyMap(),
-        isTracingEnabled = false,
-        isMetricsEnabled = false,
-        isVerboseLoggingEnabled = false
-    )
-
-    private fun authContext(userId: UserId) = AuthenticatedRequestContext(
-        traceId = null,
-        userId = userId,
-        userRole = UserRole.ADMIN,
-        sessionId = UserSessionId.generate(),
-        clientInfo = ClientInfo(
-            deviceInfo = ClientDeviceInfo(null, null, null, null, null, null),
-            userAgent = "test-agent",
-            ipAddress = "127.0.0.1",
-            host = null,
-            origin = null,
-            apiVersion = null
-        )
+        contactSupportEmail = "support@example.com"
     )
 
     @Test
     fun `successfully updates settings, logs audit and broadcasts via websocket`() = runTest {
         val settings = sampleSettings()
         val userId = UserId.generate()
-        val context = authContext(userId)
+        val context = createTestAuthenticatedRequestContext(userId = userId)
         val openGlobalSettings = mockk<OpenGlobalSettings>(relaxed = true)
 
         coEvery { globalSettingsProvider.updateManagementGlobalSettings(settings) } returns AppResult.Success(Unit)
@@ -115,7 +93,7 @@ class UpdateGlobalSettingsUseCaseTest {
     fun `handles error, logs failure audit and does not broadcast`() = runTest {
         val settings = sampleSettings()
         val userId = UserId.generate()
-        val context = authContext(userId)
+        val context = createTestAuthenticatedRequestContext(userId = userId)
         val error = CommonError.Internal(RuntimeException("Database error"))
         val errorLogData = AuditErrorLogData(AuditStatus.FAILED, emptySet())
 

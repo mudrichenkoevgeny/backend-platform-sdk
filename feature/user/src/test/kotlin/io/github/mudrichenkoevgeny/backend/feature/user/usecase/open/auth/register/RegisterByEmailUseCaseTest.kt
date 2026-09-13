@@ -9,12 +9,12 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
@@ -27,7 +27,6 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -52,17 +51,9 @@ class RegisterByEmailUseCaseTest {
         validatePasswordUseCase = validatePasswordUseCase
     )
 
-    private fun createRequestContext() = RequestContext(
-        traceId = null,
-        userId = null,
-        userRole = null,
-        sessionId = null,
-        clientInfo = ClientInfo()
-    )
-
     @Test
     fun `successfully registers user and logs audit`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val userId = UserId.generate()
         val userDetails = mockk<UserDetails> {
             every { id } returns userId
@@ -101,7 +92,7 @@ class RegisterByEmailUseCaseTest {
 
     @Test
     fun `returns error when registration is disabled`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         every { authSettingsProvider.getIsRegistrationEnabled() } returns false
@@ -116,7 +107,7 @@ class RegisterByEmailUseCaseTest {
 
     @Test
     fun `returns error when password policy validation fails`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val error = UserError.InvalidCredentials()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
@@ -142,7 +133,7 @@ class RegisterByEmailUseCaseTest {
 
     @Test
     fun `returns error when OTP code is incorrect`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         every { authSettingsProvider.getIsRegistrationEnabled() } returns true
@@ -168,7 +159,7 @@ class RegisterByEmailUseCaseTest {
 
     @Test
     fun `returns error when rate limit exceeded`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val error = UserError.InvalidCredentials()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 

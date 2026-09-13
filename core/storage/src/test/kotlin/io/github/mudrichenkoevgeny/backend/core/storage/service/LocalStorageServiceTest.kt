@@ -1,8 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.service
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
-import io.github.mudrichenkoevgeny.backend.core.storage.model.StorageType
+import io.github.mudrichenkoevgeny.backend.core.storage.config.model.createTestStorageConfig
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -15,7 +14,7 @@ class LocalStorageServiceTest {
 
     @Test
     fun `save writes file and returns key`(@TempDir root: Path) = runBlocking {
-        val config = storageConfig(root = root.toString())
+        val config = createTestStorageConfig(localStoragePath = root.toString())
         val service = LocalStorageService(config)
 
         val result = service.save(
@@ -33,7 +32,7 @@ class LocalStorageServiceTest {
 
     @Test
     fun `save with bucket creates subdirectory`(@TempDir root: Path) = runBlocking {
-        val config = storageConfig(root = root.toString())
+        val config = createTestStorageConfig(localStoragePath = root.toString())
         val service = LocalStorageService(config)
 
         val result = service.save(
@@ -50,7 +49,7 @@ class LocalStorageServiceTest {
 
     @Test
     fun `delete returns true when file existed`(@TempDir root: Path) = runBlocking {
-        val config = storageConfig(root = root.toString())
+        val config = createTestStorageConfig(localStoragePath = root.toString())
         val service = LocalStorageService(config)
         val file = root.resolve("to-delete.txt").toFile()
         file.writeText("x")
@@ -64,7 +63,7 @@ class LocalStorageServiceTest {
 
     @Test
     fun `delete returns false when file did not exist`(@TempDir root: Path) = runBlocking {
-        val config = storageConfig(root = root.toString())
+        val config = createTestStorageConfig(localStoragePath = root.toString())
         val service = LocalStorageService(config)
 
         val result = service.delete(key = "missing.txt", bucket = null)
@@ -75,7 +74,7 @@ class LocalStorageServiceTest {
 
     @Test
     fun `getUrl returns base URL plus key`() {
-        val config = storageConfig(s3PublicUrl = "https://cdn.example.com")
+        val config = createTestStorageConfig(s3PublicUrl = "https://cdn.example.com")
         val service = LocalStorageService(config)
 
         val result = service.getUrl(key = "path/to/file.png")
@@ -86,7 +85,7 @@ class LocalStorageServiceTest {
 
     @Test
     fun `getUrl strips trailing slash from base URL`() {
-        val config = storageConfig(s3PublicUrl = "https://cdn.example.com/")
+        val config = createTestStorageConfig(s3PublicUrl = "https://cdn.example.com/")
         val service = LocalStorageService(config)
 
         val result = service.getUrl(key = "file.txt")
@@ -94,19 +93,4 @@ class LocalStorageServiceTest {
         assertTrue(result is AppResult.Success)
         assertEquals("https://cdn.example.com/file.txt", (result as AppResult.Success).data)
     }
-
-    private fun storageConfig(
-        root: String = "/tmp/storage",
-        s3PublicUrl: String = "https://example.com/files"
-    ) = StorageConfig(
-        storageType = StorageType.LOCAL,
-        s3Endpoint = "",
-        s3Region = "",
-        s3AccessKey = "",
-        s3SecretKey = "",
-        s3BucketName = "",
-        s3PublicUrl = s3PublicUrl,
-        forcePathStyle = false,
-        localStoragePath = root
-    )
 }

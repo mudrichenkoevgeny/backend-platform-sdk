@@ -1,25 +1,18 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.error
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.createTestAppError
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.ktor.http.HttpStatusCode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AuditErrorConverterTest {
 
-    private val stubParser = object : AuditErrorParser {
-        override fun parse(error: AppError): AuditErrorLogData? {
-            return if (error.code == "special_error") {
-                AuditErrorLogData(AuditStatus.DENIED, emptySet())
-            } else null
-        }
-    }
+    private val stubParser = TestAuditErrorParser(
+        targetErrorCode = "special_error",
+        resultStatus = AuditStatus.DENIED
+    )
 
     private val commonParser = CommonAuditErrorParser()
     private val converter = AuditErrorConverter(
@@ -29,7 +22,7 @@ class AuditErrorConverterTest {
 
     @Test
     fun `convert uses specialized parser when match found`() {
-        val error = createTestError("special_error")
+        val error = createTestAppError(code = "special_error")
 
         val result = converter.convert(error)
 
@@ -44,14 +37,5 @@ class AuditErrorConverterTest {
 
         assertEquals(AuditStatus.FAILED, result.status)
         assertTrue(result.metadata.any { it.value == error.code })
-    }
-
-    private fun createTestError(errorCode: String) = object : AppError {
-        override val errorId = ErrorId.generate()
-        override val code = errorCode
-        override val publicArgs = null
-        override val secretArgs = null
-        override val httpStatusCode = HttpStatusCode.InternalServerError
-        override val appErrorSeverity = AppErrorSeverity.MEDIUM
     }
 }

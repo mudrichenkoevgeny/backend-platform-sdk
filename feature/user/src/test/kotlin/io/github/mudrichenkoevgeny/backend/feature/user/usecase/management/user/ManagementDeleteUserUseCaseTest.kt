@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -48,16 +48,10 @@ class ManagementDeleteUserUseCaseTest {
         authenticationChallengeService = authenticationChallengeService
     )
 
-    private val managerId = UserId.generate()
+    private val context = createTestAuthenticatedRequestContext()
+    private val managerId = context.userId
     private val targetId = UserId.generate()
-    private val sessionId = UserSessionId.generate()
-    private val context = AuthenticatedRequestContext(
-        traceId = null,
-        userId = managerId,
-        userRole = UserRole.ADMIN,
-        sessionId = sessionId,
-        clientInfo = mockk(relaxed = true)
-    )
+    private val sessionId = context.sessionId
 
     @Test
     fun `successfully deletes user and notifies sessions`() = runTest {

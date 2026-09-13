@@ -6,17 +6,16 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
-import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeData
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
@@ -51,17 +50,9 @@ class LoginByTotpUseCaseTest {
         authManager = authManager
     )
 
-    private fun createRequestContext() = RequestContext(
-        traceId = null,
-        userId = null,
-        userRole = null,
-        sessionId = null,
-        clientInfo = ClientInfo()
-    )
-
     @Test
     fun `successfully authenticates by TOTP and logs audit`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val userId = UserId.generate()
         val identifierId = UserIdentifierId.generate()
         val userDetails = mockk<UserDetails> {
@@ -106,7 +97,7 @@ class LoginByTotpUseCaseTest {
 
     @Test
     fun `returns error when TOTP code is incorrect`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val userId = UserId.generate()
         val error = UserError.WrongConfirmationCode()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
@@ -143,7 +134,7 @@ class LoginByTotpUseCaseTest {
 
     @Test
     fun `returns error when mfa token is invalid`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val error = SecurityError.InvalidMfaToken()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 

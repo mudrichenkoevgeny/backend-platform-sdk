@@ -4,6 +4,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.client.createTestClientInfo
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.session.createTestUserSession
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
@@ -47,7 +50,7 @@ class SessionManagerImplExtendedTest {
 
     private val userId = UserId.generate()
     private val sessionId = UserSessionId.generate()
-    private val deviceInfo = ClientDeviceInfo(deviceId = ClientDeviceId.generate())
+    private val deviceInfo = createTestClientInfo().deviceInfo
 
     @Test
     fun `updateLastReauthenticated calls repository`() = runTest {
@@ -157,39 +160,13 @@ class SessionManagerImplExtendedTest {
         assertEquals(deletedId, (result as AppResult.Success).data)
     }
 
-    private fun createSampleInternalSession(uId: UserId, hash: RefreshTokenHash) = UserSessionInternal(
-        id = UserSessionId.generate(),
+    private fun createSampleInternalSession(uId: UserId, hash: RefreshTokenHash) = createTestUserSessionInternal(
         userId = uId,
-        userRole = UserRole.USER,
-        identifier = "test",
-        identifierId = UserIdentifierId.generate(),
-        identifierAuthProvider = UserAuthProvider.EMAIL,
-        refreshTokenHash = hash,
-        deviceInfo = deviceInfo,
-        userAgent = "Mozilla",
-        ipAddress = "127.0.0.1",
-        expiresAt = Clock.System.now() + 1.days,
-        lastAccessedAt = Clock.System.now(),
-        lastReauthenticatedAt = Clock.System.now(),
-        createdAt = Clock.System.now(),
-        updatedAt = null
+        refreshTokenHash = hash
     )
 
-    private fun createSampleUserSession(sId: UserSessionId, uId: UserId) = UserSession(
+    private fun createSampleUserSession(sId: UserSessionId, uId: UserId) = createTestUserSession(
         id = sId,
-        userId = uId,
-        userRole = UserRole.USER,
-        identifier = "test",
-        identifierId = UserIdentifierId.generate(),
-        identifierAuthProvider = UserAuthProvider.EMAIL,
-        deviceInfo = deviceInfo,
-        userAgent = "Mozilla",
-        ipAddress = "127.0.0.1",
-        expiresAt = Clock.System.now() + 1.days,
-        lastAccessedAt = Clock.System.now(),
-        lastReauthenticatedAt = Clock.System.now(),
-        isSensitiveValuesMasked = false,
-        createdAt = Clock.System.now(),
-        updatedAt = null
+        userId = uId
     )
 }

@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener
 
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
-import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.createTestWebSocketSessionContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import io.ktor.server.websocket.DefaultWebSocketServerSession
@@ -79,16 +79,10 @@ class UserSessionExpirationListenerTest {
         coVerify(exactly = 0) { webSocketManager.disconnectSocket(any()) }
     }
 
-    private fun context(socketId: String): WebSocketSessionContext {
-        return WebSocketSessionContext(
-            socketSessionId = socketId,
-            apiScope = ApiScope.OPEN,
-            userId = null,
-            userRole = null,
-            clientInfo = null,
-            userSessionId = null
-        )
-    }
+    private fun context(socketId: String) = createTestWebSocketSessionContext(
+        socketSessionId = socketId,
+        apiScope = ApiScope.OPEN
+    )
 
     private companion object {
         const val SOCKET_ID = "socket-id"

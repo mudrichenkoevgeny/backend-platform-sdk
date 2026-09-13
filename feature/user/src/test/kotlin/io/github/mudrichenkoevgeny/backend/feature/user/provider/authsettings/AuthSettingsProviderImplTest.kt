@@ -32,6 +32,7 @@ class AuthSettingsProviderImplTest {
     @BeforeEach
     fun setUp() {
         every { config.managementAuthSettings } returns managementSettings
+        every { config.accountLockoutCheckIntervalSeconds } returns 60
         every { managementSettings.availableAuthProviders } returns availableAuthProviders
         every { managementSettings.maxTotalIdentifiers } returns 5
         every { managementSettings.maxEmailIdentifiers } returns 1
@@ -58,7 +59,7 @@ class AuthSettingsProviderImplTest {
         assertTrue(result is AppResult.Success)
         coVerify(exactly = 1) {
             settingsService.registerDefaults(match { list ->
-                list.size == 11
+                list.size == 12
             })
         }
     }

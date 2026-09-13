@@ -10,7 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.Secur
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
@@ -51,17 +51,9 @@ class UnlockByEmailUseCaseTest {
         userManager = userManager
     )
 
-    private fun createRequestContext() = RequestContext(
-        traceId = null,
-        userId = null,
-        userRole = null,
-        sessionId = null,
-        clientInfo = mockk(relaxed = true)
-    )
-
     @Test
     fun `successfully unlocks user account by email confirmation code`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val userId = UserId.generate()
         val lockoutPolicy = mockk<AccountLockoutPolicy> {
             every { isSelfServiceUnlockEnabled } returns true
@@ -97,7 +89,7 @@ class UnlockByEmailUseCaseTest {
 
     @Test
     fun `returns error when self service unlock is disabled`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val lockoutPolicy = mockk<AccountLockoutPolicy> {
             every { isSelfServiceUnlockEnabled } returns false
         }

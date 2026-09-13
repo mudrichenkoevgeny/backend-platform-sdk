@@ -9,22 +9,19 @@ import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -56,17 +53,9 @@ class DeleteUserIdentifierUseCaseTest {
         authenticationChallengeService = authenticationChallengeService
     )
 
-    private fun createAuthContext() = AuthenticatedRequestContext(
-        traceId = null,
-        userId = UserId.generate(),
-        userRole = UserRole.USER,
-        sessionId = UserSessionId.generate(),
-        clientInfo = ClientInfo()
-    )
-
     @Test
     fun `successfully deletes identifier and notifies associated sessions`() = runTest {
-        val context = createAuthContext()
+        val context = createTestAuthenticatedRequestContext()
         val userDetails = mockk<UserDetails>()
         val currentSession = mockk<UserSessionInternal>()
 
@@ -126,7 +115,7 @@ class DeleteUserIdentifierUseCaseTest {
 
     @Test
     fun `returns error when trying to delete the last identifier`() = runTest {
-        val context = createAuthContext()
+        val context = createTestAuthenticatedRequestContext()
         val userDetails = mockk<UserDetails>()
         val currentSession = mockk<UserSessionInternal>()
         val idToDelete = UserIdentifierId.generate()
@@ -154,7 +143,7 @@ class DeleteUserIdentifierUseCaseTest {
 
     @Test
     fun `returns error when identifier not found in user list`() = runTest {
-        val context = createAuthContext()
+        val context = createTestAuthenticatedRequestContext()
         val userDetails = mockk<UserDetails>()
         val currentSession = mockk<UserSessionInternal>()
         val unknownId = UserIdentifierId.generate()

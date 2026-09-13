@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
@@ -22,7 +23,7 @@ class ValidatePasswordUseCaseTest {
     private val passwordPolicyValidator = PasswordPolicyValidatorImpl()
     private lateinit var useCase: ValidatePasswordUseCase
 
-    private val defaultPolicy = ManagementPasswordPolicy(
+    private val defaultPolicy = createTestManagementPasswordPolicy(
         minLength = 8,
         requireDigit = true,
         requireUpperCase = true,

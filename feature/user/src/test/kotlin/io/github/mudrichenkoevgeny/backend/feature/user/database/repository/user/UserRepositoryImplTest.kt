@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -161,19 +162,12 @@ class UserRepositoryImplTest {
         assertNull((result as AppResult.Success).data)
     }
 
-    private fun createTestUser(userId: UserId) = UserDetails(
+    private fun createTestUser(userId: UserId) = createTestUserDetails(
         id = userId,
         role = UserRole.USER,
         accountStatus = UserAccountStatus.ACTIVE,
-        accountStatusBeforeDeletion = null,
         authorityLevel = 1,
-        permissionCodes = emptySet(),
-        isTotpEnabled = false,
-        lastLoginAt = null,
-        lastActiveAt = null,
-        createdAt = Instant.parse(CREATED_AT),
-        updatedAt = null,
-        scheduledPermanentDeletionAt = null
+        createdAt = Instant.parse(CREATED_AT)
     )
 
     private companion object {

@@ -1,19 +1,19 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.service
 
-import io.github.mudrichenkoevgeny.backend.core.audit.compositeAuditActionTypeParserForRepositoryTests
-import io.github.mudrichenkoevgeny.backend.core.audit.compositeAuditResourceTypeParserForRepositoryTests
 import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepository
 import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepositoryImpl
 import io.github.mudrichenkoevgeny.backend.core.audit.database.table.AuditEventsTable
-import io.github.mudrichenkoevgeny.backend.core.audit.RepositoryTestAuditAction
-import io.github.mudrichenkoevgeny.backend.core.audit.RepositoryTestAuditResource
-import io.github.mudrichenkoevgeny.backend.core.audit.compositeAuditMetadataKeyParserForRepositoryTests
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.action.RepositoryTestAuditAction
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEvent
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.resource.RepositoryTestAuditResource
+import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditActionTypeParserForRepositoryTests
+import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditMetadataKeyParserForRepositoryTests
+import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditResourceTypeParserForRepositoryTests
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import kotlin.time.Clock
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuditServiceImplTest {
@@ -63,7 +62,11 @@ class AuditServiceImplTest {
         val appLogger = mockk<AppLogger>(relaxed = true)
         val service = AuditServiceImpl(repository, ioBackgroundScope(), appLogger)
 
-        val event = sampleAuditEvent(action = "login", resource = "session")
+        val event = createTestAuditEvent(
+            actorType = AuditActorType.SYSTEM,
+            action = RepositoryTestAuditAction("login"),
+            resource = RepositoryTestAuditResource("session")
+        )
         service.log(event)
         service.awaitAll()
 
@@ -81,23 +84,16 @@ class AuditServiceImplTest {
         val appLogger = mockk<AppLogger>(relaxed = true)
         val service = AuditServiceImpl(repo, ioBackgroundScope(), appLogger)
 
-        val event = sampleAuditEvent(action = "action", resource = "resource", status = AuditStatus.FAILED)
+        val event = createTestAuditEvent(
+            actorType = AuditActorType.SYSTEM,
+            action = RepositoryTestAuditAction("action"),
+            resource = RepositoryTestAuditResource("resource"),
+            status = AuditStatus.FAILED
+        )
         service.log(event)
         service.awaitAll()
 
         coVerify(exactly = 1) { repo.createEvent(event) }
         verify(exactly = 1) { appLogger.logError(any()) }
     }
-
-    private fun sampleAuditEvent(
-        action: String,
-        resource: String,
-        status: AuditStatus = AuditStatus.SUCCESS
-    ): AuditEvent = AuditEvent(
-        actorType = AuditActorType.SYSTEM,
-        action = RepositoryTestAuditAction(action),
-        resource = RepositoryTestAuditResource(resource),
-        status = status,
-        createdAt = Clock.System.now()
-    )
 }

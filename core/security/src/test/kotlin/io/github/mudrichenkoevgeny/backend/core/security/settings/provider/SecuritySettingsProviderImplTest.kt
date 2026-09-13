@@ -1,12 +1,14 @@
 package io.github.mudrichenkoevgeny.backend.core.security.settings.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
+import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestManagementSecuritySettings
+import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestSecurityConfig
+import io.github.mudrichenkoevgeny.backend.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
+import io.github.mudrichenkoevgeny.backend.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.ManagementSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.otpconfirmation.toOtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.passwordpolicy.toManagementPasswordPolicyPayload
 import io.mockk.clearMocks
@@ -21,23 +23,16 @@ import org.junit.jupiter.api.Test
 class SecuritySettingsProviderImplTest {
 
     private val settingsService = mockk<SystemSettingsService>()
-    private val defaultPolicy = ManagementPasswordPolicy(minLength = 10, requireDigit = true)
-    private val defaultOtpConfirmation = OtpConfirmation(
+    private val defaultPolicy = createTestManagementPasswordPolicy(minLength = 10, requireDigit = true)
+    private val defaultOtpConfirmation = createTestOtpConfirmation(
         retryAfterSeconds = 60,
         numberOfSymbols = 6,
         expirationSeconds = 300
     )
 
-    private val config = SecurityConfig(
-        authRealm = "test-realm",
-        totpEncryptionSecret = "test-secret",
-        recentAuthenticationValidityInSeconds = 30,
-        recentAuthenticationValidityInSecondsForManagement = 60,
+    private val config = createTestSecurityConfig(
         passwordPolicy = defaultPolicy,
-        otpConfirmation = defaultOtpConfirmation,
-        mfaTokenExpirationSeconds = 120,
-        maxRequestsPerPeriod = 100,
-        rateLimitPeriodSeconds = 60
+        otpConfirmation = defaultOtpConfirmation
     )
 
     private val provider = SecuritySettingsProviderImpl(settingsService, config)
@@ -60,14 +55,15 @@ class SecuritySettingsProviderImplTest {
 
     @Test
     fun `getManagementSecuritySettings returns stored values when present`() {
-        val storedPolicy = ManagementPasswordPolicy(minLength = 20, requireSpecialChar = true)
-        val storedOtp = OtpConfirmation(retryAfterSeconds = 10, numberOfSymbols = 4, expirationSeconds = 60)
+        val storedPolicy = createTestManagementPasswordPolicy(minLength = 20, requireSpecialChar = true)
+        val storedOtp = createTestOtpConfirmation(retryAfterSeconds = 10, numberOfSymbols = 4, expirationSeconds = 60)
 
         every { settingsService.getInt("security.recent_authentication_validity_in_seconds") } returns 99
         every { settingsService.getInt("security.recent_authentication_validity_in_seconds_for_management") } returns 120
         every { settingsService.getInt("security.mfa_token_expiration_seconds") } returns 300
         every { settingsService.getInt("security.max_requests_per_period") } returns 200
         every { settingsService.getInt("security.rate_limit_period_seconds") } returns 120
+        every { settingsService.getJson<Any>(any(), any()) } returns null
         stubGetJsonPasswordPolicyDeserializesTo(storedPolicy)
         stubGetJsonOtpConfirmationDeserializesTo(storedOtp)
 
@@ -95,7 +91,7 @@ class SecuritySettingsProviderImplTest {
 
     @Test
     fun `getManagementPasswordPolicy returns stored policy when present`() {
-        val storedPolicy = ManagementPasswordPolicy(minLength = 8, requireUpperCase = true)
+        val storedPolicy = createTestManagementPasswordPolicy(minLength = 8, requireUpperCase = true)
         stubGetJsonPasswordPolicyDeserializesTo(storedPolicy)
 
         val policy = provider.getManagementPasswordPolicy()
@@ -114,14 +110,11 @@ class SecuritySettingsProviderImplTest {
 
     @Test
     fun `updateManagementSecuritySettings returns success when all updates succeed`() = runTest {
-        val newSettings = ManagementSecuritySettings(
+        val newSettings = createTestManagementSecuritySettings(
             recentAuthenticationValiditySecondsForOpenUser = 45,
             recentAuthenticationValiditySecondsForManagementUser = 90,
-            passwordPolicy = ManagementPasswordPolicy(minLength = 25),
+            passwordPolicy = createTestManagementPasswordPolicy(minLength = 25),
             otpConfirmation = defaultOtpConfirmation,
-            accountLockoutPolicy = SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY,
-            openIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
-            managementIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
             mfaTokenExpirationSeconds = 180,
             maxRequestsPerPeriod = 150,
             rateLimitPeriodSeconds = 90

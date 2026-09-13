@@ -12,12 +12,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
@@ -25,11 +24,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -63,17 +59,9 @@ class IdentifierEmailChangePasswordUseCaseTest {
         validatePasswordUseCase = validatePasswordUseCase
     )
 
-    private fun createAuthContext() = AuthenticatedRequestContext(
-        traceId = null,
-        userId = UserId.generate(),
-        userRole = UserRole.USER,
-        sessionId = UserSessionId.generate(),
-        clientInfo = ClientInfo()
-    )
-
     @Test
     fun `successfully changes password`() = runTest {
-        val context = createAuthContext()
+        val context = createTestAuthenticatedRequestContext()
         val userDetails = mockk<UserDetails>()
         val sessionInternal = mockk<UserSessionInternal>()
         val identifierId = UserIdentifierId.generate()
@@ -129,7 +117,7 @@ class IdentifierEmailChangePasswordUseCaseTest {
 
     @Test
     fun `returns error when old password is wrong`() = runTest {
-        val context = createAuthContext()
+        val context = createTestAuthenticatedRequestContext()
         val userDetails = mockk<UserDetails>()
         val sessionInternal = mockk<UserSessionInternal>()
         val identifierId = UserIdentifierId.generate()
@@ -175,7 +163,7 @@ class IdentifierEmailChangePasswordUseCaseTest {
 
     @Test
     fun `returns error when password policy validation fails`() = runTest {
-        val context = createAuthContext()
+        val context = createTestAuthenticatedRequestContext()
         val userDetails = mockk<UserDetails>()
         val sessionInternal = mockk<UserSessionInternal>()
         val policyError = mockk<SecurityError.PasswordTooWeak>()

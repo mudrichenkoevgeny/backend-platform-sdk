@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.management.auth.login
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.createTestAuthData
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
@@ -49,23 +50,7 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
         loginByTotpRecoveryCodeUseCase = loginByTotpRecoveryCodeUseCase
     )
 
-    private val testAuthData = AuthData(
-        userDetails = UserDetails(
-            id = UserId.generate(),
-            role = UserRole.USER,
-            accountStatus = UserAccountStatus.ACTIVE,
-            accountStatusBeforeDeletion = null,
-            authorityLevel = 0,
-            permissionCodes = emptySet(),
-            isTotpEnabled = false,
-            createdAt = Clock.System.now()
-        ),
-        sessionToken = SessionToken(
-            accessToken = AccessToken("access-token"),
-            refreshToken = RefreshToken("refresh-token"),
-            expiresAt = Clock.System.now()
-        )
-    )
+    private val testAuthData = createTestAuthData()
 
     @BeforeEach
     fun setUp() {

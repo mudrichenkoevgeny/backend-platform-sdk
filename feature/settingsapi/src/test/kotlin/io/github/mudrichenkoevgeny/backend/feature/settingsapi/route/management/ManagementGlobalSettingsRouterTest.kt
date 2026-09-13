@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLog
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.settings.config.model.createTestManagementGlobalSettings
 import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.management.globalsettings.GetManagementGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.management.globalsettings.UpdateGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
@@ -56,15 +57,10 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
         clearMocks(updateGlobalSettingsUseCase, getManagementGlobalSettingsUseCase, auditErrorConverter)
     }
 
-    private fun sampleSettings() = ManagementGlobalSettings(
+    private fun sampleSettings() = createTestManagementGlobalSettings(
         privacyPolicyUrl = "https://example.com/privacy",
         termsOfServiceUrl = "https://example.com/terms",
-        contactSupportEmail = "support@example.com",
-        maintenanceUntilEpochMillis = null,
-        minSupportedAppVersions = emptyMap(),
-        isTracingEnabled = false,
-        isMetricsEnabled = false,
-        isVerboseLoggingEnabled = false
+        contactSupportEmail = "support@example.com"
     )
 
     @Test

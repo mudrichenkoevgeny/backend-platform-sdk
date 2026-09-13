@@ -25,7 +25,13 @@ class UserWebSocketMessageHandlerTest {
         knownTypes.forEach { type ->
             val result = runBlocking {
                 handler.handle(
-                    frame = SocketFrame(id = FRAME_ID, type = type, timestamp = FRAME_TIMESTAMP),
+                    frame = SocketFrame(
+                        id = FRAME_ID,
+                        type = type,
+                        payload = null,
+                        metadata = emptyMap(),
+                        timestamp = FRAME_TIMESTAMP
+                    ),
                     webSocketSessionContext = context()
                 )
             }
@@ -38,7 +44,13 @@ class UserWebSocketMessageHandlerTest {
     fun `handle returns not handled for unknown event type`() {
         val result = runBlocking {
             handler.handle(
-                frame = SocketFrame(id = FRAME_ID, type = UNKNOWN_TYPE, timestamp = FRAME_TIMESTAMP),
+                frame = SocketFrame(
+                    id = FRAME_ID,
+                    type = UNKNOWN_TYPE,
+                    payload = null,
+                    metadata = emptyMap(),
+                    timestamp = FRAME_TIMESTAMP
+                ),
                 webSocketSessionContext = context()
             )
         }

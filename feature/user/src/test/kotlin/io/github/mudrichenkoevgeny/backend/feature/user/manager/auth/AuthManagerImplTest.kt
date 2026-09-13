@@ -2,6 +2,9 @@ package io.github.mudrichenkoevgeny.backend.feature.user.manager.auth
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.createTestSessionToken
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
@@ -9,16 +12,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.SessionToken
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -28,7 +24,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.time.Clock
 
 class AuthManagerImplTest {
 
@@ -59,9 +54,9 @@ class AuthManagerImplTest {
     fun `authenticateExistingUser returns valid AuthData with SessionToken`() = runTest {
         val userId = UserId.generate()
         val clientInfo = mockk<ClientInfo>(relaxed = true)
-        val userDetails = createSampleUserDetails(userId)
-        val userIdentifier = createSampleIdentifier(userId)
-        val expectedToken = createSampleSessionToken()
+        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER)
+        val userIdentifier = createTestUserIdentifierInternal(userId = userId)
+        val expectedToken = createTestSessionToken()
 
         coEvery {
             identifierManager.getUserIdentifierInternalByProvider(any(), any())
@@ -93,8 +88,8 @@ class AuthManagerImplTest {
     @Test
     fun `provideAuthData returns Error UserBlocked when status is BANNED`() = runTest {
         val userId = UserId.generate()
-        val userDetails = createSampleUserDetails(userId).copy(accountStatus = UserAccountStatus.BANNED)
-        val userIdentifier = createSampleIdentifier(userId)
+        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.BANNED)
+        val userIdentifier = createTestUserIdentifierInternal(userId = userId)
 
         coEvery {
             identifierManager.getUserIdentifierInternalByProvider(any(), any())
@@ -110,36 +105,4 @@ class AuthManagerImplTest {
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.UserBlocked)
     }
-
-    private fun createSampleUserDetails(userId: UserId) = UserDetails(
-        id = userId,
-        role = UserRole.USER,
-        accountStatus = UserAccountStatus.ACTIVE,
-        accountStatusBeforeDeletion = null,
-        authorityLevel = 1,
-        permissionCodes = emptySet(),
-        isTotpEnabled = false,
-        createdAt = Clock.System.now(),
-        updatedAt = null,
-        lastLoginAt = null,
-        lastActiveAt = null,
-        scheduledPermanentDeletionAt = null
-    )
-
-    private fun createSampleIdentifier(userId: UserId) = UserIdentifierInternal(
-        id = UserIdentifierId.generate(),
-        userId = userId,
-        userAuthProvider = UserAuthProvider.EMAIL,
-        identifier = "test@test.com",
-        externalProviderEmail = null,
-        passwordHash = PasswordHash("hash"),
-        createdAt = Clock.System.now(),
-        updatedAt = null
-    )
-
-    private fun createSampleSessionToken() = SessionToken(
-        accessToken = AccessToken("access"),
-        refreshToken = RefreshToken("refresh"),
-        expiresAt = Clock.System.now()
-    )
 }

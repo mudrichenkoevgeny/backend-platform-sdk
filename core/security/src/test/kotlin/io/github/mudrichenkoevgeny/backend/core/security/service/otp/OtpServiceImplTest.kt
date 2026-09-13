@@ -2,9 +2,9 @@ package io.github.mudrichenkoevgeny.backend.core.security.service.otp
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
+import io.github.mudrichenkoevgeny.backend.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -24,7 +24,7 @@ class OtpServiceImplTest {
         securitySettingsProvider = securitySettingsProvider
     )
 
-    private val otpConfirmation = OtpConfirmation(
+    private val otpConfirmation = createTestOtpConfirmation(
         expirationSeconds = 300,
         retryAfterSeconds = 60,
         numberOfSymbols = 6

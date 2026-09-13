@@ -7,26 +7,36 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import kotlin.time.Clock
+import kotlin.time.Instant
 
 fun createTestUserDetails(
     id: UserId = UserId.generate(),
     role: UserRole = UserRole.ADMIN,
     accountStatus: UserAccountStatus = UserAccountStatus.ACTIVE,
+    accountStatusBeforeDeletion: UserAccountStatus? = null,
+    authorityLevel: Int = 10,
     permissionCodes: Set<PermissionCode> = emptySet(),
-    authorityLevel: Int = 10
+    isTotpEnabled: Boolean = false,
+    lastLoginAt: Instant? = null,
+    lastActiveAt: Instant? = null,
+    createdAt: Instant = Clock.System.now(),
+    updatedAt: Instant? = null,
+    scheduledPermanentDeletionAt: Instant? = null,
+    lockoutType: AccountLockoutType = AccountLockoutType.NONE,
+    temporaryLockoutUntil: Instant? = null
 ) = UserDetails(
     id = id,
     role = role,
     accountStatus = accountStatus,
-    accountStatusBeforeDeletion = null,
+    accountStatusBeforeDeletion = accountStatusBeforeDeletion,
     authorityLevel = authorityLevel,
     permissionCodes = permissionCodes,
-    isTotpEnabled = false,
-    lastLoginAt = null,
-    lastActiveAt = null,
-    createdAt = Clock.System.now(),
-    updatedAt = null,
-    scheduledPermanentDeletionAt = null,
-    lockoutType = AccountLockoutType.NONE,
-    temporaryLockoutUntil = null
+    isTotpEnabled = isTotpEnabled,
+    lastLoginAt = lastLoginAt,
+    lastActiveAt = lastActiveAt,
+    createdAt = createdAt,
+    updatedAt = updatedAt,
+    scheduledPermanentDeletionAt = scheduledPermanentDeletionAt,
+    lockoutType = lockoutType,
+    temporaryLockoutUntil = temporaryLockoutUntil
 )

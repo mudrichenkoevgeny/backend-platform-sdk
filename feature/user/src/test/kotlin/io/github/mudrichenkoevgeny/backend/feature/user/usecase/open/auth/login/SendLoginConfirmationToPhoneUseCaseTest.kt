@@ -5,11 +5,10 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirmationData
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneService
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -31,17 +30,9 @@ class SendLoginConfirmationToPhoneUseCaseTest {
         phoneService = phoneService
     )
 
-    private fun createRequestContext() = RequestContext(
-        traceId = null,
-        userId = null,
-        userRole = null,
-        sessionId = null,
-        clientInfo = ClientInfo()
-    )
-
     @Test
     fun `successfully sends verification code`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val otpConfirmation = mockk<OtpConfirmation>()
         val otpData = OtpConfirmationData(
             code = TEST_CODE,
@@ -71,7 +62,7 @@ class SendLoginConfirmationToPhoneUseCaseTest {
 
     @Test
     fun `returns error when rate limit exceeded`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val error = UserError.InvalidCredentials()
 
         coEvery {
@@ -88,7 +79,7 @@ class SendLoginConfirmationToPhoneUseCaseTest {
 
     @Test
     fun `returns error when otp service fails`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val error = UserError.InvalidCredentials()
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
@@ -102,7 +93,7 @@ class SendLoginConfirmationToPhoneUseCaseTest {
 
     @Test
     fun `returns error when phone service fails to send sms`() = runTest {
-        val context = createRequestContext()
+        val context = createTestRequestContext()
         val error = UserError.CannotCreateUserIdentifier()
         val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = mockk())
 
@@ -121,6 +112,5 @@ class SendLoginConfirmationToPhoneUseCaseTest {
     companion object {
         private const val TEST_PHONE = "+79991112233"
         private const val TEST_CODE = "555666"
-        private const val TEST_LANG = "ru"
     }
 }

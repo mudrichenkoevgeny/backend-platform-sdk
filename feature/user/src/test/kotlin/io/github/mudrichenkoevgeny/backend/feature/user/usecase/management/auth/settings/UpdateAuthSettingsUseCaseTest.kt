@@ -5,22 +5,17 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.settings.createTestManagementAuthSettings
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.emailrestriction.EmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import io.mockk.coEvery
@@ -46,55 +41,11 @@ class UpdateAuthSettingsUseCaseTest {
         webSocketManager = webSocketManager
     )
 
-    private fun sampleManagementSettings() = ManagementAuthSettings(
-        availableAuthProviders = AvailableAuthProviders(
-            primary = emptyList(),
-            secondary = emptyList()
-        ),
-        maxTotalIdentifiers = 5,
-        maxEmailIdentifiers = 2,
-        maxPhoneIdentifiers = 2,
-        maxIdentifiersPerExternalProvider = 1,
-        maxActiveSessionsForOpenUser = 10,
-        maxActiveSessionsForManagementUser = 3,
-        accessTokenExpirationSeconds = 3600,
-        refreshTokenExpirationSeconds = 86400,
-        accountDeletionDelaySeconds = 2592000,
-        isRegistrationEnabled = true,
-        openEmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
-            isBlacklistEnabled = false,
-            blacklist = emptyList(),
-            isWhitelistEnabled = false,
-            whitelist = emptyList()
-        ),
-        managementEmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
-            isBlacklistEnabled = false,
-            blacklist = emptyList(),
-            isWhitelistEnabled = false,
-            whitelist = emptyList()
-        )
-    )
-
-    private fun authContext(userId: UserId) = AuthenticatedRequestContext(
-        traceId = null,
-        userId = userId,
-        userRole = UserRole.ADMIN,
-        sessionId = UserSessionId.generate(),
-        clientInfo = ClientInfo(
-            deviceInfo = ClientDeviceInfo(null, null, null, null, null, null),
-            userAgent = "test-agent",
-            ipAddress = "127.0.0.1",
-            host = null,
-            origin = null,
-            apiVersion = null
-        )
-    )
-
     @Test
     fun `successfully updates settings, logs audit and broadcasts via websocket`() = runTest {
-        val settings = sampleManagementSettings()
+        val settings = createTestManagementAuthSettings()
         val userId = UserId.generate()
-        val context = authContext(userId)
+        val context = createTestAuthenticatedRequestContext(userId = userId)
         val openAuthSettings = mockk<OpenAuthSettings>(relaxed = true)
 
         coEvery {
@@ -136,9 +87,9 @@ class UpdateAuthSettingsUseCaseTest {
 
     @Test
     fun `handles error, logs failure audit and does not broadcast`() = runTest {
-        val settings = sampleManagementSettings()
+        val settings = createTestManagementAuthSettings()
         val userId = UserId.generate()
-        val context = authContext(userId)
+        val context = createTestAuthenticatedRequestContext(userId = userId)
         val error = UserError.UserForbidden()
         val errorLogData = AuditErrorLogData(
             status = AuditStatus.FAILED,

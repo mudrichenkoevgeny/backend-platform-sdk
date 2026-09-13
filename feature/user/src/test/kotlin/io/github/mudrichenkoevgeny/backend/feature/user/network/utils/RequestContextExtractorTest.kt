@@ -7,7 +7,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getJWTPrinc
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionId
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserId
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserRole
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.client.createTestClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonHttpHeaders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.toUserSessionIdOrThrow
@@ -32,7 +32,7 @@ class RequestContextUtilsTest {
     private val call = mockk<RoutingCall>()
     private val request = mockk<RoutingRequest>()
     private val principal = mockk<JWTPrincipal>()
-    private val clientInfo = ClientInfo()
+    private val clientInfo = createTestClientInfo()
 
     @BeforeEach
     fun setUp() {

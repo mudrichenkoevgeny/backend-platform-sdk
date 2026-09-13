@@ -13,7 +13,7 @@ class HttpClientProviderTest {
     fun `create builds http client without errors`() {
         MDC.put(TracingKeys.TRACE_ID_KEY, "trace-123")
 
-        val settings = HttpClientSettings(
+        val settings = createTestHttpClientSettings(
             baseUrl = "https://example.com",
             requestTimeout = 1000L,
             connectTimeout = 2000L,
@@ -28,4 +28,3 @@ class HttpClientProviderTest {
         MDC.remove(TracingKeys.TRACE_ID_KEY)
     }
 }
-

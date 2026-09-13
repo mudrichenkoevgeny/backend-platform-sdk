@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ksp)
     alias(libs.plugins.java.library)
+    `java-test-fixtures`
 }
 
 dependencies {
@@ -35,6 +36,7 @@ dependencies {
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(testFixtures(project(":core:common")))
     testRuntimeOnly(libs.junit.jupiter.engine)
     testRuntimeOnly(libs.kotlin.test.junit5)
     testImplementation(libs.h2database)

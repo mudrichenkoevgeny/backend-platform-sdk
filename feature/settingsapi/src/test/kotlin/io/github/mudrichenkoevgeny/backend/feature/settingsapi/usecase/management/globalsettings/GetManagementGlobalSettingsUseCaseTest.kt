@@ -1,8 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.feature.settingsapi.usecase.management.globalsettings
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.settings.config.model.createTestManagementGlobalSettings
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.ManagementGlobalSettings
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,16 +16,7 @@ class GetManagementGlobalSettingsUseCaseTest {
 
     @Test
     fun `invoke - returns management global settings from provider`() {
-        val expectedSettings = ManagementGlobalSettings(
-            privacyPolicyUrl = "https://example.com/privacy",
-            termsOfServiceUrl = "https://example.com/terms",
-            contactSupportEmail = "support@example.com",
-            maintenanceUntilEpochMillis = null,
-            minSupportedAppVersions = emptyMap(),
-            isTracingEnabled = false,
-            isMetricsEnabled = false,
-            isVerboseLoggingEnabled = false
-        )
+        val expectedSettings = createTestManagementGlobalSettings()
 
         every { globalSettingsProvider.getManagementGlobalSettings() } returns expectedSettings
 

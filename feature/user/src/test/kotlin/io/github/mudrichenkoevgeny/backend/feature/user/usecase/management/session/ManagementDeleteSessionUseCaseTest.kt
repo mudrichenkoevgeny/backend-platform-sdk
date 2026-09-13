@@ -10,12 +10,11 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
@@ -55,20 +54,12 @@ class ManagementDeleteSessionUseCaseTest {
         authenticationChallengeService = authenticationChallengeService
     )
 
-    private fun createAuthContext(managerId: UserId) = AuthenticatedRequestContext(
-        traceId = null,
-        userId = managerId,
-        userRole = UserRole.ADMIN,
-        sessionId = UserSessionId.generate(),
-        clientInfo = ClientInfo()
-    )
-
     @Test
     fun `successfully deletes specific session and notifies via websocket`() = runTest {
         val managerId = UserId.generate()
         val targetUserId = UserId.generate()
         val targetSessionId = UserSessionId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
 
         val managerDetails = mockk<UserDetails> {
             every { id } returns managerId
@@ -120,7 +111,7 @@ class ManagementDeleteSessionUseCaseTest {
     fun `returns error when attempting to delete own session via management route`() = runTest {
         val managerId = UserId.generate()
         val targetSessionId = UserSessionId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
 
         val managerDetails = mockk<UserDetails> {
             every { id } returns managerId
@@ -147,7 +138,7 @@ class ManagementDeleteSessionUseCaseTest {
     fun `returns error when session does not exist`() = runTest {
         val managerId = UserId.generate()
         val targetSessionId = UserSessionId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
 
         val managerDetails = mockk<UserDetails> {
             every { id } returns managerId
@@ -169,7 +160,7 @@ class ManagementDeleteSessionUseCaseTest {
         val managerId = UserId.generate()
         val targetUserId = UserId.generate()
         val targetSessionId = UserSessionId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
 
         val managerDetails = mockk<UserDetails> {
             every { id } returns managerId
@@ -202,7 +193,7 @@ class ManagementDeleteSessionUseCaseTest {
         val managerId = UserId.generate()
         val targetUserId = UserId.generate()
         val targetSessionId = UserSessionId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
 
         val managerDetails = mockk<UserDetails> {
             every { id } returns managerId
@@ -236,7 +227,7 @@ class ManagementDeleteSessionUseCaseTest {
     fun `returns error when rate limit is exceeded`() = runTest {
         val managerId = UserId.generate()
         val targetSessionId = UserSessionId.generate()
-        val context = createAuthContext(managerId)
+        val context = createTestAuthenticatedRequestContext(userId = managerId)
         val limitError = mockk<AppError>()
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(limitError)

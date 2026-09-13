@@ -100,7 +100,8 @@ class UpdateSecuritySettingsUseCase @Inject constructor(
                 payload = FoundationJson.encodeToJsonElement(
                     OpenSecuritySettingsPayload.serializer(),
                     openSecuritySettingsPayload
-                )
+                ),
+                metadata = emptyMap()
             )
         )
 
@@ -114,7 +115,8 @@ class UpdateSecuritySettingsUseCase @Inject constructor(
                 payload = FoundationJson.encodeToJsonElement(
                     ManagementSecuritySettingsPayload.serializer(),
                     managementSecuritySettingsPayload
-                )
+                ),
+                metadata = emptyMap()
             )
         )
 

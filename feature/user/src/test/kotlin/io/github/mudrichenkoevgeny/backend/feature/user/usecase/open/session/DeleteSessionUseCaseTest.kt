@@ -7,17 +7,15 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -43,17 +41,9 @@ class DeleteSessionUseCaseTest {
         webSocketManager = webSocketManager
     )
 
-    private fun createAuthContext() = AuthenticatedRequestContext(
-        traceId = null,
-        userId = UserId.generate(),
-        userRole = UserRole.USER,
-        sessionId = UserSessionId.generate(),
-        clientInfo = ClientInfo()
-    )
-
     @Test
     fun `successfully deletes specific session`() = runTest {
-        val context = createAuthContext()
+        val context = createTestAuthenticatedRequestContext(userRole = UserRole.USER)
         val targetSessionId = UserSessionId.generate()
 
         coEvery {
@@ -91,7 +81,7 @@ class DeleteSessionUseCaseTest {
 
     @Test
     fun `returns error when rate limit exceeded`() = runTest {
-        val context = createAuthContext()
+        val context = createTestAuthenticatedRequestContext(userRole = UserRole.USER)
         val targetSessionId = UserSessionId.generate()
         val error = mockk<AppError>()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
@@ -122,7 +112,7 @@ class DeleteSessionUseCaseTest {
 
     @Test
     fun `returns error when session manager fails to delete`() = runTest {
-        val context = createAuthContext()
+        val context = createTestAuthenticatedRequestContext(userRole = UserRole.USER)
         val targetSessionId = UserSessionId.generate()
         val error = mockk<AppError>()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())

@@ -4,15 +4,14 @@ import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -30,14 +29,8 @@ class ManagementGetUsersUseCaseTest {
     private val userManager = mockk<UserManager>()
     private val useCase = ManagementGetUsersUseCase(userManager)
 
-    private val managerId = UserId.generate()
-    private val context = AuthenticatedRequestContext(
-        traceId = null,
-        userId = managerId,
-        userRole = UserRole.ADMIN,
-        sessionId = UserSessionId.generate(),
-        clientInfo = mockk(relaxed = true)
-    )
+    private val context = createTestAuthenticatedRequestContext()
+    private val managerId = context.userId
 
     private val defaultPageParams = PageParams(page = 1, size = 20)
     private val defaultSortBy = UserSortValues.UserSortBy.CREATED_AT

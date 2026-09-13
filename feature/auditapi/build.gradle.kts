@@ -27,6 +27,8 @@ dependencies {
     implementation(libs.smiley4.ktor.openapi)
 
     // Testing
+    testImplementation(testFixtures(project(":core:common")))
+    testImplementation(testFixtures(project(":core:audit")))
     testImplementation(testFixtures(project(":feature:user")))
 
     testImplementation(libs.junit.jupiter.api)

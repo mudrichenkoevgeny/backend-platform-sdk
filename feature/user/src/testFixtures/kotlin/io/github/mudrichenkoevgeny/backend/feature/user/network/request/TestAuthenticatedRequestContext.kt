@@ -1,26 +1,21 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.request
 
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.client.createTestClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 
 fun createTestAuthenticatedRequestContext(
+    traceId: String? = null,
     userId: UserId = UserId.generate(),
-    role: UserRole = UserRole.ADMIN,
-    traceId: String = "test-trace-id"
-) = AuthenticatedRequestContext(
+    userRole: UserRole = UserRole.ADMIN,
+    sessionId: UserSessionId = UserSessionId.generate(),
+    clientInfo: ClientInfo = createTestClientInfo()
+): AuthenticatedRequestContext = AuthenticatedRequestContext(
     traceId = traceId,
     userId = userId,
-    userRole = role,
-    sessionId = UserSessionId.generate(),
-    clientInfo = ClientInfo(
-        deviceInfo = ClientDeviceInfo(null, null, null, null, null, null),
-        userAgent = null,
-        ipAddress = "127.0.0.1",
-        host = null,
-        origin = null,
-        apiVersion = null
-    )
+    userRole = userRole,
+    sessionId = sessionId,
+    clientInfo = clientInfo
 )
