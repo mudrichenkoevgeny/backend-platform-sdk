@@ -3,8 +3,8 @@ package io.github.mudrichenkoevgeny.backend.core.security.lockout
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
+import io.github.mudrichenkoevgeny.backend.core.security.domain.model.accountlockout.createTestAccountLockoutPolicy
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutPolicy
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -23,15 +23,7 @@ class LockoutManagerImplTest {
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val lockoutManager = LockoutManagerImpl(redisManager, securitySettingsProvider)
 
-    private val testPolicy = AccountLockoutPolicy(
-        maxFailedPasswordAttempts = 5,
-        maxFailedOtpAttempts = 3,
-        maxFailedTotpAttempts = 3,
-        failedAttemptsWindowSeconds = 300,
-        lockoutDurationSeconds = 900,
-        permanentLockoutThreshold = 0,
-        isSelfServiceUnlockEnabled = true
-    )
+    private val testPolicy = createTestAccountLockoutPolicy(permanentLockoutThreshold = 0)
 
     @BeforeEach
     fun setUp() {
@@ -59,6 +51,7 @@ class LockoutManagerImplTest {
         val identifier = "+1234567890"
         val counterKey = "lockout:failed:otp:$identifier"
         val lockoutKey = "lockout:blocked:$identifier"
+        val consecutiveKey = "lockout:consecutive:$identifier"
 
         coEvery {
             redisManager.incrementWithExpiration(counterKey, testPolicy.failedAttemptsWindowSeconds.toLong())
@@ -67,6 +60,10 @@ class LockoutManagerImplTest {
         coEvery {
             redisManager.setWithExpiration(lockoutKey, any(), testPolicy.lockoutDurationSeconds.toLong())
         } returns AppResult.Success(Unit)
+
+        coEvery {
+            redisManager.incrementWithExpiration(consecutiveKey, any())
+        } returns AppResult.Success(1L)
 
         val result = lockoutManager.recordFailedAttempt(identifier, LockoutAttemptType.OTP)
 
@@ -127,7 +124,7 @@ class LockoutManagerImplTest {
     }
 
     @Test
-    fun `clearLockout deletes all lockout keys and all attempt counters`() = runTest {
+    fun `clearLockout deletes lockout key and all attempt counters`() = runTest {
         val identifier = "test@example.com"
 
         coEvery { redisManager.delete(any()) } returns AppResult.Success(Unit)

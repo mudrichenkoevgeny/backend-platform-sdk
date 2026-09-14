@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
@@ -44,6 +45,8 @@ class AuthSettingsProviderImplTest {
         every { managementSettings.refreshTokenExpirationSeconds } returns 2592000
         every { managementSettings.accountDeletionDelaySeconds } returns 604800
         every { managementSettings.isRegistrationEnabled } returns true
+        every { managementSettings.openEmailRestrictionPolicy } returns createTestEmailRestrictionPolicy()
+        every { managementSettings.managementEmailRestrictionPolicy } returns createTestEmailRestrictionPolicy()
 
         provider = AuthSettingsProviderImpl(settingsService, config)
     }
@@ -59,7 +62,7 @@ class AuthSettingsProviderImplTest {
         assertTrue(result is AppResult.Success)
         coVerify(exactly = 1) {
             settingsService.registerDefaults(match { list ->
-                list.size == 12
+                list.size == 14
             })
         }
     }
@@ -75,7 +78,7 @@ class AuthSettingsProviderImplTest {
         assertTrue(result is AppResult.Success)
         coVerify(exactly = 1) {
             settingsService.updateSettings(match { list ->
-                list.size == 11
+                list.size == 13
             })
         }
     }

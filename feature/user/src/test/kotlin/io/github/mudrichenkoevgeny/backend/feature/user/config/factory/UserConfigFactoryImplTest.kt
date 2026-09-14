@@ -105,5 +105,13 @@ class UserConfigFactoryImplTest {
         every { envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_DELAY_SECONDS) } returns "3600"
         every { envReader.getByKeyOrNull(UserEnvKeys.ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS) } returns "60"
         every { envReader.getByKeyOrNull(UserEnvKeys.IS_REGISTRATION_ENABLED) } returns null
+        every { envReader.getByKeyOrNull(UserEnvKeys.IS_EMAIL_BLACKLIST_ENABLED_OPEN) } returns null
+        every { envReader.getByKeyOrNull(UserEnvKeys.EMAIL_BLACKLIST_OPEN) } returns null
+        every { envReader.getByKeyOrNull(UserEnvKeys.IS_EMAIL_WHITELIST_ENABLED_OPEN) } returns null
+        every { envReader.getByKeyOrNull(UserEnvKeys.EMAIL_WHITELIST_OPEN) } returns null
+        every { envReader.getByKeyOrNull(UserEnvKeys.IS_EMAIL_BLACKLIST_ENABLED_MANAGEMENT) } returns null
+        every { envReader.getByKeyOrNull(UserEnvKeys.EMAIL_BLACKLIST_MANAGEMENT) } returns null
+        every { envReader.getByKeyOrNull(UserEnvKeys.IS_EMAIL_WHITELIST_ENABLED_MANAGEMENT) } returns null
+        every { envReader.getByKeyOrNull(UserEnvKeys.EMAIL_WHITELIST_MANAGEMENT) } returns null
     }
 }

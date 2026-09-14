@@ -17,6 +17,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationch
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
@@ -33,6 +35,8 @@ import javax.inject.Singleton
 @Singleton
 class ManagementCreateUserUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
+    private val authSettingsProvider: AuthSettingsProvider,
+    private val emailRestrictionPolicyValidator: EmailRestrictionPolicyValidator,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val userManager: UserManager,
@@ -163,6 +167,20 @@ class ManagementCreateUserUseCase @Inject constructor(
         if (passwordPolicyCheckResult is AppResult.Error) {
             return handleError(
                 error = passwordPolicyCheckResult.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                baseMetadata = auditMetadata
+            )
+        }
+
+        val policy = when (role) {
+            UserRole.USER -> authSettingsProvider.getOpenEmailRestrictionPolicy()
+            else -> authSettingsProvider.getManagementEmailRestrictionPolicy()
+        }
+
+        if (!emailRestrictionPolicyValidator.isEmailAllowed(email, policy)) {
+            return handleError(
+                error = UserError.EmailNotAllowed(),
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata

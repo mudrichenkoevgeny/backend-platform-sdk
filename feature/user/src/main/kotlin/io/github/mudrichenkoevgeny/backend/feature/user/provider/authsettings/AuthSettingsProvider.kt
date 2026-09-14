@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.emailrestriction.EmailRestrictionPolicy
 
 /**
  * Provides persisted authentication settings for the user feature.
@@ -90,6 +91,16 @@ interface AuthSettingsProvider {
      * Returns whether new user registrations are currently permitted.
      */
     fun getIsRegistrationEnabled(): Boolean
+
+    /**
+     * Returns the open email restriction policy.
+     */
+    fun getOpenEmailRestrictionPolicy(): EmailRestrictionPolicy
+
+    /**
+     * Returns the management email restriction policy.
+     */
+    fun getManagementEmailRestrictionPolicy(): EmailRestrictionPolicy
 
     /**
      * Persists management auth settings.

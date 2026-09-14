@@ -12,12 +12,17 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerif
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class SendAddEmailIdentifierConfirmationUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
+    private val authSettingsProvider: AuthSettingsProvider,
+    private val emailRestrictionPolicyValidator: EmailRestrictionPolicyValidator,
     private val identifierManager: IdentifierManager,
     private val otpService: OtpService,
     private val emailService: EmailService
@@ -48,6 +53,13 @@ class SendAddEmailIdentifierConfirmationUseCase @Inject constructor(
         )
         if (rateLimitCheck is AppResult.Error) {
             return AppResult.Error(rateLimitCheck.error)
+        }
+
+        if (!emailRestrictionPolicyValidator.isEmailAllowed(
+                email = email,
+                policy = authSettingsProvider.getOpenEmailRestrictionPolicy())
+            ) {
+            return AppResult.Error(UserError.EmailNotAllowed())
         }
 
         val getUserIdentifierResult = identifierManager.getUserIdentifierInternalByProvider(

@@ -17,6 +17,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
@@ -31,6 +32,7 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
     private val auditErrorConverter: AuditErrorConverter,
     private val externalAuthVerifiers: Set<@JvmSuppressWildcards ExternalAuthVerifier>,
     private val authSettingsProvider: AuthSettingsProvider,
+    private val emailRestrictionPolicyValidator: EmailRestrictionPolicyValidator,
     private val authManager: AuthManager
 ) {
     /**
@@ -108,6 +110,17 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
                     key = UserAuditMetadataKey.EMAIL_ADDRESS,
                     value = it
                 )
+            )
+        }
+
+        val externalEmail = verificationData.email
+        if (externalEmail != null && !emailRestrictionPolicyValidator.isEmailAllowed(
+                email = externalEmail,
+                policy = authSettingsProvider.getOpenEmailRestrictionPolicy())
+            ) {
+            return handleError(
+                error = UserError.EmailNotAllowed(),
+                baseMetadata = auditMetadata
             )
         }
 

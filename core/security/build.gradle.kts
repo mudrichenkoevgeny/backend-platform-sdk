@@ -43,6 +43,7 @@ dependencies {
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.ktor.server.test.host)
     testImplementation(testFixtures(project(":core:common")))
     testRuntimeOnly(libs.kotlin.test.junit5)
 }

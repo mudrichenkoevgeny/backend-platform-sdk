@@ -22,6 +22,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -38,6 +40,7 @@ class LoginByExternalAuthProviderUseCaseTest {
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val auditErrorConverter = mockk<AuditErrorConverter>()
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
+    private val emailRestrictionPolicyValidator = EmailRestrictionPolicyValidator()
     private val authManager = mockk<AuthManager>()
     private val externalAuthVerifier = mockk<ExternalAuthVerifier>()
 
@@ -47,6 +50,7 @@ class LoginByExternalAuthProviderUseCaseTest {
         auditErrorConverter = auditErrorConverter,
         externalAuthVerifiers = setOf(externalAuthVerifier),
         authSettingsProvider = authSettingsProvider,
+        emailRestrictionPolicyValidator = emailRestrictionPolicyValidator,
         authManager = authManager
     )
 
@@ -86,6 +90,7 @@ class LoginByExternalAuthProviderUseCaseTest {
         coEvery { externalAuthVerifier.verify(TEST_TOKEN) } returns AppResult.Success(verificationData)
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_TOKEN) } returns AppResult.Success(Unit)
         mockProviderSupport(provider, supported = true)
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
 
         coEvery {
             authManager.authenticateOrCreateUser(
@@ -138,6 +143,33 @@ class LoginByExternalAuthProviderUseCaseTest {
                 metadata = any()
             )
         }
+    }
+
+    @Test
+    fun `returns error when external provider email is blocked by policy`() = runTest {
+        val context = createTestRequestContext()
+        val provider = UserAuthProvider.GOOGLE
+        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
+        val verificationData = ExternalAuthProviderData(
+            authProvider = provider,
+            externalId = EXTERNAL_ID,
+            email = "user@tempmail.com"
+        )
+
+        every { externalAuthVerifier.provider } returns provider
+        coEvery { externalAuthVerifier.verify(TEST_TOKEN) } returns AppResult.Success(verificationData)
+        coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_TOKEN) } returns AppResult.Success(Unit)
+        mockProviderSupport(provider, supported = true)
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy(
+            isBlacklistEnabled = true,
+            blacklist = listOf("@tempmail.com")
+        )
+        every { auditErrorConverter.convert(any<UserError.EmailNotAllowed>()) } returns errorLogData
+
+        val result = useCase(provider, TEST_TOKEN, context)
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is UserError.EmailNotAllowed)
     }
 
     @Test

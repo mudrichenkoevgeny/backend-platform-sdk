@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.security.settings.provider
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestManagementSecuritySettings
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestOpenSecuritySettings
+import io.github.mudrichenkoevgeny.backend.core.security.domain.model.iprestriction.createTestIpRestrictionPolicy
 import io.github.mudrichenkoevgeny.backend.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.github.mudrichenkoevgeny.backend.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutPolicy
@@ -37,9 +38,13 @@ class RecordingSecuritySettingsProvider : SecuritySettingsProvider {
 
     override fun getAccountLockoutPolicy(): AccountLockoutPolicy = error("Not used")
 
-    override fun getOpenIpRestrictionPolicy(): IpRestrictionPolicy = error("Not used")
+    var openIpRestrictionPolicy: IpRestrictionPolicy = createTestIpRestrictionPolicy()
 
-    override fun getManagementIpRestrictionPolicy(): IpRestrictionPolicy = error("Not used")
+    var managementIpRestrictionPolicy: IpRestrictionPolicy = createTestIpRestrictionPolicy()
+
+    override fun getOpenIpRestrictionPolicy(): IpRestrictionPolicy = openIpRestrictionPolicy
+
+    override fun getManagementIpRestrictionPolicy(): IpRestrictionPolicy = managementIpRestrictionPolicy
 
     override fun getMfaTokenExpirationSeconds(): Int = 120
 

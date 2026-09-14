@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.Secur
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
@@ -60,19 +61,19 @@ class LockoutManagerImpl @Inject constructor(
             val consecutiveKey = buildConsecutiveKey(identifier)
             val consecutiveResult = redisManager.incrementWithExpiration(
                 key = consecutiveKey,
-                expirationSeconds = 604800L
+                expirationSeconds = INDEFINITE_LOCKOUT_TTL_SECONDS
             )
             val consecutiveCount = when (consecutiveResult) {
                 is AppResult.Success -> consecutiveResult.data
                 is AppResult.Error -> 0L
             }
 
-            if (policy.permanentLockoutThreshold > 0 && consecutiveCount >= policy.permanentLockoutThreshold) {
+            if (policy.permanentLockoutThreshold in 1..consecutiveCount) {
                 val indefiniteLockoutKey = buildIndefiniteLockoutKey(identifier)
                 redisManager.setWithExpiration(
                     key = indefiniteLockoutKey,
-                    value = "1",
-                    expirationSeconds = 604800L
+                    value = REDIS_TRUE_FLAG,
+                    expirationSeconds = INDEFINITE_LOCKOUT_TTL_SECONDS
                 )
             }
 
@@ -147,5 +148,10 @@ class LockoutManagerImpl @Inject constructor(
 
     private fun buildConsecutiveKey(identifier: String): String {
         return "lockout:consecutive:$identifier"
+    }
+
+    companion object {
+        private const val REDIS_TRUE_FLAG = "1"
+        private val INDEFINITE_LOCKOUT_TTL_SECONDS = 7.days.inWholeSeconds // 7 days in seconds
     }
 }

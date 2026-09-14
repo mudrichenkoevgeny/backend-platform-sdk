@@ -6,12 +6,15 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
@@ -32,6 +35,8 @@ import org.junit.jupiter.api.Test
 class ManagementCreateUserUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
+    private val authSettingsProvider = mockk<AuthSettingsProvider>()
+    private val emailRestrictionPolicyValidator = EmailRestrictionPolicyValidator()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val auditErrorConverter = mockk<AuditErrorConverter>()
     private val userManager = mockk<UserManager>()
@@ -42,6 +47,8 @@ class ManagementCreateUserUseCaseTest {
 
     private val useCase = ManagementCreateUserUseCase(
         rateLimiter = rateLimiter,
+        authSettingsProvider = authSettingsProvider,
+        emailRestrictionPolicyValidator = emailRestrictionPolicyValidator,
         auditLogger = auditLogger,
         auditErrorConverter = auditErrorConverter,
         userManager = userManager,
@@ -70,6 +77,7 @@ class ManagementCreateUserUseCaseTest {
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
         coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(managerSession)
         coEvery {
@@ -165,6 +173,40 @@ class ManagementCreateUserUseCaseTest {
         )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserMissingPermissions)
+    }
+
+    @Test
+    fun `returns error when created email is blocked by restriction policy`() = runTest {
+        val permission = UserPermissionCode.USER_CREATE_AS_USER
+        val managerDetails = mockk<UserDetails> {
+            every { accountStatus } returns UserAccountStatus.ACTIVE
+            every { authorityLevel } returns 100
+            every { permissionCodes } returns setOf(permission)
+        }
+
+        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy(
+            isBlacklistEnabled = true,
+            blacklist = listOf("@tempmail.com")
+        )
+        every { auditErrorConverter.convert(any<UserError.EmailNotAllowed>()) } returns AuditErrorLogData(
+            status = AuditStatus.FAILED,
+            metadata = emptySet()
+        )
+
+        val result = useCase(
+            email = "user@tempmail.com",
+            password = "password123",
+            role = UserRole.USER,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 50,
+            permissionCodes = emptySet(),
+            authenticatedRequestContext = context
+        )
+
+        assertTrue(result is AppResult.Error && result.error is UserError.EmailNotAllowed)
     }
 
     @Test

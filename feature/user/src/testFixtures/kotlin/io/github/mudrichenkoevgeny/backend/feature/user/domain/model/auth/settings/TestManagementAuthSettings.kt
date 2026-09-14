@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.settings
 
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.emailrestriction.EmailRestrictionPolicy
@@ -19,18 +20,8 @@ fun createTestManagementAuthSettings(
     refreshTokenExpirationSeconds: Int = 86400,
     accountDeletionDelaySeconds: Int = 2592000,
     isRegistrationEnabled: Boolean = true,
-    openEmailRestrictionPolicy: EmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
-        isBlacklistEnabled = false,
-        blacklist = emptyList(),
-        isWhitelistEnabled = false,
-        whitelist = emptyList()
-    ),
-    managementEmailRestrictionPolicy: EmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
-        isBlacklistEnabled = false,
-        blacklist = emptyList(),
-        isWhitelistEnabled = false,
-        whitelist = emptyList()
-    )
+    openEmailRestrictionPolicy: EmailRestrictionPolicy = createTestEmailRestrictionPolicy(),
+    managementEmailRestrictionPolicy: EmailRestrictionPolicy = createTestEmailRestrictionPolicy()
 ): ManagementAuthSettings = ManagementAuthSettings(
     availableAuthProviders = availableAuthProviders,
     maxTotalIdentifiers = maxTotalIdentifiers,

@@ -22,6 +22,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.m
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,6 +31,7 @@ import javax.inject.Singleton
 class RegisterByEmailUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val authSettingsProvider: AuthSettingsProvider,
+    private val emailRestrictionPolicyValidator: EmailRestrictionPolicyValidator,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val otpService: OtpService,
@@ -77,6 +79,16 @@ class RegisterByEmailUseCase @Inject constructor(
         if (!authSettingsProvider.getIsRegistrationEnabled()) {
             return handleError(
                 error = UserError.RegistrationDisabled(),
+                baseMetadata = auditMetadata
+            )
+        }
+
+        if (!emailRestrictionPolicyValidator.isEmailAllowed(
+                email = email,
+                policy = authSettingsProvider.getOpenEmailRestrictionPolicy())
+            ) {
+            return handleError(
+                error = UserError.EmailNotAllowed(),
                 baseMetadata = auditMetadata
             )
         }

@@ -22,6 +22,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
@@ -33,6 +35,8 @@ import javax.inject.Singleton
 @Singleton
 class AddUserIdentifierEmailUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
+    private val authSettingsProvider: AuthSettingsProvider,
+    private val emailRestrictionPolicyValidator: EmailRestrictionPolicyValidator,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val userManager: UserManager,
@@ -99,6 +103,18 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
         if (rateLimitCheck is AppResult.Error) {
             return handleError(
                 error = rateLimitCheck.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                baseMetadata = auditMetadata
+            )
+        }
+
+        if (!emailRestrictionPolicyValidator.isEmailAllowed(
+                email = email,
+                policy = authSettingsProvider.getOpenEmailRestrictionPolicy())
+            ) {
+            return handleError(
+                error = UserError.EmailNotAllowed(),
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata

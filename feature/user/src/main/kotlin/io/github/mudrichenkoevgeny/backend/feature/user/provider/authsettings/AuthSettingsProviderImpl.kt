@@ -12,6 +12,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.emailrestriction.EmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.settings.toAvailableAuthProvidersPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.emailrestriction.toEmailRestrictionPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.emailrestriction.toEmailRestrictionPolicyPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.emailrestriction.EmailRestrictionPolicyPayload
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,6 +27,9 @@ class AuthSettingsProviderImpl @Inject constructor(
     private val settingsService: SystemSettingsService,
     private val config: UserConfig
 ) : AuthSettingsProvider {
+
+    private val openEmailRestrictionPolicyCache = AtomicReference<Pair<String, EmailRestrictionPolicy>?>()
+    private val managementEmailRestrictionPolicyCache = AtomicReference<Pair<String, EmailRestrictionPolicy>?>()
 
     override suspend fun initialize(): AppResult<Unit> {
         val defaults = config.managementAuthSettings
@@ -86,6 +93,16 @@ class AuthSettingsProviderImpl @Inject constructor(
                 key = KEY_IS_REGISTRATION_ENABLED,
                 value = "${defaults.isRegistrationEnabled}",
                 type = SettingType.BOOLEAN
+            ),
+            SystemSetting(
+                key = KEY_OPEN_EMAIL_RESTRICTION_POLICY,
+                value = FoundationJson.encodeToString(defaults.openEmailRestrictionPolicy.toEmailRestrictionPolicyPayload()),
+                type = SettingType.JSON
+            ),
+            SystemSetting(
+                key = KEY_MANAGEMENT_EMAIL_RESTRICTION_POLICY,
+                value = FoundationJson.encodeToString(defaults.managementEmailRestrictionPolicy.toEmailRestrictionPolicyPayload()),
+                type = SettingType.JSON
             )
         )
         return settingsService.registerDefaults(defaultSettings)
@@ -104,18 +121,8 @@ class AuthSettingsProviderImpl @Inject constructor(
             refreshTokenExpirationSeconds = getRefreshTokenExpirationSeconds(),
             accountDeletionDelaySeconds = getAccountDeletionDelaySeconds(),
             isRegistrationEnabled = getIsRegistrationEnabled(),
-            openEmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
-                isBlacklistEnabled = false,
-                blacklist = emptyList(),
-                isWhitelistEnabled = false,
-                whitelist = emptyList()
-            ),
-            managementEmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
-                isBlacklistEnabled = false,
-                blacklist = emptyList(),
-                isWhitelistEnabled = false,
-                whitelist = emptyList()
-            )
+            openEmailRestrictionPolicy = getOpenEmailRestrictionPolicy(),
+            managementEmailRestrictionPolicy = getManagementEmailRestrictionPolicy()
         )
     }
 
@@ -191,6 +198,42 @@ class AuthSettingsProviderImpl @Inject constructor(
             ?: config.managementAuthSettings.isRegistrationEnabled
     }
 
+    override fun getOpenEmailRestrictionPolicy(): EmailRestrictionPolicy {
+        val rawJson = settingsService.getString(KEY_OPEN_EMAIL_RESTRICTION_POLICY)
+            ?: return config.managementAuthSettings.openEmailRestrictionPolicy
+
+        val cached = openEmailRestrictionPolicyCache.get()
+        if (cached != null && (cached.first == rawJson)) {
+            return cached.second
+        }
+
+        return try {
+            val parsed = FoundationJson.decodeFromString<EmailRestrictionPolicyPayload>(rawJson).toEmailRestrictionPolicy()
+            openEmailRestrictionPolicyCache.set(rawJson to parsed)
+            parsed
+        } catch (_: Exception) {
+            config.managementAuthSettings.openEmailRestrictionPolicy
+        }
+    }
+
+    override fun getManagementEmailRestrictionPolicy(): EmailRestrictionPolicy {
+        val rawJson = settingsService.getString(KEY_MANAGEMENT_EMAIL_RESTRICTION_POLICY)
+            ?: return config.managementAuthSettings.managementEmailRestrictionPolicy
+
+        val cached = managementEmailRestrictionPolicyCache.get()
+        if (cached != null && (cached.first == rawJson)) {
+            return cached.second
+        }
+
+        return try {
+            val parsed = FoundationJson.decodeFromString<EmailRestrictionPolicyPayload>(rawJson).toEmailRestrictionPolicy()
+            managementEmailRestrictionPolicyCache.set(rawJson to parsed)
+            parsed
+        } catch (_: Exception) {
+            config.managementAuthSettings.managementEmailRestrictionPolicy
+        }
+    }
+
     override suspend fun updateManagementAuthSettings(
         managementAuthSettings: ManagementAuthSettings
     ): AppResult<Unit> {
@@ -249,6 +292,16 @@ class AuthSettingsProviderImpl @Inject constructor(
                 key = KEY_IS_REGISTRATION_ENABLED,
                 value = "${managementAuthSettings.isRegistrationEnabled}",
                 type = SettingType.BOOLEAN
+            ),
+            SystemSetting(
+                key = KEY_OPEN_EMAIL_RESTRICTION_POLICY,
+                value = FoundationJson.encodeToString(managementAuthSettings.openEmailRestrictionPolicy.toEmailRestrictionPolicyPayload()),
+                type = SettingType.JSON
+            ),
+            SystemSetting(
+                key = KEY_MANAGEMENT_EMAIL_RESTRICTION_POLICY,
+                value = FoundationJson.encodeToString(managementAuthSettings.managementEmailRestrictionPolicy.toEmailRestrictionPolicyPayload()),
+                type = SettingType.JSON
             )
         )
         return settingsService.updateSettings(settingsToUpdate).mapSuccess { }
@@ -267,5 +320,7 @@ class AuthSettingsProviderImpl @Inject constructor(
         const val KEY_ACCOUNT_DELETION_DELAY_SECONDS = "auth.account_deletion_delay_seconds"
         const val KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS = "auth.account_lockout_check_interval_seconds"
         const val KEY_IS_REGISTRATION_ENABLED = "auth.is_registration_enabled"
+        const val KEY_OPEN_EMAIL_RESTRICTION_POLICY = "auth.open_email_restriction_policy"
+        const val KEY_MANAGEMENT_EMAIL_RESTRICTION_POLICY = "auth.management_email_restriction_policy"
     }
 }

@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
@@ -106,10 +107,12 @@ class LoginByEmailUseCase @Inject constructor(
         baseMetadata: Set<AuditEventMetadata>
     ): AppResult<T> {
         val auditErrorLogData = auditErrorConverter.convert(error)
+        val resolvedActorId = actorId ?: (error as? UserError.UserBlocked)?.userId?.asHexDashString()
+        val resolvedResourceId = resourceId ?: (error as? UserError.UserBlocked)?.userId?.asHexDashString()
         logAudit(
-            actorId = actorId,
+            actorId = resolvedActorId,
             actorUserRole = actorUserRole,
-            resourceId = resourceId,
+            resourceId = resolvedResourceId,
             status = auditErrorLogData.status,
             metadata = baseMetadata + auditErrorLogData.metadata
         )

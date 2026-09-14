@@ -11,6 +11,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.rou
 import io.github.mudrichenkoevgeny.backend.core.common.routing.onPort
 import io.github.mudrichenkoevgeny.backend.core.observability.application.configureObservability
 import io.github.mudrichenkoevgeny.backend.core.observability.metrics.route.installMetricsEndpoint
+import io.github.mudrichenkoevgeny.backend.core.security.application.iprestriction.configureIpRestriction
 import io.github.mudrichenkoevgeny.backend.sample.di.AppComponent
 import io.github.mudrichenkoevgeny.shared.foundation.feature.auditapi.domain.permissions.AuditPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.domain.permission.SecurityPermissionCode
@@ -83,6 +84,11 @@ fun Application.module(
         appLogger = appLogger
     )
     val securitySettingsProvider = appComponent.securitySettingsProvider()
+    configureIpRestriction(
+        commonConfig = commonConfig,
+        securitySettingsProvider = securitySettingsProvider,
+        validator = appComponent.ipRestrictionPolicyValidator()
+    )
     configureGlobalRateLimit(
         getMaxRequestsPerPeriod = { securitySettingsProvider.getMaxRequestsPerPeriod() },
         getRateLimitPeriodSeconds = { securitySettingsProvider.getRateLimitPeriodSeconds() }

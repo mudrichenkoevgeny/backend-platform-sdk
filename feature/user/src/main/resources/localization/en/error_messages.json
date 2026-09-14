@@ -22,5 +22,6 @@
   "WRONG_CONFIRMATION_CODE": "The confirmation code is incorrect or has expired.",
   "EXTERNAL_IDENTIFIER_LINKAGE_FAILED": "External account could not be linked.",
   "REGISTRATION_DISABLED": "User registration is currently disabled.",
-  "SELF_SERVICE_UNLOCK_DISABLED": "Self-service account unlock is currently disabled."
+  "SELF_SERVICE_UNLOCK_DISABLED": "Self-service account unlock is currently disabled.",
+  "EMAIL_NOT_ALLOWED": "Registration or usage of this email address or domain is restricted by security policy."
 }

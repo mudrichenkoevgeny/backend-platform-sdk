@@ -7,5 +7,6 @@
   "MFA_TOKEN_EXPIRED": "The MFA token has expired. Please request a new one.",
   "RECOVERY_CODE_ALREADY_USED": "This recovery code has already been used.",
   "INVALID_TOTP_CODE": "The provided code is invalid.",
-  "INVALID_MFA_TOKEN": "The MFA token is invalid or malformed."
+  "INVALID_MFA_TOKEN": "The MFA token is invalid or malformed.",
+  "IP_NOT_ALLOWED": "Access from your IP address is restricted by security policy."
 }

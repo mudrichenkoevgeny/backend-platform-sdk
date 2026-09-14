@@ -8,14 +8,17 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
@@ -37,6 +40,8 @@ import org.junit.jupiter.api.Test
 class AddUserIdentifierEmailUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
+    private val authSettingsProvider = mockk<AuthSettingsProvider>()
+    private val emailRestrictionPolicyValidator = EmailRestrictionPolicyValidator()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val auditErrorConverter = mockk<AuditErrorConverter>()
     private val userManager = mockk<UserManager>()
@@ -48,6 +53,8 @@ class AddUserIdentifierEmailUseCaseTest {
 
     private val useCase = AddUserIdentifierEmailUseCase(
         rateLimiter = rateLimiter,
+        authSettingsProvider = authSettingsProvider,
+        emailRestrictionPolicyValidator = emailRestrictionPolicyValidator,
         auditLogger = auditLogger,
         auditErrorConverter = auditErrorConverter,
         userManager = userManager,
@@ -67,6 +74,8 @@ class AddUserIdentifierEmailUseCaseTest {
         val identifier = mockk<UserIdentifier> {
             every { id } returns identifierId
         }
+
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
 
         coEvery {
             rateLimiter.checkRateLimit(UserRateLimitAction.USER_IDENTIFIER_ADD, any())
@@ -165,6 +174,28 @@ class AddUserIdentifierEmailUseCaseTest {
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 0) { userManager.getUserByIdForSelf(any()) }
+    }
+
+    @Test
+    fun `returns error when email is not allowed by restriction policy`() = runTest {
+        val context = createTestAuthenticatedRequestContext()
+        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
+
+        coEvery {
+            rateLimiter.checkRateLimit(any(), any())
+        } returns AppResult.Success(Unit)
+
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy(
+            isBlacklistEnabled = true,
+            blacklist = listOf("@tempmail.com")
+        )
+
+        every { auditErrorConverter.convert(any<UserError.EmailNotAllowed>()) } returns errorLogData
+
+        val result = useCase("user@tempmail.com", TEST_PASSWORD, TEST_CODE, context)
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is UserError.EmailNotAllowed)
     }
 
     companion object {

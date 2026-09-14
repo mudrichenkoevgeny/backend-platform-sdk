@@ -198,8 +198,9 @@ class LoginByTotpRecoveryCodeUseCase @Inject constructor(
         baseMetadata: Set<AuditEventMetadata>
     ): AppResult<T> {
         val auditErrorLogData = auditErrorConverter.convert(error)
+        val resolvedActorId = actorId ?: (error as? UserError.UserBlocked)?.userId?.asHexDashString()
         logAudit(
-            actorId = actorId,
+            actorId = resolvedActorId,
             actorUserRole = actorUserRole,
             status = auditErrorLogData.status,
             metadata = baseMetadata + auditErrorLogData.metadata

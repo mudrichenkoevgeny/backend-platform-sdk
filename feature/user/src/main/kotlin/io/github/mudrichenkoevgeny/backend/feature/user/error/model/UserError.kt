@@ -344,4 +344,14 @@ sealed class UserError(
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.MEDIUM
     )
+
+    /**
+     * The registration, login, or email linkage attempt was rejected because the email address or domain is not permitted.
+     */
+    class EmailNotAllowed : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.EMAIL_NOT_ALLOWED,
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
 }

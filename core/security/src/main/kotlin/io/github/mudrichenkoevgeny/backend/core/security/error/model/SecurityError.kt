@@ -129,4 +129,14 @@ sealed class SecurityError(
         httpStatusCode = HttpStatusCode.Unauthorized,
         appErrorSeverity = AppErrorSeverity.LOW
     )
+
+    /**
+     * Request was rejected because the client IP address is not permitted by IP restriction policy.
+     */
+    class IpNotAllowed : SecurityError(
+        errorId = ErrorId.generate(),
+        code = SecurityErrorCodes.IP_NOT_ALLOWED,
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
 }

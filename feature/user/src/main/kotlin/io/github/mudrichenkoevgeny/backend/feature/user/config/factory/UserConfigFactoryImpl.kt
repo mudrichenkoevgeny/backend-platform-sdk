@@ -54,6 +54,25 @@ class UserConfigFactoryImpl @Inject constructor(
         val refreshTokenExpirationSeconds = envReader.getByKey(UserEnvKeys.REFRESH_TOKEN_EXPIRATION_SECONDS).toInt()
         val accountDeletionDelaySeconds = envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_DELAY_SECONDS).toInt()
         val isRegistrationEnabled = envReader.getByKeyOrNull(UserEnvKeys.IS_REGISTRATION_ENABLED)?.toBooleanStrictOrNull() ?: true
+
+        val isOpenEmailBlacklistEnabled = envReader
+            .getByKeyOrNull(UserEnvKeys.IS_EMAIL_BLACKLIST_ENABLED_OPEN)
+            ?.toBooleanStrictOrNull() ?: false
+        val openEmailBlacklist = envReader.getStringList(UserEnvKeys.EMAIL_BLACKLIST_OPEN)
+        val isOpenEmailWhitelistEnabled = envReader
+            .getByKeyOrNull(UserEnvKeys.IS_EMAIL_WHITELIST_ENABLED_OPEN)
+            ?.toBooleanStrictOrNull() ?: false
+        val openEmailWhitelist = envReader.getStringList(UserEnvKeys.EMAIL_WHITELIST_OPEN)
+
+        val isManagementEmailBlacklistEnabled = envReader
+            .getByKeyOrNull(UserEnvKeys.IS_EMAIL_BLACKLIST_ENABLED_MANAGEMENT)
+            ?.toBooleanStrictOrNull() ?: false
+        val managementEmailBlacklist = envReader.getStringList(UserEnvKeys.EMAIL_BLACKLIST_MANAGEMENT)
+        val isManagementEmailWhitelistEnabled = envReader
+            .getByKeyOrNull(UserEnvKeys.IS_EMAIL_WHITELIST_ENABLED_MANAGEMENT)
+            ?.toBooleanStrictOrNull() ?: false
+        val managementEmailWhitelist = envReader.getStringList(UserEnvKeys.EMAIL_WHITELIST_MANAGEMENT)
+
         val managementAuthSettings = ManagementAuthSettings(
             availableAuthProviders = AvailableAuthProviders(
                 primary = availablePrimaryAuthProviders,
@@ -69,17 +88,17 @@ class UserConfigFactoryImpl @Inject constructor(
             refreshTokenExpirationSeconds = refreshTokenExpirationSeconds,
             accountDeletionDelaySeconds = accountDeletionDelaySeconds,
             isRegistrationEnabled = isRegistrationEnabled,
-            openEmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
-                isBlacklistEnabled = false,
-                blacklist = emptyList(),
-                isWhitelistEnabled = false,
-                whitelist = emptyList()
+            openEmailRestrictionPolicy = EmailRestrictionPolicy(
+                isBlacklistEnabled = isOpenEmailBlacklistEnabled,
+                blacklist = openEmailBlacklist,
+                isWhitelistEnabled = isOpenEmailWhitelistEnabled,
+                whitelist = openEmailWhitelist
             ),
-            managementEmailRestrictionPolicy = EmailRestrictionPolicy( // todo wait for implementation
-                isBlacklistEnabled = false,
-                blacklist = emptyList(),
-                isWhitelistEnabled = false,
-                whitelist = emptyList()
+            managementEmailRestrictionPolicy = EmailRestrictionPolicy(
+                isBlacklistEnabled = isManagementEmailBlacklistEnabled,
+                blacklist = managementEmailBlacklist,
+                isWhitelistEnabled = isManagementEmailWhitelistEnabled,
+                whitelist = managementEmailWhitelist
             )
         )
 

@@ -25,6 +25,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -140,6 +141,7 @@ class LoginByPhoneUseCase @Inject constructor(
                 is AppResult.Success -> recordResult.data
                 is AppResult.Error -> null
             }
+            var resolvedUserId: UserId? = null
             if (blockedUntil != null) {
                 val identifierResult = identifierManager.getUserIdentifierInternalByProvider(
                     userAuthProvider = UserAuthProvider.PHONE,
@@ -150,16 +152,22 @@ class LoginByPhoneUseCase @Inject constructor(
                     is AppResult.Error -> null
                 }
                 if (identifierData != null) {
+                    resolvedUserId = identifierData.userId
                     userManager.lockUserAccount(identifierData.userId, blockedUntil)
                 }
             }
             val error = if (blockedUntil != null) {
-                UserError.UserBlocked(blockedUntil = blockedUntil)
+                UserError.UserBlocked(
+                    userId = resolvedUserId,
+                    blockedUntil = blockedUntil
+                )
             } else {
                 UserError.WrongConfirmationCode()
             }
             return handleError(
                 error = error,
+                actorId = resolvedUserId?.asHexDashString(),
+                resourceId = resolvedUserId?.asHexDashString(),
                 baseMetadata = auditMetadata
             )
         }
@@ -198,10 +206,12 @@ class LoginByPhoneUseCase @Inject constructor(
         baseMetadata: Set<AuditEventMetadata>
     ): AppResult<T> {
         val auditErrorLogData = auditErrorConverter.convert(error)
+        val resolvedActorId = actorId ?: (error as? UserError.UserBlocked)?.userId?.asHexDashString()
+        val resolvedResourceId = resourceId ?: (error as? UserError.UserBlocked)?.userId?.asHexDashString()
         logAudit(
-            actorId = actorId,
+            actorId = resolvedActorId,
             actorUserRole = actorUserRole,
-            resourceId = resourceId,
+            resourceId = resolvedResourceId,
             status = auditErrorLogData.status,
             metadata = baseMetadata + auditErrorLogData.metadata
         )

@@ -26,6 +26,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.iprestriction.IpRestrictionPolicyPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.otpconfirmation.OtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.passwordpolicy.ManagementPasswordPolicyPayload
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,6 +38,9 @@ class SecuritySettingsProviderImpl @Inject constructor(
     private val settingsService: SystemSettingsService,
     private val config: SecurityConfig
 ) : SecuritySettingsProvider {
+
+    private val openIpRestrictionPolicyCache = AtomicReference<Pair<String, IpRestrictionPolicy>?>()
+    private val managementIpRestrictionPolicyCache = AtomicReference<Pair<String, IpRestrictionPolicy>?>()
 
     override suspend fun initialize(): AppResult<Unit> {
         val defaultSettings = listOf(
@@ -157,15 +161,39 @@ class SecuritySettingsProviderImpl @Inject constructor(
     }
 
     override fun getOpenIpRestrictionPolicy(): IpRestrictionPolicy {
-        return settingsService.getJson(KEY_OPEN_IP_RESTRICTION_POLICY) { json ->
-            FoundationJson.decodeFromString<IpRestrictionPolicyPayload>(json).toIpRestrictionPolicy()
-        } ?: config.openIpRestrictionPolicy
+        val rawJson = settingsService.getString(KEY_OPEN_IP_RESTRICTION_POLICY)
+            ?: return config.openIpRestrictionPolicy
+
+        val cached = openIpRestrictionPolicyCache.get()
+        if (cached != null && (cached.first == rawJson)) {
+            return cached.second
+        }
+
+        return try {
+            val parsed = FoundationJson.decodeFromString<IpRestrictionPolicyPayload>(rawJson).toIpRestrictionPolicy()
+            openIpRestrictionPolicyCache.set(rawJson to parsed)
+            parsed
+        } catch (_: Exception) {
+            config.openIpRestrictionPolicy
+        }
     }
 
     override fun getManagementIpRestrictionPolicy(): IpRestrictionPolicy {
-        return settingsService.getJson(KEY_MANAGEMENT_IP_RESTRICTION_POLICY) { json ->
-            FoundationJson.decodeFromString<IpRestrictionPolicyPayload>(json).toIpRestrictionPolicy()
-        } ?: config.managementIpRestrictionPolicy
+        val rawJson = settingsService.getString(KEY_MANAGEMENT_IP_RESTRICTION_POLICY)
+            ?: return config.managementIpRestrictionPolicy
+
+        val cached = managementIpRestrictionPolicyCache.get()
+        if (cached != null && (cached.first == rawJson)) {
+            return cached.second
+        }
+
+        return try {
+            val parsed = FoundationJson.decodeFromString<IpRestrictionPolicyPayload>(rawJson).toIpRestrictionPolicy()
+            managementIpRestrictionPolicyCache.set(rawJson to parsed)
+            parsed
+        } catch (_: Exception) {
+            config.managementIpRestrictionPolicy
+        }
     }
 
     override fun getMfaTokenExpirationSeconds(): Int {

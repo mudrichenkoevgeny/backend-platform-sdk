@@ -1,25 +1,38 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.session
 
+import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
+import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionRequirement
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.token.RotatedRefreshTokenData
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
@@ -52,8 +65,24 @@ class SessionManagerImpl @Inject constructor(
     private val jwtTokenProvider: TokenProvider,
     private val refreshTokenProvider: RefreshTokenProvider,
     private val userManager: UserManager,
-    private val userSessionRepository: UserSessionRepository
+    private val userSessionRepository: UserSessionRepository,
+    private val redisManager: RedisManager,
+    private val auditLogger: AuditLogger,
+    private val userRepository: UserRepository
 ) : SessionManager {
+
+    companion object {
+        // todo wait for shared update ManagementSecuritySettings.refreshTokenRotationGracePeriodSeconds
+        private val GRACE_PERIOD_DURATION = 30.seconds
+
+        // todo wait for shared update SecurityAuditActionType.REFRESH_TOKEN_REUSE_DETECTED
+        private object RefreshTokenReuseAuditAction : AuditActionType {
+            override val serialName: String = "refresh_token_reuse_detected"
+            override fun parseOrNull(value: String): AuditActionType? = if (value == serialName) this else null
+            override fun parseOrThrow(value: String): AuditActionType =
+                parseOrNull(value) ?: throw IllegalArgumentException("Unknown action: '$value'")
+        }
+    }
 
     override suspend fun createSession(
         userId: UserId,
@@ -146,26 +175,90 @@ class SessionManagerImpl @Inject constructor(
             is AppResult.Error -> return@dbQuery currentUserSessionResult
         }
 
+        val now = Clock.System.now()
+
         val isSessionValid = currentUserSession?.isValid(
             clientDeviceId = clientInfo.deviceInfo.deviceId,
-            now = Clock.System.now()
+            now = now
         ) ?: false
 
-        if (currentUserSession == null || !isSessionValid) {
-            return@dbQuery AppResult.Error(UserError.InvalidRefreshToken())
+        if (currentUserSession != null && isSessionValid) {
+            userSessionRepository.deleteUserSessionById(currentUserSession.id)
+
+            val newSessionResult = createSession(
+                userId = currentUserSession.userId,
+                userRole = currentUserSession.userRole,
+                identifier = currentUserSession.identifier,
+                identifierId = currentUserSession.identifierId,
+                identifierAuthProvider = currentUserSession.identifierAuthProvider,
+                clientInfo = clientInfo,
+                lastReauthenticatedAt = currentUserSession.lastReauthenticatedAt
+            )
+
+            if (newSessionResult is AppResult.Success) {
+                val rotatedData = RotatedRefreshTokenData.from(
+                    sessionToken = newSessionResult.data,
+                    userId = currentUserSession.userId,
+                    rotatedAt = now
+                )
+                val serializedData = FoundationJson.encodeToString(rotatedData)
+                val refreshTtl = authSettingsProvider.getRefreshTokenExpirationSeconds().toLong()
+                redisManager.setWithExpiration(
+                    key = buildRotatedRefreshKey(refreshTokenHash.value),
+                    value = serializedData,
+                    expirationSeconds = refreshTtl
+                )
+            }
+
+            return@dbQuery newSessionResult
         }
 
-        userSessionRepository.deleteUserSessionById(currentUserSession.id)
+        val rotatedRedisResult = redisManager.get(buildRotatedRefreshKey(refreshTokenHash.value))
+        val rotatedJson = when (rotatedRedisResult) {
+            is AppResult.Success -> rotatedRedisResult.data
+            is AppResult.Error -> null
+        }
 
-        createSession(
-            userId = currentUserSession.userId,
-            userRole = currentUserSession.userRole,
-            identifier = currentUserSession.identifier,
-            identifierId = currentUserSession.identifierId,
-            identifierAuthProvider = currentUserSession.identifierAuthProvider,
-            clientInfo = clientInfo,
-            lastReauthenticatedAt = currentUserSession.lastReauthenticatedAt
-        )
+        if (rotatedJson != null) {
+            val rotatedData = runCatching {
+                FoundationJson.decodeFromString<RotatedRefreshTokenData>(rotatedJson)
+            }.getOrNull()
+
+            if (rotatedData != null) {
+                val elapsed = now - rotatedData.rotatedAt
+                if (elapsed <= GRACE_PERIOD_DURATION) {
+                    return@dbQuery AppResult.Success(rotatedData.toSessionToken())
+                } else {
+                    userSessionRepository.deleteAllUserSessions(rotatedData.getUserId())
+
+                    userRepository.updateUser(
+                        userId = rotatedData.getUserId(),
+                        status = UpdateField.Set(UserAccountStatus.SECURITY_HOLD)
+                    )
+
+                    redisManager.delete(buildRotatedRefreshKey(refreshTokenHash.value))
+
+                    auditLogger.log(
+                        actorId = rotatedData.getUserId().asHexDashString(),
+                        actorType = AuditActorType.USER,
+                        action = RefreshTokenReuseAuditAction,
+                        resource = UserAuditResourceType.USER,
+                        resourceId = rotatedData.getUserId().asHexDashString(),
+                        status = AuditStatus.FAILED,
+                        metadata = setOf(
+                            AuditEventMetadata(
+                                key = UserAuditMetadataKey.USER_ID,
+                                value = rotatedData.getUserId().asHexDashString()
+                            )
+                        )
+                    )
+
+                    return@dbQuery AppResult.Error(UserError.InvalidRefreshToken())
+                }
+            }
+        }
+
+        AppResult.Error(UserError.InvalidRefreshToken())
     }
 
     override suspend fun updateLastAccessed(userSessionId: UserSessionId): AppResult<Unit> = dbQuery {
@@ -432,4 +525,6 @@ class SessionManagerImpl @Inject constructor(
         ),
         isSensitiveValuesMasked = true
     )
+
+    private fun buildRotatedRefreshKey(hashValue: String): String = "auth:rotated_refresh:$hashValue"
 }

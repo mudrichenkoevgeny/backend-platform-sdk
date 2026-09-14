@@ -20,6 +20,7 @@ import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.Telemetr
 import io.github.mudrichenkoevgeny.backend.core.security.di.SecurityModules
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.system.settings.SeedSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.core.security.validator.iprestriction.IpRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.backend.core.settings.di.SettingsModules
 import io.github.mudrichenkoevgeny.backend.core.storage.di.StorageModules
 import io.github.mudrichenkoevgeny.backend.feature.auditapi.di.AuditApiModules
@@ -115,6 +116,7 @@ interface AppComponent {
     // security
     fun securitySettingsProvider(): SecuritySettingsProvider
     fun seedSecuritySettingsUseCase(): SeedSecuritySettingsUseCase
+    fun ipRestrictionPolicyValidator(): IpRestrictionPolicyValidator
     fun openSecuritySettingsRouter(): OpenSecuritySettingsRouter
     fun managementSecuritySettingsRouter(): ManagementSecuritySettingsRouter
 

@@ -5,11 +5,15 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirmationData
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
@@ -17,18 +21,24 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SendAddEmailIdentifierConfirmationUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
+    private val authSettingsProvider = mockk<AuthSettingsProvider>()
+    private val emailRestrictionPolicyValidator = EmailRestrictionPolicyValidator()
     private val identifierManager = mockk<IdentifierManager>()
     private val otpService = mockk<OtpService>()
     private val emailService = mockk<EmailService>()
 
     private val useCase = SendAddEmailIdentifierConfirmationUseCase(
         rateLimiter = rateLimiter,
+        authSettingsProvider = authSettingsProvider,
+        emailRestrictionPolicyValidator = emailRestrictionPolicyValidator,
         identifierManager = identifierManager,
         otpService = otpService,
         emailService = emailService
@@ -44,6 +54,8 @@ class SendAddEmailIdentifierConfirmationUseCaseTest {
             otpConfirmation = otpConfirmation,
             code = TEST_CODE
         )
+
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
 
         coEvery {
             rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_EMAIL, TEST_EMAIL)
@@ -126,6 +138,23 @@ class SendAddEmailIdentifierConfirmationUseCaseTest {
         assertEquals(AppResult.Error(error), result)
 
         coVerify(exactly = 0) { otpService.getOtp(any(), any()) }
+    }
+
+    @Test
+    fun `returns error when email is not allowed by restriction policy`() = runTest {
+        coEvery {
+            rateLimiter.checkRateLimit(any(), any())
+        } returns AppResult.Success(Unit)
+
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy(
+            isBlacklistEnabled = true,
+            blacklist = listOf("@tempmail.com")
+        )
+
+        val result = useCase("user@tempmail.com", context)
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is UserError.EmailNotAllowed)
     }
 
     companion object {
