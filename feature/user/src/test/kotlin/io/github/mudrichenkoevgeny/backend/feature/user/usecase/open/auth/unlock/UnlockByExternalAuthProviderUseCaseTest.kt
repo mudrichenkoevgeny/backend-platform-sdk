@@ -89,7 +89,7 @@ class UnlockByExternalAuthProviderUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_TOKEN) } returns AppResult.Success(Unit)
         coEvery { externalAuthVerifier.verify(TEST_TOKEN) } returns AppResult.Success(verificationData)
         coEvery { identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.GOOGLE, TEST_EXTERNAL_ID) } returns AppResult.Success(identifier)
-        coEvery { userManager.unlockUserAccount(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.unlockUserAccount(userId, listOf(TEST_EXTERNAL_ID)) } returns AppResult.Success(userDetails)
 
         val result = useCase(UserAuthProvider.GOOGLE, TEST_TOKEN, context)
 

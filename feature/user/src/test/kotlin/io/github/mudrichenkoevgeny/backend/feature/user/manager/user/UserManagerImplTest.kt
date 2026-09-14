@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.manager.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
@@ -19,6 +20,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.time.Clock
 
@@ -26,9 +28,17 @@ class UserManagerImplTest {
 
     private val userRepository = mockk<UserRepository>()
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
-    private val userManager = UserManagerImpl(userRepository, authSettingsProvider)
+    private val lockoutManager = mockk<LockoutManager>(relaxed = true)
+    private val userManager = UserManagerImpl(userRepository, authSettingsProvider, lockoutManager)
 
     private val userId = UserId.generate()
+
+    @BeforeEach
+    fun setup() {
+        org.jetbrains.exposed.v1.jdbc.Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
+        coEvery { lockoutManager.isIndefiniteLockout(any()) } returns AppResult.Success(false)
+        coEvery { lockoutManager.getLockoutUntil(any()) } returns AppResult.Success(null)
+    }
 
     @Test
     fun `getUserByIdForSelf returns success`() = runTest {

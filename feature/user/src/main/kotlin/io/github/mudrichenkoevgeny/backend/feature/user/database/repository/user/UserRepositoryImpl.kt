@@ -61,13 +61,13 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             row[authorityLevel] = user.authorityLevel
             row[permissionCodes] = user.permissionCodes.map { it.value }.toSet()
             row[isTotpEnabled] = user.isTotpEnabled
-            row[accountLockoutType] = user.lockoutType
-            row[temporaryLockoutUntil] = user.temporaryLockoutUntil?.toJavaInstant()
             row[lastLoginAt] = user.lastLoginAt?.toJavaInstant()
             row[lastActiveAt] = user.lastActiveAt?.toJavaInstant()
             row[createdAt] = user.createdAt.toJavaInstant()
             row[updatedAt] = user.updatedAt?.toJavaInstant()
             row[scheduledPermanentDeletionAt] = user.scheduledPermanentDeletionAt?.toJavaInstant()
+            row[accountLockoutType] = user.lockoutType
+            row[temporaryLockoutUntil] = user.temporaryLockoutUntil?.toJavaInstant()
         }
 
         if (inserted.insertedCount == 0) {
@@ -91,11 +91,11 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         authorityLevel: UpdateField<Int>,
         permissionCodes: UpdateField<Set<PermissionCode>>,
         isTotpEnabled: UpdateField<Boolean>,
-        accountLockoutType: UpdateField<AccountLockoutType>,
-        temporaryLockoutUntil: UpdateField<KotlinInstant>,
         lastLoginAt: UpdateField<KotlinInstant>,
         lastActiveAt: UpdateField<KotlinInstant>,
-        scheduledPermanentDeletionAt: UpdateField<KotlinInstant>
+        scheduledPermanentDeletionAt: UpdateField<KotlinInstant>,
+        accountLockoutType: UpdateField<AccountLockoutType>,
+        temporaryLockoutUntil: UpdateField<KotlinInstant>
     ): AppResult<UserDetails> {
         val statusToSet = if (status is UpdateField.Set) {
             status.value
@@ -137,16 +137,6 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
                 updateStatement[UsersTable.isTotpEnabled] = enabled
             }
 
-            accountLockoutType.onSet { type ->
-                if (type != null) {
-                    updateStatement[UsersTable.accountLockoutType] = type
-                }
-            }
-
-            temporaryLockoutUntil.onSet { until ->
-                updateStatement[UsersTable.temporaryLockoutUntil] = until?.toJavaInstant()
-            }
-
             lastLoginAt.onSet { lastLoginAt ->
                 updateStatement[UsersTable.lastLoginAt] = lastLoginAt?.toJavaInstant()
             }
@@ -157,6 +147,16 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
 
             scheduledPermanentDeletionAt.onSet { scheduledDeletionAt ->
                 updateStatement[UsersTable.scheduledPermanentDeletionAt] = scheduledDeletionAt?.toJavaInstant()
+            }
+
+            accountLockoutType.onSet { type ->
+                if (type != null) {
+                    updateStatement[UsersTable.accountLockoutType] = type
+                }
+            }
+
+            temporaryLockoutUntil.onSet { until ->
+                updateStatement[UsersTable.temporaryLockoutUntil] = until?.toJavaInstant()
             }
 
             updateStatement[UsersTable.updatedAt] = updatedAtJavaInstant
@@ -289,13 +289,13 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             authorityLevel = this[UsersTable.authorityLevel],
             permissionCodes = this[UsersTable.permissionCodes].map { PermissionCode(it) }.toSet(),
             isTotpEnabled = this[UsersTable.isTotpEnabled],
-            lockoutType = this[UsersTable.accountLockoutType],
-            temporaryLockoutUntil = this[UsersTable.temporaryLockoutUntil]?.toKotlinInstant(),
             lastLoginAt = this[UsersTable.lastLoginAt]?.toKotlinInstant(),
             lastActiveAt = this[UsersTable.lastActiveAt]?.toKotlinInstant(),
             createdAt = this[UsersTable.createdAt].toKotlinInstant(),
             updatedAt = this[UsersTable.updatedAt]?.toKotlinInstant(),
-            scheduledPermanentDeletionAt = this[UsersTable.scheduledPermanentDeletionAt]?.toKotlinInstant()
+            scheduledPermanentDeletionAt = this[UsersTable.scheduledPermanentDeletionAt]?.toKotlinInstant(),
+            lockoutType = this[UsersTable.accountLockoutType],
+            temporaryLockoutUntil = this[UsersTable.temporaryLockoutUntil]?.toKotlinInstant()
         )
     }
 }

@@ -81,7 +81,7 @@ class AddUserIdentifierPhoneUseCaseTest {
 
         coEvery {
             authManager.createIdentifierForAuthorizedUser(
-                context.userId, UserAuthProvider.PHONE, TEST_PHONE, null, null
+                context.userId, UserAuthProvider.PHONE, TEST_PHONE, null
             )
         } returns AppResult.Success(identifier)
 

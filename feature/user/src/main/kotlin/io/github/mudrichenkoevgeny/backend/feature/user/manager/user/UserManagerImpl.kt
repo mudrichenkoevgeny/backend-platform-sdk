@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
+import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
@@ -35,11 +36,17 @@ import kotlin.time.Instant
 @Singleton
 class UserManagerImpl @Inject constructor(
     private val userRepository: UserRepository,
-    private val authSettingsProvider: AuthSettingsProvider
+    private val authSettingsProvider: AuthSettingsProvider,
+    private val lockoutManager: LockoutManager
 ): UserManager {
 
     override suspend fun getUserByIdForSelf(userId: UserId): AppResult<UserDetails?> = dbQuery {
-        userRepository.getUserDetailsById(userId)
+        val userResult = userRepository.getUserDetailsById(userId)
+        val user = when (userResult) {
+            is AppResult.Success -> userResult.data ?: return@dbQuery AppResult.Success(null)
+            is AppResult.Error -> return@dbQuery userResult
+        }
+        AppResult.Success(enrichUserDetailsWithLockout(user))
     }
 
     override suspend fun createUser(
@@ -122,7 +129,7 @@ class UserManagerImpl @Inject constructor(
             authorityLevel = authorityLevel?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
             permissionCodes = permissions?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
             scheduledPermanentDeletionAt = scheduledDeletionUpdate
-        ).mapSuccess { userDetails -> userDetails }
+        ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
     }
 
     override suspend fun getUserForManagement(
@@ -143,7 +150,7 @@ class UserManagerImpl @Inject constructor(
                     return@dbQuery AppResult.Error(UserError.UserMissingPermissions(managementUserId))
                 }
 
-                AppResult.Success(targetUser)
+                AppResult.Success(enrichUserDetailsWithLockout(targetUser))
             }
         }
     }
@@ -162,7 +169,7 @@ class UserManagerImpl @Inject constructor(
         isTotpEnabled: Boolean?,
     ): AppResult<PagedResult<UserDetails>> = dbQuery {
         val accessFilter = buildAccessFilter(managementUserPermissionCodes)
-        userRepository.getUsersPageWithAccessFilter(
+        val pagedResult = userRepository.getUsersPageWithAccessFilter(
             accessFilter = accessFilter,
             pageParams = pageParams,
             sortBy = sortBy,
@@ -175,6 +182,25 @@ class UserManagerImpl @Inject constructor(
             permissionCodes = permissionCodes,
             isTotpEnabled = isTotpEnabled
         )
+
+        val enrichedItems = when (pagedResult) {
+            is AppResult.Success -> {
+                val enrichedList = mutableListOf<UserDetails>()
+                for (item in pagedResult.data.items) {
+                    enrichedList.add(enrichUserDetailsWithLockout(item))
+                }
+                PagedResult(
+                    items = enrichedList,
+                    totalCount = pagedResult.data.totalCount,
+                    pageNumber = pagedResult.data.pageNumber,
+                    pageSize = pagedResult.data.pageSize,
+                    totalPages = pagedResult.data.totalPages
+                )
+            }
+            is AppResult.Error -> return@dbQuery pagedResult
+        }
+
+        AppResult.Success(enrichedItems)
     }
 
     override suspend fun restoreUserForSelf(
@@ -186,7 +212,7 @@ class UserManagerImpl @Inject constructor(
             status = UpdateField.Set(newStatus),
             statusBeforeDeletion = UpdateField.Set(null),
             scheduledPermanentDeletionAt = UpdateField.Set(null)
-        )
+        ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
     }
 
     override suspend fun scheduleUserDeletionForSelf(
@@ -198,19 +224,44 @@ class UserManagerImpl @Inject constructor(
             status = UpdateField.Set(UserAccountStatus.PENDING_DELETION),
             statusBeforeDeletion = UpdateField.Set(currentStatus),
             scheduledPermanentDeletionAt = UpdateField.Set(getScheduledPermanentDeletionAt())
-        )
+        ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
     }
 
     override suspend fun deleteUserForManagement(userId: UserId): AppResult<Unit> = dbQuery {
         userRepository.deleteUser(userId)
     }
 
-    override suspend fun unlockUserAccount(userId: UserId): AppResult<UserDetails> = dbQuery {
+    override suspend fun unlockUserAccount(
+        userId: UserId,
+        clearLockoutForIdentifiers: List<String>
+    ): AppResult<UserDetails> = dbQuery {
+        lockoutManager.clearLockout(userId.asHexDashString())
+
+        for (identifier in clearLockoutForIdentifiers) {
+            lockoutManager.clearLockout(identifier)
+        }
+
         userRepository.updateUser(
             userId = userId,
             accountLockoutType = UpdateField.Set(AccountLockoutType.NONE),
             temporaryLockoutUntil = UpdateField.Set(null)
-        )
+        ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
+    }
+
+    override suspend fun lockUserAccount(userId: UserId, blockedUntil: Instant): AppResult<UserDetails> = dbQuery {
+        userRepository.updateUser(
+            userId = userId,
+            accountLockoutType = UpdateField.Set(AccountLockoutType.TEMPORARY),
+            temporaryLockoutUntil = UpdateField.Set(blockedUntil)
+        ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
+    }
+
+    override suspend fun lockUserAccountIndefinitely(userId: UserId): AppResult<UserDetails> = dbQuery {
+        userRepository.updateUser(
+            userId = userId,
+            accountLockoutType = UpdateField.Set(AccountLockoutType.PERMANENT),
+            temporaryLockoutUntil = UpdateField.Set(null)
+        ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
     }
 
     override suspend fun deleteUsersDueForPermanentDeletionForSystem(): AppResult<Int> = dbQuery {
@@ -232,6 +283,47 @@ class UserManagerImpl @Inject constructor(
             }
         }
         AppResult.Success(unlockedCount)
+    }
+
+    private suspend fun enrichUserDetailsWithLockout(user: UserDetails): UserDetails {
+        val isIndefiniteResult = lockoutManager.isIndefiniteLockout(user.id.asHexDashString())
+        val isIndefinite = when (isIndefiniteResult) {
+            is AppResult.Success -> isIndefiniteResult.data
+            is AppResult.Error -> false
+        }
+
+        if (isIndefinite) {
+            return user.copy(
+                lockoutType = AccountLockoutType.PERMANENT,
+                temporaryLockoutUntil = null
+            )
+        }
+
+        val lockoutUntilResult = lockoutManager.getLockoutUntil(user.id.asHexDashString())
+        val lockoutUntil = when (lockoutUntilResult) {
+            is AppResult.Success -> lockoutUntilResult.data
+            is AppResult.Error -> null
+        }
+
+        if (lockoutUntil != null && user.lockoutType != AccountLockoutType.PERMANENT) {
+            return user.copy(
+                lockoutType = AccountLockoutType.TEMPORARY,
+                temporaryLockoutUntil = lockoutUntil
+            )
+        }
+
+        if (user.lockoutType == AccountLockoutType.TEMPORARY) {
+            val now = Clock.System.now()
+            val tempUntil = user.temporaryLockoutUntil
+            if (tempUntil != null && now >= tempUntil) {
+                return user.copy(
+                    lockoutType = AccountLockoutType.NONE,
+                    temporaryLockoutUntil = null
+                )
+            }
+        }
+
+        return user
     }
 
     private fun buildAccessFilter(userPermissionCodes: Set<PermissionCode>): UserRoleAccessFilter {

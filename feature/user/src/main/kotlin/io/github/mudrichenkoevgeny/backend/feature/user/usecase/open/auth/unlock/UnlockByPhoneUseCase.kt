@@ -124,7 +124,10 @@ class UnlockByPhoneUseCase @Inject constructor(
             )
         }
 
-        val unlockResult = userManager.unlockUserAccount(userIdentifier.userId)
+        val unlockResult = userManager.unlockUserAccount(
+            userId = userIdentifier.userId,
+            clearLockoutForIdentifiers = listOf(phoneNumber)
+        )
         return when (unlockResult) {
             is AppResult.Error -> handleError(
                 error = unlockResult.error,

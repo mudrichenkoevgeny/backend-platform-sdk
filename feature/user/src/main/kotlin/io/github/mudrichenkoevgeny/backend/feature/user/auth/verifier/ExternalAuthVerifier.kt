@@ -7,6 +7,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 /**
  * Verifies a token issued by an external authentication provider (e.g. Google) and extracts the
  * provider identity data used by the user feature.
+ *
+ * **Security Requirement:** Implementations MUST strictly enforce email verification checks.
+ * If the external provider includes an email address but does not explicitly confirm that it is
+ * verified by the user, the implementation MUST discard the email (set it to `null` in
+ * [ExternalAuthProviderData]) to prevent Account Takeover (ATO) via implicit account linking.
  */
 interface ExternalAuthVerifier {
     /**

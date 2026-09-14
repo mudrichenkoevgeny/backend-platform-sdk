@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLog
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
@@ -40,6 +41,7 @@ class UnlockByEmailUseCaseTest {
     private val identifierManager = mockk<IdentifierManager>()
     private val otpService = mockk<OtpService>()
     private val userManager = mockk<UserManager>()
+    private val lockoutManager = mockk<LockoutManager>()
 
     private val useCase = UnlockByEmailUseCase(
         rateLimiter = rateLimiter,
@@ -48,7 +50,8 @@ class UnlockByEmailUseCaseTest {
         securitySettingsProvider = securitySettingsProvider,
         identifierManager = identifierManager,
         otpService = otpService,
-        userManager = userManager
+        userManager = userManager,
+        lockoutManager = lockoutManager
     )
 
     @Test
@@ -69,7 +72,7 @@ class UnlockByEmailUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_EMAIL) } returns AppResult.Success(Unit)
         coEvery { otpService.verifyOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_UNLOCK, TEST_CODE) } returns AppResult.Success(true)
         coEvery { identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.EMAIL, TEST_EMAIL) } returns AppResult.Success(identifier)
-        coEvery { userManager.unlockUserAccount(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.unlockUserAccount(userId, listOf(TEST_EMAIL)) } returns AppResult.Success(userDetails)
 
         val result = useCase(TEST_EMAIL, TEST_CODE, context)
 

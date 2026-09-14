@@ -39,11 +39,11 @@ interface UserRepository {
      * @param authorityLevel new authority level.
      * @param permissionCodes new set of effective permissions.
      * @param isTotpEnabled TOTP enablement status.
-     * @param accountLockoutType account lockout type.
-     * @param temporaryLockoutUntil timestamp when temporary lockout expires.
      * @param lastLoginAt timestamp of the last successful authentication.
      * @param lastActiveAt timestamp of the last user activity.
      * @param scheduledPermanentDeletionAt timestamp for the final removal of the account.
+     * @param accountLockoutType account lockout type.
+     * @param temporaryLockoutUntil timestamp when temporary lockout expires.
      * @return [AppResult] containing the updated [UserDetails].
      */
     suspend fun updateUser(
@@ -53,11 +53,11 @@ interface UserRepository {
         authorityLevel: UpdateField<Int> = UpdateField.Ignore,
         permissionCodes: UpdateField<Set<PermissionCode>> = UpdateField.Ignore,
         isTotpEnabled: UpdateField<Boolean> = UpdateField.Ignore,
-        accountLockoutType: UpdateField<AccountLockoutType> = UpdateField.Ignore,
-        temporaryLockoutUntil: UpdateField<Instant> = UpdateField.Ignore,
         lastLoginAt: UpdateField<Instant> = UpdateField.Ignore,
         lastActiveAt: UpdateField<Instant> = UpdateField.Ignore,
-        scheduledPermanentDeletionAt: UpdateField<Instant> = UpdateField.Ignore
+        scheduledPermanentDeletionAt: UpdateField<Instant> = UpdateField.Ignore,
+        accountLockoutType: UpdateField<AccountLockoutType> = UpdateField.Ignore,
+        temporaryLockoutUntil: UpdateField<Instant> = UpdateField.Ignore
     ): AppResult<UserDetails>
 
     suspend fun getUserDetailsById(userId: UserId): AppResult<UserDetails?>
@@ -80,6 +80,7 @@ interface UserRepository {
      * @param authorityLevelTo optional inclusive upper bound for authority level.
      * @param permissionCodes list of permission codes that the user MUST possess (ALL of them).
      * @param isTotpEnabled optional filter by TOTP enablement status.
+     * // todo wait for shared update and add lockout fields
      * @return [PagedResult] of matching users or an error.
      */
     suspend fun getUsersPageWithAccessFilter(

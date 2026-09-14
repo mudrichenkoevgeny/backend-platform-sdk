@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
@@ -33,7 +34,8 @@ class UnlockByEmailUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val identifierManager: IdentifierManager,
     private val otpService: OtpService,
-    private val userManager: UserManager
+    private val userManager: UserManager,
+    private val lockoutManager: LockoutManager
 ) {
     /**
      * Unlocks a temporarily locked user account using an email confirmation code.
@@ -124,7 +126,10 @@ class UnlockByEmailUseCase @Inject constructor(
             )
         }
 
-        val unlockResult = userManager.unlockUserAccount(userIdentifier.userId)
+        val unlockResult = userManager.unlockUserAccount(
+            userId = userIdentifier.userId,
+            clearLockoutForIdentifiers = listOf(email)
+        )
         return when (unlockResult) {
             is AppResult.Error -> handleError(
                 error = unlockResult.error,

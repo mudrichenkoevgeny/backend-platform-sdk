@@ -69,7 +69,7 @@ class UnlockByPhoneUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_PHONE) } returns AppResult.Success(Unit)
         coEvery { otpService.verifyOtp(TEST_PHONE, UserOtpVerificationType.PHONE_UNLOCK, TEST_CODE) } returns AppResult.Success(true)
         coEvery { identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.PHONE, TEST_PHONE) } returns AppResult.Success(identifier)
-        coEvery { userManager.unlockUserAccount(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.unlockUserAccount(userId, listOf(TEST_PHONE)) } returns AppResult.Success(userDetails)
 
         val result = useCase(TEST_PHONE, TEST_CODE, context)
 

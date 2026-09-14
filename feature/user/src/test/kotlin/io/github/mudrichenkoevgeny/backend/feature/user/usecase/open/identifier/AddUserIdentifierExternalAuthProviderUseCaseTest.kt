@@ -113,8 +113,7 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
                 userId = context.userId,
                 userAuthProvider = UserAuthProvider.GOOGLE,
                 identifier = "ext_google_123",
-                password = null,
-                externalProviderEmail = "test@google.com"
+                password = null
             )
         } returns AppResult.Success(identifier)
 

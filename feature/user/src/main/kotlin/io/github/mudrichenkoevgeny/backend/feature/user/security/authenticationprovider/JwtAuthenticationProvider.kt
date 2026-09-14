@@ -2,8 +2,6 @@ package io.github.mudrichenkoevgeny.backend.feature.user.security.authentication
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.auth0.jwt.exceptions.JWTDecodeException
-import com.auth0.jwt.exceptions.TokenExpiredException
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
@@ -13,7 +11,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionIdFromCredential
-import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromCredential
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
@@ -68,33 +65,33 @@ class JwtAuthenticationProvider @Inject constructor(
                 }
 
                 validate { credential ->
-                    try {
-                        val userId = credential.getUserIdFromCredential()
-                        val userResult = userManager.getUserByIdForSelf(userId)
-
-                        when (userResult) {
-                            is AppResult.Success -> {
-                                if (userResult.data == null) return@validate null
-
-                                val sessionId = credential.getSessionIdFromCredential()
-                                if (sessionId != null) {
-                                    sessionManager.updateLastAccessed(sessionId)
-                                }
-                                JWTPrincipal(credential.payload)
-                            }
-                            is AppResult.Error -> null
-                        }
-                    } catch (_: JWTDecodeException) {
-                        null
-                    } catch (_: TokenExpiredException) {
-                        null
-                    } catch (_: Exception) {
-                        null
+                    val sessionId = credential.getSessionIdFromCredential()
+                    if (sessionId != null) {
+                        sessionManager.updateLastAccessed(sessionId)
                     }
+                    JWTPrincipal(credential.payload)
                 }
 
                 challenge { _, _ ->
-                    val appError = UserError.InvalidAccessToken()
+                    val authHeader = call.request.parseAuthorizationHeader()
+                    var isExpired = false
+
+                    if (authHeader is HttpAuthHeader.Single && authHeader.authScheme.equals(UserAuthSpec.TOKEN_TYPE_BEARER, ignoreCase = true)) {
+                        try {
+                            val jwt = JWT.decode(authHeader.blob)
+                            if (jwt.expiresAt != null && jwt.expiresAt.time < System.currentTimeMillis()) {
+                                isExpired = true
+                            }
+                        } catch (_: Exception) {
+                        }
+                    }
+
+                    val appError = if (isExpired) {
+                        UserError.AccessTokenExpired()
+                    } else {
+                        UserError.InvalidAccessToken()
+                    }
+
                     val apiError = appErrorParser.getApiErrorResponse(appError)
                     call.respond(appError.httpStatusCode, apiError)
                 }

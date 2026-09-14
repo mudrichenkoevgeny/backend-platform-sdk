@@ -77,7 +77,6 @@ interface AuthManager {
      * @param userAuthProvider The authentication method to be registered.
      * @param identifier The unique identifier string.
      * @param password Raw password to be hashed.
-     * @param externalProviderEmail Optional email for account linking logic.
      * @param roleForUserCreation Explicit role for the new user.
      * @param accountStatusForUserCreation Explicit status for the new user.
      * @param authorityLevelForUserCreation  Explicit authorityLevel for the new user.
@@ -88,7 +87,6 @@ interface AuthManager {
         userAuthProvider: UserAuthProvider,
         identifier: String,
         password: String? = null,
-        externalProviderEmail: String? = null,
         roleForUserCreation: UserRole,
         accountStatusForUserCreation: UserAccountStatus,
         authorityLevelForUserCreation: Int,
@@ -104,15 +102,13 @@ interface AuthManager {
      * @param userAuthProvider The new provider type to add.
      * @param identifier The identifier string for the new provider.
      * @param password Raw password (if adding an email provider).
-     * @param externalProviderEmail Optional email from an external provider.
      * @return [AppResult] with the new [UserIdentifier].
      */
     suspend fun createIdentifierForAuthorizedUser(
         userId: UserId,
         userAuthProvider: UserAuthProvider,
         identifier: String,
-        password: String? = null,
-        externalProviderEmail: String? = null
+        password: String? = null
     ): AppResult<UserIdentifier>
 
     /**

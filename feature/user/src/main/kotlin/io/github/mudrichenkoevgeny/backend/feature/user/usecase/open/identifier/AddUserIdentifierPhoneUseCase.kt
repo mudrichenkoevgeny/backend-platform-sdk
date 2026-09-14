@@ -165,8 +165,7 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
             userId = currentUserId,
             userAuthProvider = UserAuthProvider.PHONE,
             identifier = phoneNumber,
-            password = null,
-            externalProviderEmail = null
+            password = null
         )
 
         when (createIdentifierResult) {

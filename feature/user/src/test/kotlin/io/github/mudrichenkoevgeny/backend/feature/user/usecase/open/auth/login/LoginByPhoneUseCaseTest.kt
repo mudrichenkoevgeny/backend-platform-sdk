@@ -4,10 +4,13 @@ import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLog
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
@@ -27,6 +30,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class LoginByPhoneUseCaseTest {
@@ -36,14 +40,28 @@ class LoginByPhoneUseCaseTest {
     private val auditErrorConverter = mockk<AuditErrorConverter>()
     private val otpService = mockk<OtpService>()
     private val authManager = mockk<AuthManager>()
+    private val lockoutManager = mockk<LockoutManager>(relaxed = true)
+    private val identifierManager = mockk<IdentifierManager>()
+    private val userManager = mockk<UserManager>()
 
     private val useCase = LoginByPhoneUseCase(
         rateLimiter = rateLimiter,
         auditLogger = auditLogger,
         auditErrorConverter = auditErrorConverter,
         otpService = otpService,
-        authManager = authManager
+        authManager = authManager,
+        lockoutManager = lockoutManager,
+        identifierManager = identifierManager,
+        userManager = userManager
     )
+
+    @BeforeEach
+    fun setup() {
+        coEvery { lockoutManager.isIndefiniteLockout(any()) } returns AppResult.Success(false)
+        coEvery { lockoutManager.getLockoutUntil(any()) } returns AppResult.Success(null)
+        coEvery { lockoutManager.clearLockout(any()) } returns AppResult.Success(Unit)
+        coEvery { lockoutManager.recordFailedAttempt(any(), any()) } returns AppResult.Success(null)
+    }
 
     @Test
     fun `successfully authenticates by phone and logs audit`() = runTest {

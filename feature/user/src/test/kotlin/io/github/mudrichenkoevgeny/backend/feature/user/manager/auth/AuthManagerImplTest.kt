@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.auth
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.createTestSessionToken
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
@@ -33,6 +34,7 @@ class AuthManagerImplTest {
     private val passwordHasher = mockk<PasswordHasher>()
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val webSocketManager = mockk<WebSocketManager>()
+    private val lockoutManager = mockk<LockoutManager>()
 
     private val authManager = AuthManagerImpl(
         userManager,
@@ -40,7 +42,8 @@ class AuthManagerImplTest {
         sessionManager,
         passwordHasher,
         authSettingsProvider,
-        webSocketManager
+        webSocketManager,
+        lockoutManager
     )
 
     @BeforeEach
@@ -48,6 +51,10 @@ class AuthManagerImplTest {
         Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
         coEvery { authSettingsProvider.getMaxActiveSessionsForOpenUser() } returns 5
         coEvery { authSettingsProvider.getMaxActiveSessionsForManagementUser() } returns 3
+
+        coEvery { lockoutManager.isIndefiniteLockout(any()) } returns AppResult.Success(false)
+        coEvery { lockoutManager.getLockoutUntil(any()) } returns AppResult.Success(null)
+        coEvery { lockoutManager.clearLockout(any()) } returns AppResult.Success(Unit)
     }
 
     @Test

@@ -55,7 +55,7 @@ class SeedAdminAccountsUseCaseTest {
 
         coEvery {
             authManager.createUserAndIdentifier(
-                any(), any(), any(), any(), any(), any(), any(), any()
+                any(), any(), any(), any(), any(), any(), any()
             )
         } returns AppResult.Error(alreadyExistsError)
 
@@ -71,7 +71,7 @@ class SeedAdminAccountsUseCaseTest {
 
         coEvery {
             authManager.createUserAndIdentifier(
-                any(), any(), any(), any(), any(), any(), any(), any()
+                any(), any(), any(), any(), any(), any(), any()
             )
         } returns AppResult.Error(criticalError)
 
@@ -91,7 +91,6 @@ class SeedAdminAccountsUseCaseTest {
                 userAuthProvider = any(),
                 identifier = eq(configAccount.email),
                 password = any(),
-                externalProviderEmail = any(),
                 roleForUserCreation = any(),
                 accountStatusForUserCreation = any(),
                 authorityLevelForUserCreation = any(),
@@ -117,7 +116,6 @@ class SeedAdminAccountsUseCaseTest {
                 userAuthProvider = any(),
                 identifier = eq("first@admin.com"),
                 password = any(),
-                externalProviderEmail = any(),
                 roleForUserCreation = any(),
                 accountStatusForUserCreation = any(),
                 authorityLevelForUserCreation = any(),
@@ -130,7 +128,6 @@ class SeedAdminAccountsUseCaseTest {
                 userAuthProvider = any(),
                 identifier = eq("second@admin.com"),
                 password = any(),
-                externalProviderEmail = any(),
                 roleForUserCreation = any(),
                 accountStatusForUserCreation = any(),
                 authorityLevelForUserCreation = any(),

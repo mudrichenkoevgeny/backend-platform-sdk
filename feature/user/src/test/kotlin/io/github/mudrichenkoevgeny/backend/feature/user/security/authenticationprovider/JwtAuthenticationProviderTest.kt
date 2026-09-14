@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
@@ -27,6 +28,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 class JwtAuthenticationProviderTest {
 
@@ -102,7 +105,7 @@ class JwtAuthenticationProviderTest {
             userId = userId,
             role = UserRole.USER,
             status = UserAccountStatus.ACTIVE,
-            permissions = emptySet()
+            permissions = setOf()
         )
 
         every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
@@ -156,11 +159,62 @@ class JwtAuthenticationProviderTest {
         assertTrue((result as AppResult.Error).error is UserError.UserNotFound)
     }
 
+    @Test
+    fun `requireUser should return Error when lockoutType is PERMANENT`() = runTest {
+        val userId = UserId.generate()
+        val userDetails = createFakeUser(
+            userId = userId,
+            role = UserRole.USER,
+            status = UserAccountStatus.ACTIVE,
+            lockoutType = AccountLockoutType.PERMANENT
+        )
+
+        every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+
+        val result = provider.requireUser(
+            call = call,
+            allowedRoles = setOf(UserRole.USER),
+            allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE),
+            requiredPermissions = emptySet()
+        )
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is UserError.UserBlocked)
+    }
+
+    @Test
+    fun `requireUser should return Error when lockoutType is TEMPORARY and time is in future`() = runTest {
+        val userId = UserId.generate()
+        val userDetails = createFakeUser(
+            userId = userId,
+            role = UserRole.USER,
+            status = UserAccountStatus.ACTIVE,
+            lockoutType = AccountLockoutType.TEMPORARY,
+            temporaryLockoutUntil = Clock.System.now() + 1.hours
+        )
+
+        every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+
+        val result = provider.requireUser(
+            call = call,
+            allowedRoles = setOf(UserRole.USER),
+            allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE),
+            requiredPermissions = emptySet()
+        )
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is UserError.UserBlocked)
+    }
+
     private fun createFakeUser(
         userId: UserId,
         role: UserRole,
         status: UserAccountStatus,
-        permissions: Set<PermissionCode> = emptySet()
+        permissions: Set<PermissionCode> = emptySet(),
+        lockoutType: AccountLockoutType = AccountLockoutType.NONE,
+        temporaryLockoutUntil: Instant? = null
     ): UserDetails {
         val now = Clock.System.now()
         return createTestUserDetails(
@@ -173,6 +227,9 @@ class JwtAuthenticationProviderTest {
             lastActiveAt = now,
             createdAt = now,
             updatedAt = now
+        ).copy(
+            lockoutType = lockoutType,
+            temporaryLockoutUntil = temporaryLockoutUntil
         )
     }
 }

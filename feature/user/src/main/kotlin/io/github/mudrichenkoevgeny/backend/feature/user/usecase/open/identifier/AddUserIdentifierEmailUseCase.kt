@@ -181,8 +181,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
             userId = currentUserId,
             userAuthProvider = UserAuthProvider.EMAIL,
             identifier = email,
-            password = password,
-            externalProviderEmail = null
+            password = password
         )
 
         when (createIdentifierResult) {

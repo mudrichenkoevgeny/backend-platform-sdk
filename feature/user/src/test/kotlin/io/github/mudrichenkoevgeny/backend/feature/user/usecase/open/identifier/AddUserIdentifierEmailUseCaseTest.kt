@@ -92,7 +92,7 @@ class AddUserIdentifierEmailUseCaseTest {
 
         coEvery {
             authManager.createIdentifierForAuthorizedUser(
-                context.userId, UserAuthProvider.EMAIL, TEST_EMAIL, TEST_PASSWORD, null
+                context.userId, UserAuthProvider.EMAIL, TEST_EMAIL, TEST_PASSWORD
             )
         } returns AppResult.Success(identifier)
 

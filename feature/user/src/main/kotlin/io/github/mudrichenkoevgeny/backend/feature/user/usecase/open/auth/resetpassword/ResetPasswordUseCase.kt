@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
@@ -32,7 +33,8 @@ class ResetPasswordUseCase @Inject constructor(
     private val auditErrorConverter: AuditErrorConverter,
     private val otpService: OtpService,
     private val identifierManager: IdentifierManager,
-    private val validatePasswordUseCase: ValidatePasswordUseCase
+    private val validatePasswordUseCase: ValidatePasswordUseCase,
+    private val userManager: UserManager
 ) {
     /**
      * Resets a user's password using an OTP verification code sent to their email.
@@ -138,6 +140,10 @@ class ResetPasswordUseCase @Inject constructor(
                 baseMetadata = auditMetadata
             )
             is AppResult.Success -> {
+                userManager.unlockUserAccount(
+                    userId = userIdentifier.userId,
+                    clearLockoutForIdentifiers = listOf(email)
+                )
                 logAudit(
                     actorId = userIdentifier.userId.asHexDashString(),
                     resourceId = userIdentifier.userId.asHexDashString(),

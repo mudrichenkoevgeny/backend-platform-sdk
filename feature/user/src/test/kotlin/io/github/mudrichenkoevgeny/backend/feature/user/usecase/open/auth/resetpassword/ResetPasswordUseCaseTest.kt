@@ -9,6 +9,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
@@ -36,6 +37,7 @@ class ResetPasswordUseCaseTest {
     private val otpService = mockk<OtpService>()
     private val identifierManager = mockk<IdentifierManager>()
     private val validatePasswordUseCase = mockk<ValidatePasswordUseCase>()
+    private val userManager = mockk<UserManager>()
 
     private val useCase = ResetPasswordUseCase(
         rateLimiter = rateLimiter,
@@ -43,7 +45,8 @@ class ResetPasswordUseCaseTest {
         auditErrorConverter = auditErrorConverter,
         otpService = otpService,
         identifierManager = identifierManager,
-        validatePasswordUseCase = validatePasswordUseCase
+        validatePasswordUseCase = validatePasswordUseCase,
+        userManager = userManager
     )
 
     @Test
@@ -68,6 +71,7 @@ class ResetPasswordUseCaseTest {
         coEvery {
             identifierManager.updateUserIdentifierPassword(identifierInternal, TEST_PASSWORD)
         } returns AppResult.Success(userIdentifier)
+        coEvery { userManager.unlockUserAccount(userId, listOf(TEST_EMAIL)) } returns AppResult.Success(mockk())
 
         val result = useCase(TEST_EMAIL, TEST_PASSWORD, TEST_CODE, context)
 

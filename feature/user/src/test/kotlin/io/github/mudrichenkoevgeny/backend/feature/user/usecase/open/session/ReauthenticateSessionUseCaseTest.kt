@@ -6,12 +6,14 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
+import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
@@ -38,6 +40,8 @@ class ReauthenticateSessionUseCaseTest {
     private val mfaService = mockk<MfaService>(relaxed = true)
     private val sessionManager = mockk<SessionManager>()
     private val totpManager = mockk<TotpManager>()
+    private val lockoutManager = mockk<LockoutManager>(relaxed = true)
+    private val userManager = mockk<UserManager>(relaxed = true)
 
     private val useCase = ReauthenticateSessionUseCase(
         rateLimiter = rateLimiter,
@@ -45,7 +49,9 @@ class ReauthenticateSessionUseCaseTest {
         auditErrorConverter = auditErrorConverter,
         mfaService = mfaService,
         sessionManager = sessionManager,
-        totpManager = totpManager
+        totpManager = totpManager,
+        lockoutManager = lockoutManager,
+        userManager = userManager
     )
 
     private val mfaToken = "mfa-token"

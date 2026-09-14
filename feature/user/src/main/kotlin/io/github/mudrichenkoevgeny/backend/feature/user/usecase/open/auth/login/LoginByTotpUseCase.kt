@@ -6,12 +6,16 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
+import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutAttemptType
+import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -32,7 +36,9 @@ class LoginByTotpUseCase @Inject constructor(
     private val auditErrorConverter: AuditErrorConverter,
     private val mfaService: MfaService,
     private val totpManager: TotpManager,
-    private val authManager: AuthManager
+    private val authManager: AuthManager,
+    private val lockoutManager: LockoutManager,
+    private val userManager: UserManager
 ) {
     /**
      * Completes the multifactor authentication flow using a TOTP (Time-based One-Time Password).
@@ -97,18 +103,67 @@ class LoginByTotpUseCase @Inject constructor(
             )
         }
 
-        val verifyResult = totpManager.verifyTotp(
-            userId = userId,
-            code = code
+        val isIndefiniteLockoutResult = lockoutManager.isIndefiniteLockout(
+            identifier = userId.asHexDashString()
         )
-        if (verifyResult is AppResult.Error) {
+        val isIndefiniteLockout = when (isIndefiniteLockoutResult) {
+            is AppResult.Success -> isIndefiniteLockoutResult.data
+            is AppResult.Error -> false
+        }
+        if (isIndefiniteLockout) {
+            userManager.lockUserAccountIndefinitely(userId)
             return handleError(
-                error = verifyResult.error,
+                error = UserError.UserBlocked(userId = userId),
                 actorId = userId.asHexDashString(),
                 actorUserRole = userRole,
                 baseMetadata = auditMetadata
             )
         }
+
+        val lockoutCheck = lockoutManager.getLockoutUntil(userId.asHexDashString())
+        val lockoutUntil = when (lockoutCheck) {
+            is AppResult.Success -> lockoutCheck.data
+            is AppResult.Error -> null
+        }
+        if (lockoutUntil != null) {
+            return handleError(
+                error = UserError.UserBlocked(userId = userId, blockedUntil = lockoutUntil),
+                actorId = userId.asHexDashString(),
+                actorUserRole = userRole,
+                baseMetadata = auditMetadata
+            )
+        }
+
+        val verifyResult = totpManager.verifyTotp(
+            userId = userId,
+            code = code
+        )
+        if (verifyResult is AppResult.Error) {
+            val recordResult = lockoutManager.recordFailedAttempt(
+                identifier = userId.asHexDashString(),
+                type = LockoutAttemptType.TOTP
+            )
+            val blockedUntil = when (recordResult) {
+                is AppResult.Success -> recordResult.data
+                is AppResult.Error -> null
+            }
+            if (blockedUntil != null) {
+                userManager.lockUserAccount(userId, blockedUntil)
+            }
+            val error = if (blockedUntil != null) {
+                UserError.UserBlocked(userId = userId, blockedUntil = blockedUntil)
+            } else {
+                verifyResult.error
+            }
+            return handleError(
+                error = error,
+                actorId = userId.asHexDashString(),
+                actorUserRole = userRole,
+                baseMetadata = auditMetadata
+            )
+        }
+
+        lockoutManager.clearLockout(userId.asHexDashString())
 
         mfaService.consumeChallenge(mfaToken)
 

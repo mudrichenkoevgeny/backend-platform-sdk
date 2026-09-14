@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.l
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import kotlin.time.Instant
 
 /**
  * Manages user entities for the user feature.
@@ -171,9 +172,33 @@ interface UserManager {
      * Unlocks a temporarily locked user account.
      *
      * @param userId The ID of the user to unlock.
+     * @param clearLockoutForIdentifiers Optional list of identifiers (e.g., email, phone) to clear from lockout cache.
      * @return [AppResult.Success] with the updated [UserDetails] or an error.
      */
     suspend fun unlockUserAccount(
+        userId: UserId,
+        clearLockoutForIdentifiers: List<String> = emptyList()
+    ): AppResult<UserDetails>
+
+    /**
+     * Locks a user account temporarily until [blockedUntil].
+     *
+     * @param userId The ID of the user to lock.
+     * @param blockedUntil The timestamp when lockout expires.
+     * @return [AppResult.Success] with the updated [UserDetails] or an error.
+     */
+    suspend fun lockUserAccount(
+        userId: UserId,
+        blockedUntil: Instant
+    ): AppResult<UserDetails>
+
+    /**
+     * Locks a user account indefinitely under an indefinite lockout.
+     *
+     * @param userId The ID of the user to lock indefinitely.
+     * @return [AppResult.Success] with the updated [UserDetails] or an error.
+     */
+    suspend fun lockUserAccountIndefinitely(
         userId: UserId
     ): AppResult<UserDetails>
 

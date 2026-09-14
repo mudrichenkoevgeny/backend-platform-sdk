@@ -132,7 +132,15 @@ class UnlockByExternalAuthProviderUseCase @Inject constructor(
             )
         }
 
-        val unlockResult = userManager.unlockUserAccount(userIdentifier.userId)
+        val identifiersToClear = listOfNotNull(
+            verificationData.externalId,
+            verificationData.email
+        )
+
+        val unlockResult = userManager.unlockUserAccount(
+            userId = userIdentifier.userId,
+            clearLockoutForIdentifiers = identifiersToClear
+        )
         return when (unlockResult) {
             is AppResult.Error -> handleError(
                 error = unlockResult.error,
