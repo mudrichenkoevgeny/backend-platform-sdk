@@ -19,11 +19,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SendAddEmailIdentifierConfirmationUseCaseTest {
@@ -47,6 +48,11 @@ class SendAddEmailIdentifierConfirmationUseCaseTest {
     private val context = createTestAuthenticatedRequestContext()
     private val clientInfo = context.clientInfo
 
+    @BeforeEach
+    fun setUp() {
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
+    }
+
     @Test
     fun `successfully sends verification code when email is new`() = runTest {
         val otpConfirmation = mockk<OtpConfirmation>()
@@ -54,8 +60,6 @@ class SendAddEmailIdentifierConfirmationUseCaseTest {
             otpConfirmation = otpConfirmation,
             code = TEST_CODE
         )
-
-        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
 
         coEvery {
             rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_EMAIL, TEST_EMAIL)

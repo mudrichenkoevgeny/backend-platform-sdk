@@ -134,5 +134,5 @@ fi
 # ----------------------------------------------------------------------
 echo "=== DEBUG: Database ready, starting app ==="
 MAIN_CLASS="io.github.mudrichenkoevgeny.backend.sample.MainKt"
-echo "DEBUG: Command: exec java -cp \"app.jar:lib/*\" $MAIN_CLASS"
-exec java -cp "app.jar:lib/*" "$MAIN_CLASS"
+echo "DEBUG: Command: exec java -cp \"app.jar:lib/*\" $MAIN_CLASS $@"
+exec java -cp "app.jar:lib/*" "$MAIN_CLASS" "$@"

@@ -24,6 +24,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SendRegistrationConfirmationToEmailUseCaseTest {
@@ -44,6 +45,11 @@ class SendRegistrationConfirmationToEmailUseCaseTest {
         emailService = emailService
     )
 
+    @BeforeEach
+    fun setUp() {
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
+    }
+
     @Test
     fun `successfully sends verification code for new email`() = runTest {
         val context = createTestRequestContext()
@@ -51,7 +57,6 @@ class SendRegistrationConfirmationToEmailUseCaseTest {
         val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = otpConfirmation)
 
         every { authSettingsProvider.getIsRegistrationEnabled() } returns true
-        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_EMAIL, TEST_EMAIL) } returns AppResult.Success(Unit)
         coEvery { identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.EMAIL, TEST_EMAIL) } returns AppResult.Success(null)
         coEvery { otpService.getOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_VERIFICATION) } returns AppResult.Success(otpData)

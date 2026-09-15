@@ -80,7 +80,7 @@ fun <T> Iterable<AppResult<T>>.combine(): AppResult<List<T>> {
     for (result in this) {
         when (result) {
             is AppResult.Success -> results.add(result.data)
-            is AppResult.Error -> return AppResult.Error(result.error)
+            is AppResult.Error -> return result
         }
     }
     return AppResult.Success(results)

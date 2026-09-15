@@ -22,8 +22,21 @@ import kotlin.time.Instant
  * with optional filters.
  */
 interface UserRepository {
+
+    /**
+     * Persists a new user record.
+     *
+     * @param user user details model to create.
+     * @return [AppResult] containing the created [UserDetails] or an error.
+     */
     suspend fun createUser(user: UserDetails): AppResult<UserDetails>
 
+    /**
+     * Deletes a user record by the unique user identifier.
+     *
+     * @param userId unique user identifier.
+     * @return [AppResult] containing [Unit] on success or an error.
+     */
     suspend fun deleteUser(userId: UserId): AppResult<Unit>
 
     /**
@@ -60,6 +73,12 @@ interface UserRepository {
         temporaryLockoutUntil: UpdateField<Instant> = UpdateField.Ignore
     ): AppResult<UserDetails>
 
+    /**
+     * Retrieves user details by the unique user identifier.
+     *
+     * @param userId unique user identifier.
+     * @return [AppResult] containing [UserDetails] when found, `null` when missing, or an error.
+     */
     suspend fun getUserDetailsById(userId: UserId): AppResult<UserDetails?>
 
     /**

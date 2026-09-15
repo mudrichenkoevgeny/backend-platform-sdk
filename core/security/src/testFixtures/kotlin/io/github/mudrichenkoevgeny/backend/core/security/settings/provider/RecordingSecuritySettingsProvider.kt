@@ -38,13 +38,13 @@ class RecordingSecuritySettingsProvider : SecuritySettingsProvider {
 
     override fun getAccountLockoutPolicy(): AccountLockoutPolicy = error("Not used")
 
-    var openIpRestrictionPolicy: IpRestrictionPolicy = createTestIpRestrictionPolicy()
+    var currentOpenIpRestrictionPolicy: IpRestrictionPolicy = createTestIpRestrictionPolicy()
 
-    var managementIpRestrictionPolicy: IpRestrictionPolicy = createTestIpRestrictionPolicy()
+    var currentManagementIpRestrictionPolicy: IpRestrictionPolicy = createTestIpRestrictionPolicy()
 
-    override fun getOpenIpRestrictionPolicy(): IpRestrictionPolicy = openIpRestrictionPolicy
+    override fun getOpenIpRestrictionPolicy(): IpRestrictionPolicy = currentOpenIpRestrictionPolicy
 
-    override fun getManagementIpRestrictionPolicy(): IpRestrictionPolicy = managementIpRestrictionPolicy
+    override fun getManagementIpRestrictionPolicy(): IpRestrictionPolicy = currentManagementIpRestrictionPolicy
 
     override fun getMfaTokenExpirationSeconds(): Int = 120
 

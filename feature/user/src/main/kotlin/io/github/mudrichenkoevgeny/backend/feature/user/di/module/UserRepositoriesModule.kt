@@ -4,12 +4,14 @@ import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepositoryImpl
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepositoryImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usertotpsettings.UserTotpSettingsRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usertotpsettings.UserTotpSettingsRepositoryImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.userknowndevices.UserKnownDevicesRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.userknowndevices.UserKnownDevicesRepositoryImpl
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepositoryImpl
 import dagger.Binds
 import dagger.Module
-import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usertotpsettings.UserTotpSettingsRepository
-import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usertotpsettings.UserTotpSettingsRepositoryImpl
 import javax.inject.Singleton
 
 /**
@@ -41,4 +43,10 @@ interface UserRepositoriesModule {
     fun bindUserTotpSettingsRepository(
         userTotpSettingsRepositoryImpl: UserTotpSettingsRepositoryImpl
     ): UserTotpSettingsRepository
+
+    @Binds
+    @Singleton
+    fun bindUserKnownDevicesRepository(
+        userKnownDevicesRepositoryImpl: UserKnownDevicesRepositoryImpl
+    ): UserKnownDevicesRepository
 }

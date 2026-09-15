@@ -8,11 +8,15 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.CommonErrorP
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.RecordingSecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.core.security.validator.iprestriction.IpRestrictionPolicyValidator
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.iprestriction.IpRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorCodes
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.install
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
@@ -35,7 +39,7 @@ class ApplicationIpRestrictionTest {
 
     @Test
     fun `allows request when ip restriction is disabled`() = testApplication {
-        securitySettingsProvider.openIpRestrictionPolicy = IpRestrictionPolicy(
+        securitySettingsProvider.currentOpenIpRestrictionPolicy = IpRestrictionPolicy(
             isBlacklistEnabled = false,
             blacklist = emptyList(),
             isWhitelistEnabled = false,
@@ -43,6 +47,9 @@ class ApplicationIpRestrictionTest {
         )
 
         application {
+            this.install(ContentNegotiation) {
+                json(FoundationJson)
+            }
             configureStatusPages(errorParser, mockLogger)
             configureIpRestriction(commonConfig, securitySettingsProvider, validator)
             routing {
@@ -59,7 +66,7 @@ class ApplicationIpRestrictionTest {
 
     @Test
     fun `rejects request with 403 Forbidden when ip is blacklisted on open contour`() = testApplication {
-        securitySettingsProvider.openIpRestrictionPolicy = IpRestrictionPolicy(
+        securitySettingsProvider.currentOpenIpRestrictionPolicy = IpRestrictionPolicy(
             isBlacklistEnabled = true,
             blacklist = listOf("127.0.0.1", "localhost"),
             isWhitelistEnabled = false,
@@ -67,6 +74,9 @@ class ApplicationIpRestrictionTest {
         )
 
         application {
+            this.install(ContentNegotiation) {
+                json(FoundationJson)
+            }
             configureStatusPages(errorParser, mockLogger)
             configureIpRestriction(commonConfig, securitySettingsProvider, validator)
             routing {
@@ -83,20 +93,23 @@ class ApplicationIpRestrictionTest {
 
     @Test
     fun `uses management ip policy when path starts with management`() = testApplication {
-        securitySettingsProvider.openIpRestrictionPolicy = IpRestrictionPolicy(
+        securitySettingsProvider.currentOpenIpRestrictionPolicy = IpRestrictionPolicy(
             isBlacklistEnabled = false,
             blacklist = emptyList(),
             isWhitelistEnabled = false,
             whitelist = emptyList()
         )
-        securitySettingsProvider.managementIpRestrictionPolicy = IpRestrictionPolicy(
+        securitySettingsProvider.currentManagementIpRestrictionPolicy = IpRestrictionPolicy(
             isBlacklistEnabled = true,
-            blacklist = listOf("127.0.0.1"),
+            blacklist = listOf("127.0.0.1", "localhost"),
             isWhitelistEnabled = false,
             whitelist = emptyList()
         )
 
         application {
+            this.install(ContentNegotiation) {
+                json(FoundationJson)
+            }
             configureStatusPages(errorParser, mockLogger)
             configureIpRestriction(commonConfig, securitySettingsProvider, validator)
             routing {
@@ -118,20 +131,23 @@ class ApplicationIpRestrictionTest {
             ktorServerPort = 8080,
             ktorManagementPort = 9090
         )
-        securitySettingsProvider.openIpRestrictionPolicy = IpRestrictionPolicy(
+        securitySettingsProvider.currentOpenIpRestrictionPolicy = IpRestrictionPolicy(
             isBlacklistEnabled = false,
             blacklist = emptyList(),
             isWhitelistEnabled = false,
             whitelist = emptyList()
         )
-        securitySettingsProvider.managementIpRestrictionPolicy = IpRestrictionPolicy(
+        securitySettingsProvider.currentManagementIpRestrictionPolicy = IpRestrictionPolicy(
             isBlacklistEnabled = true,
-            blacklist = listOf("127.0.0.1"),
+            blacklist = listOf("127.0.0.1", "localhost"),
             isWhitelistEnabled = false,
             whitelist = emptyList()
         )
 
         application {
+            this.install(ContentNegotiation) {
+                json(FoundationJson)
+            }
             configureStatusPages(errorParser, mockLogger)
             configureIpRestriction(managementConfig, securitySettingsProvider, validator)
             routing {

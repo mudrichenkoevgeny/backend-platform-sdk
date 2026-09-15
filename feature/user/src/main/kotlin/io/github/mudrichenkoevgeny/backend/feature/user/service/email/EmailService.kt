@@ -27,6 +27,9 @@ interface EmailService {
     /** Notifies about successful login (security notification). */
     suspend fun sendSuccessfulLoginEmail(email: String, ipAddress: String?, deviceName: String?): AppResult<Unit>
 
+    /** Notifies about a login from a new unrecognized device (security notification). */
+    suspend fun sendNewDeviceLoginEmail(email: String, ipAddress: String?, deviceName: String?, userAgent: String?): AppResult<Unit>
+
     /** Notifies that the password was changed. */
     suspend fun sendPasswordSuccessfullyChangedEmail(email: String, ipAddress: String?, deviceName: String?): AppResult<Unit>
 

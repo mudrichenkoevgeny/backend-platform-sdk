@@ -31,6 +31,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class RegisterByEmailUseCaseTest {
@@ -55,6 +56,11 @@ class RegisterByEmailUseCaseTest {
         validatePasswordUseCase = validatePasswordUseCase
     )
 
+    @BeforeEach
+    fun setUp() {
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
+    }
+
     @Test
     fun `successfully registers user and logs audit`() = runTest {
         val context = createTestRequestContext()
@@ -68,7 +74,6 @@ class RegisterByEmailUseCaseTest {
         }
 
         every { authSettingsProvider.getIsRegistrationEnabled() } returns true
-        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.REGISTRATION_ATTEMPT, TEST_EMAIL) } returns AppResult.Success(Unit)
         coEvery { validatePasswordUseCase(TEST_PASSWORD) } returns AppResult.Success(Unit)
         coEvery { otpService.verifyOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_VERIFICATION, TEST_CODE) } returns AppResult.Success(true)

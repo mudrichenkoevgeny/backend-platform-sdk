@@ -23,6 +23,10 @@
     "subject": "Successful Login",
     "body": "<div style=\"font-family: sans-serif;\"><p>A new login was detected on your account.</p><p>IP: {ipAddress}, Device: {deviceName}</p></div>"
   },
+  "new_device_login": {
+    "subject": "New Device Login Detected",
+    "body": "<div style=\"font-family: sans-serif;\"><p>A login was detected from a new device.</p><p>IP: {ipAddress}, Device: {deviceName}, Browser/OS: {userAgent}</p></div>"
+  },
   "password_changed": {
     "subject": "Security: Password Changed",
     "body": "<div style=\"font-family: sans-serif;\"><p>Your password has been successfully updated.</p><p>IP: {ipAddress}, Device: {deviceName}</p></div>"

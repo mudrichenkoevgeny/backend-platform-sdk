@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseCo
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DatabaseConfigFactoryImplTest {
@@ -33,6 +34,7 @@ class DatabaseConfigFactoryImplTest {
         every { envReader.readSecret(DB_USER_FILE) } returns DB_USER
         every { envReader.readSecret(DB_PASSWORD_FILE) } returns DB_PASSWORD
         every { envReader.getByKeyOrNull(DatabaseEnvKeys.MIGRATION_PATHS) } returns MIGRATION_PATHS
+        every { envReader.getByKeyOrNull(DatabaseEnvKeys.DB_MIGRATE_ON_STARTUP) } returns "true"
         every { envReader.readSecret(REDIS_URL_FILE) } returns REDIS_URL
         every { envReader.getByKey(DatabaseEnvKeys.REDIS_TIMEOUT_SECONDS) } returns REDIS_TIMEOUT
 
@@ -44,6 +46,7 @@ class DatabaseConfigFactoryImplTest {
         assertEquals(DB_USER, config.dbUser)
         assertEquals(DB_PASSWORD, config.dbPassword)
         assertEquals(listOf("classpath:db/migration", "classpath:app/migration"), config.migrationPaths)
+        assertTrue(config.isMigrationEnabled)
         assertEquals(REDIS_URL, config.redisUrl)
         assertEquals(5L, config.redisTimeoutSeconds)
     }
@@ -57,6 +60,7 @@ class DatabaseConfigFactoryImplTest {
         every { envReader.readSecret(DB_USER_FILE) } returns DB_USER
         every { envReader.readSecret(DB_PASSWORD_FILE) } returns DB_PASSWORD
         every { envReader.getByKeyOrNull(DatabaseEnvKeys.MIGRATION_PATHS) } returns null
+        every { envReader.getByKeyOrNull(DatabaseEnvKeys.DB_MIGRATE_ON_STARTUP) } returns null
         every { envReader.readSecret(REDIS_URL_FILE) } returns REDIS_URL
         every { envReader.getByKey(DatabaseEnvKeys.REDIS_TIMEOUT_SECONDS) } returns REDIS_TIMEOUT
 
@@ -65,5 +69,6 @@ class DatabaseConfigFactoryImplTest {
         val config: DatabaseConfig = factory.create()
 
         assertEquals(DatabaseConfig.defaultMigrationPaths, config.migrationPaths)
+        assertTrue(config.isMigrationEnabled)
     }
 }

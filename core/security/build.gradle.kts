@@ -44,6 +44,8 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.ktor.server.content.negotiation)
+    testImplementation(libs.ktor.serialization.json)
     testImplementation(testFixtures(project(":core:common")))
     testRuntimeOnly(libs.kotlin.test.junit5)
 }

@@ -23,6 +23,10 @@
     "subject": "Вход в аккаунт",
     "body": "<div style=\"font-family: sans-serif;\"><p>Выполнен вход в ваш профиль.</p><p>IP: {ipAddress}, Устройство: {deviceName}</p></div>"
   },
+  "new_device_login": {
+    "subject": "Вход с нового устройства",
+    "body": "<div style=\"font-family: sans-serif;\"><p>Обнаружен вход с нового устройства.</p><p>IP: {ipAddress}, Устройство: {deviceName}, Браузер/ОС: {userAgent}</p></div>"
+  },
   "password_changed": {
     "subject": "Безопасность: пароль изменен",
     "body": "<div style=\"font-family: sans-serif;\"><p>Ваш пароль был успешно изменен.</p><p>IP: {ipAddress}, Устройство: {deviceName}</p></div>"

@@ -4,7 +4,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import io.github.mudrichenkoevgeny.backend.core.database.datasource.DataSourceCreator
 import io.github.mudrichenkoevgeny.backend.core.database.datasource.HikariDatasourceCreator
-import io.github.mudrichenkoevgeny.backend.core.database.di.qualifiers.DatabaseMigratorFlyway
 import io.github.mudrichenkoevgeny.backend.core.database.di.qualifiers.DriverClassName
 import io.github.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManager
 import io.github.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManagerImpl
@@ -21,7 +20,7 @@ import javax.sql.DataSource
 /**
  * Dagger module for PostgreSQL DataSource, Exposed Database, and [DatabaseManager].
  *
- * Binds [DatabaseMigrator] to [FlywayDatabaseMigrator] (qualified with [DatabaseMigratorFlyway]).
+ * Binds [DatabaseMigrator] to [FlywayDatabaseMigrator].
  * Provides [DriverClassName] (PostgreSQL driver), [DataSourceCreator] (→ [HikariDatasourceCreator]),
  * [DataSource] from config, [DatabaseManager] (→ [DatabaseManagerImpl]), and Exposed [Database] from the manager.
  */
@@ -30,7 +29,6 @@ interface DatabaseModule {
 
     @Binds
     @Singleton
-    @DatabaseMigratorFlyway
     fun bindDatabaseMigrator(flywayDatabaseMigrator: FlywayDatabaseMigrator): DatabaseMigrator
 
     companion object {
@@ -68,7 +66,7 @@ interface DatabaseModule {
         @Singleton
         fun provideDatabaseManager(
             dataSource: DataSource,
-            @DatabaseMigratorFlyway databaseMigrator: DatabaseMigrator,
+            databaseMigrator: DatabaseMigrator,
             databaseConfig: DatabaseConfig,
             appLogger: AppLogger
         ): DatabaseManager {

@@ -63,6 +63,7 @@ class SecuritySettingsProviderImplTest {
         every { settingsService.getInt("security.mfa_token_expiration_seconds") } returns 300
         every { settingsService.getInt("security.max_requests_per_period") } returns 200
         every { settingsService.getInt("security.rate_limit_period_seconds") } returns 120
+        every { settingsService.getString(any()) } returns null
         every { settingsService.getJson<Any>(any(), any()) } returns null
         stubGetJsonPasswordPolicyDeserializesTo(storedPolicy)
         stubGetJsonOtpConfirmationDeserializesTo(storedOtp)
@@ -80,6 +81,7 @@ class SecuritySettingsProviderImplTest {
     @Test
     fun `getManagementSecuritySettings falls back to config when keys missing`() {
         every { settingsService.getInt(any()) } returns null
+        every { settingsService.getString(any()) } returns null
         every { settingsService.getJson<Any>(any(), any()) } returns null
 
         val result = provider.getManagementSecuritySettings()
@@ -158,12 +160,6 @@ class SecuritySettingsProviderImplTest {
     private fun stubGetJsonPasswordPolicyReturnsNull() {
         every {
             settingsService.getJson("security.password_policy", any<(String) -> ManagementPasswordPolicy>())
-        } returns null
-    }
-
-    private fun stubGetJsonOtpConfirmationReturnsNull() {
-        every {
-            settingsService.getJson("security.otp_confirmation", any<(String) -> OtpConfirmation>())
         } returns null
     }
 }

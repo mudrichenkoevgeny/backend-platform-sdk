@@ -2,8 +2,8 @@ package io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
@@ -99,6 +99,7 @@ class AuthSettingsProviderImplTest {
         every { settingsService.getJson<AvailableAuthProviders>(any(), any()) } returns null
         every { settingsService.getInt(any()) } returns null
         every { settingsService.getBoolean(any()) } returns null
+        every { settingsService.getString(any()) } returns null
 
         val result = provider.getManagementAuthSettings()
 
@@ -114,6 +115,7 @@ class AuthSettingsProviderImplTest {
         every { settingsService.getInt("auth.max_total_identifiers") } returns 100
         every { settingsService.getInt(not("auth.max_total_identifiers")) } returns null
         every { settingsService.getBoolean(any()) } returns null
+        every { settingsService.getString(any()) } returns null
 
         val result = provider.getManagementAuthSettings()
 

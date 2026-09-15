@@ -59,9 +59,7 @@ class SystemSettingsServiceImpl @Inject constructor(
 
                 AppResult.Success(Unit)
             }
-            is AppResult.Error -> {
-                AppResult.Error(result.error)
-            }
+            is AppResult.Error -> result
         }
     }
 
@@ -78,7 +76,7 @@ class SystemSettingsServiceImpl @Inject constructor(
                 broadcastUpdate()
                 AppResult.Success(Unit)
             }
-            is AppResult.Error -> AppResult.Error(result.error)
+            is AppResult.Error -> result
         }
     }
 
@@ -99,9 +97,7 @@ class SystemSettingsServiceImpl @Inject constructor(
 
                 AppResult.Success(Unit)
             }
-            is AppResult.Error -> {
-                AppResult.Error(result.error)
-            }
+            is AppResult.Error -> result
         }
     }
 
@@ -141,7 +137,7 @@ class SystemSettingsServiceImpl @Inject constructor(
                 broadcastUpdate()
                 AppResult.Success(result.data)
             }
-            is AppResult.Error -> AppResult.Error(result.error)
+            is AppResult.Error -> result
         }
     }
 
@@ -160,7 +156,7 @@ class SystemSettingsServiceImpl @Inject constructor(
                 broadcastUpdate()
                 AppResult.Success(result.data)
             }
-            is AppResult.Error -> AppResult.Error(result.error)
+            is AppResult.Error -> result
         }
     }
 
@@ -171,7 +167,7 @@ class SystemSettingsServiceImpl @Inject constructor(
                 broadcastUpdate()
                 AppResult.Success(Unit)
             }
-            is AppResult.Error -> AppResult.Error(result.error)
+            is AppResult.Error -> result
         }
     }
 

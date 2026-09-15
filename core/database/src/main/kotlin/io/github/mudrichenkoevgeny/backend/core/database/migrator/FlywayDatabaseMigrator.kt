@@ -2,7 +2,6 @@ package io.github.mudrichenkoevgeny.backend.core.database.migrator
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.database.di.qualifiers.DatabaseMigratorFlyway
 import org.flywaydb.core.Flyway
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,7 +14,6 @@ import javax.sql.DataSource
  * baselineOnMigrate and outOfOrder enabled, failOnMissingLocations false. On failure logs via [AppLogger] and rethrows.
  */
 @Singleton
-@DatabaseMigratorFlyway
 class FlywayDatabaseMigrator @Inject constructor(
     private val appLogger: AppLogger
 ): DatabaseMigrator {

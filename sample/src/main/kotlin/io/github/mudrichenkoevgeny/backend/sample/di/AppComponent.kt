@@ -12,7 +12,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthChecker
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import io.github.mudrichenkoevgeny.backend.core.database.di.DatabaseModules
-import io.github.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManager
 import io.github.mudrichenkoevgeny.backend.core.database.migrator.DatabaseMigrator
 import io.github.mudrichenkoevgeny.backend.core.events.di.EventsModules
 import io.github.mudrichenkoevgeny.backend.core.observability.di.ObservabilityModules
@@ -100,7 +99,6 @@ interface AppComponent {
     fun swaggerInitializer(): SwaggerInitializer
 
     // database
-    fun databaseManager(): DatabaseManager
     fun databaseMigrator(): DatabaseMigrator
     fun databaseConfig(): DatabaseConfig
     fun dataSource(): DataSource

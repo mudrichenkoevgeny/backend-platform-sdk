@@ -21,6 +21,8 @@ object EmailTemplateKeys {
     const val SUCCESSFUL_REGISTRATION = "successful_registration"
     /** Security notification: successful login. */
     const val SUCCESSFUL_LOGIN = "successful_login"
+    /** Security notification: login from new device. */
+    const val NEW_DEVICE_LOGIN = "new_device_login"
     /** Security notification: password changed. */
     const val PASSWORD_CHANGED = "password_changed"
 }

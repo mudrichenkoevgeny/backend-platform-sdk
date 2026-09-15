@@ -49,6 +49,14 @@ class UnconfiguredEmailService @Inject constructor() : EmailService {
     ): AppResult<Unit> =
         AppResult.Error(error)
 
+    override suspend fun sendNewDeviceLoginEmail(
+        email: String,
+        ipAddress: String?,
+        deviceName: String?,
+        userAgent: String?
+    ): AppResult<Unit> =
+        AppResult.Error(error)
+
     override suspend fun sendPasswordSuccessfullyChangedEmail(
         email: String,
         ipAddress: String?,

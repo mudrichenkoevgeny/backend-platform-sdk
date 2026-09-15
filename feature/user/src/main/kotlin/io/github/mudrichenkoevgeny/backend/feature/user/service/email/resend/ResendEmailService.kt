@@ -109,6 +109,24 @@ class ResendEmailService @Inject constructor(
         )
     }
 
+    override suspend fun sendNewDeviceLoginEmail(
+        email: String,
+        ipAddress: String?,
+        deviceName: String?,
+        userAgent: String?
+    ): AppResult<Unit> {
+        return executeTemplatedSend(
+            email = email,
+            templateKey = EmailTemplateKeys.NEW_DEVICE_LOGIN,
+            args = mapOf(
+                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: "unknown"),
+                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: "unknown"),
+                EmailTemplateArgs.USER_AGENT to (userAgent ?: "unknown")
+            ),
+            language = defaultLanguage
+        )
+    }
+
     override suspend fun sendPasswordSuccessfullyChangedEmail(
         email: String,
         ipAddress: String?,

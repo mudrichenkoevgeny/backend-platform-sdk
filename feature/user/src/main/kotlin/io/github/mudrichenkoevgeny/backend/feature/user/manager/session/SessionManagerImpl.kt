@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.session
 
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
+import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
@@ -13,6 +14,10 @@ import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.userknowndevices.UserKnownDevicesRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.model.device.UserKnownDevice
+import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.token.RotatedRefreshTokenData
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
@@ -61,11 +66,15 @@ import kotlin.time.Instant
  */
 @Singleton
 class SessionManagerImpl @Inject constructor(
+    private val appLogger: AppLogger,
     private val authSettingsProvider: AuthSettingsProvider,
     private val jwtTokenProvider: TokenProvider,
     private val refreshTokenProvider: RefreshTokenProvider,
     private val userManager: UserManager,
     private val userSessionRepository: UserSessionRepository,
+    private val userKnownDevicesRepository: UserKnownDevicesRepository,
+    private val userIdentifierRepository: UserIdentifierRepository,
+    private val emailService: EmailService,
     private val redisManager: RedisManager,
     private val auditLogger: AuditLogger,
     private val userRepository: UserRepository
@@ -74,6 +83,14 @@ class SessionManagerImpl @Inject constructor(
     companion object {
         // todo wait for shared update ManagementSecuritySettings.refreshTokenRotationGracePeriodSeconds
         private val GRACE_PERIOD_DURATION = 30.seconds
+
+        // todo wait for shared update SecurityAuditActionType.NEW_DEVICE_DETECTED
+        private object NewDeviceDetectedAuditAction : AuditActionType {
+            override val serialName: String = "new_device_detected"
+            override fun parseOrNull(value: String): AuditActionType? = if (value == serialName) this else null
+            override fun parseOrThrow(value: String): AuditActionType =
+                parseOrNull(value) ?: throw IllegalArgumentException("Unknown action: '$value'")
+        }
 
         // todo wait for shared update SecurityAuditActionType.REFRESH_TOKEN_REUSE_DETECTED
         private object RefreshTokenReuseAuditAction : AuditActionType {
@@ -92,6 +109,36 @@ class SessionManagerImpl @Inject constructor(
         identifierAuthProvider: UserAuthProvider,
         clientInfo: ClientInfo,
         lastReauthenticatedAt: Instant
+    ): AppResult<SessionToken> {
+        var isNewDeviceDetected = false
+
+        val sessionResult = createSessionInDatabase(
+            userId = userId,
+            userRole = userRole,
+            identifier = identifier,
+            identifierId = identifierId,
+            identifierAuthProvider = identifierAuthProvider,
+            clientInfo = clientInfo,
+            lastReauthenticatedAt = lastReauthenticatedAt,
+            onNewDeviceDetected = { isNewDeviceDetected = true }
+        )
+
+        if (sessionResult is AppResult.Success && isNewDeviceDetected) {
+            notifyNewDeviceDetected(userId, userRole, clientInfo)
+        }
+
+        return sessionResult
+    }
+
+    private suspend fun createSessionInDatabase(
+        userId: UserId,
+        userRole: UserRole,
+        identifier: String,
+        identifierId: UserIdentifierId,
+        identifierAuthProvider: UserAuthProvider,
+        clientInfo: ClientInfo,
+        lastReauthenticatedAt: Instant,
+        onNewDeviceDetected: () -> Unit
     ): AppResult<SessionToken> = dbQuery {
         val userSessionId = UserSessionId.generate()
 
@@ -112,14 +159,12 @@ class SessionManagerImpl @Inject constructor(
         }
 
         val refreshTokenResult = refreshTokenProvider.getRefreshToken()
-
         val refreshToken = when (refreshTokenResult) {
             is AppResult.Success -> refreshTokenResult.data
             is AppResult.Error -> return@dbQuery refreshTokenResult
         }
 
         val refreshTokenHashResult = refreshTokenProvider.getRefreshTokenHash(refreshToken)
-
         val refreshTokenHash = when (refreshTokenHashResult) {
             is AppResult.Success -> refreshTokenHashResult.data
             is AppResult.Error -> return@dbQuery refreshTokenHashResult
@@ -144,6 +189,42 @@ class SessionManagerImpl @Inject constructor(
         )
 
         val createUserSessionResult = userSessionRepository.createUserSession(userSession)
+
+        val deviceId = clientInfo.deviceInfo.deviceId?.asHexDashString()
+        if (deviceId != null) {
+            val knownDeviceResult = userKnownDevicesRepository.getKnownDevice(userId, deviceId)
+            when (knownDeviceResult) {
+                is AppResult.Success -> {
+                    val knownDevice = knownDeviceResult.data
+                    if (knownDevice != null) {
+                        userKnownDevicesRepository.updateKnownDevice(
+                            userId = userId,
+                            deviceId = deviceId,
+                            lastIpAddress = UpdateField.Set(clientInfo.ipAddress),
+                            lastSeenAt = UpdateField.Set(now)
+                        )
+                    } else {
+                        val newDevice = UserKnownDevice(
+                            userId = userId,
+                            deviceId = deviceId,
+                            firstIpAddress = clientInfo.ipAddress,
+                            lastIpAddress = clientInfo.ipAddress,
+                            userAgent = clientInfo.userAgent,
+                            firstSeenAt = now,
+                            lastSeenAt = now
+                        )
+                        userKnownDevicesRepository.createKnownDevice(newDevice)
+                        onNewDeviceDetected()
+                    }
+                }
+                is AppResult.Error -> {
+                    appLogger.logError(knownDeviceResult.error)
+                }
+            }
+        } else {
+            onNewDeviceDetected()
+        }
+
         when (createUserSessionResult) {
             is AppResult.Success -> AppResult.Success(
                 SessionToken(
@@ -154,6 +235,36 @@ class SessionManagerImpl @Inject constructor(
             )
             is AppResult.Error -> createUserSessionResult
         }
+    }
+
+    private suspend fun notifyNewDeviceDetected(
+        userId: UserId,
+        userRole: UserRole,
+        clientInfo: ClientInfo
+    ) {
+        val userIdentifiersResult = userIdentifierRepository.getUserIdentifiersListByUserId(userId)
+        if (userIdentifiersResult is AppResult.Success) {
+            val emailIdentifier = userIdentifiersResult.data.find { it.userAuthProvider == UserAuthProvider.EMAIL }
+            if (emailIdentifier != null) {
+                emailService.sendNewDeviceLoginEmail(
+                    email = emailIdentifier.identifier,
+                    ipAddress = clientInfo.ipAddress,
+                    deviceName = clientInfo.deviceInfo.deviceName,
+                    userAgent = clientInfo.userAgent
+                )
+            }
+        }
+
+        auditLogger.log(
+            actorId = userId.asHexDashString(),
+            actorType = AuditActorType.USER,
+            actorUserRole = userRole.serialName,
+            action = NewDeviceDetectedAuditAction,
+            resource = UserAuditResourceType.USER,
+            resourceId = userId.asHexDashString(),
+            status = AuditStatus.SUCCESS,
+            metadata = setOf()
+        )
     }
 
     override suspend fun refreshSession(

@@ -13,4 +13,6 @@ object EmailTemplateArgs {
     const val IP_ADDRESS = "ipAddress"
     /** Optional client device name for security notifications. */
     const val DEVICE_NAME = "deviceName"
+    /** Value to replace the `{userAgent}` placeholder. */
+    const val USER_AGENT = "userAgent"
 }

@@ -18,6 +18,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permiss
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -35,7 +36,7 @@ class UserManagerImplTest {
 
     @BeforeEach
     fun setup() {
-        org.jetbrains.exposed.v1.jdbc.Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
+        Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
         coEvery { lockoutManager.isIndefiniteLockout(any()) } returns AppResult.Success(false)
         coEvery { lockoutManager.getLockoutUntil(any()) } returns AppResult.Success(null)
     }

@@ -35,6 +35,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class AddUserIdentifierEmailUseCaseTest {
@@ -65,6 +66,11 @@ class AddUserIdentifierEmailUseCaseTest {
         validatePasswordUseCase = validatePasswordUseCase
     )
 
+    @BeforeEach
+    fun setUp() {
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
+    }
+
     @Test
     fun `successfully adds email identifier`() = runTest {
         val context = createTestAuthenticatedRequestContext()
@@ -74,8 +80,6 @@ class AddUserIdentifierEmailUseCaseTest {
         val identifier = mockk<UserIdentifier> {
             every { id } returns identifierId
         }
-
-        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
 
         coEvery {
             rateLimiter.checkRateLimit(UserRateLimitAction.USER_IDENTIFIER_ADD, any())
