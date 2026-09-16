@@ -20,6 +20,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -67,6 +68,8 @@ class ManagementUpdateUserUseCase @Inject constructor(
      * @param accountStatus The new account status, if provided.
      * @param authorityLevel The new authority level, if provided.
      * @param permissionCodes The new set of permission codes, if provided.
+     * @param lockoutType The new account lockout type, if provided.
+     * @param temporaryLockoutUntil The new temporary lockout expiration timestamp in epoch milliseconds, if provided.
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] containing the updated [UserDetails].
      */
@@ -75,7 +78,8 @@ class ManagementUpdateUserUseCase @Inject constructor(
         accountStatus: UserAccountStatus? = null,
         authorityLevel: Int? = null,
         permissionCodes: Set<PermissionCode>? = null,
-        // todo after shared lib update add lockoutType and temporaryLockoutUntil params
+        lockoutType: AccountLockoutType? = null,
+        temporaryLockoutUntil: Long? = null,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<UserDetails> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
@@ -224,6 +228,21 @@ class ManagementUpdateUserUseCase @Inject constructor(
             }
         }
 
+        if (lockoutType != null || temporaryLockoutUntil != null) {
+            val updateSecurityPermission = when (targetUser.role) {
+                UserRole.USER -> UserPermissionCode.USER_UPDATE_SECURITY_FOR_USER
+                UserRole.STAFF -> UserPermissionCode.USER_UPDATE_SECURITY_FOR_STAFF
+                else -> return handleError(
+                    error = UserError.UserForbidden(managementUserId),
+                    actorId = auditActorId,
+                    actorUserRole = auditActorUserRole,
+                    resourceId = auditResourceId,
+                    baseMetadata = auditMetadata
+                )
+            }
+            requiredPermissions.add(updateSecurityPermission)
+        }
+
         val missingRequiredPermissions = requiredPermissions.filter { it !in managementUser.permissionCodes }
         if (missingRequiredPermissions.isNotEmpty()) {
             return handleError(
@@ -268,7 +287,9 @@ class ManagementUpdateUserUseCase @Inject constructor(
             user = targetUser,
             accountStatus = accountStatus,
             authorityLevel = authorityLevel,
-            permissions = permissionCodes
+            permissions = permissionCodes,
+            lockoutType = lockoutType,
+            temporaryLockoutUntil = temporaryLockoutUntil
         ).mapNotNullOrError(UserError.UserNotFound(targetUser.id))
 
         return when (updateResult) {

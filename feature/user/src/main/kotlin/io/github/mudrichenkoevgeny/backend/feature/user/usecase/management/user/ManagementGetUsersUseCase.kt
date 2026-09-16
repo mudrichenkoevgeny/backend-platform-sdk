@@ -9,6 +9,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.Authenti
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -45,6 +46,7 @@ class ManagementGetUsersUseCase @Inject constructor(
      * @param authorityLevelTo inclusive upper bound for [UserDetails.authorityLevel].
      * @param requiredPermissionCodes filter for users possessing all of these permission codes.
      * @param isTotpEnabled filter by MFA status.
+     * @param accountLockoutTypes filter by account lockout types.
      * @param authenticatedRequestContext context containing the ID of the manager performing the search.
      * @return [AppResult] containing [PagedResult] of [UserDetails].
      */
@@ -59,6 +61,7 @@ class ManagementGetUsersUseCase @Inject constructor(
         authorityLevelTo: Int?,
         requiredPermissionCodes: Set<PermissionCode>,
         isTotpEnabled: Boolean?,
+        accountLockoutTypes: List<AccountLockoutType>,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<UserDetails>> {
         val managementUserId = authenticatedRequestContext.userId
@@ -86,7 +89,8 @@ class ManagementGetUsersUseCase @Inject constructor(
             authorityLevelFrom = authorityLevelFrom,
             authorityLevelTo = authorityLevelTo,
             permissionCodes = requiredPermissionCodes,
-            isTotpEnabled = isTotpEnabled
+            isTotpEnabled = isTotpEnabled,
+            accountLockoutTypes = accountLockoutTypes
         )
     }
 }

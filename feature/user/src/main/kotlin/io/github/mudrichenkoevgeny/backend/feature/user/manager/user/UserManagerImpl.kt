@@ -102,7 +102,9 @@ class UserManagerImpl @Inject constructor(
         user: UserDetails,
         accountStatus: UserAccountStatus?,
         authorityLevel: Int?,
-        permissions: Set<PermissionCode>?
+        permissions: Set<PermissionCode>?,
+        lockoutType: AccountLockoutType?,
+        temporaryLockoutUntil: Long?
     ): AppResult<UserDetails?> = dbQuery {
         var statusBeforeDeletionUpdate: UpdateField<UserAccountStatus> = UpdateField.Ignore
         var scheduledDeletionUpdate: UpdateField<Instant> = UpdateField.Ignore
@@ -128,7 +130,10 @@ class UserManagerImpl @Inject constructor(
             statusBeforeDeletion = statusBeforeDeletionUpdate,
             authorityLevel = authorityLevel?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
             permissionCodes = permissions?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
-            scheduledPermanentDeletionAt = scheduledDeletionUpdate
+            scheduledPermanentDeletionAt = scheduledDeletionUpdate,
+            accountLockoutType = lockoutType?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
+            temporaryLockoutUntil = temporaryLockoutUntil
+                ?.let { UpdateField.Set(Instant.fromEpochMilliseconds(it)) } ?: UpdateField.Ignore
         ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
     }
 
@@ -167,6 +172,7 @@ class UserManagerImpl @Inject constructor(
         authorityLevelTo: Int?,
         permissionCodes: Set<PermissionCode>,
         isTotpEnabled: Boolean?,
+        accountLockoutTypes: List<AccountLockoutType>
     ): AppResult<PagedResult<UserDetails>> = dbQuery {
         val accessFilter = buildAccessFilter(managementUserPermissionCodes)
         val pagedResult = userRepository.getUsersPageWithAccessFilter(
@@ -180,7 +186,8 @@ class UserManagerImpl @Inject constructor(
             authorityLevelFrom = authorityLevelFrom,
             authorityLevelTo = authorityLevelTo,
             permissionCodes = permissionCodes,
-            isTotpEnabled = isTotpEnabled
+            isTotpEnabled = isTotpEnabled,
+            accountLockoutTypes = accountLockoutTypes
         )
 
         val enrichedItems = when (pagedResult) {
@@ -259,7 +266,7 @@ class UserManagerImpl @Inject constructor(
     override suspend fun lockUserAccountIndefinitely(userId: UserId): AppResult<UserDetails> = dbQuery {
         userRepository.updateUser(
             userId = userId,
-            accountLockoutType = UpdateField.Set(AccountLockoutType.PERMANENT),
+            accountLockoutType = UpdateField.Set(AccountLockoutType.INDEFINITE),
             temporaryLockoutUntil = UpdateField.Set(null)
         ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
     }
@@ -294,7 +301,7 @@ class UserManagerImpl @Inject constructor(
 
         if (isIndefinite) {
             return user.copy(
-                lockoutType = AccountLockoutType.PERMANENT,
+                lockoutType = AccountLockoutType.INDEFINITE,
                 temporaryLockoutUntil = null
             )
         }
@@ -305,7 +312,7 @@ class UserManagerImpl @Inject constructor(
             is AppResult.Error -> null
         }
 
-        if (lockoutUntil != null && user.lockoutType != AccountLockoutType.PERMANENT) {
+        if (lockoutUntil != null && user.lockoutType != AccountLockoutType.INDEFINITE) {
             return user.copy(
                 lockoutType = AccountLockoutType.TEMPORARY,
                 temporaryLockoutUntil = lockoutUntil
@@ -340,6 +347,6 @@ class UserManagerImpl @Inject constructor(
     }
 
     private fun getScheduledPermanentDeletionAt(): Instant {
-        return Clock.System.now() + authSettingsProvider.getAccountDeletionDelaySeconds().seconds
+        return Clock.System.now() + authSettingsProvider.getAccountDeletionGracePeriodSeconds().seconds
     }
 }

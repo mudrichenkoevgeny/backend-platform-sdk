@@ -89,7 +89,7 @@ class UserManagerImplTest {
         val user = createSampleUserDetails(userId, status = UserAccountStatus.ACTIVE)
         val updatedUser = user.copy(accountStatus = UserAccountStatus.PENDING_DELETION)
 
-        coEvery { authSettingsProvider.getAccountDeletionDelaySeconds() } returns 3600
+        coEvery { authSettingsProvider.getAccountDeletionGracePeriodSeconds() } returns 3600
         coEvery {
             userRepository.updateUser(
                 userId = userId,
@@ -156,7 +156,8 @@ class UserManagerImplTest {
                 authorityLevelFrom = any(),
                 authorityLevelTo = any(),
                 permissionCodes = any(),
-                isTotpEnabled = any()
+                isTotpEnabled = any(),
+                accountLockoutTypes = any()
             )
         } returns AppResult.Success(paged)
 
@@ -197,7 +198,7 @@ class UserManagerImplTest {
     @Test
     fun `scheduleUserDeletionForSelf calls update`() = runTest {
         val user = createSampleUserDetails(userId)
-        coEvery { authSettingsProvider.getAccountDeletionDelaySeconds() } returns 3600
+        coEvery { authSettingsProvider.getAccountDeletionGracePeriodSeconds() } returns 3600
         coEvery {
             userRepository.updateUser(
                 userId = userId,

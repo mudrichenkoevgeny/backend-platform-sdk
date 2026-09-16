@@ -14,7 +14,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.ManagementSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.OpenSecuritySettings
 
-class RecordingSecuritySettingsProvider : SecuritySettingsProvider {
+class TestSecuritySettingsProvider : SecuritySettingsProvider {
     var initializeCalled: Boolean = false
 
     override suspend fun initialize(): AppResult<Unit> {
@@ -38,6 +38,10 @@ class RecordingSecuritySettingsProvider : SecuritySettingsProvider {
 
     override fun getAccountLockoutPolicy(): AccountLockoutPolicy = error("Not used")
 
+    var currentAccountLockoutCheckIntervalSeconds: Int = 60
+
+    override fun getAccountLockoutCheckIntervalSeconds(): Int = currentAccountLockoutCheckIntervalSeconds
+
     var currentOpenIpRestrictionPolicy: IpRestrictionPolicy = createTestIpRestrictionPolicy()
 
     var currentManagementIpRestrictionPolicy: IpRestrictionPolicy = createTestIpRestrictionPolicy()
@@ -51,6 +55,10 @@ class RecordingSecuritySettingsProvider : SecuritySettingsProvider {
     override fun getMaxRequestsPerPeriod(): Int = 100
 
     override fun getRateLimitPeriodSeconds(): Int = 60
+
+    var currentRefreshTokenRotationGracePeriodSeconds: Int = 30
+
+    override fun getRefreshTokenRotationGracePeriodSeconds(): Int = currentRefreshTokenRotationGracePeriodSeconds
 
     override suspend fun updateManagementSecuritySettings(
         managementSecuritySettings: ManagementSecuritySettings

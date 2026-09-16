@@ -10,7 +10,7 @@ The module follows a strict layered architecture to ensure separation of concern
 Managers act as the primary coordination layer between Use Cases and multiple Repositories or Services.
 *   **UserManager**: Core user profile and status management.
 *   **AuthManager**: High-level authentication logic, including login and registration flows.
-*   **SessionManager**: Lifecycle of user sessions (creation, validation, termination).
+*   **SessionManager**: Lifecycle of user sessions (creation, validation, termination, refresh token reuse detection).
 *   **IdentifierManager**: Management of user identities (Email, Phone, OAuth).
 *   **TotpManager**: Security orchestration for 2FA/TOTP.
 *   **WebSocketManager**: Real-time connection management and session-aware broadcasting.
@@ -39,17 +39,19 @@ Built on top of Exposed, defining the schema and constraints.
 
 ### 1. Management (Privileged Operations)
 *   **User Admin**: `ManagementCreateUser`, `ManagementUpdateUser`, `ManagementDeleteUser`, `ManagementGetUsers`, `ManagementGetUser`.
+*   **Access Control**: Management of IP whitelists/blacklists and Email/Domain whitelists/blacklists (enforced during registration and admin user creation).
 *   **Security Admin**: `ManagementDisableTotp` (Force reset).
 *   **Session Control**: `ManagementGetSessions`, `ManagementGetSession`, `ManagementDeleteSession`, `ManagementDeleteAllSessions`.
 *   **Identifier Control**: `ManagementGetIdentifiers`, `ManagementGetIdentifier`, `ManagementDeleteIdentifier`.
-*   **System Settings**: `GetManagementAuthSettings`, `UpdateAuthSettings`.
+*   **System Settings**: `GetManagementAuthSettings`, `UpdateAuthSettings` (e.g., toggling "is registration allowed", configuring lockouts).
 
 ### 2. Open (Client & Self-Service)
 *   **Auth & Lifecycle**:
     *   **Login**: `LoginByEmail`, `LoginByPhone`, `LoginByExternalAuthProvider`, `LoginByTotp`, `LoginByTotpRecoveryCode`.
     *   **Registration**: `RegisterByEmail`, `SendRegistrationConfirmationToEmail`.
-    *   **Recovery**: `ResetPassword`, `SendResetPasswordConfirmation`.
-    *   **Session**: `RefreshToken`, `Logout`, `GetSessions`, `DeleteSession`, `DeleteAllOtherSessions`, `ReauthenticateSession` (Step-up).
+    *   **Recovery**: `ResetPassword`, `SendResetPasswordConfirmation`, Self-service account unlock.
+    *   **Session**: `RefreshToken` (with reuse detection), `Logout`, `GetSessions`, `DeleteSession`, `DeleteAllOtherSessions`, `ReauthenticateSession` (Step-up).
+    *   **Security Alerts**: Login from new device detection and user notification.
 *   **Security (2FA/TOTP)**: `SetupTotp`, `EnableTotp`, `DisableTotp`, `GetRecoveryCodes`, `RegenerateRecoveryCodes`.
 *   **Profile**: `GetUser`, `RestoreUser`, `ScheduleUserDeletion`.
 *   **Identifiers**: `AddUserIdentifierEmail`, `AddUserIdentifierPhone`, `AddUserIdentifierExternalAuthProvider`, `DeleteUserIdentifier`, `GetIdentifiers`, `IdentifierEmailChangePassword`.

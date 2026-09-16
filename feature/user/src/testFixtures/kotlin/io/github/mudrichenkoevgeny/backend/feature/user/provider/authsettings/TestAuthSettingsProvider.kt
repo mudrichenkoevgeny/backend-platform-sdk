@@ -39,8 +39,8 @@ class TestAuthSettingsProvider : AuthSettingsProvider {
     var configuredMaxActiveSessionsForManagementUser: Int = 3
     var configuredAccessTokenExpirationSeconds: Int = 3600
     var configuredRefreshTokenExpirationSeconds: Int = 2592000
-    var configuredAccountDeletionDelaySeconds: Int = 2592000
-    var configuredAccountLockoutCheckIntervalSeconds: Int = 60
+    var configuredAccountDeletionGracePeriodSeconds: Int = 2592000
+    var configuredAccountDeletionCheckIntervalSeconds: Int = 60
     var configuredIsRegistrationEnabled: Boolean = true
 
     override suspend fun initialize(): AppResult<Unit> {
@@ -68,8 +68,8 @@ class TestAuthSettingsProvider : AuthSettingsProvider {
     override fun getMaxActiveSessionsForManagementUser(): Int = configuredMaxActiveSessionsForManagementUser
     override fun getAccessTokenExpirationSeconds(): Int = configuredAccessTokenExpirationSeconds
     override fun getRefreshTokenExpirationSeconds(): Int = configuredRefreshTokenExpirationSeconds
-    override fun getAccountDeletionDelaySeconds(): Int = configuredAccountDeletionDelaySeconds
-    override fun getAccountLockoutCheckIntervalSeconds(): Int = configuredAccountLockoutCheckIntervalSeconds
+    override fun getAccountDeletionGracePeriodSeconds(): Int = configuredAccountDeletionGracePeriodSeconds
+    override fun getAccountDeletionCheckIntervalSeconds(): Int = configuredAccountDeletionCheckIntervalSeconds
     override fun getIsRegistrationEnabled(): Boolean = configuredIsRegistrationEnabled
     override fun getOpenEmailRestrictionPolicy(): EmailRestrictionPolicy = currentOpenEmailRestrictionPolicy
     override fun getManagementEmailRestrictionPolicy(): EmailRestrictionPolicy = currentManagementEmailRestrictionPolicy

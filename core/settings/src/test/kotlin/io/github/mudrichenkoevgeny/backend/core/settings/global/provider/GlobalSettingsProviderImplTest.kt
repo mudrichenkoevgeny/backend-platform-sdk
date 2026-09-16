@@ -4,7 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.config.model.GlobalSettingsConfig
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SettingType
-import io.github.mudrichenkoevgeny.backend.core.settings.service.RecordingSystemSettingsService
+import io.github.mudrichenkoevgeny.backend.core.settings.service.TestSystemSettingsService
 import io.github.mudrichenkoevgeny.backend.core.settings.service.RegisterDefaultCall
 import io.github.mudrichenkoevgeny.backend.core.settings.service.UpdateSettingCall
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.ManagementGlobalSettings
@@ -18,7 +18,7 @@ class GlobalSettingsProviderImplTest {
 
     @Test
     fun `initialize registers defaults using config values or empty strings`() = runBlocking {
-        val service = RecordingSystemSettingsService()
+        val service = TestSystemSettingsService()
         val config = GlobalSettingsConfig(
             privacyPolicyUrl = "privacy",
             termsOfServiceUrl = null,
@@ -49,7 +49,7 @@ class GlobalSettingsProviderImplTest {
 
     @Test
     fun `getOpenGlobalSettings reads values from service and falls back to config`() {
-        val service = RecordingSystemSettingsService(
+        val service = TestSystemSettingsService(
             stringByKey = mapOf(
                 "global.privacy_policy_url" to "service_privacy",
                 "global.contact_support_email" to "service_support@example.com"
@@ -71,7 +71,7 @@ class GlobalSettingsProviderImplTest {
 
     @Test
     fun `getManagementGlobalSettings reads boolean values and flags`() {
-        val service = RecordingSystemSettingsService(
+        val service = TestSystemSettingsService(
             booleanByKey = mapOf(
                 "global.is_tracing_enabled" to true,
                 "global.is_metrics_enabled" to false,
@@ -90,7 +90,7 @@ class GlobalSettingsProviderImplTest {
 
     @Test
     fun `updateManagementGlobalSettings delegates to service updateSettings for all keys`() = runBlocking {
-        val service = RecordingSystemSettingsService()
+        val service = TestSystemSettingsService()
         val provider = GlobalSettingsProviderImpl(service, GlobalSettingsConfig(null, null, null))
         val payload = ManagementGlobalSettings(
             privacyPolicyUrl = "new_privacy",
@@ -123,7 +123,7 @@ class GlobalSettingsProviderImplTest {
     @Test
     fun `updateManagementGlobalSettings returns error when update fails`() = runBlocking {
         val error = CommonError.Database("fail")
-        val service = RecordingSystemSettingsService(
+        val service = TestSystemSettingsService(
             failUpdateForKey = "global.terms_of_service_url",
             failUpdateError = error
         )

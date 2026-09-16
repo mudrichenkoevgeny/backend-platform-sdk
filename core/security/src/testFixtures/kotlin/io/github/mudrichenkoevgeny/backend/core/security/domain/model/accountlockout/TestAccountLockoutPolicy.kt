@@ -11,7 +11,7 @@ fun createTestAccountLockoutPolicy(
     maxFailedTotpAttempts: Int = 3,
     failedAttemptsWindowSeconds: Int = 300,
     lockoutDurationSeconds: Int = 900,
-    permanentLockoutThreshold: Int = 3,
+    indefiniteLockoutThreshold: Int = 3,
     isSelfServiceUnlockEnabled: Boolean = true
 ) = AccountLockoutPolicy(
     maxFailedPasswordAttempts = maxFailedPasswordAttempts,
@@ -19,6 +19,6 @@ fun createTestAccountLockoutPolicy(
     maxFailedTotpAttempts = maxFailedTotpAttempts,
     failedAttemptsWindowSeconds = failedAttemptsWindowSeconds,
     lockoutDurationSeconds = lockoutDurationSeconds,
-    permanentLockoutThreshold = permanentLockoutThreshold,
+    indefiniteLockoutThreshold = indefiniteLockoutThreshold,
     isSelfServiceUnlockEnabled = isSelfServiceUnlockEnabled
 )

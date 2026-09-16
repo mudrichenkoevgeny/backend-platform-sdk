@@ -32,7 +32,9 @@ class SecuritySettingsProviderImplTest {
 
     private val config = createTestSecurityConfig(
         passwordPolicy = defaultPolicy,
-        otpConfirmation = defaultOtpConfirmation
+        otpConfirmation = defaultOtpConfirmation,
+        accountLockoutCheckIntervalSeconds = 60,
+        refreshTokenRotationGracePeriodSeconds = 30
     )
 
     private val provider = SecuritySettingsProviderImpl(settingsService, config)
@@ -60,9 +62,11 @@ class SecuritySettingsProviderImplTest {
 
         every { settingsService.getInt("security.recent_authentication_validity_in_seconds") } returns 99
         every { settingsService.getInt("security.recent_authentication_validity_in_seconds_for_management") } returns 120
+        every { settingsService.getInt("security.account_lockout_check_interval_seconds") } returns 45
         every { settingsService.getInt("security.mfa_token_expiration_seconds") } returns 300
         every { settingsService.getInt("security.max_requests_per_period") } returns 200
         every { settingsService.getInt("security.rate_limit_period_seconds") } returns 120
+        every { settingsService.getInt("security.refresh_token_rotation_grace_period_seconds") } returns 15
         every { settingsService.getString(any()) } returns null
         every { settingsService.getJson<Any>(any(), any()) } returns null
         stubGetJsonPasswordPolicyDeserializesTo(storedPolicy)
@@ -74,8 +78,10 @@ class SecuritySettingsProviderImplTest {
         assertEquals(120, result.recentAuthenticationValiditySecondsForManagementUser)
         assertEquals(storedPolicy, result.passwordPolicy)
         assertEquals(storedOtp, result.otpConfirmation)
+        assertEquals(45, result.accountLockoutCheckIntervalSeconds)
         assertEquals(200, result.maxRequestsPerPeriod)
         assertEquals(120, result.rateLimitPeriodSeconds)
+        assertEquals(15, result.refreshTokenRotationGracePeriodSeconds)
     }
 
     @Test
@@ -89,6 +95,8 @@ class SecuritySettingsProviderImplTest {
         assertEquals(30, result.recentAuthenticationValiditySecondsForOpenUser)
         assertEquals(60, result.recentAuthenticationValiditySecondsForManagementUser)
         assertEquals(defaultPolicy, result.passwordPolicy)
+        assertEquals(60, result.accountLockoutCheckIntervalSeconds)
+        assertEquals(30, result.refreshTokenRotationGracePeriodSeconds)
     }
 
     @Test
@@ -117,9 +125,11 @@ class SecuritySettingsProviderImplTest {
             recentAuthenticationValiditySecondsForManagementUser = 90,
             passwordPolicy = createTestManagementPasswordPolicy(minLength = 25),
             otpConfirmation = defaultOtpConfirmation,
+            accountLockoutCheckIntervalSeconds = 40,
             mfaTokenExpirationSeconds = 180,
             maxRequestsPerPeriod = 150,
-            rateLimitPeriodSeconds = 90
+            rateLimitPeriodSeconds = 90,
+            refreshTokenRotationGracePeriodSeconds = 20
         )
 
         coEvery {

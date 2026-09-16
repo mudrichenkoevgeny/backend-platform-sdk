@@ -4,7 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SettingType
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 
-class RecordingSystemSettingsManager(
+class TestSystemSettingsManager(
     private val getAllSettingsResult: AppResult<List<SystemSetting>> = AppResult.Success(emptyList()),
     private val saveSettingResult: AppResult<SystemSetting> = AppResult.Success(
         SystemSetting(key = "unused", value = "unused", type = SettingType.STRING)

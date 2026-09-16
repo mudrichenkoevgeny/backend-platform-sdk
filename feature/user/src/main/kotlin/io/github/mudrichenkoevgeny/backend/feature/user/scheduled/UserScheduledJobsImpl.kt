@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundS
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import kotlinx.coroutines.CoroutineScope
@@ -23,6 +24,7 @@ import kotlin.time.Duration.Companion.seconds
 @Singleton
 class UserScheduledJobsImpl @Inject constructor(
     private val userManager: UserManager,
+    private val securitySettingsProvider: SecuritySettingsProvider,
     private val authSettingsProvider: AuthSettingsProvider,
     @param:BackgroundScope private val scope: CoroutineScope,
     private val appLogger: AppLogger,
@@ -59,7 +61,7 @@ class UserScheduledJobsImpl @Inject constructor(
                     appLogger.logError(CommonError.Internal(t))
                 }
 
-                val intervalSeconds = authSettingsProvider.getAccountDeletionDelaySeconds()
+                val intervalSeconds = authSettingsProvider.getAccountDeletionCheckIntervalSeconds()
                 val delaySeconds = if (intervalSeconds > 0) intervalSeconds else DEFAULT_CHECK_INTERVAL_SECONDS
                 delay(delaySeconds.seconds)
             }
@@ -82,7 +84,7 @@ class UserScheduledJobsImpl @Inject constructor(
                     appLogger.logError(CommonError.Internal(t))
                 }
 
-                val intervalSeconds = authSettingsProvider.getAccountLockoutCheckIntervalSeconds()
+                val intervalSeconds = securitySettingsProvider.getAccountLockoutCheckIntervalSeconds()
                 val delaySeconds = if (intervalSeconds > 0) intervalSeconds else DEFAULT_CHECK_INTERVAL_SECONDS
                 delay(delaySeconds.seconds)
             }

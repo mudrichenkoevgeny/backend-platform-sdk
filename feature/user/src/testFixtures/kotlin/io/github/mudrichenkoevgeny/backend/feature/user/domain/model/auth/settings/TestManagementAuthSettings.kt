@@ -18,7 +18,8 @@ fun createTestManagementAuthSettings(
     maxActiveSessionsForManagementUser: Int = 3,
     accessTokenExpirationSeconds: Int = 3600,
     refreshTokenExpirationSeconds: Int = 86400,
-    accountDeletionDelaySeconds: Int = 2592000,
+    accountDeletionGracePeriodSeconds: Int = 2592000,
+    accountDeletionCheckIntervalSeconds: Int = 60,
     isRegistrationEnabled: Boolean = true,
     openEmailRestrictionPolicy: EmailRestrictionPolicy = createTestEmailRestrictionPolicy(),
     managementEmailRestrictionPolicy: EmailRestrictionPolicy = createTestEmailRestrictionPolicy()
@@ -32,7 +33,8 @@ fun createTestManagementAuthSettings(
     maxActiveSessionsForManagementUser = maxActiveSessionsForManagementUser,
     accessTokenExpirationSeconds = accessTokenExpirationSeconds,
     refreshTokenExpirationSeconds = refreshTokenExpirationSeconds,
-    accountDeletionDelaySeconds = accountDeletionDelaySeconds,
+    accountDeletionGracePeriodSeconds = accountDeletionGracePeriodSeconds,
+    accountDeletionCheckIntervalSeconds = accountDeletionCheckIntervalSeconds,
     isRegistrationEnabled = isRegistrationEnabled,
     openEmailRestrictionPolicy = openEmailRestrictionPolicy,
     managementEmailRestrictionPolicy = managementEmailRestrictionPolicy

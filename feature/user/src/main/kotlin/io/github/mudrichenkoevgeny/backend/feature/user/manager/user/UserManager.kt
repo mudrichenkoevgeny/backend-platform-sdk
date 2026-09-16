@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -74,13 +75,17 @@ interface UserManager {
      * @param accountStatus New account status if update is requested.
      * @param authorityLevel New authority level if update is requested.
      * @param permissions New set of permission codes if update is requested.
+     * @param lockoutType New account lockout type if update is requested.
+     * @param temporaryLockoutUntil New temporary lockout expiration timestamp in epoch milliseconds if update is requested.
      * @return [AppResult.Success] with the updated [UserDetails], null if user not found, or an error.
      */
     suspend fun updateUserForManagement(
         user: UserDetails,
         accountStatus: UserAccountStatus? = null,
         authorityLevel: Int? = null,
-        permissions: Set<PermissionCode>? = null
+        permissions: Set<PermissionCode>? = null,
+        lockoutType: AccountLockoutType? = null,
+        temporaryLockoutUntil: Long? = null,
     ): AppResult<UserDetails?>
 
     /**
@@ -114,6 +119,7 @@ interface UserManager {
      * @param authorityLevelTo inclusive upper bound for authority level.
      * @param permissionCodes Optional filter for users possessing ALL specified permissions.
      * @param isTotpEnabled filter by TOTP enablement status.
+     * @param accountLockoutTypes Filter by account lockout types.
      * @return [AppResult.Success] with a [PagedResult] of users or an error.
      */
     suspend fun getUsersPageForManagement(
@@ -127,7 +133,8 @@ interface UserManager {
         authorityLevelFrom: Int? = null,
         authorityLevelTo: Int? = null,
         permissionCodes: Set<PermissionCode> = emptySet(),
-        isTotpEnabled: Boolean? = null
+        isTotpEnabled: Boolean? = null,
+        accountLockoutTypes: List<AccountLockoutType> = emptyList()
     ): AppResult<PagedResult<UserDetails>>
 
     /**

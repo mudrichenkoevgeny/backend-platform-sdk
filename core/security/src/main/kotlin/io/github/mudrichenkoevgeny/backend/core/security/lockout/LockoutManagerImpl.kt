@@ -68,7 +68,7 @@ class LockoutManagerImpl @Inject constructor(
                 is AppResult.Error -> 0L
             }
 
-            if (policy.permanentLockoutThreshold in 1..consecutiveCount) {
+            if (policy.indefiniteLockoutThreshold in 1..consecutiveCount) {
                 val indefiniteLockoutKey = buildIndefiniteLockoutKey(identifier)
                 redisManager.setWithExpiration(
                     key = indefiniteLockoutKey,

@@ -11,6 +11,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
+import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
@@ -35,6 +36,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -68,6 +70,7 @@ import kotlin.time.Instant
 class SessionManagerImpl @Inject constructor(
     private val appLogger: AppLogger,
     private val authSettingsProvider: AuthSettingsProvider,
+    private val securitySettingsProvider: SecuritySettingsProvider,
     private val jwtTokenProvider: TokenProvider,
     private val refreshTokenProvider: RefreshTokenProvider,
     private val userManager: UserManager,
@@ -81,18 +84,7 @@ class SessionManagerImpl @Inject constructor(
 ) : SessionManager {
 
     companion object {
-        // todo wait for shared update ManagementSecuritySettings.refreshTokenRotationGracePeriodSeconds
-        private val GRACE_PERIOD_DURATION = 30.seconds
-
-        // todo wait for shared update SecurityAuditActionType.NEW_DEVICE_DETECTED
-        private object NewDeviceDetectedAuditAction : AuditActionType {
-            override val serialName: String = "new_device_detected"
-            override fun parseOrNull(value: String): AuditActionType? = if (value == serialName) this else null
-            override fun parseOrThrow(value: String): AuditActionType =
-                parseOrNull(value) ?: throw IllegalArgumentException("Unknown action: '$value'")
-        }
-
-        // todo wait for shared update SecurityAuditActionType.REFRESH_TOKEN_REUSE_DETECTED
+        // todo wait for shared update UserAuditActionType.REFRESH_TOKEN_REUSE_DETECTED
         private object RefreshTokenReuseAuditAction : AuditActionType {
             override val serialName: String = "refresh_token_reuse_detected"
             override fun parseOrNull(value: String): AuditActionType? = if (value == serialName) this else null
@@ -259,7 +251,7 @@ class SessionManagerImpl @Inject constructor(
             actorId = userId.asHexDashString(),
             actorType = AuditActorType.USER,
             actorUserRole = userRole.serialName,
-            action = NewDeviceDetectedAuditAction,
+            action = UserAuditActionType.NEW_DEVICE_DETECTED,
             resource = UserAuditResourceType.USER,
             resourceId = userId.asHexDashString(),
             status = AuditStatus.SUCCESS,
@@ -337,7 +329,8 @@ class SessionManagerImpl @Inject constructor(
 
             if (rotatedData != null) {
                 val elapsed = now - rotatedData.rotatedAt
-                if (elapsed <= GRACE_PERIOD_DURATION) {
+                val gracePeriod = securitySettingsProvider.getRefreshTokenRotationGracePeriodSeconds().seconds
+                if (elapsed <= gracePeriod) {
                     return@dbQuery AppResult.Success(rotatedData.toSessionToken())
                 } else {
                     userSessionRepository.deleteAllUserSessions(rotatedData.getUserId())
@@ -352,7 +345,7 @@ class SessionManagerImpl @Inject constructor(
                     auditLogger.log(
                         actorId = rotatedData.getUserId().asHexDashString(),
                         actorType = AuditActorType.USER,
-                        action = RefreshTokenReuseAuditAction,
+                        action = RefreshTokenReuseAuditAction, // todo wait for shared update. Use UserAuditActionType.REFRESH_TOKEN_REUSE_DETECTED
                         resource = UserAuditResourceType.USER,
                         resourceId = rotatedData.getUserId().asHexDashString(),
                         status = AuditStatus.FAILED,

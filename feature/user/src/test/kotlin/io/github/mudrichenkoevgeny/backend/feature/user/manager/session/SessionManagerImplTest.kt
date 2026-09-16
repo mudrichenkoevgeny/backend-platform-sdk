@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
+import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.userknowndevices.UserKnownDevicesRepository
@@ -36,6 +37,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.t
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
@@ -52,6 +54,7 @@ class SessionManagerImplTest {
 
     private val appLogger = mockk<AppLogger>(relaxed = true)
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
+    private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val jwtTokenProvider = mockk<TokenProvider>()
     private val refreshTokenProvider = mockk<RefreshTokenProvider>()
     private val userManager = mockk<UserManager>()
@@ -66,6 +69,7 @@ class SessionManagerImplTest {
     private val manager = SessionManagerImpl(
         appLogger = appLogger,
         authSettingsProvider = authSettingsProvider,
+        securitySettingsProvider = securitySettingsProvider,
         jwtTokenProvider = jwtTokenProvider,
         refreshTokenProvider = refreshTokenProvider,
         userManager = userManager,
@@ -86,6 +90,7 @@ class SessionManagerImplTest {
     @BeforeEach
     fun setup() {
         Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
+        every { securitySettingsProvider.getRefreshTokenRotationGracePeriodSeconds() } returns 30
     }
 
     @Test
@@ -207,7 +212,7 @@ class SessionManagerImplTest {
                 actorType = any(),
                 action = any(),
                 resource = any(),
-                resourceId = any(),
+                resourceId = userId.asHexDashString(),
                 status = any(),
                 metadata = any()
             )

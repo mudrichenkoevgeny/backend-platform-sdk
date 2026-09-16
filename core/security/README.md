@@ -14,7 +14,8 @@ Security primitives for SDK-based applications: password hashing, MFA management
 - **Password Management**:
     - **Hashing**: [PasswordHasher] (Argon2 implementation via Password4j).
     - **Validation**: [ValidatePasswordUseCase] enforces the active [PasswordPolicy] provided by [SecuritySettingsProvider].
-- **Rate Limiting**: [RateLimiter] (Redis-backed) with policies for actions like login attempts or OTP retries.
+- **Rate Limiting & Lockout**: [RateLimiter] (Redis-backed) with policies for actions like login attempts or OTP retries. Integrates with account lockout mechanics (temporary and permanent blockades on suspicious behavior like brute-force).
+- **Access Control Policies**: Configurable management settings for allowed/blocked IPs and domain filtering.
 - **Audit Integration**: [SecurityAuditErrorParser] maps security failures (weak passwords, expired MFA tokens) to standard audit reason codes.
 - **DI Wiring**: [SecurityModules] aggregates all components, including MFA, OTP, and Crypto processors.
 - **Utilities**:

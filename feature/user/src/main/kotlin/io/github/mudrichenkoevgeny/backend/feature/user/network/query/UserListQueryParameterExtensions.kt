@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.g
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserFilterValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
@@ -54,6 +55,13 @@ fun ApplicationCall.parseUsersListQueryParams(): UserListQueryParams {
 
     val isTotpEnabled = firstNonBlankQueryValue(filterNames.IS_TOTP_ENABLED)?.toBooleanStrictOrNull()
 
+    val accountLockoutTypes = getQueryValues(filterNames.ACCOUNT_LOCKOUT_TYPE)
+        .map { lockoutTypeValue ->
+            AccountLockoutType.fromValueOrNull(lockoutTypeValue) ?: throw RequestHandlingException(
+                CommonError.InvalidParameterValue(filterNames.ACCOUNT_LOCKOUT_TYPE)
+            )
+        }
+
     return UserListQueryParams(
         listing = listing,
         roles = roles,
@@ -62,6 +70,7 @@ fun ApplicationCall.parseUsersListQueryParams(): UserListQueryParams {
         authorityLevelFrom = authorityLevelFrom,
         authorityLevelTo = authorityLevelTo,
         requiredPermissionCodes = requiredPermissionCodes,
-        isTotpEnabled = isTotpEnabled
+        isTotpEnabled = isTotpEnabled,
+        accountLockoutTypes = accountLockoutTypes
     )
 }

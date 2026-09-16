@@ -77,15 +77,15 @@ interface AuthSettingsProvider {
     fun getRefreshTokenExpirationSeconds(): Int
 
     /**
-     * Returns the delay in seconds between scheduling an account for deletion
+     * Returns the grace period in seconds between scheduling an account for deletion
      * and its permanent removal from the system.
      */
-    fun getAccountDeletionDelaySeconds(): Int
+    fun getAccountDeletionGracePeriodSeconds(): Int
 
     /**
-     * Returns the interval in seconds between background checks for expired account lockouts.
+     * Returns the background worker check interval in seconds for processing accounts pending permanent deletion.
      */
-    fun getAccountLockoutCheckIntervalSeconds(): Int
+    fun getAccountDeletionCheckIntervalSeconds(): Int
 
     /**
      * Returns whether new user registrations are currently permitted.

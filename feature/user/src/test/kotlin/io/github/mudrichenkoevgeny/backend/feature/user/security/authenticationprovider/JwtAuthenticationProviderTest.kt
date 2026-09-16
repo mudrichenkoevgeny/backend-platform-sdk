@@ -160,13 +160,13 @@ class JwtAuthenticationProviderTest {
     }
 
     @Test
-    fun `requireUser should return Error when lockoutType is PERMANENT`() = runTest {
+    fun `requireUser should return Error when lockoutType is INDEFINITE`() = runTest {
         val userId = UserId.generate()
         val userDetails = createFakeUser(
             userId = userId,
             role = UserRole.USER,
             status = UserAccountStatus.ACTIVE,
-            lockoutType = AccountLockoutType.PERMANENT
+            lockoutType = AccountLockoutType.INDEFINITE
         )
 
         every { call.getUserIdFromPayload() } returns AppResult.Success(userId)

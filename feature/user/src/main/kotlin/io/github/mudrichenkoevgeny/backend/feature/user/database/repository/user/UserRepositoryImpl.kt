@@ -193,7 +193,8 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         authorityLevelFrom: Int?,
         authorityLevelTo: Int?,
         permissionCodes: Set<PermissionCode>,
-        isTotpEnabled: Boolean?
+        isTotpEnabled: Boolean?,
+        accountLockoutTypes: List<AccountLockoutType>
     ): AppResult<PagedResult<UserDetails>> {
         val query = UsersTable.selectAll()
 
@@ -224,6 +225,10 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             query.andWhere { UsersTable.isTotpEnabled eq isTotpEnabled }
         }
 
+        if (accountLockoutTypes.isNotEmpty()) {
+            query.andWhere { UsersTable.accountLockoutType inList accountLockoutTypes }
+        }
+
         if (permissionCodes.isNotEmpty()) {
             query.andWhere {
                 UsersTable.permissionCodes jsonbContainsAllStrings permissionCodes.map { it.value }.toSet()
@@ -238,6 +243,8 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             UserSortValues.UserSortBy.SCHEDULED_PERMANENT_DELETION_AT -> UsersTable.scheduledPermanentDeletionAt
             UserSortValues.UserSortBy.CREATED_AT -> UsersTable.createdAt
             UserSortValues.UserSortBy.UPDATED_AT -> UsersTable.updatedAt
+            UserSortValues.UserSortBy.ACCOUNT_LOCKOUT_TYPE -> UsersTable.accountLockoutType
+            UserSortValues.UserSortBy.TEMPORARY_LOCKOUT_UNTIL -> UsersTable.temporaryLockoutUntil
         }
 
         val users = query

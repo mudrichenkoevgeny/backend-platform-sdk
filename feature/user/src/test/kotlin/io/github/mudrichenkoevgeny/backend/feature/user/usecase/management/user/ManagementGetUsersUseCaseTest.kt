@@ -69,7 +69,8 @@ class ManagementGetUsersUseCaseTest {
                 authorityLevelFrom = any(),
                 authorityLevelTo = any(),
                 permissionCodes = any(),
-                isTotpEnabled = any()
+                isTotpEnabled = any(),
+                accountLockoutTypes = any()
             )
         } returns AppResult.Success(pagedResult)
 
@@ -84,6 +85,7 @@ class ManagementGetUsersUseCaseTest {
             authorityLevelTo = null,
             requiredPermissionCodes = emptySet(),
             isTotpEnabled = null,
+            accountLockoutTypes = emptyList(),
             authenticatedRequestContext = context
         )
 
@@ -109,6 +111,7 @@ class ManagementGetUsersUseCaseTest {
             authorityLevelTo = null,
             requiredPermissionCodes = emptySet(),
             isTotpEnabled = null,
+            accountLockoutTypes = emptyList(),
             authenticatedRequestContext = context
         )
 
@@ -130,6 +133,7 @@ class ManagementGetUsersUseCaseTest {
             authorityLevelTo = null,
             requiredPermissionCodes = emptySet(),
             isTotpEnabled = null,
+            accountLockoutTypes = emptyList(),
             authenticatedRequestContext = context
         )
 

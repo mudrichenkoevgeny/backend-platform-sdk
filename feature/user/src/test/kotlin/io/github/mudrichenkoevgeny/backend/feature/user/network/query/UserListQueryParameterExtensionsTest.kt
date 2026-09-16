@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.query
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserFilterValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
@@ -45,6 +46,7 @@ class UserListQueryParameterExtensionsTest {
                 filterNames.AUTHORITY_LEVEL_TO to listOf("10"),
                 filterNames.PERMISSION_CODES to listOf(TEST_PERMISSION),
                 filterNames.IS_TOTP_ENABLED to listOf("true"),
+                filterNames.ACCOUNT_LOCKOUT_TYPE to listOf("temporary"),
                 "sortBy" to listOf("createdAt")
             )
         )
@@ -58,6 +60,7 @@ class UserListQueryParameterExtensionsTest {
         assertEquals(10, result.authorityLevelTo)
         assertTrue(result.requiredPermissionCodes.contains(PermissionCode(TEST_PERMISSION)))
         assertEquals(true, result.isTotpEnabled)
+        assertEquals(AccountLockoutType.TEMPORARY, result.accountLockoutTypes.first())
         assertEquals(UserSortValues.UserSortBy.CREATED_AT, result.listing.sortBy)
     }
 
@@ -83,6 +86,18 @@ class UserListQueryParameterExtensionsTest {
 
         val error = exception.error as CommonError.InvalidParameterValue
         assertEquals(filterNames.ACCOUNT_STATUS, error.parameterName)
+    }
+
+    @Test
+    fun `should throw RequestHandlingException when account lockout type is invalid`() {
+        setupMockParameters(mapOf(filterNames.ACCOUNT_LOCKOUT_TYPE to listOf(INVALID_VAL)))
+
+        val exception = assertThrows<RequestHandlingException> {
+            call.parseUsersListQueryParams()
+        }
+
+        val error = exception.error as CommonError.InvalidParameterValue
+        assertEquals(filterNames.ACCOUNT_LOCKOUT_TYPE, error.parameterName)
     }
 
     @Test

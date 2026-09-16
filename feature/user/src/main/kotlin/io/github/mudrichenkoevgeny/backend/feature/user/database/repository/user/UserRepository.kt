@@ -99,7 +99,7 @@ interface UserRepository {
      * @param authorityLevelTo optional inclusive upper bound for authority level.
      * @param permissionCodes list of permission codes that the user MUST possess (ALL of them).
      * @param isTotpEnabled optional filter by TOTP enablement status.
-     * // todo wait for shared update and add lockout fields
+     * @param accountLockoutTypes Filter by account lockout types.
      * @return [PagedResult] of matching users or an error.
      */
     suspend fun getUsersPageWithAccessFilter(
@@ -113,7 +113,8 @@ interface UserRepository {
         authorityLevelFrom: Int? = null,
         authorityLevelTo: Int? = null,
         permissionCodes: Set<PermissionCode> = emptySet(),
-        isTotpEnabled: Boolean? = null
+        isTotpEnabled: Boolean? = null,
+        accountLockoutTypes: List<AccountLockoutType> = emptyList()
     ): AppResult<PagedResult<UserDetails>>
 
     /**

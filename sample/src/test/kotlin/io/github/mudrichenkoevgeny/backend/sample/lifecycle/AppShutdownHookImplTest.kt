@@ -20,7 +20,7 @@ class AppShutdownHookImplTest {
 
     @Test
     fun `register adds shutdown hook that stops server waits audit and shuts down resources`() = runBlocking {
-        val registrar = RecordingRegistrar()
+        val registrar = TestShutdownHookRegistrar()
 
         val server = mockk<EmbeddedServer<*, *>>()
         val databaseManager = mockk<DatabaseManager>()
@@ -53,7 +53,7 @@ class AppShutdownHookImplTest {
         coVerify(exactly = 1) { auditService.awaitAll() }
     }
 
-    private class RecordingRegistrar : ShutdownHookRegistrar {
+    private class TestShutdownHookRegistrar : ShutdownHookRegistrar {
         var lastHook: Thread? = null
 
         override fun addShutdownHook(hook: Thread) {

@@ -23,11 +23,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
  * overrides it.
  * @property otpConfirmation Global parameters for handling one-time confirmation codes.
  * @property accountLockoutPolicy Default account lockout policy.
+ * @property accountLockoutCheckIntervalSeconds Background worker check interval in seconds for processing expired account lockouts.
  * @property openIpRestrictionPolicy Default open IP restriction policy.
  * @property managementIpRestrictionPolicy Default management IP restriction policy.
  * @property mfaTokenExpirationSeconds Lifetime (in seconds) of the temporary MFA challenge token (mfaToken).
  * @property maxRequestsPerPeriod Maximum number of requests allowed per rate limit window.
  * @property rateLimitPeriodSeconds Rate limit time window duration in seconds.
+ * @property refreshTokenRotationGracePeriodSeconds Grace period in seconds during refresh token rotation before triggering replay attack protection.
  */
 data class SecurityConfig(
     val authRealm: String,
@@ -37,15 +39,19 @@ data class SecurityConfig(
     val passwordPolicy: ManagementPasswordPolicy,
     val otpConfirmation: OtpConfirmation,
     val accountLockoutPolicy: AccountLockoutPolicy = DEFAULT_ACCOUNT_LOCKOUT_POLICY,
+    val accountLockoutCheckIntervalSeconds: Int = DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS,
     val openIpRestrictionPolicy: IpRestrictionPolicy = DEFAULT_IP_RESTRICTION_POLICY,
     val managementIpRestrictionPolicy: IpRestrictionPolicy = DEFAULT_IP_RESTRICTION_POLICY,
     val mfaTokenExpirationSeconds: Int,
     val maxRequestsPerPeriod: Int = DEFAULT_MAX_REQUESTS_PER_PERIOD,
-    val rateLimitPeriodSeconds: Int = DEFAULT_RATE_LIMIT_PERIOD_SECONDS
+    val rateLimitPeriodSeconds: Int = DEFAULT_RATE_LIMIT_PERIOD_SECONDS,
+    val refreshTokenRotationGracePeriodSeconds: Int = DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS
 ) {
     companion object {
         const val DEFAULT_MAX_REQUESTS_PER_PERIOD = 100
         const val DEFAULT_RATE_LIMIT_PERIOD_SECONDS = 60
+        const val DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS = 60
+        const val DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS = 30
 
         val DEFAULT_ACCOUNT_LOCKOUT_POLICY = AccountLockoutPolicy(
             maxFailedPasswordAttempts = 5,
@@ -53,7 +59,7 @@ data class SecurityConfig(
             maxFailedTotpAttempts = 3,
             failedAttemptsWindowSeconds = 600,
             lockoutDurationSeconds = 1800,
-            permanentLockoutThreshold = 3,
+            indefiniteLockoutThreshold = 3,
             isSelfServiceUnlockEnabled = true
         )
 

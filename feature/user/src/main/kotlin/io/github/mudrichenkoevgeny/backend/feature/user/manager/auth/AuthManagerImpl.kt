@@ -559,7 +559,7 @@ class AuthManagerImpl @Inject constructor(
             }
         }
 
-        if (user.lockoutType == AccountLockoutType.PERMANENT) {
+        if (user.lockoutType == AccountLockoutType.INDEFINITE) {
             return AppResult.Error(UserError.UserBlocked(userId = user.id))
         }
 

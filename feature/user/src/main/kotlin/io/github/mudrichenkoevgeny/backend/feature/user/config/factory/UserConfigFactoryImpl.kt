@@ -27,7 +27,7 @@ import javax.inject.Singleton
 @Singleton
 class UserConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader
-): UserConfigFactory {
+) : UserConfigFactory {
 
     override fun create(): UserConfig {
         // secret files
@@ -52,7 +52,8 @@ class UserConfigFactoryImpl @Inject constructor(
         val maxActiveSessionsForManagementUser = envReader.getByKey(UserEnvKeys.MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER).toInt()
         val accessTokenExpirationSeconds = envReader.getByKey(UserEnvKeys.ACCESS_TOKEN_EXPIRATION_SECONDS).toInt()
         val refreshTokenExpirationSeconds = envReader.getByKey(UserEnvKeys.REFRESH_TOKEN_EXPIRATION_SECONDS).toInt()
-        val accountDeletionDelaySeconds = envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_DELAY_SECONDS).toInt()
+        val accountDeletionGracePeriodSeconds = envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_GRACE_PERIOD_SECONDS).toInt()
+        val accountDeletionCheckIntervalSeconds = envReader.getByKeyOrNull(UserEnvKeys.ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS)?.toIntOrNull() ?: 600
         val isRegistrationEnabled = envReader.getByKeyOrNull(UserEnvKeys.IS_REGISTRATION_ENABLED)?.toBooleanStrictOrNull() ?: true
 
         val isOpenEmailBlacklistEnabled = envReader
@@ -86,7 +87,8 @@ class UserConfigFactoryImpl @Inject constructor(
             maxActiveSessionsForManagementUser = maxActiveSessionsForManagementUser,
             accessTokenExpirationSeconds = accessTokenExpirationSeconds,
             refreshTokenExpirationSeconds = refreshTokenExpirationSeconds,
-            accountDeletionDelaySeconds = accountDeletionDelaySeconds,
+            accountDeletionGracePeriodSeconds = accountDeletionGracePeriodSeconds,
+            accountDeletionCheckIntervalSeconds = accountDeletionCheckIntervalSeconds,
             isRegistrationEnabled = isRegistrationEnabled,
             openEmailRestrictionPolicy = EmailRestrictionPolicy(
                 isBlacklistEnabled = isOpenEmailBlacklistEnabled,
@@ -134,16 +136,13 @@ class UserConfigFactoryImpl @Inject constructor(
             null
         }
 
-        val accountLockoutCheckIntervalSeconds = envReader.getByKeyOrNull(UserEnvKeys.ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS)?.toIntOrNull() ?: 60
-
         return UserConfig(
             jwtSecret = jwtSecret,
             adminAccountsList = adminList.admins,
             managementAuthSettings = managementAuthSettings,
             googleWebClientId = googleWebClientId,
             uniOneConfig = uniOneConfig,
-            resendConfig = resendConfig,
-            accountLockoutCheckIntervalSeconds = accountLockoutCheckIntervalSeconds
+            resendConfig = resendConfig
         )
     }
 }

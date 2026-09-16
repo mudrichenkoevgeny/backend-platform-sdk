@@ -24,7 +24,7 @@ The sample module itself does not define its own env keys. It relies on configur
 in [AppComponent], for example:
 
 - `core:common` (server/ports/cors/etc.)
-- `core:database` (DB URL/credentials, Flyway migration locations, Redis URL)
+- `core:database` (DB URL/credentials, Flyway migration locations, Redis URL). Alternatively, a `db-migrator` Docker container can be used for isolated migration execution.
 - `core:settings` and `feature:settingsapi` (global settings seed values and sync)
 - `core:security` and `feature:securityapi` (security policies and MFA)
 - `feature:user` (auth, JWT, and user lifecycle settings)

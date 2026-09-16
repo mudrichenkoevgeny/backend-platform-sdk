@@ -32,6 +32,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toA
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -248,6 +249,7 @@ class ManagementUserRouter @Inject constructor(
             authorityLevelTo = queryParams.authorityLevelTo,
             requiredPermissionCodes = queryParams.requiredPermissionCodes,
             isTotpEnabled = queryParams.isTotpEnabled,
+            accountLockoutTypes = queryParams.accountLockoutTypes,
             authenticatedRequestContext = authenticatedRequestContext
         )
 
@@ -389,6 +391,11 @@ class ManagementUserRouter @Inject constructor(
             parser = UserAccountStatus::fromValueOrNull
         )
 
+        val lockoutType = request.lockoutType?.validateFieldValue(
+            fieldName = UserApiFields.ACCOUNT_LOCKOUT_TYPE,
+            parser = AccountLockoutType::fromValueOrNull
+        )
+
         val result = managementUpdateUserUseCase(
             userId = userId,
             accountStatus = accountStatus,
@@ -396,6 +403,8 @@ class ManagementUserRouter @Inject constructor(
             permissionCodes = request.permissionCodes?.map { permissionCode ->
                 PermissionCode(permissionCode)
             }?.toSet(),
+            lockoutType = lockoutType,
+            temporaryLockoutUntil = request.temporaryLockoutUntil,
             authenticatedRequestContext = authenticatedRequestContext
         )
         call.respondResult(result, appLogger, appErrorParser) { userDetails ->

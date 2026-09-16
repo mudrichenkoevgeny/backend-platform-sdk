@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.settings.service
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
-import io.github.mudrichenkoevgeny.backend.core.settings.manager.RecordingSystemSettingsManager
+import io.github.mudrichenkoevgeny.backend.core.settings.manager.TestSystemSettingsManager
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SettingType
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import io.mockk.mockk
@@ -29,7 +29,7 @@ class SystemSettingsServiceImplTest {
             SystemSetting(key = "a", value = "1", type = SettingType.LONG),
             SystemSetting(key = "b", value = "true", type = SettingType.BOOLEAN)
         )
-        val manager = RecordingSystemSettingsManager(
+        val manager = TestSystemSettingsManager(
             getAllSettingsResult = AppResult.Success(existing)
         )
 
@@ -45,7 +45,7 @@ class SystemSettingsServiceImplTest {
     @Test
     fun `initialize returns error when manager fails`() = runTest {
         val error = CommonError.Database("boom")
-        val manager = RecordingSystemSettingsManager(
+        val manager = TestSystemSettingsManager(
             getAllSettingsResult = AppResult.Error(error)
         )
         val service = SystemSettingsServiceImpl(manager, redisManager, scope)
@@ -59,7 +59,7 @@ class SystemSettingsServiceImplTest {
     @Test
     fun `registerDefault does nothing when key already cached`() = runTest {
         val cachedSetting = SystemSetting(key = "k", value = "v", type = SettingType.STRING)
-        val manager = RecordingSystemSettingsManager(
+        val manager = TestSystemSettingsManager(
             getAllSettingsResult = AppResult.Success(listOf(cachedSetting)),
             saveSettingResult = AppResult.Success(cachedSetting)
         )
@@ -76,7 +76,7 @@ class SystemSettingsServiceImplTest {
     @Test
     fun `registerDefault persists and caches when key missing`() = runTest {
         val saved = SystemSetting(key = "k", value = "v", type = SettingType.STRING)
-        val manager = RecordingSystemSettingsManager(
+        val manager = TestSystemSettingsManager(
             getAllSettingsResult = AppResult.Success(emptyList()),
             saveSettingResult = AppResult.Success(saved)
         )
@@ -93,7 +93,7 @@ class SystemSettingsServiceImplTest {
 
     @Test
     fun `typed getters return null when value is missing or invalid`() = runTest {
-        val manager = RecordingSystemSettingsManager(
+        val manager = TestSystemSettingsManager(
             getAllSettingsResult = AppResult.Success(
                 listOf(
                     SystemSetting(key = "long", value = "x", type = SettingType.LONG),
@@ -113,7 +113,7 @@ class SystemSettingsServiceImplTest {
 
     @Test
     fun `getJson returns deserialized value and returns null on deserializer error`() = runTest {
-        val manager = RecordingSystemSettingsManager(
+        val manager = TestSystemSettingsManager(
             getAllSettingsResult = AppResult.Success(
                 listOf(SystemSetting(key = "json", value = """{"a":1}""", type = SettingType.JSON))
             )
@@ -131,7 +131,7 @@ class SystemSettingsServiceImplTest {
     @Test
     fun `updateSetting creates new setting when missing and caches result`() = runTest {
         val saved = SystemSetting(key = "k", value = "v1", type = SettingType.STRING)
-        val manager = RecordingSystemSettingsManager(
+        val manager = TestSystemSettingsManager(
             getAllSettingsResult = AppResult.Success(emptyList()),
             saveSettingResult = AppResult.Success(saved)
         )
@@ -149,7 +149,7 @@ class SystemSettingsServiceImplTest {
     fun `updateSetting keeps existing type and id when present`() = runTest {
         val existing = SystemSetting(key = "k", value = "v0", type = SettingType.LONG)
         val saved = existing.copy(value = "v1")
-        val manager = RecordingSystemSettingsManager(
+        val manager = TestSystemSettingsManager(
             getAllSettingsResult = AppResult.Success(listOf(existing)),
             saveSettingResult = AppResult.Success(saved)
         )
@@ -168,7 +168,7 @@ class SystemSettingsServiceImplTest {
     fun `registerDefaults batch saves missing keys`() = runTest {
         val existing = SystemSetting(key = "k1", value = "v1", type = SettingType.STRING)
         val newSetting = SystemSetting(key = "k2", value = "v2", type = SettingType.STRING)
-        val manager = RecordingSystemSettingsManager(
+        val manager = TestSystemSettingsManager(
             getAllSettingsResult = AppResult.Success(listOf(existing))
         )
         val service = SystemSettingsServiceImpl(manager, redisManager, scope)
@@ -186,7 +186,7 @@ class SystemSettingsServiceImplTest {
     fun `updateSettings batch updates all keys`() = runTest {
         val s1 = SystemSetting(key = "k1", value = "v1", type = SettingType.STRING)
         val s2 = SystemSetting(key = "k2", value = "v2", type = SettingType.STRING)
-        val manager = RecordingSystemSettingsManager(
+        val manager = TestSystemSettingsManager(
             getAllSettingsResult = AppResult.Success(emptyList())
         )
         val service = SystemSettingsServiceImpl(manager, redisManager, scope)
@@ -203,7 +203,7 @@ class SystemSettingsServiceImplTest {
     @Test
     fun `deleteSetting removes from cache and manager`() = runTest {
         val existing = SystemSetting(key = "k", value = "v", type = SettingType.STRING)
-        val manager = RecordingSystemSettingsManager(
+        val manager = TestSystemSettingsManager(
             getAllSettingsResult = AppResult.Success(listOf(existing))
         )
         val service = SystemSettingsServiceImpl(manager, redisManager, scope)

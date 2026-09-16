@@ -33,7 +33,6 @@ class AuthSettingsProviderImplTest {
     @BeforeEach
     fun setUp() {
         every { config.managementAuthSettings } returns managementSettings
-        every { config.accountLockoutCheckIntervalSeconds } returns 60
         every { managementSettings.availableAuthProviders } returns availableAuthProviders
         every { managementSettings.maxTotalIdentifiers } returns 5
         every { managementSettings.maxEmailIdentifiers } returns 1
@@ -43,7 +42,8 @@ class AuthSettingsProviderImplTest {
         every { managementSettings.maxActiveSessionsForManagementUser } returns 3
         every { managementSettings.accessTokenExpirationSeconds } returns 3600
         every { managementSettings.refreshTokenExpirationSeconds } returns 2592000
-        every { managementSettings.accountDeletionDelaySeconds } returns 604800
+        every { managementSettings.accountDeletionGracePeriodSeconds } returns 604800
+        every { managementSettings.accountDeletionCheckIntervalSeconds } returns 60
         every { managementSettings.isRegistrationEnabled } returns true
         every { managementSettings.openEmailRestrictionPolicy } returns createTestEmailRestrictionPolicy()
         every { managementSettings.managementEmailRestrictionPolicy } returns createTestEmailRestrictionPolicy()
@@ -78,7 +78,7 @@ class AuthSettingsProviderImplTest {
         assertTrue(result is AppResult.Success)
         coVerify(exactly = 1) {
             settingsService.updateSettings(match { list ->
-                list.size == 13
+                list.size == 14
             })
         }
     }
@@ -106,6 +106,8 @@ class AuthSettingsProviderImplTest {
         assertEquals(availableAuthProviders, result.availableAuthProviders)
         assertEquals(5, result.maxTotalIdentifiers)
         assertEquals(3600, result.accessTokenExpirationSeconds)
+        assertEquals(604800, result.accountDeletionGracePeriodSeconds)
+        assertEquals(60, result.accountDeletionCheckIntervalSeconds)
         assertEquals(true, result.isRegistrationEnabled)
     }
 
@@ -121,5 +123,7 @@ class AuthSettingsProviderImplTest {
 
         assertEquals(100, result.maxTotalIdentifiers)
         assertEquals(3600, result.accessTokenExpirationSeconds)
+        assertEquals(604800, result.accountDeletionGracePeriodSeconds)
+        assertEquals(60, result.accountDeletionCheckIntervalSeconds)
     }
 }

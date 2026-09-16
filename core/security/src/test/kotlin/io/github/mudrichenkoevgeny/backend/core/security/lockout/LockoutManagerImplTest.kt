@@ -23,7 +23,7 @@ class LockoutManagerImplTest {
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val lockoutManager = LockoutManagerImpl(redisManager, securitySettingsProvider)
 
-    private val testPolicy = createTestAccountLockoutPolicy(permanentLockoutThreshold = 0)
+    private val testPolicy = createTestAccountLockoutPolicy(indefiniteLockoutThreshold = 0)
 
     @BeforeEach
     fun setUp() {

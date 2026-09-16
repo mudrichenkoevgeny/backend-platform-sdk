@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.model
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -20,6 +21,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
  * @property authorityLevelTo Upper bound for authority level filtering (inclusive).
  * @property requiredPermissionCodes Filter for users possessing all specified [PermissionCode]s.
  * @property isTotpEnabled Filter users based on whether Two-Factor Authentication is currently enabled.
+ * @property accountLockoutTypes Filter by account lockout types.
  */
 data class UserListQueryParams(
     val listing: ListingQueryParams<UserSortValues.UserSortBy>,
@@ -29,5 +31,6 @@ data class UserListQueryParams(
     val authorityLevelFrom: Int?,
     val authorityLevelTo: Int?,
     val requiredPermissionCodes: Set<PermissionCode>,
-    val isTotpEnabled: Boolean?
+    val isTotpEnabled: Boolean?,
+    val accountLockoutTypes: List<AccountLockoutType>
 )

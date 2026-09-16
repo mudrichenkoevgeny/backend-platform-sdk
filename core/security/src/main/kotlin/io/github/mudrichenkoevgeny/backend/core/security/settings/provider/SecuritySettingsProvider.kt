@@ -66,6 +66,11 @@ interface SecuritySettingsProvider {
     fun getAccountLockoutPolicy(): AccountLockoutPolicy
 
     /**
+     * Returns the background worker check interval in seconds for processing expired account lockouts.
+     */
+    fun getAccountLockoutCheckIntervalSeconds(): Int
+
+    /**
      * Returns the effective open IP restriction policy.
      */
     fun getOpenIpRestrictionPolicy(): IpRestrictionPolicy
@@ -89,6 +94,11 @@ interface SecuritySettingsProvider {
      * Returns the rate limit time window in seconds.
      */
     fun getRateLimitPeriodSeconds(): Int
+
+    /**
+     * Returns the grace period in seconds during refresh token rotation before triggering replay attack protection.
+     */
+    fun getRefreshTokenRotationGracePeriodSeconds(): Int
 
     /**
      * Updates the stored security settings including password policy, OTP, and expiration windows.

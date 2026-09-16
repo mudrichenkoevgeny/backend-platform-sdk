@@ -16,7 +16,7 @@ A modular foundational SDK for building scalable Kotlin/Ktor microservices. Prov
 | **core/audit** | Infrastructure for background audit logging with visibility filtering and error parsing. |
 | **core/storage** | Object storage abstraction supporting S3 (AWS/MinIO) and Local Filesystem. |
 | **core/events** | Event publishing/subscribing via Kafka or In-Memory bus. |
-| **feature/user** | Advanced IAM: Multi-method auth (Email, Phone, OAuth), JWT/Refresh sessions, 2FA/TOTP, and full user lifecycle. |
+| **feature/user** | Advanced IAM: Multi-method auth (Email, Phone, OAuth), JWT/Refresh sessions (with reuse detection), 2FA/TOTP, device login detection, lockouts, and full user lifecycle. |
 | **feature/auditapi** | HTTP API for audit trail management with permission-aware filtering. |
 | **feature/securityapi** | Security policy management with real-time WebSocket synchronization. |
 | **feature/settingsapi** | Public and management APIs for global configuration with WebSocket sync. |
@@ -41,7 +41,7 @@ dependencies {
 
 2. **Common** — Install `CommonModules` and bootstrap with `KtorServer.create(commonConfig)`. Configure observability using the `telemetryProvider` and register your feature routers within the application routing block.
 
-3. **Database** — If using `core/database`, provide DB and Redis connection secrets. Include Flyway migration paths for all used modules (e.g., `db/migration/core/audit`, `db/migration/feature/user`).
+3. **Database** — If using `core/database`, provide DB and Redis connection secrets. Include Flyway migration paths for all used modules (e.g., `db/migration/core/audit`, `db/migration/feature/user`). Alternatively, use the standalone `db-migrator` Docker container for running migrations.
 
 4. **System Initialization** — On application startup, you must initialize the settings cache and seed default values:
 

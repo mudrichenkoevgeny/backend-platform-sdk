@@ -20,7 +20,7 @@ import javax.inject.Singleton
 @Singleton
 class SecurityConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader
-): SecurityConfigFactory {
+) : SecurityConfigFactory {
 
     override fun create(): SecurityConfig {
         val totpEncryptionSecretFile = envReader.getByKey(SecurityEnvKeys.TOTP_ENCRYPTION_SECRET_FILE)
@@ -82,8 +82,8 @@ class SecurityConfigFactoryImpl @Inject constructor(
             ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.failedAttemptsWindowSeconds
         val lockoutDurationSeconds = envReader.getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_DURATION_SECONDS)?.toInt()
             ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.lockoutDurationSeconds
-        val permanentLockoutThreshold = envReader.getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_PERMANENT_THRESHOLD)?.toInt()
-            ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.permanentLockoutThreshold
+        val indefiniteLockoutThreshold = envReader.getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_INDEFINITE_THRESHOLD)?.toInt()
+            ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.indefiniteLockoutThreshold
         val isSelfServiceUnlockEnabled = envReader.getByKeyOrNull(SecurityEnvKeys.IS_SELF_SERVICE_UNLOCK_ENABLED)?.toBooleanStrictOrNull()
             ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.isSelfServiceUnlockEnabled
 
@@ -93,9 +93,15 @@ class SecurityConfigFactoryImpl @Inject constructor(
             maxFailedTotpAttempts = maxFailedTotpAttempts,
             failedAttemptsWindowSeconds = failedAttemptsWindowSeconds,
             lockoutDurationSeconds = lockoutDurationSeconds,
-            permanentLockoutThreshold = permanentLockoutThreshold,
+            indefiniteLockoutThreshold = indefiniteLockoutThreshold,
             isSelfServiceUnlockEnabled = isSelfServiceUnlockEnabled
         )
+
+        val accountLockoutCheckIntervalSeconds = envReader.getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS)?.toInt()
+            ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS
+
+        val refreshTokenRotationGracePeriodSeconds = envReader.getByKeyOrNull(SecurityEnvKeys.REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS)?.toInt()
+            ?: SecurityConfig.DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS
 
         val isOpenIpBlacklistEnabled = envReader.getByKeyOrNull(SecurityEnvKeys.IS_IP_BLACKLIST_ENABLED_OPEN)?.toBooleanStrictOrNull() ?: false
         val openIpBlacklist = envReader.getStringList(SecurityEnvKeys.IP_BLACKLIST_OPEN)
@@ -145,11 +151,13 @@ class SecurityConfigFactoryImpl @Inject constructor(
             passwordPolicy = passwordPolicy,
             otpConfirmation = otpConfirmation,
             accountLockoutPolicy = accountLockoutPolicy,
+            accountLockoutCheckIntervalSeconds = accountLockoutCheckIntervalSeconds,
             openIpRestrictionPolicy = openIpRestrictionPolicy,
             managementIpRestrictionPolicy = managementIpRestrictionPolicy,
             mfaTokenExpirationSeconds = mfaTokenExpirationSeconds,
             maxRequestsPerPeriod = maxRequestsPerPeriod,
-            rateLimitPeriodSeconds = rateLimitPeriodSeconds
+            rateLimitPeriodSeconds = rateLimitPeriodSeconds,
+            refreshTokenRotationGracePeriodSeconds = refreshTokenRotationGracePeriodSeconds
         )
     }
 }

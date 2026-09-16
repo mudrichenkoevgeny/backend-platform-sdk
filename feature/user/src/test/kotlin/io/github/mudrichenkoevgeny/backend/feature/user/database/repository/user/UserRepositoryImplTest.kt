@@ -9,6 +9,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAcc
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -125,6 +126,33 @@ class UserRepositoryImplTest {
         val success = result as AppResult.Success
         assertEquals(1, success.data.items.size)
         assertEquals(userId, success.data.items.first().id)
+    }
+
+    @Test
+    fun `getUsersPageWithAccessFilter filters by accountLockoutTypes and sorts by ACCOUNT_LOCKOUT_TYPE`() = runBlocking {
+        val userId1 = UserId.generate()
+        val userId2 = UserId.generate()
+        val user1 = createTestUser(userId1).copy(lockoutType = AccountLockoutType.TEMPORARY)
+        val user2 = createTestUser(userId2).copy(lockoutType = AccountLockoutType.NONE)
+
+        suspendTransaction {
+            repository.createUser(user1)
+            repository.createUser(user2)
+        }
+
+        val result = suspendTransaction {
+            repository.getUsersPageWithAccessFilter(
+                accessFilter = UserRoleAccessFilter(allowedUserRoles = setOf(UserRole.USER)),
+                pageParams = PageParams(page = 1, size = 10),
+                sortBy = UserSortValues.UserSortBy.ACCOUNT_LOCKOUT_TYPE,
+                sortOrder = SortOrder.ASC,
+                accountLockoutTypes = listOf(AccountLockoutType.TEMPORARY)
+            )
+        }
+
+        val success = result as AppResult.Success
+        assertEquals(1, success.data.items.size)
+        assertEquals(userId1, success.data.items.first().id)
     }
 
     @Test

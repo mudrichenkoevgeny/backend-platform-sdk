@@ -2,6 +2,8 @@ package io.github.mudrichenkoevgeny.backend.core.security.config.model
 
 import io.github.mudrichenkoevgeny.backend.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.github.mudrichenkoevgeny.backend.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.iprestriction.IpRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.OpenPasswordPolicy
@@ -15,9 +17,14 @@ fun createTestSecurityConfig(
     recentAuthenticationValidityInSecondsForManagement: Int = 60,
     passwordPolicy: ManagementPasswordPolicy = createTestManagementPasswordPolicy(),
     otpConfirmation: OtpConfirmation = createTestOtpConfirmation(),
+    accountLockoutPolicy: AccountLockoutPolicy = SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY,
+    accountLockoutCheckIntervalSeconds: Int = SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS,
+    openIpRestrictionPolicy: IpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
+    managementIpRestrictionPolicy: IpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
     mfaTokenExpirationSeconds: Int = 120,
-    maxRequestsPerPeriod: Int = 100,
-    rateLimitPeriodSeconds: Int = 60
+    maxRequestsPerPeriod: Int = SecurityConfig.DEFAULT_MAX_REQUESTS_PER_PERIOD,
+    rateLimitPeriodSeconds: Int = SecurityConfig.DEFAULT_RATE_LIMIT_PERIOD_SECONDS,
+    refreshTokenRotationGracePeriodSeconds: Int = SecurityConfig.DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS
 ) = SecurityConfig(
     authRealm = authRealm,
     totpEncryptionSecret = totpEncryptionSecret,
@@ -25,9 +32,14 @@ fun createTestSecurityConfig(
     recentAuthenticationValidityInSecondsForManagement = recentAuthenticationValidityInSecondsForManagement,
     passwordPolicy = passwordPolicy,
     otpConfirmation = otpConfirmation,
+    accountLockoutPolicy = accountLockoutPolicy,
+    accountLockoutCheckIntervalSeconds = accountLockoutCheckIntervalSeconds,
+    openIpRestrictionPolicy = openIpRestrictionPolicy,
+    managementIpRestrictionPolicy = managementIpRestrictionPolicy,
     mfaTokenExpirationSeconds = mfaTokenExpirationSeconds,
     maxRequestsPerPeriod = maxRequestsPerPeriod,
-    rateLimitPeriodSeconds = rateLimitPeriodSeconds
+    rateLimitPeriodSeconds = rateLimitPeriodSeconds,
+    refreshTokenRotationGracePeriodSeconds = refreshTokenRotationGracePeriodSeconds
 )
 
 fun createTestManagementSecuritySettings(
@@ -35,20 +47,27 @@ fun createTestManagementSecuritySettings(
     recentAuthenticationValiditySecondsForManagementUser: Int = 60,
     passwordPolicy: ManagementPasswordPolicy = createTestManagementPasswordPolicy(),
     otpConfirmation: OtpConfirmation = createTestOtpConfirmation(),
+    accountLockoutPolicy: AccountLockoutPolicy = SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY,
+    accountLockoutCheckIntervalSeconds: Int = SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS,
+    openIpRestrictionPolicy: IpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
+    managementIpRestrictionPolicy: IpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
     mfaTokenExpirationSeconds: Int = 120,
-    maxRequestsPerPeriod: Int = 100,
-    rateLimitPeriodSeconds: Int = 60
+    maxRequestsPerPeriod: Int = SecurityConfig.DEFAULT_MAX_REQUESTS_PER_PERIOD,
+    rateLimitPeriodSeconds: Int = SecurityConfig.DEFAULT_RATE_LIMIT_PERIOD_SECONDS,
+    refreshTokenRotationGracePeriodSeconds: Int = SecurityConfig.DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS
 ) = ManagementSecuritySettings(
     recentAuthenticationValiditySecondsForOpenUser = recentAuthenticationValiditySecondsForOpenUser,
     recentAuthenticationValiditySecondsForManagementUser = recentAuthenticationValiditySecondsForManagementUser,
     passwordPolicy = passwordPolicy,
     otpConfirmation = otpConfirmation,
-    accountLockoutPolicy = SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY,
-    openIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
-    managementIpRestrictionPolicy = SecurityConfig.DEFAULT_IP_RESTRICTION_POLICY,
+    accountLockoutPolicy = accountLockoutPolicy,
+    accountLockoutCheckIntervalSeconds = accountLockoutCheckIntervalSeconds,
+    openIpRestrictionPolicy = openIpRestrictionPolicy,
+    managementIpRestrictionPolicy = managementIpRestrictionPolicy,
     mfaTokenExpirationSeconds = mfaTokenExpirationSeconds,
     maxRequestsPerPeriod = maxRequestsPerPeriod,
-    rateLimitPeriodSeconds = rateLimitPeriodSeconds
+    rateLimitPeriodSeconds = rateLimitPeriodSeconds,
+    refreshTokenRotationGracePeriodSeconds = refreshTokenRotationGracePeriodSeconds
 )
 
 fun createTestOpenSecuritySettings(

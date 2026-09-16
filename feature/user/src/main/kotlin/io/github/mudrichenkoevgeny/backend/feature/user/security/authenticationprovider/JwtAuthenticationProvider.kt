@@ -124,7 +124,7 @@ class JwtAuthenticationProvider @Inject constructor(
             is AppResult.Error -> return userResult
         }
 
-        if (user.lockoutType == AccountLockoutType.PERMANENT) {
+        if (user.lockoutType == AccountLockoutType.INDEFINITE) {
             return AppResult.Error(UserError.UserBlocked(userId = userId))
         }
 

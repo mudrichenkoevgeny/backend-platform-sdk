@@ -4,12 +4,11 @@ import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLog
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CommonAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataDeniedReasonValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,17 +20,6 @@ import javax.inject.Singleton
  */
 @Singleton
 class UserAuditErrorParser @Inject constructor() : AuditErrorParser {
-
-    companion object {
-        // todo wait for shared update UserAuditMetadataKey.BLOCKED_UNTIL
-        private object BlockedUntilAuditMetadataKey : AuditMetadataKey {
-            override val serialName: String = "blocked_until"
-            override val valueSensitivity: AuditValueSensitivity = AuditValueSensitivity.NON_SENSITIVE
-            override fun parseOrNull(value: String): AuditMetadataKey? = if (value == serialName) this else null
-            override fun parseOrThrow(value: String): AuditMetadataKey =
-                parseOrNull(value) ?: throw IllegalArgumentException("Unknown key: '$value'")
-        }
-    }
 
     override fun parse(error: AppError): AuditErrorLogData? {
         if (error !is UserError) return null
@@ -60,7 +48,7 @@ class UserAuditErrorParser @Inject constructor() : AuditErrorParser {
         if (error is UserError.UserBlocked && error.blockedUntil != null) {
             metadata.add(
                 AuditEventMetadata(
-                    key = BlockedUntilAuditMetadataKey,
+                    key = UserAuditMetadataKey.BLOCKED_UNTIL,
                     value = error.blockedUntil.toEpochMilliseconds().toString()
                 )
             )

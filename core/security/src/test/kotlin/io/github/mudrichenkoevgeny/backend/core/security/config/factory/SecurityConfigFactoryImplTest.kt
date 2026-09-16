@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.security.config.factory
 
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.security.config.envkeys.SecurityEnvKeys
+import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
 import io.mockk.every
 import io.mockk.mockk
@@ -50,6 +51,8 @@ class SecurityConfigFactoryImplTest {
 
         assertEquals(6, config.otpConfirmation.numberOfSymbols)
         assertEquals(120, config.mfaTokenExpirationSeconds)
+        assertEquals(SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS, config.accountLockoutCheckIntervalSeconds)
+        assertEquals(SecurityConfig.DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS, config.refreshTokenRotationGracePeriodSeconds)
     }
 
     @Test
@@ -66,6 +69,8 @@ class SecurityConfigFactoryImplTest {
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_DIGIT) } returns "true"
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_SPECIAL_CHAR) } returns "true"
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_COMMON_PASSWORDS) } returns "pass123,  qwerty  , ,  letmein "
+        every { envReader.getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS) } returns "120"
+        every { envReader.getByKeyOrNull(SecurityEnvKeys.REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS) } returns "45"
 
         val config = factory.create()
 
@@ -78,5 +83,7 @@ class SecurityConfigFactoryImplTest {
         assertTrue(config.passwordPolicy.requireDigit)
         assertTrue(config.passwordPolicy.requireSpecialChar)
         assertEquals(setOf("pass123", "qwerty", "letmein"), config.passwordPolicy.commonPasswords)
+        assertEquals(120, config.accountLockoutCheckIntervalSeconds)
+        assertEquals(45, config.refreshTokenRotationGracePeriodSeconds)
     }
 }

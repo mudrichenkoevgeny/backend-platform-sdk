@@ -6,7 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppInstanceM
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorParserConfig
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.CommonErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.RecordingSecuritySettingsProvider
+import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.TestSecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.core.security.validator.iprestriction.IpRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.iprestriction.IpRestrictionPolicy
@@ -32,7 +32,7 @@ class ApplicationIpRestrictionTest {
         ktorServerPort = 8080,
         ktorManagementPort = 9090
     )
-    private val securitySettingsProvider = RecordingSecuritySettingsProvider()
+    private val securitySettingsProvider = TestSecuritySettingsProvider()
     private val validator = IpRestrictionPolicyValidator()
     private val mockLogger = mockk<AppLogger>(relaxed = true)
     private val errorParser = CommonErrorParser(AppErrorParserConfig())

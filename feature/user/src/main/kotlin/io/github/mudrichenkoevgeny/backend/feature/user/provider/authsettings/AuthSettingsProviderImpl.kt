@@ -80,13 +80,13 @@ class AuthSettingsProviderImpl @Inject constructor(
                 type = SettingType.INT
             ),
             SystemSetting(
-                key = KEY_ACCOUNT_DELETION_DELAY_SECONDS,
-                value = "${defaults.accountDeletionDelaySeconds}",
+                key = KEY_ACCOUNT_DELETION_GRACE_PERIOD_SECONDS,
+                value = "${defaults.accountDeletionGracePeriodSeconds}",
                 type = SettingType.INT
             ),
             SystemSetting(
-                key = KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS,
-                value = "${config.accountLockoutCheckIntervalSeconds}",
+                key = KEY_ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS,
+                value = "${defaults.accountDeletionCheckIntervalSeconds}",
                 type = SettingType.INT
             ),
             SystemSetting(
@@ -119,7 +119,8 @@ class AuthSettingsProviderImpl @Inject constructor(
             maxActiveSessionsForManagementUser = getMaxActiveSessionsForManagementUser(),
             accessTokenExpirationSeconds = getAccessTokenExpirationSeconds(),
             refreshTokenExpirationSeconds = getRefreshTokenExpirationSeconds(),
-            accountDeletionDelaySeconds = getAccountDeletionDelaySeconds(),
+            accountDeletionGracePeriodSeconds = getAccountDeletionGracePeriodSeconds(),
+            accountDeletionCheckIntervalSeconds = getAccountDeletionCheckIntervalSeconds(),
             isRegistrationEnabled = getIsRegistrationEnabled(),
             openEmailRestrictionPolicy = getOpenEmailRestrictionPolicy(),
             managementEmailRestrictionPolicy = getManagementEmailRestrictionPolicy()
@@ -183,14 +184,14 @@ class AuthSettingsProviderImpl @Inject constructor(
             ?: config.managementAuthSettings.refreshTokenExpirationSeconds
     }
 
-    override fun getAccountDeletionDelaySeconds(): Int {
-        return settingsService.getInt(KEY_ACCOUNT_DELETION_DELAY_SECONDS)
-            ?: config.managementAuthSettings.accountDeletionDelaySeconds
+    override fun getAccountDeletionGracePeriodSeconds(): Int {
+        return settingsService.getInt(KEY_ACCOUNT_DELETION_GRACE_PERIOD_SECONDS)
+            ?: config.managementAuthSettings.accountDeletionGracePeriodSeconds
     }
 
-    override fun getAccountLockoutCheckIntervalSeconds(): Int {
-        return settingsService.getInt(KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS)
-            ?: config.accountLockoutCheckIntervalSeconds
+    override fun getAccountDeletionCheckIntervalSeconds(): Int {
+        return settingsService.getInt(KEY_ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS)
+            ?: config.managementAuthSettings.accountDeletionCheckIntervalSeconds
     }
 
     override fun getIsRegistrationEnabled(): Boolean {
@@ -284,8 +285,13 @@ class AuthSettingsProviderImpl @Inject constructor(
                 type = SettingType.INT
             ),
             SystemSetting(
-                key = KEY_ACCOUNT_DELETION_DELAY_SECONDS,
-                value = "${managementAuthSettings.accountDeletionDelaySeconds}",
+                key = KEY_ACCOUNT_DELETION_GRACE_PERIOD_SECONDS,
+                value = "${managementAuthSettings.accountDeletionGracePeriodSeconds}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS,
+                value = "${managementAuthSettings.accountDeletionCheckIntervalSeconds}",
                 type = SettingType.INT
             ),
             SystemSetting(
@@ -317,8 +323,8 @@ class AuthSettingsProviderImpl @Inject constructor(
         const val KEY_MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER = "auth.max_active_sessions_for_management_user"
         const val KEY_ACCESS_TOKEN_EXPIRATION_SECONDS = "auth.access_token_expiration_seconds"
         const val KEY_REFRESH_TOKEN_EXPIRATION_SECONDS = "auth.refresh_token_expiration_seconds"
-        const val KEY_ACCOUNT_DELETION_DELAY_SECONDS = "auth.account_deletion_delay_seconds"
-        const val KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS = "auth.account_lockout_check_interval_seconds"
+        const val KEY_ACCOUNT_DELETION_GRACE_PERIOD_SECONDS = "auth.account_deletion_grace_period_seconds"
+        const val KEY_ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS = "auth.account_deletion_check_interval_seconds"
         const val KEY_IS_REGISTRATION_ENABLED = "auth.is_registration_enabled"
         const val KEY_OPEN_EMAIL_RESTRICTION_POLICY = "auth.open_email_restriction_policy"
         const val KEY_MANAGEMENT_EMAIL_RESTRICTION_POLICY = "auth.management_email_restriction_policy"

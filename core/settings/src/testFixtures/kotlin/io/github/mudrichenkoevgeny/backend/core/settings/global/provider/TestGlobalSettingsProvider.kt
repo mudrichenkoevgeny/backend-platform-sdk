@@ -5,7 +5,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.cl
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.ManagementGlobalSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.OpenGlobalSettings
 
-class RecordingGlobalSettingsProvider : GlobalSettingsProvider {
+class TestGlobalSettingsProvider : GlobalSettingsProvider {
     var initializeCalled: Boolean = false
 
     override suspend fun initialize(): AppResult<Unit> {

@@ -51,6 +51,8 @@ class UserConfigFactoryImplTest {
         val auth = config.managementAuthSettings
         assertEquals(listOf(UserAuthProvider.GOOGLE), auth.availableAuthProviders.primary)
         assertEquals(listOf(UserAuthProvider.EMAIL), auth.availableAuthProviders.secondary)
+        assertEquals(3600, auth.accountDeletionGracePeriodSeconds)
+        assertEquals(60, auth.accountDeletionCheckIntervalSeconds)
     }
 
     @Test
@@ -102,8 +104,8 @@ class UserConfigFactoryImplTest {
         every { envReader.getByKey(UserEnvKeys.MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER) } returns "3"
         every { envReader.getByKey(UserEnvKeys.ACCESS_TOKEN_EXPIRATION_SECONDS) } returns "3600"
         every { envReader.getByKey(UserEnvKeys.REFRESH_TOKEN_EXPIRATION_SECONDS) } returns "86400"
-        every { envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_DELAY_SECONDS) } returns "3600"
-        every { envReader.getByKeyOrNull(UserEnvKeys.ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS) } returns "60"
+        every { envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_GRACE_PERIOD_SECONDS) } returns "3600"
+        every { envReader.getByKeyOrNull(UserEnvKeys.ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS) } returns "600"
         every { envReader.getByKeyOrNull(UserEnvKeys.IS_REGISTRATION_ENABLED) } returns null
         every { envReader.getByKeyOrNull(UserEnvKeys.IS_EMAIL_BLACKLIST_ENABLED_OPEN) } returns null
         every { envReader.getByKeyOrNull(UserEnvKeys.EMAIL_BLACKLIST_OPEN) } returns null

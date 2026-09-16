@@ -70,6 +70,11 @@ class SecuritySettingsProviderImpl @Inject constructor(
                 type = SettingType.JSON
             ),
             SystemSetting(
+                key = KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS,
+                value = "${config.accountLockoutCheckIntervalSeconds}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
                 key = KEY_OPEN_IP_RESTRICTION_POLICY,
                 value = FoundationJson.encodeToString(config.openIpRestrictionPolicy.toIpRestrictionPolicyPayload()),
                 type = SettingType.JSON
@@ -93,6 +98,11 @@ class SecuritySettingsProviderImpl @Inject constructor(
                 key = KEY_RATE_LIMIT_PERIOD_SECONDS,
                 value = "${config.rateLimitPeriodSeconds}",
                 type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS,
+                value = "${config.refreshTokenRotationGracePeriodSeconds}",
+                type = SettingType.INT
             )
         )
         return settingsService.registerDefaults(defaultSettings)
@@ -105,11 +115,13 @@ class SecuritySettingsProviderImpl @Inject constructor(
             passwordPolicy = getManagementPasswordPolicy(),
             otpConfirmation = getOtpConfirmation(),
             accountLockoutPolicy = getAccountLockoutPolicy(),
+            accountLockoutCheckIntervalSeconds = getAccountLockoutCheckIntervalSeconds(),
             openIpRestrictionPolicy = getOpenIpRestrictionPolicy(),
             managementIpRestrictionPolicy = getManagementIpRestrictionPolicy(),
             mfaTokenExpirationSeconds = getMfaTokenExpirationSeconds(),
             maxRequestsPerPeriod = getMaxRequestsPerPeriod(),
-            rateLimitPeriodSeconds = getRateLimitPeriodSeconds()
+            rateLimitPeriodSeconds = getRateLimitPeriodSeconds(),
+            refreshTokenRotationGracePeriodSeconds = getRefreshTokenRotationGracePeriodSeconds()
         )
     }
 
@@ -158,6 +170,11 @@ class SecuritySettingsProviderImpl @Inject constructor(
         return settingsService.getJson(KEY_ACCOUNT_LOCKOUT_POLICY) { json ->
             FoundationJson.decodeFromString<AccountLockoutPolicyPayload>(json).toAccountLockoutPolicy()
         } ?: config.accountLockoutPolicy
+    }
+
+    override fun getAccountLockoutCheckIntervalSeconds(): Int {
+        return settingsService.getInt(KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS)
+            ?: config.accountLockoutCheckIntervalSeconds
     }
 
     override fun getOpenIpRestrictionPolicy(): IpRestrictionPolicy {
@@ -211,6 +228,11 @@ class SecuritySettingsProviderImpl @Inject constructor(
             ?: config.rateLimitPeriodSeconds
     }
 
+    override fun getRefreshTokenRotationGracePeriodSeconds(): Int {
+        return settingsService.getInt(KEY_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS)
+            ?: config.refreshTokenRotationGracePeriodSeconds
+    }
+
     override suspend fun updateManagementSecuritySettings(
         managementSecuritySettings: ManagementSecuritySettings
     ): AppResult<Unit> {
@@ -241,6 +263,11 @@ class SecuritySettingsProviderImpl @Inject constructor(
                 type = SettingType.JSON
             ),
             SystemSetting(
+                key = KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS,
+                value = "${managementSecuritySettings.accountLockoutCheckIntervalSeconds}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
                 key = KEY_OPEN_IP_RESTRICTION_POLICY,
                 value = FoundationJson.encodeToString(managementSecuritySettings.openIpRestrictionPolicy.toIpRestrictionPolicyPayload()),
                 type = SettingType.JSON
@@ -264,6 +291,11 @@ class SecuritySettingsProviderImpl @Inject constructor(
                 key = KEY_RATE_LIMIT_PERIOD_SECONDS,
                 value = "${managementSecuritySettings.rateLimitPeriodSeconds}",
                 type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS,
+                value = "${managementSecuritySettings.refreshTokenRotationGracePeriodSeconds}",
+                type = SettingType.INT
             )
         )
         return settingsService.updateSettings(settingsToUpdate).mapSuccess { }
@@ -275,10 +307,12 @@ class SecuritySettingsProviderImpl @Inject constructor(
         const val KEY_PASSWORD_POLICY = "security.password_policy"
         const val KEY_OTP_CONFIRMATION = "security.otp_confirmation"
         const val KEY_ACCOUNT_LOCKOUT_POLICY = "security.account_lockout_policy"
+        const val KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS = "security.account_lockout_check_interval_seconds"
         const val KEY_OPEN_IP_RESTRICTION_POLICY = "security.open_ip_restriction_policy"
         const val KEY_MANAGEMENT_IP_RESTRICTION_POLICY = "security.management_ip_restriction_policy"
         const val KEY_MFA_TOKEN_EXPIRATION_SECONDS = "security.mfa_token_expiration_seconds"
         const val KEY_MAX_REQUESTS_PER_PERIOD = "security.max_requests_per_period"
         const val KEY_RATE_LIMIT_PERIOD_SECONDS = "security.rate_limit_period_seconds"
+        const val KEY_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS = "security.refresh_token_rotation_grace_period_seconds"
     }
 }

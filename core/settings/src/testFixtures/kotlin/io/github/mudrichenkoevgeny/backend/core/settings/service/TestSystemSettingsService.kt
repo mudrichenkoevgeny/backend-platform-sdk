@@ -18,7 +18,7 @@ data class UpdateSettingCall(
     val type: SettingType
 )
 
-class RecordingSystemSettingsService(
+class TestSystemSettingsService(
     private val stringByKey: Map<String, String?> = emptyMap(),
     private val booleanByKey: Map<String, Boolean?> = emptyMap(),
     private val failUpdateForKey: String? = null,

@@ -84,7 +84,7 @@ class ManagementUpdateUserUseCaseTest {
         } returns AppResult.Success(Unit)
         coEvery { sessionManager.getAllUserSessions(targetId) } returns AppResult.Success(listOf(targetSession))
         coEvery {
-            userManager.updateUserForManagement(targetDetails, null, null, setOf(newPermission))
+            userManager.updateUserForManagement(any(), any(), any(), any(), any(), any())
         } returns AppResult.Success(updatedUser)
 
         val result = useCase(
