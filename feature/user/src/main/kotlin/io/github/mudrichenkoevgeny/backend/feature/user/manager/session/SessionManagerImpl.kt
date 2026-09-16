@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.session
 
+import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
@@ -52,8 +53,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.t
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.SessionToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.SessionPermissionCode
+import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
@@ -80,7 +84,8 @@ class SessionManagerImpl @Inject constructor(
     private val emailService: EmailService,
     private val redisManager: RedisManager,
     private val auditLogger: AuditLogger,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    @param:BackgroundScope private val scope: CoroutineScope
 ) : SessionManager {
 
     companion object {
@@ -100,7 +105,8 @@ class SessionManagerImpl @Inject constructor(
         identifierId: UserIdentifierId,
         identifierAuthProvider: UserAuthProvider,
         clientInfo: ClientInfo,
-        lastReauthenticatedAt: Instant
+        lastReauthenticatedAt: Instant,
+        checkNewDevice: Boolean
     ): AppResult<SessionToken> {
         var isNewDeviceDetected = false
 
@@ -112,11 +118,14 @@ class SessionManagerImpl @Inject constructor(
             identifierAuthProvider = identifierAuthProvider,
             clientInfo = clientInfo,
             lastReauthenticatedAt = lastReauthenticatedAt,
+            checkNewDevice = checkNewDevice,
             onNewDeviceDetected = { isNewDeviceDetected = true }
         )
 
         if (sessionResult is AppResult.Success && isNewDeviceDetected) {
-            notifyNewDeviceDetected(userId, userRole, clientInfo)
+            scope.launch {
+                notifyNewDeviceDetected(userId, userRole, clientInfo)
+            }
         }
 
         return sessionResult
@@ -130,6 +139,7 @@ class SessionManagerImpl @Inject constructor(
         identifierAuthProvider: UserAuthProvider,
         clientInfo: ClientInfo,
         lastReauthenticatedAt: Instant,
+        checkNewDevice: Boolean,
         onNewDeviceDetected: () -> Unit
     ): AppResult<SessionToken> = dbQuery {
         val userSessionId = UserSessionId.generate()
@@ -182,8 +192,8 @@ class SessionManagerImpl @Inject constructor(
 
         val createUserSessionResult = userSessionRepository.createUserSession(userSession)
 
-        val deviceId = clientInfo.deviceInfo.deviceId?.asHexDashString()
-        if (deviceId != null) {
+        if (checkNewDevice) {
+            val deviceId = resolveDeviceId(userId, clientInfo)
             val knownDeviceResult = userKnownDevicesRepository.getKnownDevice(userId, deviceId)
             when (knownDeviceResult) {
                 is AppResult.Success -> {
@@ -213,8 +223,6 @@ class SessionManagerImpl @Inject constructor(
                     appLogger.logError(knownDeviceResult.error)
                 }
             }
-        } else {
-            onNewDeviceDetected()
         }
 
         when (createUserSessionResult) {
@@ -227,6 +235,20 @@ class SessionManagerImpl @Inject constructor(
             )
             is AppResult.Error -> createUserSessionResult
         }
+    }
+
+    private fun resolveDeviceId(userId: UserId, clientInfo: ClientInfo): String {
+        val rawDeviceId = clientInfo.deviceInfo.deviceId?.asHexDashString()
+        if (!rawDeviceId.isNullOrBlank()) {
+            return rawDeviceId
+        }
+
+        val ip = clientInfo.ipAddress ?: "unknown_ip"
+        val userAgent = clientInfo.userAgent ?: "unknown_ua"
+        val rawString = "${userId.value}:$ip:$userAgent"
+        val hashBytes = MessageDigest.getInstance("SHA-256").digest(rawString.toByteArray())
+        val hexString = hashBytes.joinToString("") { "%02x".format(it) }
+        return "synthetic:$hexString"
     }
 
     private suspend fun notifyNewDeviceDetected(
@@ -295,7 +317,8 @@ class SessionManagerImpl @Inject constructor(
                 identifierId = currentUserSession.identifierId,
                 identifierAuthProvider = currentUserSession.identifierAuthProvider,
                 clientInfo = clientInfo,
-                lastReauthenticatedAt = currentUserSession.lastReauthenticatedAt
+                lastReauthenticatedAt = currentUserSession.lastReauthenticatedAt,
+                checkNewDevice = false
             )
 
             if (newSessionResult is AppResult.Success) {

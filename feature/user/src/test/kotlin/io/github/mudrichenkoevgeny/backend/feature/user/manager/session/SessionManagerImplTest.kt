@@ -22,6 +22,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.Au
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
@@ -39,7 +41,9 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -79,7 +83,8 @@ class SessionManagerImplTest {
         emailService = emailService,
         redisManager = redisManager,
         auditLogger = auditLogger,
-        userRepository = userRepository
+        userRepository = userRepository,
+        scope = CoroutineScope(kotlinx.coroutines.Dispatchers.Unconfined)
     )
 
     private val userId = UserId.generate()
@@ -411,6 +416,107 @@ class SessionManagerImplTest {
                 status = any(),
                 metadata = any()
             )
+        }
+    }
+
+    @Test
+    fun `createSession with null deviceId generates synthetic deviceId and checks known devices`() = runTest {
+        val now = Clock.System.now()
+        val accessToken = AccessToken("access-token")
+        val refreshToken = RefreshToken("refresh-token")
+        val refreshHash = RefreshTokenHash("refresh-hash")
+        val internalSession = createTestUserSessionInternal(userId = userId)
+
+        val clientInfoNoDevice = createTestClientInfo(
+            deviceInfo = ClientDeviceInfo(
+                clientType = ClientType.WEB,
+                deviceId = null,
+                deviceName = "Web Browser",
+                appVersion = null,
+                operationSystemVersion = null,
+                language = "en"
+            )
+        )
+
+        coEvery { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
+        coEvery { authSettingsProvider.getRefreshTokenExpirationSeconds() } returns 86400
+        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any()) } returns AppResult.Success(accessToken)
+        coEvery { refreshTokenProvider.getRefreshToken() } returns AppResult.Success(refreshToken)
+        coEvery { refreshTokenProvider.getRefreshTokenHash(refreshToken) } returns AppResult.Success(refreshHash)
+        coEvery { userSessionRepository.createUserSession(any()) } returns AppResult.Success(internalSession)
+
+        val capturedDeviceIdSlot = slot<String>()
+        coEvery {
+            userKnownDevicesRepository.getKnownDevice(userId, capture(capturedDeviceIdSlot))
+        } returns AppResult.Success(null)
+        coEvery { userKnownDevicesRepository.createKnownDevice(any()) } returns AppResult.Success(mockk(relaxed = true))
+        coEvery { userIdentifierRepository.getUserIdentifiersListByUserId(userId) } returns AppResult.Success(
+            listOf(
+                createTestUserIdentifierInternal(
+                    id = identifierId,
+                    userId = userId,
+                    identifier = "test@example.com",
+                    userAuthProvider = UserAuthProvider.EMAIL
+                )
+            )
+        )
+        coEvery {
+            emailService.sendNewDeviceLoginEmail(any(), any(), any(), any())
+        } returns AppResult.Success(Unit)
+
+        val result = manager.createSession(
+            userId = userId,
+            userRole = UserRole.USER,
+            identifier = "test@example.com",
+            identifierId = identifierId,
+            identifierAuthProvider = UserAuthProvider.EMAIL,
+            clientInfo = clientInfoNoDevice,
+            lastReauthenticatedAt = now
+        )
+
+        assertTrue(result is AppResult.Success)
+        assertTrue(capturedDeviceIdSlot.captured.startsWith("synthetic:"))
+
+        coVerify(exactly = 1) {
+            emailService.sendNewDeviceLoginEmail(
+                email = "test@example.com",
+                ipAddress = any(),
+                deviceName = any(),
+                userAgent = any()
+            )
+        }
+    }
+
+    @Test
+    fun `refreshSession does not trigger new device notification`() = runTest {
+        val oldRefreshToken = RefreshToken("old-refresh-token")
+        val oldHash = RefreshTokenHash("old-hash")
+        val newAccessToken = AccessToken("new-access-token")
+        val newRefreshToken = RefreshToken("new-refresh-token")
+        val newHash = RefreshTokenHash("new-hash")
+        val currentSession = createSampleInternalSession(userId, oldHash)
+        val newInternalSession = createSampleInternalSession(userId, newHash)
+
+        coEvery { refreshTokenProvider.getRefreshTokenHash(oldRefreshToken) } returns AppResult.Success(oldHash)
+        coEvery { userSessionRepository.getUserSessionByHash(oldHash) } returns AppResult.Success(currentSession)
+        coEvery { userSessionRepository.deleteUserSessionById(currentSession.id) } returns AppResult.Success(Unit)
+
+        coEvery { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
+        coEvery { authSettingsProvider.getRefreshTokenExpirationSeconds() } returns 86400
+        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any()) } returns AppResult.Success(newAccessToken)
+        coEvery { refreshTokenProvider.getRefreshToken() } returns AppResult.Success(newRefreshToken)
+        coEvery { refreshTokenProvider.getRefreshTokenHash(newRefreshToken) } returns AppResult.Success(newHash)
+        coEvery { userSessionRepository.createUserSession(any()) } returns AppResult.Success(newInternalSession)
+        coEvery { redisManager.setWithExpiration(any(), any(), any()) } returns AppResult.Success(Unit)
+
+        val result = manager.refreshSession(oldRefreshToken, clientInfo)
+
+        assertTrue(result is AppResult.Success)
+        coVerify(exactly = 0) {
+            emailService.sendNewDeviceLoginEmail(any(), any(), any(), any())
+        }
+        coVerify(exactly = 0) {
+            userKnownDevicesRepository.getKnownDevice(any(), any())
         }
     }
 

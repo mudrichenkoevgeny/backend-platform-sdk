@@ -82,7 +82,7 @@ class AuthManagerImplTest {
         coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
 
         coEvery {
-            sessionManager.createSession(userId, any(), any(), any(), any(), any(), any())
+            sessionManager.createSession(userId, any(), any(), any(), any(), any(), any(), any())
         } returns AppResult.Success(expectedToken)
 
         val result = authManager.authenticateExistingUser(
@@ -139,7 +139,7 @@ class AuthManagerImplTest {
         coEvery { webSocketManager.sendMessageToUserSession(oldestSessionId, any()) } returns Unit
         coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
         coEvery {
-            sessionManager.createSession(userId, any(), any(), any(), any(), any(), any())
+            sessionManager.createSession(userId, any(), any(), any(), any(), any(), any(), any())
         } returns AppResult.Success(expectedToken)
 
         val result = authManager.authenticateExistingUser(
@@ -174,7 +174,7 @@ class AuthManagerImplTest {
         coEvery { webSocketManager.sendMessageToUserSession(oldestSessionId, any()) } returns Unit
         coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
         coEvery {
-            sessionManager.createSession(userId, any(), any(), any(), any(), any(), any())
+            sessionManager.createSession(userId, any(), any(), any(), any(), any(), any(), any())
         } returns AppResult.Success(expectedToken)
 
         val result = authManager.authenticateExistingUser(
@@ -206,7 +206,7 @@ class AuthManagerImplTest {
         coEvery { sessionManager.getAllUserSessions(userId) } returns AppResult.Success(existingSessions)
         coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
         coEvery {
-            sessionManager.createSession(userId, any(), any(), any(), any(), any(), any())
+            sessionManager.createSession(userId, any(), any(), any(), any(), any(), any(), any())
         } returns AppResult.Success(expectedToken)
 
         val result = authManager.authenticateExistingUser(

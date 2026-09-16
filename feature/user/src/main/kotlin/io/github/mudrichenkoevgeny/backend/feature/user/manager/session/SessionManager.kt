@@ -45,7 +45,8 @@ interface SessionManager {
         identifierId: UserIdentifierId,
         identifierAuthProvider: UserAuthProvider,
         clientInfo: ClientInfo,
-        lastReauthenticatedAt: Instant
+        lastReauthenticatedAt: Instant,
+        checkNewDevice: Boolean = true
     ): AppResult<SessionToken>
 
     /**
