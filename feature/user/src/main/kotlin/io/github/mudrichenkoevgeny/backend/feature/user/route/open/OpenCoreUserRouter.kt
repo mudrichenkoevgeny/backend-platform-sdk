@@ -7,6 +7,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.open.identifier.Op
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.session.OpenSessionRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.user.OpenUserRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.user.security.OpenUserSecurityRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.OpenSecuritySettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.OpenGlobalSettingsRouter
 import io.ktor.server.routing.Route
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,7 +36,9 @@ class OpenCoreUserRouter @Inject constructor(
     private val openUserRouter: OpenUserRouter,
     private val openUserSecurityRouter: OpenUserSecurityRouter,
     private val openIdentifierRouter: OpenIdentifierRouter,
-    private val openSessionRouter: OpenSessionRouter
+    private val openSessionRouter: OpenSessionRouter,
+    private val openSecuritySettingsRouter: OpenSecuritySettingsRouter,
+    private val openGlobalSettingsRouter: OpenGlobalSettingsRouter
 ) : BaseRouter {
     override fun register(route: Route) {
         openAuthRouter.register(route)
@@ -43,5 +47,7 @@ class OpenCoreUserRouter @Inject constructor(
         openUserSecurityRouter.register(route)
         openIdentifierRouter.register(route)
         openSessionRouter.register(route)
+        openSecuritySettingsRouter.register(route)
+        openGlobalSettingsRouter.register(route)
     }
 }

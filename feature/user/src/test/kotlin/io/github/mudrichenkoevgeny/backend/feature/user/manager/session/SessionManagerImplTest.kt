@@ -108,7 +108,7 @@ class SessionManagerImplTest {
         val now = Clock.System.now()
         val expiresAt = now + 3600.seconds
 
-        val currentSession = createSampleInternalSession(userId, oldHash).copy(
+        val currentSession = createSampleInternalSession(userId, oldHash).copy(deviceInfo = clientInfo.deviceInfo).copy(
             deviceInfo = clientInfo.deviceInfo,
             expiresAt = expiresAt
         )
@@ -494,7 +494,7 @@ class SessionManagerImplTest {
         val newAccessToken = AccessToken("new-access-token")
         val newRefreshToken = RefreshToken("new-refresh-token")
         val newHash = RefreshTokenHash("new-hash")
-        val currentSession = createSampleInternalSession(userId, oldHash)
+        val currentSession = createSampleInternalSession(userId, oldHash).copy(deviceInfo = clientInfo.deviceInfo)
         val newInternalSession = createSampleInternalSession(userId, newHash)
 
         coEvery { refreshTokenProvider.getRefreshTokenHash(oldRefreshToken) } returns AppResult.Success(oldHash)

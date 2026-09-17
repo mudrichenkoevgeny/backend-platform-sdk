@@ -36,9 +36,7 @@ alwaysApply: true
 ### Feature Modules (`feature/`)
 *Pluggable business logic and API endpoints.*
 
-- **`feature/user`:** Comprehensive IAM (Identity & Access Management). Auth (Email, Phone, OAuth), JWT sessions, 2FA, access control (blocklists), and account security (lockouts, new device detection).
-- **`feature/auditapi`:** Management HTTP endpoints for audit trail with permission-aware filtering.
-- **`feature/securityapi` & `feature/settingsapi`:** Public and Management APIs for security/settings with real-time WebSocket sync.
+- **`feature/user`:** Comprehensive IAM (Identity & Access Management). Auth (Email, Phone, OAuth), JWT sessions, 2FA, access control (blocklists), account security (lockouts, new device detection), global and security settings management, audit trail logs, and WebSocket synchronization.
 
 ### Other
 - **`bom`:** Bill of Materials.

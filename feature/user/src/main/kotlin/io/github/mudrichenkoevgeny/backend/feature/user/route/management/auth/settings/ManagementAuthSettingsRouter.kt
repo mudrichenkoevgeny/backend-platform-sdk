@@ -62,8 +62,8 @@ class ManagementAuthSettingsRouter @Inject constructor(
 ) : BaseRouter {
 
     override fun register(route: Route) {
-        registerGetAuthSettingsManagementRoute(route)
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
+            registerGetAuthSettingsManagementRoute(this)
             registerUpdateAuthSettingsRoute(this)
         }
     }

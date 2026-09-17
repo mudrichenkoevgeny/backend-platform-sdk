@@ -13,9 +13,9 @@ import io.github.mudrichenkoevgeny.backend.core.observability.application.config
 import io.github.mudrichenkoevgeny.backend.core.observability.metrics.route.installMetricsEndpoint
 import io.github.mudrichenkoevgeny.backend.core.security.application.iprestriction.configureIpRestriction
 import io.github.mudrichenkoevgeny.backend.sample.di.AppComponent
-import io.github.mudrichenkoevgeny.shared.foundation.feature.auditapi.domain.permissions.AuditPermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.feature.securityapi.domain.permission.SecurityPermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.feature.settingsapi.domain.permission.SettingsPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.permission.SecurityPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.permission.SettingsPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.AuthSettingsPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.SessionPermissionCode

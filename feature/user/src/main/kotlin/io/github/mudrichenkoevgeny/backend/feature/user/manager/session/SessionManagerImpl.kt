@@ -27,7 +27,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -87,16 +86,6 @@ class SessionManagerImpl @Inject constructor(
     private val userRepository: UserRepository,
     @param:BackgroundScope private val scope: CoroutineScope
 ) : SessionManager {
-
-    companion object {
-        // todo wait for shared update UserAuditActionType.REFRESH_TOKEN_REUSE_DETECTED
-        private object RefreshTokenReuseAuditAction : AuditActionType {
-            override val serialName: String = "refresh_token_reuse_detected"
-            override fun parseOrNull(value: String): AuditActionType? = if (value == serialName) this else null
-            override fun parseOrThrow(value: String): AuditActionType =
-                parseOrNull(value) ?: throw IllegalArgumentException("Unknown action: '$value'")
-        }
-    }
 
     override suspend fun createSession(
         userId: UserId,
@@ -368,7 +357,7 @@ class SessionManagerImpl @Inject constructor(
                     auditLogger.log(
                         actorId = rotatedData.getUserId().asHexDashString(),
                         actorType = AuditActorType.USER,
-                        action = RefreshTokenReuseAuditAction, // todo wait for shared update. Use UserAuditActionType.REFRESH_TOKEN_REUSE_DETECTED
+                        action = UserAuditActionType.REFRESH_TOKEN_REUSE_DETECTED,
                         resource = UserAuditResourceType.USER,
                         resourceId = rotatedData.getUserId().asHexDashString(),
                         status = AuditStatus.FAILED,

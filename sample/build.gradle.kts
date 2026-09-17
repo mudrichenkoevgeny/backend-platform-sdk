@@ -16,15 +16,9 @@ dependencies {
     api(project(":core:observability"))
     api(project(":core:storage"))
     api(project(":feature:user"))
-    api(project(":feature:settingsapi"))
-    api(project(":feature:securityapi"))
-    api(project(":feature:auditapi"))
 
     // Shared foundation
     api(libs.shared.foundation.feature.user)
-    api(libs.shared.foundation.feature.settingsapi)
-    api(libs.shared.foundation.feature.securityapi)
-    api(libs.shared.foundation.feature.auditapi)
     implementation(libs.shared.foundation.core.security) // Transitive
     implementation(libs.slf4j) // Transitive
 

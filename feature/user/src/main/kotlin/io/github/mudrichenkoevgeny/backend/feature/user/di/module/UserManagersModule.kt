@@ -2,16 +2,18 @@ package io.github.mudrichenkoevgeny.backend.feature.user.di.module
 
 import dagger.Binds
 import dagger.Module
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.AuditManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.AuditManagerImpl
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManagerImpl
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManagerImpl
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManagerImpl
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManagerImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManagerImpl
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManagerImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManagerImpl
 import javax.inject.Singleton
 
 /**
@@ -21,6 +23,10 @@ import javax.inject.Singleton
  */
 @Module
 interface UserManagersModule {
+
+    @Binds
+    @Singleton
+    fun bindAuditManager(impl: AuditManagerImpl): AuditManager
 
     @Binds
     @Singleton

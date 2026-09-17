@@ -79,6 +79,9 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.h2database)
     testImplementation(testFixtures(project(":core:common")))
+    testImplementation(testFixtures(project(":core:audit")))
+    testImplementation(testFixtures(project(":core:security")))
+    testImplementation(testFixtures(project(":core:settings")))
     testImplementation(libs.ktor.server.test.host)
 }
 

@@ -13,8 +13,5 @@ dependencies {
         api(project(":core:storage"))
         api(project(":core:events"))
         api(project(":feature:user"))
-        api(project(":feature:securityapi"))
-        api(project(":feature:settingsapi"))
-        api(project(":feature:auditapi"))
     }
 }

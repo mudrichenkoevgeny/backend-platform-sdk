@@ -7,7 +7,7 @@ with Dagger and run a Ktor server.
 
 - **Entrypoint**: [MainKt] sets UTC timezone, configures global holders ([PathResolverConfigHolder], [AppErrorParserConfigHolder]), builds Dagger component, and starts the server with shutdown handling.
 - **Dagger wiring**:
-    - [AppComponent] aggregates all SDK modules, including core infrastructure and **feature API modules** (`SettingsApi`, `SecurityApi`, `AuditApi`).
+    - [AppComponent] aggregates all SDK modules, including core infrastructure and **feature API modules**.
     - [AppModule] binds app metadata ([SampleAppInfo]) and shutdown logic ([AppShutdownHook]).
     - [AuditParsersModule] registers resource, action, and metadata parsers for all included features.
 - **Ktor application module**: [module] installs SDK configuration and registers routes based on **AppInstanceMode**:
@@ -25,10 +25,10 @@ in [AppComponent], for example:
 
 - `core:common` (server/ports/cors/etc.)
 - `core:database` (DB URL/credentials, Flyway migration locations, Redis URL). Alternatively, a `db-migrator` Docker container can be used for isolated migration execution.
-- `core:settings` and `feature:settingsapi` (global settings seed values and sync)
-- `core:security` and `feature:securityapi` (security policies and MFA)
-- `feature:user` (auth, JWT, and user lifecycle settings)
-- `core:audit` and `feature:auditapi` (audit persistence and management)
+- `core:settings` (global settings seed values)
+- `core:security` (security policies and MFA)
+- `core:audit` (audit persistence)
+- `feature:user` (auth, JWT, user lifecycle, settings, security & audit APIs, and WebSocket sync)
 
 See the README files of those modules for the complete list of required variables.
 

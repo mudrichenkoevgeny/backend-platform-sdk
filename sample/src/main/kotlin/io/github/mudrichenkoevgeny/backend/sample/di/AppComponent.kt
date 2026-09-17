@@ -22,15 +22,12 @@ import io.github.mudrichenkoevgeny.backend.core.security.usecase.system.settings
 import io.github.mudrichenkoevgeny.backend.core.security.validator.iprestriction.IpRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.backend.core.settings.di.SettingsModules
 import io.github.mudrichenkoevgeny.backend.core.storage.di.StorageModules
-import io.github.mudrichenkoevgeny.backend.feature.auditapi.di.AuditApiModules
-import io.github.mudrichenkoevgeny.backend.feature.securityapi.di.SecurityApiModules
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.di.SettingsApiModules
 import io.github.mudrichenkoevgeny.backend.core.settings.usecase.system.globalsettings.SeedGlobalSettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.auditapi.route.management.ManagementAuditRouter
-import io.github.mudrichenkoevgeny.backend.feature.securityapi.route.management.ManagementSecuritySettingsRouter
-import io.github.mudrichenkoevgeny.backend.feature.securityapi.route.open.OpenSecuritySettingsRouter
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.management.ManagementGlobalSettingsRouter
-import io.github.mudrichenkoevgeny.backend.feature.settingsapi.route.open.OpenGlobalSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.ManagementAuditRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.ManagementSecuritySettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.OpenSecuritySettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.ManagementGlobalSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.OpenGlobalSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.di.UserModules
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.ManagementWebSocketRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.OpenWebSocketRouter
@@ -59,11 +56,8 @@ import javax.sql.DataSource
         ObservabilityModules::class,
         DatabaseModules::class,
         SettingsModules::class,
-        SettingsApiModules::class,
         SecurityModules::class,
-        SecurityApiModules::class,
         AuditModules::class,
-        AuditApiModules::class,
         EventsModules::class,
         StorageModules::class,
         UserModules::class,

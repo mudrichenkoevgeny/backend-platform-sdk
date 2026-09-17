@@ -27,10 +27,7 @@ This document is the entry point for architectural and coding standards. These r
 ### Feature Modules (`feature/*`)
 *High-level business logic and HTTP API endpoints.*
 
-- **`feature/user`:** IAM, Multi-method auth (Email, Phone, OAuth), JWT sessions (with reuse detection), 2FA lifecycle, account lockouts, and access filtering.
-- **`feature/auditapi`:** Management API for audit trails with permission-aware filtering.
-- **`feature/securityapi`:** Policy management and real-time WebSocket synchronization.
-- **`feature/settingsapi`:** Public and Management configuration APIs with inter-service sync.
+- **`feature/user`:** IAM, Multi-method auth (Email, Phone, OAuth), JWT sessions (with reuse detection), 2FA lifecycle, account lockouts, access filtering, global/security settings APIs, audit log management, and WebSocket synchronization.
 
 ## Detailed Standards (`.agent/`)
 

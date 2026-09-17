@@ -6,6 +6,8 @@ import dagger.multibindings.IntoSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.KtorWebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.CommonWebSocketMessageHandler
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websockets.messagehandler.SecurityWebSocketMessageHandler
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websockets.messagehandler.SettingsWebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.UserWebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener.UserSessionExpirationListener
@@ -40,4 +42,16 @@ interface UserWebSocketModule {
     fun bindUserSessionExpirationListener(
         userSessionExpirationListener: UserSessionExpirationListener
     ): WebSocketSessionListener
+
+    @Binds
+    @IntoSet
+    fun bindSecurityWebSocketMessageHandler(
+        securityWebSocketMessageHandler: SecurityWebSocketMessageHandler
+    ): WebSocketMessageHandler
+
+    @Binds
+    @IntoSet
+    fun bindSettingsWebSocketMessageHandler(
+        settingsWebSocketMessageHandler: SettingsWebSocketMessageHandler
+    ): WebSocketMessageHandler
 }

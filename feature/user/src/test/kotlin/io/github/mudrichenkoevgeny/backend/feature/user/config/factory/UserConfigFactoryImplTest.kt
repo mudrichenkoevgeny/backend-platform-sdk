@@ -52,7 +52,7 @@ class UserConfigFactoryImplTest {
         assertEquals(listOf(UserAuthProvider.GOOGLE), auth.availableAuthProviders.primary)
         assertEquals(listOf(UserAuthProvider.EMAIL), auth.availableAuthProviders.secondary)
         assertEquals(3600, auth.accountDeletionGracePeriodSeconds)
-        assertEquals(60, auth.accountDeletionCheckIntervalSeconds)
+        assertEquals(600, auth.accountDeletionCheckIntervalSeconds)
     }
 
     @Test

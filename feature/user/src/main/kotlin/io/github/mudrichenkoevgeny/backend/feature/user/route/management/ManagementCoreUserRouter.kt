@@ -11,12 +11,16 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.management.user.Ma
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.user.SelfManagementUserRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.user.security.ManagementUserSecurityRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.user.security.SelfManagementUserSecurityRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.OpenGlobalSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.OpenSecuritySettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.settings.OpenAuthSettingsRouter
 import io.ktor.server.routing.Route
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Root management router for the user feature, aggregating all administrative and self-service sub-routers.
+ * Root management router for the user feature, aggregating all administrative and self-service sub-routers,
+ * as well as open configuration routers required by unauthenticated clients on the management connector.
  *
  * This router orchestrates the registration of:
  * 1. Authentication management ([ManagementAuthRouter]).
@@ -25,6 +29,9 @@ import javax.inject.Singleton
  * 4. Administrative and self-service user profile operations ([ManagementUserRouter], [SelfManagementUserRouter]).
  * 5. Administrative and self-service security/MFA settings ([ManagementUserSecurityRouter], [SelfManagementUserSecurityRouter]).
  * 6. Global user feature configurations ([ManagementUserConfigurationRouter]).
+ * 7. System & policy settings ([ManagementGlobalSettingsRouter], [ManagementSecuritySettingsRouter]).
+ * 8. Audit trail management ([ManagementAuditRouter]).
+ * 9. Unauthenticated open settings ([OpenGlobalSettingsRouter], [OpenSecuritySettingsRouter], [OpenAuthSettingsRouter]).
  */
 @Singleton
 class ManagementCoreUserRouter @Inject constructor(
@@ -37,7 +44,13 @@ class ManagementCoreUserRouter @Inject constructor(
     private val selfManagementUserRouter: SelfManagementUserRouter,
     private val managementUserSecurityRouter: ManagementUserSecurityRouter,
     private val selfManagementUserSecurityRouter: SelfManagementUserSecurityRouter,
-    private val managementUserConfigurationRouter: ManagementUserConfigurationRouter
+    private val managementUserConfigurationRouter: ManagementUserConfigurationRouter,
+    private val managementGlobalSettingsRouter: ManagementGlobalSettingsRouter,
+    private val managementSecuritySettingsRouter: ManagementSecuritySettingsRouter,
+    private val managementAuditRouter: ManagementAuditRouter,
+    private val openGlobalSettingsRouter: OpenGlobalSettingsRouter,
+    private val openSecuritySettingsRouter: OpenSecuritySettingsRouter,
+    private val openAuthSettingsRouter: OpenAuthSettingsRouter
 ) : BaseRouter {
     override fun register(route: Route) {
         managementAuthRouter.register(route)
@@ -50,5 +63,11 @@ class ManagementCoreUserRouter @Inject constructor(
         managementUserSecurityRouter.register(route)
         selfManagementUserSecurityRouter.register(route)
         managementUserConfigurationRouter.register(route)
+        managementGlobalSettingsRouter.register(route)
+        managementSecuritySettingsRouter.register(route)
+        managementAuditRouter.register(route)
+        openGlobalSettingsRouter.register(route)
+        openSecuritySettingsRouter.register(route)
+        openAuthSettingsRouter.register(route)
     }
 }

@@ -8,6 +8,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
     repositories {
+        mavenLocal() // todo remove after shared lib release in public maven
         mavenCentral()
     }
 }
@@ -36,10 +37,7 @@ val coreModules = listOf(
 registerModules("core", coreModules)
 
 val featureModules = listOf(
-    "user",
-    "securityapi",
-    "settingsapi",
-    "auditapi"
+    "user"
 )
 registerModules("feature", featureModules)
 
