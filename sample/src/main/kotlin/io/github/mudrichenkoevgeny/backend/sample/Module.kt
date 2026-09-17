@@ -98,6 +98,8 @@ fun Application.module(
     appComponent.swaggerInitializer().initialize(this)
 
     routing {
+        appComponent.managementHealthRouter().register(this)
+
         onPort(commonConfig.ktorManagementPort) {
             installMetricsEndpoint(telemetryProvider)
         }

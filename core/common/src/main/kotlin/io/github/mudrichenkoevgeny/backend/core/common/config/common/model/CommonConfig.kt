@@ -17,6 +17,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppInstanceM
  * @param ktorServerHost host interface used by Ktor.
  * @param ktorServerPort main HTTP port exposed by Ktor.
  * @param ktorManagementPort management/health port exposed by Ktor.
+ * @param ktorShutdownGracePeriodMs Ktor shutdown grace period in milliseconds.
+ * @param ktorShutdownTimeoutMs Ktor shutdown timeout in milliseconds.
  * @param serverUrl public base URL used in generated links and documentation.
  * @param allowedOrigins list of origins allowed by CORS.
  */
@@ -28,6 +30,8 @@ data class CommonConfig(
     val ktorServerHost: String,
     val ktorServerPort: Int,
     val ktorManagementPort: Int,
+    val ktorShutdownGracePeriodMs: Long,
+    val ktorShutdownTimeoutMs: Long,
     val serverUrl: String,
     val allowedOrigins: List<String>
 )

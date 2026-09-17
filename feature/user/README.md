@@ -13,7 +13,7 @@ Managers act as the primary coordination layer between Use Cases and multiple Re
 *   **SessionManager**: Lifecycle of user sessions (creation, validation, termination, refresh token reuse detection).
 *   **IdentifierManager**: Management of user identities (Email, Phone, OAuth).
 *   **TotpManager**: Security orchestration for 2FA/TOTP.
-*   **WebSocketManager**: Real-time connection management and session-aware broadcasting.
+*   **WebSocketManager**: Real-time connection management and session-aware broadcasting across multiple server instances via Redis Pub/Sub (`WebSocketPubSubMessage`).
 
 ### 2. Repositories (Data Abstraction)
 Standardized interfaces for data access, allowing for easy testing and storage swapping.

@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.ini
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheckerManager
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.route.ManagementHealthRouter
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import io.github.mudrichenkoevgeny.backend.core.database.di.DatabaseModules
 import io.github.mudrichenkoevgeny.backend.core.database.migrator.DatabaseMigrator
@@ -87,6 +88,7 @@ interface AppComponent {
     fun appLogger(): AppLogger
     fun appErrorParser(): AppErrorParser
     fun healthCheckerManager(): HealthCheckerManager
+    fun managementHealthRouter(): ManagementHealthRouter
 
     // observability
     fun telemetryProvider(): TelemetryProvider

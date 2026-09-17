@@ -20,6 +20,9 @@ The SDK follows a strict layering to prevent circular dependencies and ensure hi
 ## 2. Server Bootstrap & Lifecycle
 
 - **Dual-Connector Setup:** All features must support the separation of the **Public API** (default port) and the **Management/Internal API** (management port) via `core/common` infrastructure.
+- **Reverse Proxy Support:** Reverse proxies (e.g. Nginx) forward client IP and scheme headers. `configureHTTP` installs `ForwardedHeaders` and `XForwardedHeaders` plugins automatically.
+- **Health Probes:** Infrastructure liveness (`/health/live`) and readiness (`/health/ready`) probes are exposed via `ManagementHealthRouter` on the management port.
+- **Graceful Shutdown:** Configured via `KtorServer.create(commonConfig)` using `KTOR_SHUTDOWN_GRACE_PERIOD_MS` and `KTOR_SHUTDOWN_TIMEOUT_MS`. `AppShutdownHookImpl` ensures clean release of database and Redis connections during `ApplicationStopping`.
 - **Initialization:** Use `KtorServer.create(commonConfig)`. The host app is responsible for providing the `applicationModule` (Dagger) to bridge the SDK with app-specific logic.
 - **AppInfo Requirement:** Every host app **must** provide an `AppInfo` implementation (Name, Version, Env) used for logging, metrics, and Redis key namespacing.
 
@@ -54,6 +57,7 @@ Every route implementation or constant must be documented with a focus on its pl
 - **Migrations:** All DB changes must include Flyway scripts. Scripts are located in `db/migration/core/*` or `db/migration/feature/*`.
 - **JSONB:** Leverage the custom JSONB support from `core/database` for semi-structured data in PostgreSQL.
 - **Synchronization:** For stateful modules (Settings, Security), use Redis Pub/Sub to synchronize cache across multiple instances of the microservice.
+- **Stateless WebSockets:** WebSocket broadcasts (`WebSocketManager`) use Redis Pub/Sub (`WebSocketPubSubMessage`) so events reach connected clients regardless of which Ktor instance they are connected to behind the load balancer.
 
 ## 7. Naming & Packaging
 

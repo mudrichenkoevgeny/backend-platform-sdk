@@ -11,6 +11,8 @@ fun createTestCommonConfig(
     ktorServerHost: String = "0.0.0.0",
     ktorServerPort: Int = 8080,
     ktorManagementPort: Int = 8081,
+    ktorShutdownGracePeriodMs: Long = 3000,
+    ktorShutdownTimeoutMs: Long = 10000,
     serverUrl: String = "http://localhost:8080",
     allowedOrigins: List<String> = listOf("*")
 ) = CommonConfig(
@@ -21,6 +23,8 @@ fun createTestCommonConfig(
     ktorServerHost = ktorServerHost,
     ktorServerPort = ktorServerPort,
     ktorManagementPort = ktorManagementPort,
+    ktorShutdownGracePeriodMs = ktorShutdownGracePeriodMs,
+    ktorShutdownTimeoutMs = ktorShutdownTimeoutMs,
     serverUrl = serverUrl,
     allowedOrigins = allowedOrigins
 )

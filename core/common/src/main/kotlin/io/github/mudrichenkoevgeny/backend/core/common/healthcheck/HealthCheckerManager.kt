@@ -33,7 +33,7 @@ class HealthCheckerManager @Inject constructor(
      */
     fun verifyCriticalHealth() {
         runBlocking {
-            val criticalResult = runCriticalChecks()
+            val criticalResult = checkCriticalHealth()
             if (criticalResult is AppSystemResult.Error) {
                 val systemError = criticalResult.internalError
                 appLogger.logError(systemError)
@@ -41,21 +41,11 @@ class HealthCheckerManager @Inject constructor(
             }
         }
     }
-
-    /**
-     * Runs all [HealthCheck]s with [HealthCheckSeverity.NON_CRITICAL] and logs any failures.
-     */
-    suspend fun checkNonCriticalHealth() {
-        val nonCriticalErrors = runNonCriticalChecks()
-        nonCriticalErrors.forEach { systemError ->
-            appLogger.logError(systemError)
-        }
-    }
-
+    
     /**
      * Executes all critical checks concurrently and short‑circuits on the first failure.
      */
-    private suspend fun runCriticalChecks(): AppSystemResult<Unit> = coroutineScope {
+    suspend fun checkCriticalHealth(): AppSystemResult<Unit> = coroutineScope {
         val criticalChecks = healthChecks.filter { it.severity == HealthCheckSeverity.CRITICAL }
         val deferredList = criticalChecks.map { check ->
             async {
@@ -75,6 +65,16 @@ class HealthCheckerManager @Inject constructor(
         }
 
         AppSystemResult.Success(Unit)
+    }
+
+    /**
+     * Runs all [HealthCheck]s with [HealthCheckSeverity.NON_CRITICAL] and logs any failures.
+     */
+    suspend fun checkNonCriticalHealth() {
+        val nonCriticalErrors = runNonCriticalChecks()
+        nonCriticalErrors.forEach { systemError ->
+            appLogger.logError(systemError)
+        }
     }
 
     /**

@@ -14,9 +14,9 @@ with Dagger and run a Ktor server.
     - **PUBLIC**: Registers open routers for settings and user features.
     - **MANAGEMENT**: Registers management/admin routers for audit, security, and users.
     - **FULL**: Combines both public and management access.
-    - Includes: HTTP defaults, serialization, status pages, global rate limit, WebSockets, and Swagger (in non-PROD).
+    - Includes: HTTP defaults, proxy headers (`XForwardedHeaders`), serialization, status pages, global rate limit, WebSockets, health probes (`ManagementHealthRouter`), and Swagger (in non-PROD).
 - **Bootstrap**: [AppBootstrap] initializes database, verifies critical health, and warms up Redis and telemetry.
-- **Graceful shutdown**: [AppShutdownHookImpl] stops the server, waits (best-effort) for audit persistence, then shuts down database and Redis.
+- **Graceful shutdown**: [AppShutdownHookImpl] stops the server with configurable grace period and timeout, waits (best-effort) for audit persistence, then shuts down database and Redis.
 
 ## Environment variables
 

@@ -21,6 +21,8 @@ class CommonConfigFactoryImplTest {
         private const val KTOR_HOST = "0.0.0.0"
         private const val KTOR_PORT = "8080"
         private const val KTOR_MANAGEMENT_PORT = "8081"
+        private const val SHUTDOWN_GRACE = "3000"
+        private const val SHUTDOWN_TIMEOUT = "10000"
         private const val ALLOWED_ORIGIN = "http://localhost:3000"
         private const val APP_NAME = "test-app"
         private const val APP_VERSION = "1.0.0"
@@ -40,6 +42,8 @@ class CommonConfigFactoryImplTest {
         every { envReader.getByKey(CommonEnvKeys.KTOR_SERVER_HOST) } returns KTOR_HOST
         every { envReader.getByKey(CommonEnvKeys.KTOR_SERVER_PORT) } returns KTOR_PORT
         every { envReader.getByKey(CommonEnvKeys.KTOR_MANAGEMENT_PORT) } returns KTOR_MANAGEMENT_PORT
+        every { envReader.getByKey(CommonEnvKeys.KTOR_SHUTDOWN_GRACE_PERIOD_MS) } returns SHUTDOWN_GRACE
+        every { envReader.getByKey(CommonEnvKeys.KTOR_SHUTDOWN_TIMEOUT_MS) } returns SHUTDOWN_TIMEOUT
 
         every { envReader.getByKeyOrNull(CommonEnvKeys.ALLOWED_ORIGINS) } returns ALLOWED_ORIGIN
 
@@ -54,6 +58,8 @@ class CommonConfigFactoryImplTest {
         assertEquals(KTOR_HOST, config.ktorServerHost)
         assertEquals(KTOR_PORT.toInt(), config.ktorServerPort)
         assertEquals(KTOR_MANAGEMENT_PORT.toInt(), config.ktorManagementPort)
+        assertEquals(SHUTDOWN_GRACE.toLong(), config.ktorShutdownGracePeriodMs)
+        assertEquals(SHUTDOWN_TIMEOUT.toLong(), config.ktorShutdownTimeoutMs)
         assertEquals(SERVER_URL, config.serverUrl)
         assertEquals(listOf(ALLOWED_ORIGIN), config.allowedOrigins)
     }

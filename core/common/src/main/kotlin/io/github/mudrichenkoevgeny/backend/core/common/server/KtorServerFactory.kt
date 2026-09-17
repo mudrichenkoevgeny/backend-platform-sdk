@@ -50,6 +50,8 @@ object KtorServer {
                 host = commonConfig.ktorServerHost
                 port = commonConfig.ktorManagementPort
             })
+            shutdownGracePeriod = commonConfig.ktorShutdownGracePeriodMs
+            shutdownTimeout = commonConfig.ktorShutdownTimeoutMs
         }
     }
 }

@@ -25,6 +25,7 @@ dependencies {
     implementation(libs.ktor.serialization.json)
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.default.headers.jvm)
+    implementation(libs.ktor.server.forwarded.header.jvm)
     implementation(libs.ktor.server.websockets)
     implementation(libs.ktor.server.rate.limit)
     implementation(libs.ktor.client.cio)

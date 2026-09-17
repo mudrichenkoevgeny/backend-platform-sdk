@@ -10,6 +10,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSoc
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandlerResult
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener.WebSocketSessionListener
+import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
+import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.model.WebSocketPubSubMessage
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.websocket.mergeClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonWebSocketCloseReasons
@@ -41,18 +44,77 @@ import kotlin.uuid.Uuid
  *
  * Manages registration, routing of incoming frames to [WebSocketMessageHandler]s,
  * lifecycle notifications for [WebSocketSessionListener]s and error logging.
+ *
+ * Employs Redis Pub/Sub to enable a stateless architecture. Notifications sent via
+ * [sendMessageToAll], [sendMessageToUser], etc., are broadcast over Redis so that
+ * any instance hosting the target socket can deliver the frame.
  */
 @Singleton
 class KtorWebSocketManager @Inject constructor(
     private val appLogger: AppLogger,
     private val webSocketMessageHandlers: Set<@JvmSuppressWildcards WebSocketMessageHandler>,
-    private val webSocketSessionListeners: Set<@JvmSuppressWildcards WebSocketSessionListener>
+    private val webSocketSessionListeners: Set<@JvmSuppressWildcards WebSocketSessionListener>,
+    private val redisManager: RedisManager,
+    @param:BackgroundScope private val scope: CoroutineScope
 ) : WebSocketManager {
+
+    companion object {
+        private const val REDIS_PUB_SUB_CHANNEL = "websocket_messages"
+    }
 
     private val webSocketSessionToContext = ConcurrentHashMap<DefaultWebSocketServerSession, WebSocketSessionContext>()
     private val socketIdToWebSocketSession = ConcurrentHashMap<String, DefaultWebSocketServerSession>()
     private val userIdToWebSocketSessions = ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()
     private val userSessionIdToWebSocketSessions = ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()
+
+    init {
+        redisManager.subscribe(REDIS_PUB_SUB_CHANNEL) { messageStr ->
+            try {
+                val message = FoundationJson.decodeFromString<WebSocketPubSubMessage>(messageStr)
+                handlePubSubMessageLocally(message)
+            } catch (e: Exception) {
+                appLogger.logError(CommonError.Internal(e))
+            }
+        }
+    }
+
+    private suspend fun handlePubSubMessageLocally(message: WebSocketPubSubMessage) {
+        when (message.targetType) {
+            WebSocketPubSubMessage.TargetType.ALL -> {
+                webSocketSessionToContext.keys.forEach { session ->
+                    sendMessageToSession(session, message.frame)
+                }
+            }
+            WebSocketPubSubMessage.TargetType.SCOPE -> {
+                webSocketSessionToContext.forEach { (session, context) ->
+                    if (context.apiScope == message.apiScope) {
+                        sendMessageToSession(session, message.frame)
+                    }
+                }
+            }
+            WebSocketPubSubMessage.TargetType.USER -> {
+                message.targetId?.let { uid ->
+                    userIdToWebSocketSessions[uid]?.forEach { session ->
+                        sendMessageToSession(session, message.frame)
+                    }
+                }
+            }
+            WebSocketPubSubMessage.TargetType.SESSION -> {
+                message.targetId?.let { sid ->
+                    userSessionIdToWebSocketSessions[sid]?.forEach { session ->
+                        sendMessageToSession(session, message.frame)
+                    }
+                }
+            }
+            WebSocketPubSubMessage.TargetType.SOCKET -> {
+                message.targetId?.let { sid ->
+                    socketIdToWebSocketSession[sid]?.let { session ->
+                        sendMessageToSession(session, message.frame)
+                    }
+                }
+            }
+        }
+    }
 
     override suspend fun register(
         webSocketSession: DefaultWebSocketServerSession,
@@ -108,39 +170,34 @@ class KtorWebSocketManager @Inject constructor(
     }
 
     override suspend fun sendMessageToAll(frame: SocketFrame) {
-        webSocketSessionToContext.keys.forEach { session ->
-            sendMessageToSession(session, frame)
-        }
+        publishMessage(WebSocketPubSubMessage(WebSocketPubSubMessage.TargetType.ALL, null, null, frame))
     }
 
     override suspend fun sendMessageToScope(scope: ApiScope, frame: SocketFrame) {
-        webSocketSessionToContext.forEach { (session, context) ->
-            if (context.apiScope == scope) {
-                sendMessageToSession(session, frame)
-            }
-        }
+        publishMessage(WebSocketPubSubMessage(WebSocketPubSubMessage.TargetType.SCOPE, null, scope, frame))
     }
 
     override suspend fun sendMessageToUser(userId: UserId, frame: SocketFrame) {
-        userIdToWebSocketSessions[userId.asHexDashString()]?.forEach { session ->
-            sendMessageToSession(session, frame)
-        }
+        publishMessage(WebSocketPubSubMessage(WebSocketPubSubMessage.TargetType.USER, userId.asHexDashString(), null, frame))
     }
 
     override suspend fun sendMessageToUserSession(userSessionId: UserSessionId, frame: SocketFrame) {
-        userSessionIdToWebSocketSessions[userSessionId.asHexDashString()]?.forEach { session ->
-            sendMessageToSession(session, frame)
-        }
+        publishMessage(WebSocketPubSubMessage(WebSocketPubSubMessage.TargetType.SESSION, userSessionId.asHexDashString(), null, frame))
     }
 
     override suspend fun sendMessageToSocket(socketId: String, frame: SocketFrame) {
-        socketIdToWebSocketSession[socketId]?.let { session ->
-            sendMessageToSession(session, frame)
-        }
+        publishMessage(WebSocketPubSubMessage(WebSocketPubSubMessage.TargetType.SOCKET, socketId, null, frame))
     }
 
     override suspend fun disconnectSocket(socketId: String) {
         socketIdToWebSocketSession[socketId]?.closeNormal()
+    }
+
+    private fun publishMessage(message: WebSocketPubSubMessage) {
+        scope.launch {
+            val str = FoundationJson.encodeToString(message)
+            redisManager.publish(REDIS_PUB_SUB_CHANNEL, str)
+        }
     }
 
     private suspend fun DefaultWebSocketServerSession.handleIncoming(context: WebSocketSessionContext) {

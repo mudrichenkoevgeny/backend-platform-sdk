@@ -4,13 +4,15 @@ Base for all SDK modules: Ktor application wiring, config, errors, routing helpe
 
 ## What it provides
 
-- **Server:** [KtorServer] factory (Netty). Configures a dual-connector setup: a main API port and a management/monitoring port.
-- **HTTP Configuration:** [configureHTTP] extension for `Application`. Centralized setup for CORS (environment-aware) and security headers (CSP, HSTS, XSS protection, Sniff-prevention).
+- **Server:** [KtorServer] factory (Netty). Configures a dual-connector setup: a main API port and a management/monitoring port. Supports configurable Graceful Shutdown (`KTOR_SHUTDOWN_GRACE_PERIOD_MS` and `KTOR_SHUTDOWN_TIMEOUT_MS`).
+- **HTTP Configuration:** [configureHTTP] extension for `Application`. Centralized setup for CORS (environment-aware), security headers (CSP, HSTS, XSS protection, Sniff-prevention), and reverse proxy headers (`ForwardedHeaders` / `XForwardedHeaders`).
 - **Application Helpers:**
     - **Serialization:** [ApplicationSerialization] for JSON content negotiation.
     - **Status Pages:** [ApplicationStatusPages] for unified error handling.
     - **Rate Limiting:** [ApplicationRateLimit] plugin configuration.
     - **WebSockets:** [ApplicationWebSockets] with shared [WebSocketConfig].
+- **Routes & Health Probes:**
+    - **ManagementHealthRouter:** [ManagementHealthRouter] provides infrastructure Liveness (`/health/live`) and Readiness (`/health/ready`) probes on the management port for Nginx, Kubernetes, and Docker healthchecks.
 - **Config & Env:**
     - **Environment:** [EnvReaderImpl] for `.env` and system variables.
     - **Path Resolution:** [PathResolverImpl] and [ResolvedPaths] for managing configuration and secrets directories.
@@ -56,6 +58,7 @@ Place message files under `src/main/resources/localization/{lang}/error_messages
 [HealthCheckerManager]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/common/healthcheck/HealthCheckerManager.kt
 [KtorServer]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/common/server/KtorServerFactory.kt
 [ListingQueryParams]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/common/pagination/ListingQueryParams.kt
+[ManagementHealthRouter]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/common/route/ManagementHealthRouter.kt
 [PageParams]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/common/pagination/PageParams.kt
 [PathResolverImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/common/config/pathresolver/PathResolverImpl.kt
 [RequestHandlingException]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/common/network/request/handler/RequestHandlingException.kt

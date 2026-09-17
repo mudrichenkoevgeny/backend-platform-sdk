@@ -31,6 +31,8 @@ class CommonConfigFactoryImpl @Inject constructor(
         val ktorHost = envReader.getByKey(CommonEnvKeys.KTOR_SERVER_HOST)
         val ktorPort = envReader.getByKey(CommonEnvKeys.KTOR_SERVER_PORT).toInt()
         val ktorManagementPort = envReader.getByKey(CommonEnvKeys.KTOR_MANAGEMENT_PORT).toInt()
+        val shutdownGracePeriod = envReader.getByKey(CommonEnvKeys.KTOR_SHUTDOWN_GRACE_PERIOD_MS).toLong()
+        val shutdownTimeout = envReader.getByKey(CommonEnvKeys.KTOR_SHUTDOWN_TIMEOUT_MS).toLong()
         val allowedOrigins = envReader.getStringList(CommonEnvKeys.ALLOWED_ORIGINS)
 
         return CommonConfig(
@@ -41,6 +43,8 @@ class CommonConfigFactoryImpl @Inject constructor(
             ktorServerHost = ktorHost,
             ktorServerPort = ktorPort,
             ktorManagementPort = ktorManagementPort,
+            ktorShutdownGracePeriodMs = shutdownGracePeriod,
+            ktorShutdownTimeoutMs = shutdownTimeout,
             serverUrl = serverUrl,
             allowedOrigins = allowedOrigins
         )

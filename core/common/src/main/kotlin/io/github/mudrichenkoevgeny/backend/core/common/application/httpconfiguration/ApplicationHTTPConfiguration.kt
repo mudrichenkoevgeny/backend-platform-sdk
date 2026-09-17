@@ -11,6 +11,8 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.defaultheaders.DefaultHeaders
+import io.ktor.server.plugins.forwardedheaders.ForwardedHeaders
+import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
 
 /**
  * Configures HTTP-level concerns such as CORS and default security headers.
@@ -22,11 +24,16 @@ import io.ktor.server.plugins.defaultheaders.DefaultHeaders
  * - Default headers:
  *   - Masks server identity and sets security-related headers (CSP, HSTS, XSS, etc.)
  *     with values appropriate for the current [environment].
+ * - Proxy Headers:
+ *   - Installs [ForwardedHeaders] and [XForwardedHeaders] to correctly resolve client IP and protocol behind a reverse proxy (e.g. Nginx).
  */
 fun Application.configureHTTP(
     environment: AppEnvironment,
     allowedOrigins: List<String>
 ) {
+    install(ForwardedHeaders)
+    install(XForwardedHeaders)
+
     install(CORS) {
         if (environment == AppEnvironment.DEV) {
             anyHost()

@@ -3,10 +3,12 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manag
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener.WebSocketSessionListener
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.test.TestScope
 import kotlinx.serialization.SerializationException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -16,8 +18,10 @@ class KtorWebSocketManagerTest {
     private val appLogger = mockk<AppLogger>(relaxed = true)
     private val handlers: Set<WebSocketMessageHandler> = emptySet()
     private val listeners: Set<WebSocketSessionListener> = emptySet()
+    private val redisManager = mockk<RedisManager>(relaxed = true)
+    private val backgroundScope = TestScope()
 
-    private val manager = KtorWebSocketManager(appLogger, handlers, listeners)
+    private val manager = KtorWebSocketManager(appLogger, handlers, listeners, redisManager, backgroundScope)
 
     @Test
     fun `handleSocketError logs correct appError for RequestHandlingException`() {
