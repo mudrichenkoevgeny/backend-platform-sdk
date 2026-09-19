@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorPars
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
@@ -126,7 +127,7 @@ class OpenUnlockRouter @Inject constructor(
     ) {
         summary = SEND_UNLOCK_EMAIL_CONFIRMATION_SUMMARY
         operationId = SEND_UNLOCK_EMAIL_CONFIRMATION_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = SEND_UNLOCK_EMAIL_CONFIRMATION_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -161,7 +162,7 @@ class OpenUnlockRouter @Inject constructor(
     ) {
         summary = UNLOCK_BY_EMAIL_SUMMARY
         operationId = UNLOCK_BY_EMAIL_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = UNLOCK_BY_EMAIL_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -194,7 +195,7 @@ class OpenUnlockRouter @Inject constructor(
     ) {
         summary = SEND_UNLOCK_PHONE_CONFIRMATION_SUMMARY
         operationId = SEND_UNLOCK_PHONE_CONFIRMATION_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = SEND_UNLOCK_PHONE_CONFIRMATION_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -229,7 +230,7 @@ class OpenUnlockRouter @Inject constructor(
     ) {
         summary = UNLOCK_BY_PHONE_SUMMARY
         operationId = UNLOCK_BY_PHONE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = UNLOCK_BY_PHONE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -262,7 +263,7 @@ class OpenUnlockRouter @Inject constructor(
     ) {
         summary = UNLOCK_BY_EXTERNAL_PROVIDER_SUMMARY
         operationId = UNLOCK_BY_EXTERNAL_PROVIDER_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = UNLOCK_BY_EXTERNAL_PROVIDER_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -299,23 +300,23 @@ class OpenUnlockRouter @Inject constructor(
     companion object {
         const val SEND_UNLOCK_EMAIL_CONFIRMATION_SUMMARY = "Send unlock confirmation code to email"
         const val SEND_UNLOCK_EMAIL_CONFIRMATION_DESCRIPTION = "Sends a verification code to the email to unlock a locked account."
-        const val SEND_UNLOCK_EMAIL_CONFIRMATION_OPERATION_ID = "sendUnlockEmailConfirmation"
+        const val SEND_UNLOCK_EMAIL_CONFIRMATION_OPERATION_ID = "openSendUnlockConfirmationToEmail"
 
         const val UNLOCK_BY_EMAIL_SUMMARY = "Unlock account by email confirmation code"
         const val UNLOCK_BY_EMAIL_DESCRIPTION = "Unlocks a temporarily locked user account using email confirmation code."
-        const val UNLOCK_BY_EMAIL_OPERATION_ID = "unlockByEmail"
+        const val UNLOCK_BY_EMAIL_OPERATION_ID = "openUnlockByEmail"
 
         const val SEND_UNLOCK_PHONE_CONFIRMATION_SUMMARY = "Send unlock confirmation code to phone"
         const val SEND_UNLOCK_PHONE_CONFIRMATION_DESCRIPTION = "Sends a verification code to the phone to unlock a locked account."
-        const val SEND_UNLOCK_PHONE_CONFIRMATION_OPERATION_ID = "sendUnlockPhoneConfirmation"
+        const val SEND_UNLOCK_PHONE_CONFIRMATION_OPERATION_ID = "openSendUnlockConfirmationToPhone"
 
         const val UNLOCK_BY_PHONE_SUMMARY = "Unlock account by phone confirmation code"
         const val UNLOCK_BY_PHONE_DESCRIPTION = "Unlocks a temporarily locked user account using phone confirmation code."
-        const val UNLOCK_BY_PHONE_OPERATION_ID = "unlockByPhone"
+        const val UNLOCK_BY_PHONE_OPERATION_ID = "openUnlockByPhone"
 
         const val UNLOCK_BY_EXTERNAL_PROVIDER_SUMMARY = "Unlock account by external auth provider"
         const val UNLOCK_BY_EXTERNAL_PROVIDER_DESCRIPTION = "Unlocks a temporarily locked user account using external provider token."
-        const val UNLOCK_BY_EXTERNAL_PROVIDER_OPERATION_ID = "unlockByExternalProvider"
+        const val UNLOCK_BY_EXTERNAL_PROVIDER_OPERATION_ID = "openUnlockByExternalProvider"
 
         const val OK_RESPONSE_DESCRIPTION = "Success."
     }

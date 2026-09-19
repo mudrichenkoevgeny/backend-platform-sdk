@@ -77,7 +77,7 @@ class ManagementUserSecurityRouter @Inject constructor(
     ) {
         summary = DISABLE_TOTP_ROUTE_SUMMARY
         operationId = DISABLE_TOTP_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.USER)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER_SECURITY)
         description = getFormattedDescription(
             description = DISABLE_TOTP_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },

@@ -89,7 +89,7 @@ class ManagementAuditRouter @Inject constructor(
     ) {
         summary = GET_AUDIT_EVENTS_ROUTE_SUMMARY
         operationId = GET_AUDIT_EVENTS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, AuditSwaggerTags.AUDIT_EVENTS)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + AuditSwaggerTags.AUDIT_EVENTS)
 
         description = getFormattedDescription(
             description = GET_AUDIT_EVENTS_ROUTE_DESCRIPTION,
@@ -156,7 +156,7 @@ class ManagementAuditRouter @Inject constructor(
     ) {
         summary = GET_AUDIT_EVENT_ROUTE_SUMMARY
         operationId = GET_AUDIT_EVENT_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, AuditSwaggerTags.AUDIT_EVENTS)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + AuditSwaggerTags.AUDIT_EVENTS)
 
         description = getFormattedDescription(
             description = GET_AUDIT_EVENT_ROUTE_DESCRIPTION,
@@ -212,13 +212,13 @@ class ManagementAuditRouter @Inject constructor(
         const val GET_AUDIT_EVENTS_ROUTE_SUMMARY = "List audit events"
         const val GET_AUDIT_EVENTS_ROUTE_DESCRIPTION =
             "Returns a paginated list of audit events. Rows and field masking depend on the caller's audit permissions."
-        const val GET_AUDIT_EVENTS_ROUTE_OPERATION_ID = "getAuditEvents"
+        const val GET_AUDIT_EVENTS_ROUTE_OPERATION_ID = "getManagementAuditEvents"
         const val GET_AUDIT_EVENTS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged audit events"
 
         const val GET_AUDIT_EVENT_ROUTE_SUMMARY = "Get audit event by id"
         const val GET_AUDIT_EVENT_ROUTE_DESCRIPTION =
             "Returns a single audit event. Payload masking depends on the caller's audit permissions."
-        const val GET_AUDIT_EVENT_ROUTE_OPERATION_ID = "getAuditEvent"
+        const val GET_AUDIT_EVENT_ROUTE_OPERATION_ID = "getManagementAuditEvent"
         const val GET_AUDIT_EVENT_ROUTE_PATH_PARAMETER_ID_DESCRIPTION =
             "Audit event id (UUID string, hex with dashes)"
         const val GET_AUDIT_EVENT_ROUTE_RESPONSE_OK_DESCRIPTION = "Audit event"

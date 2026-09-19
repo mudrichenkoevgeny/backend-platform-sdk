@@ -129,7 +129,7 @@ class ManagementSessionRouter @Inject constructor(
     ) {
         summary = GET_SESSIONS_ROUTE_SUMMARY
         operationId = GET_SESSIONS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = GET_SESSIONS_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -192,7 +192,7 @@ class ManagementSessionRouter @Inject constructor(
     ) {
         summary = GET_SESSION_ROUTE_SUMMARY
         operationId = GET_SESSION_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = GET_SESSION_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -250,7 +250,7 @@ class ManagementSessionRouter @Inject constructor(
     ) {
         summary = DELETE_SESSION_ROUTE_SUMMARY
         operationId = DELETE_SESSION_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = DELETE_SESSION_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -311,7 +311,7 @@ class ManagementSessionRouter @Inject constructor(
     ) {
         summary = DELETE_ALL_USER_SESSIONS_ROUTE_SUMMARY
         operationId = DELETE_ALL_USER_SESSIONS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = DELETE_ALL_USER_SESSIONS_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -386,19 +386,19 @@ class ManagementSessionRouter @Inject constructor(
         const val GET_SESSIONS_ROUTE_SUMMARY = "List user sessions (management)"
         const val GET_SESSIONS_ROUTE_DESCRIPTION =
             "Returns a paginated list of user sessions. Row visibility and masking follow session permissions."
-        const val GET_SESSIONS_ROUTE_OPERATION_ID = "getManagementUserSessions"
+        const val GET_SESSIONS_ROUTE_OPERATION_ID = "getManagementSessions"
         const val GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user sessions"
 
         const val GET_SESSION_ROUTE_SUMMARY = "Get user session (management)"
         const val GET_SESSION_ROUTE_DESCRIPTION = "Returns a single user session by user id and session id."
-        const val GET_SESSION_ROUTE_OPERATION_ID = "getManagementUserSession"
+        const val GET_SESSION_ROUTE_OPERATION_ID = "getManagementSession"
         const val GET_SESSION_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
         const val GET_SESSION_ROUTE_PATH_SESSION_ID_DESCRIPTION = "Session id (UUID string, hex with dashes)"
         const val GET_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "User session"
 
         const val DELETE_SESSION_ROUTE_SUMMARY = "Delete user session (management)"
         const val DELETE_SESSION_ROUTE_DESCRIPTION = "Force-terminates the specified session for the specified user."
-        const val DELETE_SESSION_ROUTE_OPERATION_ID = "deleteManagementUserSession"
+        const val DELETE_SESSION_ROUTE_OPERATION_ID = "deleteManagementSession"
         const val DELETE_SESSION_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
         const val DELETE_SESSION_ROUTE_PATH_SESSION_ID_DESCRIPTION = "Session id (UUID string, hex with dashes)"
         const val DELETE_SESSION_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Session terminated; no response body."

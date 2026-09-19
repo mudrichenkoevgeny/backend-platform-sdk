@@ -113,7 +113,7 @@ class ManagementIdentifierRouter @Inject constructor(
     ) {
         summary = GET_IDENTIFIERS_ROUTE_SUMMARY
         operationId = GET_IDENTIFIERS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = GET_IDENTIFIERS_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -166,7 +166,7 @@ class ManagementIdentifierRouter @Inject constructor(
     ) {
         summary = GET_IDENTIFIER_ROUTE_SUMMARY
         operationId = GET_IDENTIFIER_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = GET_IDENTIFIER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -224,7 +224,7 @@ class ManagementIdentifierRouter @Inject constructor(
     ) {
         summary = DELETE_IDENTIFIER_ROUTE_SUMMARY
         operationId = DELETE_IDENTIFIER_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = DELETE_IDENTIFIER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },

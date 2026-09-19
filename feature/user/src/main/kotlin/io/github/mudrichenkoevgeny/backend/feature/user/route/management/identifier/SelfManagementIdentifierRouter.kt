@@ -115,7 +115,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
     ) {
         summary = GET_IDENTIFIER_SUMMARY
         operationId = GET_IDENTIFIER_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = GET_IDENTIFIER_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -170,7 +170,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
     ) {
         summary = GET_IDENTIFIERS_SUMMARY
         operationId = GET_IDENTIFIERS_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = GET_IDENTIFIERS_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -222,7 +222,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
     ) {
         summary = CHANGE_PASSWORD_SUMMARY
         operationId = CHANGE_PASSWORD_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = CHANGE_PASSWORD_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -292,20 +292,20 @@ class SelfManagementIdentifierRouter @Inject constructor(
     }
 
     companion object {
-        private const val GET_IDENTIFIER_SUMMARY = "Get specific identifier details"
-        private const val GET_IDENTIFIER_OPERATION_ID = "getSelfManagementIdentifier"
-        private const val GET_IDENTIFIER_DESCRIPTION = "Retrieves specific identifier details linked to the current account."
-        private const val GET_IDENTIFIER_PATH_PARAMETER_DESCRIPTION = "The unique identifier ID"
-        private const val GET_IDENTIFIER_RESPONSE_DESCRIPTION = "Identifier details"
+        const val GET_IDENTIFIER_SUMMARY = "Get specific identifier details"
+        const val GET_IDENTIFIER_OPERATION_ID = "getSelfManagementIdentifier"
+        const val GET_IDENTIFIER_DESCRIPTION = "Retrieves specific identifier details linked to the current account."
+        const val GET_IDENTIFIER_PATH_PARAMETER_DESCRIPTION = "The unique identifier ID"
+        const val GET_IDENTIFIER_RESPONSE_DESCRIPTION = "Identifier details"
 
-        private const val GET_IDENTIFIERS_SUMMARY = "Get current management identifiers"
-        private const val GET_IDENTIFIERS_OPERATION_ID = "getSelfManagementIdentifiers"
-        private const val GET_IDENTIFIERS_DESCRIPTION = "Returns identifiers linked to the current authenticated management account."
-        private const val GET_IDENTIFIERS_RESPONSE_DESCRIPTION = "Paged management identifiers"
+        const val GET_IDENTIFIERS_SUMMARY = "Get current management identifiers"
+        const val GET_IDENTIFIERS_OPERATION_ID = "getSelfManagementIdentifiers"
+        const val GET_IDENTIFIERS_DESCRIPTION = "Returns identifiers linked to the current authenticated management account."
+        const val GET_IDENTIFIERS_RESPONSE_DESCRIPTION = "Paged management identifiers"
 
-        private const val CHANGE_PASSWORD_SUMMARY = "Change management password"
-        private const val CHANGE_PASSWORD_OPERATION_ID = "selfManagementChangePassword"
-        private const val CHANGE_PASSWORD_DESCRIPTION = "Updates the management account password using current credentials."
-        private const val CHANGE_PASSWORD_RESPONSE_DESCRIPTION = "Identifier updated"
+        const val CHANGE_PASSWORD_SUMMARY = "Change management password"
+        const val CHANGE_PASSWORD_OPERATION_ID = "selfManagementChangePassword"
+        const val CHANGE_PASSWORD_DESCRIPTION = "Updates the management account password using current credentials."
+        const val CHANGE_PASSWORD_RESPONSE_DESCRIPTION = "Identifier updated"
     }
 }

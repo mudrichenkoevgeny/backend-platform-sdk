@@ -56,7 +56,7 @@ class OpenUserConfigurationRouter @Inject constructor(
     ) {
         summary = GET_USER_CONFIGURATION_ROUTE_SUMMARY
         operationId = GET_USER_CONFIGURATION_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.OPEN, UserSwaggerTags.USER_CONFIGURATION)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER_CONFIGURATION)
 
         description = getFormattedDescription(
             description = GET_USER_CONFIGURATION_ROUTE_DESCRIPTION,
@@ -84,7 +84,7 @@ class OpenUserConfigurationRouter @Inject constructor(
     companion object {
         const val GET_USER_CONFIGURATION_ROUTE_SUMMARY = "Get all user feature configuration"
         const val GET_USER_CONFIGURATION_ROUTE_DESCRIPTION = "Returns combined global, security, and auth settings for the user feature."
-        const val GET_USER_CONFIGURATION_ROUTE_OPERATION_ID = "getUserConfiguration"
+        const val GET_USER_CONFIGURATION_ROUTE_OPERATION_ID = "openGetUserConfiguration"
         const val GET_USER_CONFIGURATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Combined user configuration data"
     }
 }

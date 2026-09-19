@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
@@ -115,7 +116,7 @@ class OpenUserRouter @Inject constructor(
     ) {
         summary = GET_USER_ROUTE_SUMMARY
         operationId = GET_USER_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.USER)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER)
 
         description = getFormattedDescription(
             description = GET_USER_ROUTE_DESCRIPTION,
@@ -164,7 +165,7 @@ class OpenUserRouter @Inject constructor(
     ) {
         summary = SCHEDULE_DELETION_ROUTE_SUMMARY
         operationId = SCHEDULE_DELETION_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.USER)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER)
 
         description = getFormattedDescription(
             description = SCHEDULE_DELETION_ROUTE_DESCRIPTION,
@@ -218,7 +219,7 @@ class OpenUserRouter @Inject constructor(
     ) {
         summary = RESTORE_USER_ROUTE_SUMMARY
         operationId = RESTORE_USER_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.USER)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER)
 
         description = getFormattedDescription(
             description = RESTORE_USER_ROUTE_DESCRIPTION,
@@ -290,17 +291,17 @@ class OpenUserRouter @Inject constructor(
     companion object {
         const val GET_USER_ROUTE_SUMMARY = "Get current user"
         const val GET_USER_ROUTE_DESCRIPTION = "Returns information about the currently authenticated user."
-        const val GET_USER_ROUTE_OPERATION_ID = "getUser"
+        const val GET_USER_ROUTE_OPERATION_ID = "openGetUser"
         const val GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User data retrieved successfully"
 
         const val SCHEDULE_DELETION_ROUTE_SUMMARY = "Schedule account deletion"
         const val SCHEDULE_DELETION_ROUTE_DESCRIPTION = "Schedules the currently authenticated user account for permanent deletion."
-        const val SCHEDULE_DELETION_ROUTE_OPERATION_ID = "scheduleDeletion"
+        const val SCHEDULE_DELETION_ROUTE_OPERATION_ID = "openScheduleUserDeletion"
         const val SCHEDULE_DELETION_ROUTE_RESPONSE_OK_DESCRIPTION = "User account scheduled for deletion"
 
         const val RESTORE_USER_ROUTE_SUMMARY = "Restore user account"
         const val RESTORE_USER_ROUTE_DESCRIPTION = "Restores an account that was previously scheduled for deletion."
-        const val RESTORE_USER_ROUTE_OPERATION_ID = "restoreUser"
+        const val RESTORE_USER_ROUTE_OPERATION_ID = "openRestoreUser"
         const val RESTORE_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User account restored successfully"
     }
 }

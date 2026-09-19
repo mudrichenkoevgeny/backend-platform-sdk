@@ -72,6 +72,7 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
             }
         }
 
+        authProvider.shouldReturnSuccess(createTestUserDetails(role = UserRole.ADMIN))
         every { getManagementGlobalSettingsUseCase() } returns AppResult.Success(sampleSettings())
 
         val response = jsonClient.get(ManagementGlobalSettingsRoutes.GET_MANAGEMENT_GLOBAL_SETTINGS) {

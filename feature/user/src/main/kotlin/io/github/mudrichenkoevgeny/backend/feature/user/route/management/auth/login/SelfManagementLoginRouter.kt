@@ -90,7 +90,7 @@ class SelfManagementLoginRouter @Inject constructor(
     ) {
         summary = LOGIN_BY_EMAIL_ROUTE_SUMMARY
         operationId = LOGIN_BY_EMAIL_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_EMAIL_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -125,7 +125,7 @@ class SelfManagementLoginRouter @Inject constructor(
     ) {
         summary = LOGIN_BY_TOTP_ROUTE_SUMMARY
         operationId = LOGIN_BY_TOTP_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_TOTP_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -161,7 +161,7 @@ class SelfManagementLoginRouter @Inject constructor(
     ) {
         summary = LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_SUMMARY
         operationId = LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -204,6 +204,6 @@ class SelfManagementLoginRouter @Inject constructor(
         const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_DESCRIPTION = "Finalizes the management login process by providing a recovery code."
         const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_OPERATION_ID = "managementLoginByTotpRecoveryCode"
 
-        const val LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. User authenticated."
+        const val LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Management user authenticated."
     }
 }

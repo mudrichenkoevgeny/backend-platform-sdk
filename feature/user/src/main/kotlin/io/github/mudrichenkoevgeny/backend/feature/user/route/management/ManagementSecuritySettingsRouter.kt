@@ -81,13 +81,13 @@ class ManagementSecuritySettingsRouter @Inject constructor(
     }
 
     private fun registerGetSecuritySettingsRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.get(
             path = ManagementSecuritySettingsRoutes.GET_MANAGEMENT_SECURITY_SETTINGS,
             builder = { getSecuritySettingsDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getSecuritySettings() }
+            body = { getSecuritySettings(allowedRoles, allowedAccountStatuses) }
         )
     }
 
@@ -98,7 +98,7 @@ class ManagementSecuritySettingsRouter @Inject constructor(
     ) {
         summary = UPDATE_SECURITY_SETTINGS_ROUTE_SUMMARY
         operationId = UPDATE_SECURITY_SETTINGS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, SecuritySwaggerTags.SECURITY_SETTINGS)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + SecuritySwaggerTags.SECURITY_SETTINGS)
 
         description = getFormattedDescription(
             description = UPDATE_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
@@ -157,13 +157,13 @@ class ManagementSecuritySettingsRouter @Inject constructor(
     ) {
         summary = GET_SECURITY_SETTINGS_ROUTE_SUMMARY
         operationId = GET_SECURITY_SETTINGS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, SecuritySwaggerTags.SECURITY_SETTINGS)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + SecuritySwaggerTags.SECURITY_SETTINGS)
 
         description = getFormattedDescription(
             description = GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
-            isPublic = true
+            isPublic = false
         )
 
         response {
@@ -174,7 +174,21 @@ class ManagementSecuritySettingsRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.getSecuritySettings() {
+    private suspend fun RoutingContext.getSecuritySettings(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
+        )
+
+        if (authorizeResult is AppResult.Error) {
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
         val result = getManagementSecuritySettingsUseCase()
 
         call.respondResult(result, appLogger, appErrorParser) { securitySettings ->
@@ -204,14 +218,14 @@ class ManagementSecuritySettingsRouter @Inject constructor(
     companion object {
         const val UPDATE_SECURITY_SETTINGS_ROUTE_SUMMARY = "Update security settings"
         const val UPDATE_SECURITY_SETTINGS_ROUTE_DESCRIPTION =
-            "Replaces effective security settings with the payload."
-        const val UPDATE_SECURITY_SETTINGS_ROUTE_OPERATION_ID = "updateSecuritySettings"
+            "Replaces effective global settings with the payload."
+        const val UPDATE_SECURITY_SETTINGS_ROUTE_OPERATION_ID = "managementUpdateSecuritySettings"
         const val UPDATE_SECURITY_SETTINGS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
             "Settings were updated successfully; no response body."
 
         const val GET_SECURITY_SETTINGS_ROUTE_SUMMARY = "Get security settings"
         const val GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION = "Returns security settings."
-        const val GET_SECURITY_SETTINGS_ROUTE_OPERATION_ID = "getSecuritySettings"
+        const val GET_SECURITY_SETTINGS_ROUTE_OPERATION_ID = "managementGetSecuritySettings"
         const val GET_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Security settings data"
     }
 }

@@ -75,7 +75,7 @@ class SelfManagementResetPasswordRouter @Inject constructor(
     ) {
         summary = SEND_RESET_PASSWORD_CONFIRMATION_SUMMARY
         operationId = SEND_RESET_PASSWORD_CONFIRMATION_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
 
         description = getFormattedDescription(
             description = SEND_RESET_PASSWORD_CONFIRMATION_DESCRIPTION,
@@ -114,7 +114,7 @@ class SelfManagementResetPasswordRouter @Inject constructor(
     ) {
         summary = RESET_PASSWORD_SUMMARY
         operationId = RESET_PASSWORD_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
 
         description = getFormattedDescription(
             description = RESET_PASSWORD_DESCRIPTION,
@@ -155,6 +155,6 @@ class SelfManagementResetPasswordRouter @Inject constructor(
         const val RESET_PASSWORD_SUMMARY = "Reset management password"
         const val RESET_PASSWORD_DESCRIPTION = "Completes the password reset for a management account (STAFF or ADMIN)."
         const val RESET_PASSWORD_OPERATION_ID = "resetManagementPassword"
-        const val RESET_PASSWORD_RESPONSE_DESCRIPTION = "Reset password successfully."
+        const val RESET_PASSWORD_RESPONSE_DESCRIPTION = "Password reset successfully."
     }
 }

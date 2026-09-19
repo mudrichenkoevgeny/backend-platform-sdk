@@ -60,7 +60,7 @@ class SelfManagementRefreshTokenRouter @Inject constructor(
     ) {
         summary = REFRESH_TOKEN_ROUTE_SUMMARY
         operationId = REFRESH_TOKEN_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
 
         description = getFormattedDescription(
             description = REFRESH_TOKEN_ROUTE_DESCRIPTION,

@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.for
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
@@ -60,12 +61,12 @@ class SelfManagementUserRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
-        summary = GET_USER_ROUTE_SUMMARY
-        operationId = GET_USER_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.USER)
+        summary = GET_SELF_USER_ROUTE_SUMMARY
+        operationId = GET_SELF_USER_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER)
 
         description = getFormattedDescription(
-            description = GET_USER_ROUTE_DESCRIPTION,
+            description = GET_SELF_USER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
             isPublic = false
@@ -74,7 +75,7 @@ class SelfManagementUserRouter @Inject constructor(
         response {
             code(HttpStatusCode.OK) {
                 body<UserDetailsPayload>()
-                description = GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION
+                description = GET_SELF_USER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -106,9 +107,9 @@ class SelfManagementUserRouter @Inject constructor(
     }
 
     companion object {
-        const val GET_USER_ROUTE_SUMMARY = "Get current user"
-        const val GET_USER_ROUTE_DESCRIPTION = "Returns information about the currently authenticated user."
-        const val GET_USER_ROUTE_OPERATION_ID = "getUser"
-        const val GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User data retrieved successfully"
+        const val GET_SELF_USER_ROUTE_SUMMARY = "Get current user profile (management)"
+        const val GET_SELF_USER_ROUTE_DESCRIPTION = "Returns the profile details of the currently authenticated management user."
+        const val GET_SELF_USER_ROUTE_OPERATION_ID = "getSelfManagementUser"
+        const val GET_SELF_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User profile data."
     }
 }

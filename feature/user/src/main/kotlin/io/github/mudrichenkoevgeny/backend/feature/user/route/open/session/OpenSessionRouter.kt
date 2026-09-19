@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorPars
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
@@ -168,7 +169,7 @@ class OpenSessionRouter @Inject constructor(
     ) {
         summary = LOGOUT_ROUTE_SUMMARY
         operationId = LOGOUT_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.SESSION)
 
         description = getFormattedDescription(
             description = LOGOUT_ROUTE_DESCRIPTION,
@@ -220,7 +221,7 @@ class OpenSessionRouter @Inject constructor(
     ) {
         summary = GET_SESSIONS_ROUTE_SUMMARY
         operationId = GET_SESSIONS_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.SESSION)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.SESSION)
 
         description = getFormattedDescription(
             description = GET_SESSIONS_ROUTE_DESCRIPTION,
@@ -284,7 +285,7 @@ class OpenSessionRouter @Inject constructor(
     ) {
         summary = GET_SESSION_ROUTE_SUMMARY
         operationId = GET_SESSION_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.SESSION)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.SESSION)
 
         description = getFormattedDescription(
             description = GET_SESSION_ROUTE_DESCRIPTION,
@@ -344,7 +345,7 @@ class OpenSessionRouter @Inject constructor(
     ) {
         summary = DELETE_SESSION_ROUTE_SUMMARY
         operationId = DELETE_SESSION_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.SESSION)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.SESSION)
 
         description = getFormattedDescription(
             description = DELETE_SESSION_ROUTE_DESCRIPTION,
@@ -413,7 +414,7 @@ class OpenSessionRouter @Inject constructor(
     ) {
         summary = DELETE_ALL_OTHER_SESSIONS_ROUTE_SUMMARY
         operationId = DELETE_ALL_OTHER_SESSIONS_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.SESSION)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.SESSION)
 
         description = getFormattedDescription(
             description = DELETE_ALL_OTHER_SESSIONS_ROUTE_DESCRIPTION,
@@ -474,7 +475,7 @@ class OpenSessionRouter @Inject constructor(
     ) {
         summary = REAUTHENTICATE_SESSION_ROUTE_SUMMARY
         operationId = REAUTHENTICATE_SESSION_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.SESSION)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.SESSION)
 
         description = getFormattedDescription(
             description = REAUTHENTICATE_SESSION_ROUTE_DESCRIPTION,

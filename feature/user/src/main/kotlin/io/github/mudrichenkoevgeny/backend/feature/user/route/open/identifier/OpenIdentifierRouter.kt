@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
@@ -222,7 +223,7 @@ class OpenIdentifierRouter @Inject constructor(
     ) {
         summary = GET_USER_IDENTIFIER_ROUTE_SUMMARY
         operationId = GET_USER_IDENTIFIER_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = GET_USER_IDENTIFIER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -277,7 +278,7 @@ class OpenIdentifierRouter @Inject constructor(
     ) {
         summary = GET_USER_IDENTIFIERS_ROUTE_SUMMARY
         operationId = GET_USER_IDENTIFIERS_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = GET_USER_IDENTIFIERS_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -329,7 +330,7 @@ class OpenIdentifierRouter @Inject constructor(
     ) {
         summary = DELETE_USER_IDENTIFIER_ROUTE_SUMMARY
         operationId = DELETE_USER_IDENTIFIER_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = DELETE_USER_IDENTIFIER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -387,7 +388,7 @@ class OpenIdentifierRouter @Inject constructor(
     ) {
         summary = ADD_EMAIL_SUMMARY
         operationId = ADD_EMAIL_OPERATION_ID
-        tags = listOf(UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = ADD_EMAIL_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -450,7 +451,7 @@ class OpenIdentifierRouter @Inject constructor(
     ) {
         summary = ADD_PHONE_SUMMARY
         operationId = ADD_PHONE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = ADD_PHONE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -512,7 +513,7 @@ class OpenIdentifierRouter @Inject constructor(
     ) {
         summary = ADD_EXTERNAL_SUMMARY
         operationId = ADD_EXTERNAL_OPERATION_ID
-        tags = listOf(UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = ADD_EXTERNAL_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -581,7 +582,7 @@ class OpenIdentifierRouter @Inject constructor(
     ) {
         summary = SEND_ADD_EMAIL_CONFIRMATION_SUMMARY
         operationId = SEND_ADD_EMAIL_CONFIRMATION_OPERATION_ID
-        tags = listOf(UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = SEND_ADD_EMAIL_CONFIRMATION_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -629,7 +630,7 @@ class OpenIdentifierRouter @Inject constructor(
     ) {
         summary = SEND_ADD_PHONE_CONFIRMATION_SUMMARY
         operationId = SEND_ADD_PHONE_CONFIRMATION_OPERATION_ID
-        tags = listOf(UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = SEND_ADD_PHONE_CONFIRMATION_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -677,7 +678,7 @@ class OpenIdentifierRouter @Inject constructor(
     ) {
         summary = IDENTIFIER_EMAIL_CHANGE_PASSWORD_SUMMARY
         operationId = IDENTIFIER_EMAIL_CHANGE_PASSWORD_OPERATION_ID
-        tags = listOf(UserSwaggerTags.IDENTIFIER)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = IDENTIFIER_EMAIL_CHANGE_PASSWORD_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -759,48 +760,48 @@ class OpenIdentifierRouter @Inject constructor(
     companion object {
         const val GET_USER_IDENTIFIER_ROUTE_SUMMARY = "Get user identifier"
         const val GET_USER_IDENTIFIER_ROUTE_DESCRIPTION = "Retrieves specific identifier details linked to the current account."
-        const val GET_USER_IDENTIFIER_ROUTE_OPERATION_ID = "getUserIdentifier"
+        const val GET_USER_IDENTIFIER_ROUTE_OPERATION_ID = "openGetUserIdentifier"
         const val GET_USER_IDENTIFIER_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The unique identifier ID"
         const val GET_USER_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION = "Identifier details"
 
         const val GET_USER_IDENTIFIERS_ROUTE_SUMMARY = "Get user identifiers"
         const val GET_USER_IDENTIFIERS_ROUTE_DESCRIPTION = "Returns all authentication identifiers of the current user."
-        const val GET_USER_IDENTIFIERS_ROUTE_OPERATION_ID = "getUserIdentifiers"
+        const val GET_USER_IDENTIFIERS_ROUTE_OPERATION_ID = "openGetIdentifiers"
         const val GET_USER_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION = "Success"
 
         const val DELETE_USER_IDENTIFIER_ROUTE_SUMMARY = "Delete user identifier"
         const val DELETE_USER_IDENTIFIER_ROUTE_DESCRIPTION = "Deletes a user authentication identifier."
-        const val DELETE_USER_IDENTIFIER_ROUTE_OPERATION_ID = "deleteUserIdentifier"
+        const val DELETE_USER_IDENTIFIER_ROUTE_OPERATION_ID = "openDeleteUserIdentifier"
         const val DELETE_USER_IDENTIFIER_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "ID of the user identifier to delete"
         const val DELETE_USER_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION = "Deleted"
 
         const val ADD_EMAIL_SUMMARY = "Add email user identifier"
         const val ADD_EMAIL_DESCRIPTION = "Adds email as a new authentication identifier."
-        const val ADD_EMAIL_OPERATION_ID = "addUserIdentifierEmail"
+        const val ADD_EMAIL_OPERATION_ID = "openAddUserIdentifierEmail"
 
         const val ADD_PHONE_SUMMARY = "Add phone user identifier"
         const val ADD_PHONE_DESCRIPTION = "Adds phone number as a new authentication identifier."
-        const val ADD_PHONE_OPERATION_ID = "addUserIdentifierPhone"
+        const val ADD_PHONE_OPERATION_ID = "openAddUserIdentifierPhone"
 
         const val ADD_EXTERNAL_SUMMARY = "Add external auth provider identifier"
         const val ADD_EXTERNAL_DESCRIPTION = "Adds external authentication provider as a new authentication identifier."
-        const val ADD_EXTERNAL_OPERATION_ID = "addUserIdentifierExternalAuthProvider"
+        const val ADD_EXTERNAL_OPERATION_ID = "openAddUserIdentifierExternalAuthProvider"
 
         const val ADD_IDENTIFIER_RESPONSE_OK_DESCRIPTION = "Success. User identifier added."
 
         const val SEND_ADD_EMAIL_CONFIRMATION_SUMMARY = "Send email confirmation (identity add)"
         const val SEND_ADD_EMAIL_CONFIRMATION_DESCRIPTION = "Sends a code to a new email to link it to the current account."
-        const val SEND_ADD_EMAIL_CONFIRMATION_OPERATION_ID = "sendAddEmailIdentifierConfirmation"
+        const val SEND_ADD_EMAIL_CONFIRMATION_OPERATION_ID = "openSendEmailIdentifierConfirmationCode"
 
         const val SEND_ADD_PHONE_CONFIRMATION_SUMMARY = "Send phone confirmation (identity add)"
         const val SEND_ADD_PHONE_CONFIRMATION_DESCRIPTION = "Sends a code to a new phone number to link it to the current account."
-        const val SEND_ADD_PHONE_CONFIRMATION_OPERATION_ID = "sendAddPhoneIdentifierConfirmation"
+        const val SEND_ADD_PHONE_CONFIRMATION_OPERATION_ID = "openSendPhoneIdentifierConfirmationCode"
 
         const val CONFIRMATION_SENT_DESCRIPTION = "Success. Confirmation code sent."
 
         const val IDENTIFIER_EMAIL_CHANGE_PASSWORD_SUMMARY = "Change email password"
         const val IDENTIFIER_EMAIL_CHANGE_PASSWORD_DESCRIPTION = "Changes the current user's email password."
-        const val IDENTIFIER_EMAIL_CHANGE_PASSWORD_OPERATION_ID = "identifierEmailChangePassword"
+        const val IDENTIFIER_EMAIL_CHANGE_PASSWORD_OPERATION_ID = "openIdentifierEmailChangePassword"
         const val IDENTIFIER_EMAIL_CHANGE_PASSWORD_RESPONSE_DESCRIPTION = "Email password changed successfully."
     }
 }

@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.setting
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
@@ -55,7 +56,7 @@ class OpenAuthSettingsRouter @Inject constructor(
     ) {
         summary = GET_AUTH_SETTINGS_ROUTE_SUMMARY
         operationId = GET_AUTH_SETTINGS_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH_SETTINGS)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH_SETTINGS)
 
         description = getFormattedDescription(
             description = GET_AUTH_SETTINGS_ROUTE_DESCRIPTION,
@@ -83,7 +84,7 @@ class OpenAuthSettingsRouter @Inject constructor(
     companion object {
         const val GET_AUTH_SETTINGS_ROUTE_SUMMARY = "Get auth settings"
         const val GET_AUTH_SETTINGS_ROUTE_DESCRIPTION = "Returns available authentication settings."
-        const val GET_AUTH_SETTINGS_ROUTE_OPERATION_ID = "getAuthSettings"
+        const val GET_AUTH_SETTINGS_ROUTE_OPERATION_ID = "openGetAuthSettings"
         const val GET_AUTH_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Auth settings data"
     }
 }

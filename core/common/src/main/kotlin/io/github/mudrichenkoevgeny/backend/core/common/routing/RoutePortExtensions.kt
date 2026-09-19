@@ -35,6 +35,8 @@ fun Route.onPort(port: Int, build: Route.() -> Unit): Route {
                 RouteSelectorEvaluation.Failed
             }
         }
+
+        override fun toString(): String = ""
     })
     routeWithPort.build()
     return routeWithPort

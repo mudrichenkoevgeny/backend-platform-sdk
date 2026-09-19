@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
@@ -146,7 +147,7 @@ class OpenUserSecurityRouter @Inject constructor(
     ) {
         summary = SETUP_TOTP_SUMMARY
         operationId = SETUP_TOTP_OPERATION_ID
-        tags = listOf(UserSwaggerTags.USER_SECURITY)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER_SECURITY)
         description = getFormattedDescription(
             description = SETUP_TOTP_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -193,7 +194,7 @@ class OpenUserSecurityRouter @Inject constructor(
     ) {
         summary = ENABLE_TOTP_SUMMARY
         operationId = ENABLE_TOTP_OPERATION_ID
-        tags = listOf(UserSwaggerTags.USER_SECURITY)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER_SECURITY)
         description = getFormattedDescription(
             description = ENABLE_TOTP_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -253,7 +254,7 @@ class OpenUserSecurityRouter @Inject constructor(
     ) {
         summary = DISABLE_TOTP_SUMMARY
         operationId = DISABLE_TOTP_OPERATION_ID
-        tags = listOf(UserSwaggerTags.USER_SECURITY)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER_SECURITY)
         description = getFormattedDescription(
             description = DISABLE_TOTP_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -305,7 +306,7 @@ class OpenUserSecurityRouter @Inject constructor(
     ) {
         summary = GET_RECOVERY_CODES_SUMMARY
         operationId = GET_RECOVERY_CODES_OPERATION_ID
-        tags = listOf(UserSwaggerTags.USER_SECURITY)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER_SECURITY)
         description = getFormattedDescription(
             description = GET_RECOVERY_CODES_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -360,7 +361,7 @@ class OpenUserSecurityRouter @Inject constructor(
     ) {
         summary = REGENERATE_RECOVERY_CODES_SUMMARY
         operationId = REGENERATE_RECOVERY_CODES_OPERATION_ID
-        tags = listOf(UserSwaggerTags.USER_SECURITY)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER_SECURITY)
         description = getFormattedDescription(
             description = REGENERATE_RECOVERY_CODES_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -433,27 +434,27 @@ class OpenUserSecurityRouter @Inject constructor(
     companion object {
         const val SETUP_TOTP_SUMMARY = "Initiate TOTP setup"
         const val SETUP_TOTP_DESCRIPTION = "Generates a new TOTP secret and returns setup data (secret key, otpauth URL, and challenge token)."
-        const val SETUP_TOTP_OPERATION_ID = "setupTotp"
+        const val SETUP_TOTP_OPERATION_ID = "openSetupTotp"
         const val SETUP_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP setup data generated"
 
         const val ENABLE_TOTP_SUMMARY = "Finalize TOTP activation"
         const val ENABLE_TOTP_DESCRIPTION = "Finalizes TOTP activation by verifying the first code from the authenticator app."
-        const val ENABLE_TOTP_OPERATION_ID = "enableTotp"
+        const val ENABLE_TOTP_OPERATION_ID = "openEnableTotp"
         const val ENABLE_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP enabled successfully"
 
         const val DISABLE_TOTP_SUMMARY = "Disable TOTP"
         const val DISABLE_TOTP_DESCRIPTION = "Disables TOTP and invalidates all associated recovery codes for the authenticated account."
-        const val DISABLE_TOTP_OPERATION_ID = "disableTotp"
+        const val DISABLE_TOTP_OPERATION_ID = "openDisableTotp"
         const val DISABLE_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP disabled successfully"
 
         const val GET_RECOVERY_CODES_SUMMARY = "Get recovery codes"
         const val GET_RECOVERY_CODES_DESCRIPTION = "Returns the current active recovery codes for the authenticated user."
-        const val GET_RECOVERY_CODES_OPERATION_ID = "getRecoveryCodes"
+        const val GET_RECOVERY_CODES_OPERATION_ID = "openGetRecoveryCodes"
         const val GET_RECOVERY_CODES_RESPONSE_OK_DESCRIPTION = "Current recovery codes"
 
         const val REGENERATE_RECOVERY_CODES_SUMMARY = "Regenerate recovery codes"
         const val REGENERATE_RECOVERY_CODES_DESCRIPTION = "Invalidates all existing recovery codes and generates a new set for the account."
-        const val REGENERATE_RECOVERY_CODES_OPERATION_ID = "regenerateRecoveryCodes"
+        const val REGENERATE_RECOVERY_CODES_OPERATION_ID = "openRegenerateRecoveryCodes"
         const val REGENERATE_RECOVERY_CODES_RESPONSE_OK_DESCRIPTION = "New recovery codes generated"
     }
 }

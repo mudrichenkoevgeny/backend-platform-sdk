@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.for
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
@@ -58,7 +59,7 @@ class OpenRefreshTokenRouter @Inject constructor(
     ) {
         summary = REFRESH_TOKEN_ROUTE_SUMMARY
         operationId = REFRESH_TOKEN_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = REFRESH_TOKEN_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -91,7 +92,7 @@ class OpenRefreshTokenRouter @Inject constructor(
     companion object {
         const val REFRESH_TOKEN_ROUTE_SUMMARY = "refresh auth token"
         const val REFRESH_TOKEN_ROUTE_DESCRIPTION = "Initiates refresh token process."
-        const val REFRESH_TOKEN_ROUTE_OPERATION_ID = "refreshToken"
+        const val REFRESH_TOKEN_ROUTE_OPERATION_ID = "openRefreshToken"
         const val REFRESH_TOKEN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Token refreshed."
     }
 }

@@ -65,6 +65,7 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
             }
         }
 
+        authProvider.shouldReturnSuccess(createTestUserDetails(role = UserRole.ADMIN))
         every { getManagementSecuritySettingsUseCase() } returns AppResult.Success(createTestManagementSecuritySettings())
 
         val response = jsonClient.get(ManagementSecuritySettingsRoutes.GET_MANAGEMENT_SECURITY_SETTINGS) {

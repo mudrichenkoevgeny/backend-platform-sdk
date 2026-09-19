@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.resetpa
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
@@ -73,7 +74,7 @@ class OpenResetPasswordRouter @Inject constructor(
     ) {
         summary = SEND_RESET_PASSWORD_CONFIRMATION_SUMMARY
         operationId = SEND_RESET_PASSWORD_CONFIRMATION_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
 
         description = getFormattedDescription(
             description = SEND_RESET_PASSWORD_CONFIRMATION_DESCRIPTION,
@@ -112,7 +113,7 @@ class OpenResetPasswordRouter @Inject constructor(
     ) {
         summary = RESET_PASSWORD_SUMMARY
         operationId = RESET_PASSWORD_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
 
         description = getFormattedDescription(
             description = RESET_PASSWORD_DESCRIPTION,
@@ -148,12 +149,12 @@ class OpenResetPasswordRouter @Inject constructor(
         const val SEND_RESET_PASSWORD_CONFIRMATION_SUMMARY = "Send reset password confirmation"
         const val SEND_RESET_PASSWORD_CONFIRMATION_DESCRIPTION =
             "Sends a confirmation code to the user's email for reset password."
-        const val SEND_RESET_PASSWORD_CONFIRMATION_OPERATION_ID = "sendResetPasswordConfirmation"
+        const val SEND_RESET_PASSWORD_CONFIRMATION_OPERATION_ID = "openSendResetPasswordConfirmationToEmail"
         const val SEND_RESET_PASSWORD_CONFIRMATION_RESPONSE_DESCRIPTION = "Confirmation sent successfully."
 
         const val RESET_PASSWORD_SUMMARY = "Reset password"
         const val RESET_PASSWORD_DESCRIPTION = "Resets the user's password using a confirmation code."
-        const val RESET_PASSWORD_OPERATION_ID = "resetPassword"
+        const val RESET_PASSWORD_OPERATION_ID = "openResetPassword"
         const val RESET_PASSWORD_RESPONSE_DESCRIPTION = "Reset password successfully."
     }
 }

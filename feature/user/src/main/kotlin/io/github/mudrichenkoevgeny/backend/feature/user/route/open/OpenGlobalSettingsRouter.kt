@@ -56,7 +56,7 @@ class OpenGlobalSettingsRouter @Inject constructor(
     ) {
         summary = GET_GLOBAL_SETTINGS_ROUTE_SUMMARY
         operationId = GET_GLOBAL_SETTINGS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.OPEN, SettingsSwaggerTags.GLOBAL_SETTINGS)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + SettingsSwaggerTags.GLOBAL_SETTINGS)
 
         description = getFormattedDescription(
             description = GET_GLOBAL_SETTINGS_ROUTE_DESCRIPTION,

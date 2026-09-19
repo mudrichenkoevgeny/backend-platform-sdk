@@ -152,7 +152,7 @@ class ManagementUserRouter @Inject constructor(
     ) {
         summary = GET_USER_ROUTE_SUMMARY
         operationId = GET_USER_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.USER)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER)
         description = getFormattedDescription(
             description = GET_USER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -206,7 +206,7 @@ class ManagementUserRouter @Inject constructor(
     ) {
         summary = GET_USERS_ROUTE_SUMMARY
         operationId = GET_USERS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.USER)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER)
         description = getFormattedDescription(
             description = GET_USERS_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -264,7 +264,7 @@ class ManagementUserRouter @Inject constructor(
     ) {
         summary = CREATE_USER_ROUTE_SUMMARY
         operationId = CREATE_USER_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.USER)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER)
         description = getFormattedDescription(
             description = CREATE_USER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -338,7 +338,7 @@ class ManagementUserRouter @Inject constructor(
     ) {
         summary = UPDATE_USER_ROUTE_SUMMARY
         operationId = UPDATE_USER_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.USER)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER)
         description = getFormattedDescription(
             description = UPDATE_USER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -418,7 +418,7 @@ class ManagementUserRouter @Inject constructor(
     ) {
         summary = DELETE_USER_ROUTE_SUMMARY
         operationId = DELETE_USER_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.USER)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER)
         description = getFormattedDescription(
             description = DELETE_USER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },

@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.for
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
@@ -75,7 +76,7 @@ class OpenRegisterRouter @Inject constructor(
     ) {
         summary = REGISTER_BY_EMAIL_ROUTE_SUMMARY
         operationId = REGISTER_BY_EMAIL_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = REGISTER_BY_EMAIL_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -112,7 +113,7 @@ class OpenRegisterRouter @Inject constructor(
     ) {
         summary = SEND_REGISTER_CONFIRMATION_TO_EMAIL_ROUTE_SUMMARY
         operationId = SEND_REGISTER_CONFIRMATION_TO_EMAIL_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = SEND_REGISTER_CONFIRMATION_TO_EMAIL_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -145,12 +146,12 @@ class OpenRegisterRouter @Inject constructor(
         const val REGISTER_BY_EMAIL_ROUTE_SUMMARY = "Register user by email"
         const val REGISTER_BY_EMAIL_ROUTE_DESCRIPTION = "Registers a new user using email and password " +
                 "after confirmation code validation."
-        const val REGISTER_BY_EMAIL_ROUTE_OPERATION_ID = "registerByEmail"
+        const val REGISTER_BY_EMAIL_ROUTE_OPERATION_ID = "openRegisterByEmail"
         const val REGISTER_BY_EMAIL_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. User registered."
 
         const val SEND_REGISTER_CONFIRMATION_TO_EMAIL_ROUTE_SUMMARY = "Send registration confirmation code to email"
         const val SEND_REGISTER_CONFIRMATION_TO_EMAIL_ROUTE_DESCRIPTION = "Sends a verification code to the email for registration purposes."
-        const val SEND_REGISTER_CONFIRMATION_TO_EMAIL_ROUTE_OPERATION_ID = "sendRegisterConfirmationToEmail"
+        const val SEND_REGISTER_CONFIRMATION_TO_EMAIL_ROUTE_OPERATION_ID = "openSendRegistrationConfirmationToEmail"
         const val SEND_REGISTER_CONFIRMATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Verification code sent."
     }
 }

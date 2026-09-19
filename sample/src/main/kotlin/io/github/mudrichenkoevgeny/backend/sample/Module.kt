@@ -111,28 +111,15 @@ fun Application.module(
         when (commonConfig.instanceMode) {
             AppInstanceMode.PUBLIC -> {
                 appComponent.openWebSocketRouter().register(this)
-
-                appComponent.openSecuritySettingsRouter().register(this)
-                appComponent.openGlobalSettingsSettingsRouter().register(this)
                 appComponent.openCoreUserRouter().register(this)
             }
             AppInstanceMode.MANAGEMENT -> {
                 appComponent.managementWebSocketRouter().register(this)
-
-                appComponent.managementAuditRouter().register(this)
-                appComponent.managementSecuritySettingsRouter().register(this)
-                appComponent.managementGlobalSettingsRouter().register(this)
                 appComponent.managementCoreUserRouter().register(this)
             }
             AppInstanceMode.FULL -> {
                 appComponent.openWebSocketRouter().register(this)
                 appComponent.managementWebSocketRouter().register(this)
-
-                appComponent.managementAuditRouter().register(this)
-                appComponent.openSecuritySettingsRouter().register(this)
-                appComponent.managementSecuritySettingsRouter().register(this)
-                appComponent.openGlobalSettingsSettingsRouter().register(this)
-                appComponent.managementGlobalSettingsRouter().register(this)
                 appComponent.openCoreUserRouter().register(this)
                 appComponent.managementCoreUserRouter().register(this)
             }

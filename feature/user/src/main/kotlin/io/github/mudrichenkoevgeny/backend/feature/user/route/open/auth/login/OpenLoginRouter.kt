@@ -144,7 +144,7 @@ class OpenLoginRouter @Inject constructor(
     ) {
         summary = LOGIN_BY_EMAIL_ROUTE_SUMMARY
         operationId = LOGIN_BY_EMAIL_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_EMAIL_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -180,7 +180,7 @@ class OpenLoginRouter @Inject constructor(
     ) {
         summary = LOGIN_BY_PHONE_ROUTE_SUMMARY
         operationId = LOGIN_BY_PHONE_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_PHONE_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -216,7 +216,7 @@ class OpenLoginRouter @Inject constructor(
     ) {
         summary = LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_SUMMARY
         operationId = LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -259,7 +259,7 @@ class OpenLoginRouter @Inject constructor(
     ) {
         summary = SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_SUMMARY
         operationId = SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -292,7 +292,7 @@ class OpenLoginRouter @Inject constructor(
     ) {
         summary = LOGIN_BY_TOTP_ROUTE_SUMMARY
         operationId = LOGIN_BY_TOTP_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_TOTP_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -328,7 +328,7 @@ class OpenLoginRouter @Inject constructor(
     ) {
         summary = LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_SUMMARY
         operationId = LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -361,30 +361,30 @@ class OpenLoginRouter @Inject constructor(
     companion object {
         const val LOGIN_BY_EMAIL_ROUTE_SUMMARY = "Login by email"
         const val LOGIN_BY_EMAIL_ROUTE_DESCRIPTION = "Authenticates a user using email and password."
-        const val LOGIN_BY_EMAIL_ROUTE_OPERATION_ID = "loginByEmail"
+        const val LOGIN_BY_EMAIL_ROUTE_OPERATION_ID = "openLoginByEmail"
 
         const val LOGIN_BY_PHONE_ROUTE_SUMMARY = "Login by phone"
         const val LOGIN_BY_PHONE_ROUTE_DESCRIPTION = "Authenticates a user using phone number and confirmation code."
-        const val LOGIN_BY_PHONE_ROUTE_OPERATION_ID = "loginByPhone"
+        const val LOGIN_BY_PHONE_ROUTE_OPERATION_ID = "openLoginByPhone"
 
         const val LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_SUMMARY = "Login via external auth provider"
         const val LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_DESCRIPTION = "Authenticates a user using an external " +
                 "authentication provider token."
-        const val LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_OPERATION_ID = "loginByExternalAuthProvider"
+        const val LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_OPERATION_ID = "openLoginByExternalAuthProvider"
 
         const val LOGIN_BY_TOTP_ROUTE_SUMMARY = "Login by TOTP"
         const val LOGIN_BY_TOTP_ROUTE_DESCRIPTION = "Finalizes the login process by providing a TOTP code."
-        const val LOGIN_BY_TOTP_ROUTE_OPERATION_ID = "loginByTotp"
+        const val LOGIN_BY_TOTP_ROUTE_OPERATION_ID = "openLoginByTotp"
 
         const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_SUMMARY = "Login by totp recovery code"
         const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_DESCRIPTION = "Finalizes the login process by providing a recovery code."
-        const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_OPERATION_ID = "loginByTotpRecoveryCode"
+        const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_OPERATION_ID = "openLoginByTotpRecoveryCode"
 
         const val LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. User authenticated."
 
         const val SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_SUMMARY = "Send login confirmation code to phone"
         const val SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_DESCRIPTION = "Sends a verification code to the phone number for login/registration purposes."
-        const val SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_OPERATION_ID = "sendLoginConfirmationToPhone"
+        const val SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_OPERATION_ID = "openSendLoginConfirmationToPhone"
         const val SEND_LOGIN_CONFIRMATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Verification code sent."
     }
 }

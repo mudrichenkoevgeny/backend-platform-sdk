@@ -81,13 +81,13 @@ class ManagementGlobalSettingsRouter @Inject constructor(
     }
 
     private fun registerGetGlobalSettingsRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.get(
             path = ManagementGlobalSettingsRoutes.GET_MANAGEMENT_GLOBAL_SETTINGS,
             builder = { getGlobalSettingsDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getGlobalSettings() }
+            body = { getGlobalSettings(allowedRoles, allowedAccountStatuses) }
         )
     }
 
@@ -98,7 +98,7 @@ class ManagementGlobalSettingsRouter @Inject constructor(
     ) {
         summary = UPDATE_GLOBAL_SETTINGS_ROUTE_SUMMARY
         operationId = UPDATE_GLOBAL_SETTINGS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, SettingsSwaggerTags.GLOBAL_SETTINGS)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + SettingsSwaggerTags.GLOBAL_SETTINGS)
 
         description = getFormattedDescription(
             description = UPDATE_GLOBAL_SETTINGS_ROUTE_DESCRIPTION,
@@ -158,13 +158,13 @@ class ManagementGlobalSettingsRouter @Inject constructor(
     ) {
         summary = GET_GLOBAL_SETTINGS_ROUTE_SUMMARY
         operationId = GET_GLOBAL_SETTINGS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, SettingsSwaggerTags.GLOBAL_SETTINGS)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + SettingsSwaggerTags.GLOBAL_SETTINGS)
 
         description = getFormattedDescription(
             description = GET_GLOBAL_SETTINGS_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
-            isPublic = true
+            isPublic = false
         )
 
         response {
@@ -175,7 +175,21 @@ class ManagementGlobalSettingsRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.getGlobalSettings() {
+    private suspend fun RoutingContext.getGlobalSettings(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
+        )
+
+        if (authorizeResult is AppResult.Error) {
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
         val result = getManagementGlobalSettingsUseCase()
 
         call.respondResult(result, appLogger, appErrorParser) { globalSettings ->
@@ -205,13 +219,13 @@ class ManagementGlobalSettingsRouter @Inject constructor(
     companion object {
         const val UPDATE_GLOBAL_SETTINGS_ROUTE_SUMMARY = "Update global settings"
         const val UPDATE_GLOBAL_SETTINGS_ROUTE_DESCRIPTION = "Replaces effective global settings with the payload."
-        const val UPDATE_GLOBAL_SETTINGS_ROUTE_OPERATION_ID = "updateGlobalSettings"
+        const val UPDATE_GLOBAL_SETTINGS_ROUTE_OPERATION_ID = "managementUpdateGlobalSettings"
         const val UPDATE_GLOBAL_SETTINGS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
             "Settings were updated successfully; no response body."
 
         const val GET_GLOBAL_SETTINGS_ROUTE_SUMMARY = "Get global settings"
         const val GET_GLOBAL_SETTINGS_ROUTE_DESCRIPTION = "Returns global system settings."
-        const val GET_GLOBAL_SETTINGS_ROUTE_OPERATION_ID = "getGlobalSettings"
+        const val GET_GLOBAL_SETTINGS_ROUTE_OPERATION_ID = "managementGetGlobalSettings"
         const val GET_GLOBAL_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Global settings data"
     }
 }

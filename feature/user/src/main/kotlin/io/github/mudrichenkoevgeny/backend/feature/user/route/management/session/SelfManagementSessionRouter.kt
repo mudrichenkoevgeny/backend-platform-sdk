@@ -8,8 +8,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorPars
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseSelfSessionsListQueryParams
@@ -165,7 +165,7 @@ class SelfManagementSessionRouter @Inject constructor(
     ) {
         summary = LOGOUT_ROUTE_SUMMARY
         operationId = LOGOUT_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = LOGOUT_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -209,12 +209,12 @@ class SelfManagementSessionRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
-        summary = GET_SESSIONS_ROUTE_SUMMARY
-        operationId = GET_SESSIONS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        summary = GET_SELF_SESSIONS_ROUTE_SUMMARY
+        operationId = GET_SELF_SESSIONS_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
 
         description = getFormattedDescription(
-            description = GET_SESSIONS_ROUTE_DESCRIPTION,
+            description = GET_SELF_SESSIONS_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
             isPublic = false
@@ -223,7 +223,7 @@ class SelfManagementSessionRouter @Inject constructor(
         response {
             code(HttpStatusCode.OK) {
                 body<PagedResult<UserSessionPayload>>()
-                description = GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION
+                description = GET_SELF_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -273,12 +273,12 @@ class SelfManagementSessionRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
-        summary = GET_SESSION_ROUTE_SUMMARY
-        operationId = GET_SESSION_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        summary = GET_SELF_SESSION_ROUTE_SUMMARY
+        operationId = GET_SELF_SESSION_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
 
         description = getFormattedDescription(
-            description = GET_SESSION_ROUTE_DESCRIPTION,
+            description = GET_SELF_SESSION_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
             isPublic = false
@@ -286,14 +286,13 @@ class SelfManagementSessionRouter @Inject constructor(
 
         request {
             pathParameter<String>(UserApiPaths.SESSION_ID) {
-                description = GET_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION
+                description = GET_SELF_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION
             }
         }
-
         response {
             code(HttpStatusCode.OK) {
                 body<UserSessionPayload>()
-                description = GET_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION
+                description = GET_SELF_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -333,12 +332,12 @@ class SelfManagementSessionRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
-        summary = DELETE_SESSION_ROUTE_SUMMARY
-        operationId = DELETE_SESSION_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        summary = DELETE_SELF_SESSION_ROUTE_SUMMARY
+        operationId = DELETE_SELF_SESSION_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
 
         description = getFormattedDescription(
-            description = DELETE_SESSION_ROUTE_DESCRIPTION,
+            description = DELETE_SELF_SESSION_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
             isPublic = false
@@ -346,13 +345,13 @@ class SelfManagementSessionRouter @Inject constructor(
 
         request {
             pathParameter<String>(UserApiPaths.SESSION_ID) {
-                description = DELETE_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION
+                description = DELETE_SELF_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION
             }
         }
 
         response {
             code(HttpStatusCode.OK) {
-                description = DELETE_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION
+                description = DELETE_SELF_SESSION_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION
             }
         }
     }
@@ -402,12 +401,12 @@ class SelfManagementSessionRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
-        summary = DELETE_ALL_OTHER_SESSIONS_ROUTE_SUMMARY
-        operationId = DELETE_ALL_OTHER_SESSIONS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.SESSION)
+        summary = DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_SUMMARY
+        operationId = DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
 
         description = getFormattedDescription(
-            description = DELETE_ALL_OTHER_SESSIONS_ROUTE_DESCRIPTION,
+            description = DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
             isPublic = false
@@ -416,7 +415,7 @@ class SelfManagementSessionRouter @Inject constructor(
         response {
             code(HttpStatusCode.OK) {
                 body<DeletedSessionsPayload>()
-                description = DELETE_ALL_OTHER_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION
+                description = DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -465,7 +464,7 @@ class SelfManagementSessionRouter @Inject constructor(
     ) {
         summary = REAUTHENTICATE_SESSION_ROUTE_SUMMARY
         operationId = REAUTHENTICATE_SESSION_ROUTE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.SESSION)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
 
         description = getFormattedDescription(
             description = REAUTHENTICATE_SESSION_ROUTE_DESCRIPTION,
@@ -541,36 +540,36 @@ class SelfManagementSessionRouter @Inject constructor(
     }
 
     companion object {
-        const val LOGOUT_ROUTE_SUMMARY = "Logout from current session"
-        const val LOGOUT_ROUTE_DESCRIPTION = "Terminates the current user session and invalidates the associated authentication tokens."
-        const val LOGOUT_ROUTE_OPERATION_ID = "logout"
+        const val LOGOUT_ROUTE_SUMMARY = "Logout from current session (management)"
+        const val LOGOUT_ROUTE_DESCRIPTION = "Terminates the current management user session and invalidates the associated authentication tokens."
+        const val LOGOUT_ROUTE_OPERATION_ID = "logoutManagementSession"
         const val LOGOUT_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Success. Current session has been terminated."
 
-        const val GET_SESSIONS_ROUTE_SUMMARY = "Get all active sessions"
-        const val GET_SESSIONS_ROUTE_DESCRIPTION = "Returns a list of all active sessions for the current user, including device info and login method."
-        const val GET_SESSIONS_ROUTE_OPERATION_ID = "getSessions"
-        const val GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "List of active sessions"
+        const val GET_SELF_SESSIONS_ROUTE_SUMMARY = "List active sessions (management)"
+        const val GET_SELF_SESSIONS_ROUTE_DESCRIPTION = "Returns a paginated list of all active sessions for the current management user."
+        const val GET_SELF_SESSIONS_ROUTE_OPERATION_ID = "getSelfManagementSessions"
+        const val GET_SELF_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged sessions data"
 
-        const val GET_SESSION_ROUTE_SUMMARY = "Get specific session"
-        const val GET_SESSION_ROUTE_DESCRIPTION = "Retrieves specific session details by its identifier."
-        const val GET_SESSION_ROUTE_OPERATION_ID = "getSession"
-        const val GET_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "ID of the session to retrieve"
-        const val GET_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session details retrieved successfully"
+        const val GET_SELF_SESSION_ROUTE_SUMMARY = "Get a specific session (management)"
+        const val GET_SELF_SESSION_ROUTE_DESCRIPTION = "Retrieves details of a specific session by its identifier."
+        const val GET_SELF_SESSION_ROUTE_OPERATION_ID = "getSelfManagementSession"
+        const val GET_SELF_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "Session ID"
+        const val GET_SELF_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session details retrieved successfully"
 
-        const val DELETE_SESSION_ROUTE_SUMMARY = "Delete a specific session"
-        const val DELETE_SESSION_ROUTE_DESCRIPTION = "Deletes a session by its ID. The current session cannot be deleted using this endpoint."
-        const val DELETE_SESSION_ROUTE_OPERATION_ID = "deleteSession"
-        const val DELETE_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "ID of the session to delete"
-        const val DELETE_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session deleted successfully"
+        const val DELETE_SELF_SESSION_ROUTE_SUMMARY = "Delete a specific session (management)"
+        const val DELETE_SELF_SESSION_ROUTE_DESCRIPTION = "Terminates a specific session by its ID. Cannot be used to delete current session."
+        const val DELETE_SELF_SESSION_ROUTE_OPERATION_ID = "deleteSelfManagementSession"
+        const val DELETE_SELF_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "Session ID"
+        const val DELETE_SELF_SESSION_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Session deleted successfully"
 
-        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_SUMMARY = "Logout from all other sessions"
-        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_DESCRIPTION = "Deletes all user sessions except for the current one."
-        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_OPERATION_ID = "deleteAllOtherSessions"
-        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. All other sessions have been deleted."
+        const val DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_SUMMARY = "Delete all other sessions (management)"
+        const val DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_DESCRIPTION = "Terminates all active sessions except the current one."
+        const val DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_OPERATION_ID = "deleteAllOtherSelfManagementSessions"
+        const val DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "IDs of the deleted sessions."
 
-        const val REAUTHENTICATE_SESSION_ROUTE_SUMMARY = "Re-authenticate session"
+        const val REAUTHENTICATE_SESSION_ROUTE_SUMMARY = "Re-authenticate session (management)"
         const val REAUTHENTICATE_SESSION_ROUTE_DESCRIPTION = "Performs re-authentication via TOTP to update the session's trust level."
-        const val REAUTHENTICATE_SESSION_ROUTE_OPERATION_ID = "reauthenticateSession"
+        const val REAUTHENTICATE_SESSION_ROUTE_OPERATION_ID = "reauthenticateManagementSession"
         const val REAUTHENTICATE_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session re-authenticated successfully"
     }
 }

@@ -5,10 +5,10 @@ import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthChecker
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppSystemResult
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.onPort
+import io.github.smiley4.ktoropenapi.get
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
-import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -48,17 +48,29 @@ class ManagementHealthRouter @Inject constructor(
     override fun register(route: Route) {
         route.onPort(commonConfig.ktorManagementPort) {
             route(BASE_PATH) {
-                get(LIVE_PATH) {
-                    call.respond(HttpStatusCode.OK)
-                }
-                get(READY_PATH) {
-                    val result = healthCheckerManager.checkCriticalHealth()
-                    if (result is AppSystemResult.Success) {
+                get(
+                    path = LIVE_PATH,
+                    builder = {
+                        hidden = true
+                    },
+                    body = {
                         call.respond(HttpStatusCode.OK)
-                    } else {
-                        call.respond(HttpStatusCode.ServiceUnavailable)
                     }
-                }
+                )
+                get(
+                    path = READY_PATH,
+                    builder = {
+                        hidden = true
+                    },
+                    body = {
+                        val result = healthCheckerManager.checkCriticalHealth()
+                        if (result is AppSystemResult.Success) {
+                            call.respond(HttpStatusCode.OK)
+                        } else {
+                            call.respond(HttpStatusCode.ServiceUnavailable)
+                        }
+                    }
+                )
             }
         }
     }

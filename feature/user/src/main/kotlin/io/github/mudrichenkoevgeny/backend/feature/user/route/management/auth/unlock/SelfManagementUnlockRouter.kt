@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorPars
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
@@ -126,7 +127,7 @@ class SelfManagementUnlockRouter @Inject constructor(
     ) {
         summary = SEND_UNLOCK_EMAIL_CONFIRMATION_SUMMARY
         operationId = SEND_UNLOCK_EMAIL_CONFIRMATION_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = SEND_UNLOCK_EMAIL_CONFIRMATION_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -161,7 +162,7 @@ class SelfManagementUnlockRouter @Inject constructor(
     ) {
         summary = UNLOCK_BY_EMAIL_SUMMARY
         operationId = UNLOCK_BY_EMAIL_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = UNLOCK_BY_EMAIL_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -194,7 +195,7 @@ class SelfManagementUnlockRouter @Inject constructor(
     ) {
         summary = SEND_UNLOCK_PHONE_CONFIRMATION_SUMMARY
         operationId = SEND_UNLOCK_PHONE_CONFIRMATION_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = SEND_UNLOCK_PHONE_CONFIRMATION_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -229,7 +230,7 @@ class SelfManagementUnlockRouter @Inject constructor(
     ) {
         summary = UNLOCK_BY_PHONE_SUMMARY
         operationId = UNLOCK_BY_PHONE_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = UNLOCK_BY_PHONE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
@@ -262,7 +263,7 @@ class SelfManagementUnlockRouter @Inject constructor(
     ) {
         summary = UNLOCK_BY_EXTERNAL_PROVIDER_SUMMARY
         operationId = UNLOCK_BY_EXTERNAL_PROVIDER_OPERATION_ID
-        tags = listOf(UserSwaggerTags.AUTH)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = UNLOCK_BY_EXTERNAL_PROVIDER_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },

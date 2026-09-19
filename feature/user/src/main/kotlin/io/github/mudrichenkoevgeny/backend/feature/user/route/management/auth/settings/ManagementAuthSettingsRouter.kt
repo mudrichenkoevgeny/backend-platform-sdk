@@ -69,13 +69,13 @@ class ManagementAuthSettingsRouter @Inject constructor(
     }
 
     private fun registerGetAuthSettingsManagementRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.get(
             path = ManagementAuthSettingsRoutes.GET_MANAGEMENT_AUTH_SETTINGS,
             builder = { getAuthSettingsManagementDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getAuthSettingsManagement() }
+            body = { getAuthSettingsManagement(allowedRoles, allowedAccountStatuses) }
         )
     }
 
@@ -97,13 +97,13 @@ class ManagementAuthSettingsRouter @Inject constructor(
     ) {
         summary = GET_AUTH_SETTINGS_MANAGEMENT_ROUTE_SUMMARY
         operationId = GET_AUTH_SETTINGS_MANAGEMENT_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.AUTH_SETTINGS)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH_SETTINGS)
 
         description = getFormattedDescription(
             description = GET_AUTH_SETTINGS_MANAGEMENT_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
-            isPublic = true
+            isPublic = false
         )
 
         response {
@@ -114,7 +114,21 @@ class ManagementAuthSettingsRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.getAuthSettingsManagement() {
+    private suspend fun RoutingContext.getAuthSettingsManagement(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
+        )
+
+        if (authorizeResult is AppResult.Error) {
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
         val result = getManagementAuthSettingsUseCase()
         call.respondResult(result, appLogger, appErrorParser) { management ->
             management.toManagementAuthSettingsPayload()
@@ -128,7 +142,7 @@ class ManagementAuthSettingsRouter @Inject constructor(
     ) {
         summary = UPDATE_AUTH_SETTINGS_ROUTE_SUMMARY
         operationId = UPDATE_AUTH_SETTINGS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.MANAGEMENT, UserSwaggerTags.AUTH_SETTINGS)
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH_SETTINGS)
 
         description = getFormattedDescription(
             description = UPDATE_AUTH_SETTINGS_ROUTE_DESCRIPTION,
@@ -209,7 +223,7 @@ class ManagementAuthSettingsRouter @Inject constructor(
         const val UPDATE_AUTH_SETTINGS_ROUTE_SUMMARY = "Update auth settings"
         const val UPDATE_AUTH_SETTINGS_ROUTE_DESCRIPTION =
             "Replaces management auth settings with the provided payload."
-        const val UPDATE_AUTH_SETTINGS_ROUTE_OPERATION_ID = "updateAuthSettings"
+        const val UPDATE_AUTH_SETTINGS_ROUTE_OPERATION_ID = "updateManagementAuthSettings"
         const val UPDATE_AUTH_SETTINGS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
             "Settings were updated successfully; no response body."
     }

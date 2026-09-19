@@ -56,7 +56,7 @@ class OpenSecuritySettingsRouter @Inject constructor(
     ) {
         summary = GET_SECURITY_SETTINGS_ROUTE_SUMMARY
         operationId = GET_SECURITY_SETTINGS_ROUTE_OPERATION_ID
-        tags = listOf(CommonSwaggerTags.OPEN, SecuritySwaggerTags.SECURITY_SETTINGS)
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + SecuritySwaggerTags.SECURITY_SETTINGS)
 
         description = getFormattedDescription(
             description = GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
@@ -84,7 +84,7 @@ class OpenSecuritySettingsRouter @Inject constructor(
     companion object {
         const val GET_SECURITY_SETTINGS_ROUTE_SUMMARY = "Get security settings"
         const val GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION = "Returns security settings."
-        const val GET_SECURITY_SETTINGS_ROUTE_OPERATION_ID = "getSecuritySettings"
+        const val GET_SECURITY_SETTINGS_ROUTE_OPERATION_ID = "openGetSecuritySettings"
         const val GET_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Security settings data"
     }
 }
