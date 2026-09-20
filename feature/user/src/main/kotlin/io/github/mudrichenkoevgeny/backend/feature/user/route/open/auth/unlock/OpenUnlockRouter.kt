@@ -67,57 +67,57 @@ class OpenUnlockRouter @Inject constructor(
     }
 
     private fun registerSendUnlockEmailConfirmationRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
 
         route.post(
             path = OpenUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION,
             builder = { sendUnlockEmailConfirmationDocs(allowedRoles, allowedAccountStatuses) },
-            body = { sendUnlockEmailConfirmation() }
+            body = { sendUnlockEmailConfirmation(allowedRoles, allowedAccountStatuses) }
         )
     }
 
     private fun registerUnlockByEmailRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
 
         route.post(
             path = OpenUnlockRoutes.UNLOCK_BY_EMAIL,
             builder = { unlockByEmailDocs(allowedRoles, allowedAccountStatuses) },
-            body = { unlockByEmail() }
+            body = { unlockByEmail(allowedRoles, allowedAccountStatuses) }
         )
     }
 
     private fun registerSendUnlockPhoneConfirmationRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
 
         route.post(
             path = OpenUnlockRoutes.SEND_UNLOCK_PHONE_CONFIRMATION,
             builder = { sendUnlockPhoneConfirmationDocs(allowedRoles, allowedAccountStatuses) },
-            body = { sendUnlockPhoneConfirmation() }
+            body = { sendUnlockPhoneConfirmation(allowedRoles, allowedAccountStatuses) }
         )
     }
 
     private fun registerUnlockByPhoneRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
 
         route.post(
             path = OpenUnlockRoutes.UNLOCK_BY_PHONE,
             builder = { unlockByPhoneDocs(allowedRoles, allowedAccountStatuses) },
-            body = { unlockByPhone() }
+            body = { unlockByPhone(allowedRoles, allowedAccountStatuses) }
         )
     }
 
     private fun registerUnlockByExternalProviderRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
 
         route.post(
             path = OpenUnlockRoutes.UNLOCK_BY_EXTERNAL_PROVIDER,
             builder = { unlockByExternalProviderDocs(allowedRoles, allowedAccountStatuses) },
-            body = { unlockByExternalProvider() }
+            body = { unlockByExternalProvider(allowedRoles, allowedAccountStatuses) }
         )
     }
 
@@ -143,12 +143,17 @@ class OpenUnlockRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.sendUnlockEmailConfirmation() {
+    private suspend fun RoutingContext.sendUnlockEmailConfirmation(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<SendConfirmationToEmailRequest>()
 
         val result = sendUnlockConfirmationToEmailUseCase(
             email = request.email,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser) { otpConfirmation ->
@@ -177,13 +182,18 @@ class OpenUnlockRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.unlockByEmail() {
+    private suspend fun RoutingContext.unlockByEmail(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<UnlockByEmailConfirmationRequest>()
 
         val result = unlockByEmailUseCase(
             email = request.email,
             confirmationCode = request.confirmationCode,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser, successStatus = HttpStatusCode.OK)
@@ -211,12 +221,17 @@ class OpenUnlockRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.sendUnlockPhoneConfirmation() {
+    private suspend fun RoutingContext.sendUnlockPhoneConfirmation(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<SendConfirmationToPhoneRequest>()
 
         val result = sendUnlockConfirmationToPhoneUseCase(
             phoneNumber = request.phoneNumber,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser) { otpConfirmation ->
@@ -245,13 +260,18 @@ class OpenUnlockRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.unlockByPhone() {
+    private suspend fun RoutingContext.unlockByPhone(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<UnlockByPhoneConfirmationRequest>()
 
         val result = unlockByPhoneUseCase(
             phoneNumber = request.phoneNumber,
             confirmationCode = request.confirmationCode,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser, successStatus = HttpStatusCode.OK)
@@ -278,7 +298,10 @@ class OpenUnlockRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.unlockByExternalProvider() {
+    private suspend fun RoutingContext.unlockByExternalProvider(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<UnlockByExternalAuthProviderRequest>()
 
         val authProvider = UserAuthProvider.fromValueOrNull(request.authProvider)
@@ -291,7 +314,9 @@ class OpenUnlockRouter @Inject constructor(
         val result = unlockByExternalAuthProviderUseCase(
             authProvider = authProvider,
             token = request.externalProviderToken,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser, successStatus = HttpStatusCode.OK)

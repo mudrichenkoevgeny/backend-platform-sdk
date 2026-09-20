@@ -20,10 +20,11 @@ interface AuthenticationChallengeService {
      * @param userDetails The domain model of the user performing the action.
      * @param userSession The current active session to be verified.
      * @return [AppResult.Success] if the session is still within the validity window,
-     * or [AppResult.Error] (typically [SecurityError.TotpConfirmationRequired]) if a step-up is required.
+     * or [AppResult.Error] (typically [SecurityError.MfaConfirmationRequired]) if a step-up is required.
      */
     suspend fun ensureSessionConfirmed(
         userDetails: UserDetails,
-        userSession: UserSessionInternal
+        userSession: UserSessionInternal,
+        requireTotp: Boolean = false
     ): AppResult<Unit>
 }

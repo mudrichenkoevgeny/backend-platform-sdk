@@ -19,9 +19,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.ExternalAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
@@ -82,6 +84,8 @@ class UnlockByExternalAuthProviderUseCaseTest {
         }
         val userDetails = mockk<UserDetails> {
             every { id } returns userId
+            every { role } returns UserRole.USER
+            every { accountStatus } returns UserAccountStatus.ACTIVE
         }
 
         every { securitySettingsProvider.getAccountLockoutPolicy() } returns lockoutPolicy
@@ -89,6 +93,7 @@ class UnlockByExternalAuthProviderUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_TOKEN) } returns AppResult.Success(Unit)
         coEvery { externalAuthVerifier.verify(TEST_TOKEN) } returns AppResult.Success(verificationData)
         coEvery { identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.GOOGLE, TEST_EXTERNAL_ID) } returns AppResult.Success(identifier)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
         coEvery { userManager.unlockUserAccount(userId, listOf(TEST_EXTERNAL_ID)) } returns AppResult.Success(userDetails)
 
         val result = useCase(UserAuthProvider.GOOGLE, TEST_TOKEN, context)

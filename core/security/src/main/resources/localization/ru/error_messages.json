@@ -1,5 +1,5 @@
 {
-  "TOTP_CONFIRMATION_REQUIRED": "Требуется подтверждение аутентификации. MFA токен: {mfaToken}",
+  "MFA_CONFIRMATION_REQUIRED": "Требуется подтверждение аутентификации. MFA токен: {mfaToken}",
   "PASSWORD_TOO_WEAK": "Пароль слишком слабый. Слишком короткий: {passwordTooShort} (минимальная длина: {passwordMinLength}), Нет букв: {passwordNoLetter}, Нет заглавных букв: {passwordNoUpperCase}, Нет строчных букв: {passwordNoLowerCase}, Нет цифр: {passwordNoDigit}, Нет спецсимволов: {passwordNoSpecialChar}, Слишком распространённый пароль: {passwordTooCommon}.",
   "OTP_RETRY_TOO_SOON": "Слишком много попыток. Пожалуйста, попробуйте снова через {retryAfterSeconds} сек.",
   "TOTP_ALREADY_ENABLED": "Двухфакторная аутентификация уже включена для этого аккаунта.",

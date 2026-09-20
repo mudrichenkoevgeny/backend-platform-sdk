@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateRoleAndStatus
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionIdFromCredential
@@ -141,23 +142,8 @@ class JwtAuthenticationProvider @Inject constructor(
             }
         }
 
-        if (user.role !in allowedRoles) {
-            return AppResult.Error(UserError.UserRoleNotAllowed(userId))
-        }
-
-        if (user.accountStatus !in allowedAccountStatuses) {
-            return AppResult.Error(
-                when (user.accountStatus) {
-                    UserAccountStatus.ACTIVE -> UserError.UserForbidden(userId)
-                    UserAccountStatus.READ_ONLY -> UserError.UserReadOnly(userId)
-                    UserAccountStatus.BANNED -> UserError.UserBlocked(
-                        userId = userId,
-                        blockedUntil = user.temporaryLockoutUntil
-                    )
-                    UserAccountStatus.SECURITY_HOLD -> UserError.UserSecurityHold(userId)
-                    UserAccountStatus.PENDING_DELETION -> UserError.UserPendingDeletion(userId)
-                }
-            )
+        user.validateRoleAndStatus(allowedRoles, allowedAccountStatuses)?.let { error ->
+            return AppResult.Error(error)
         }
 
         if (requiredPermissions.isNotEmpty() && !user.permissionCodes.containsAll(requiredPermissions)) {

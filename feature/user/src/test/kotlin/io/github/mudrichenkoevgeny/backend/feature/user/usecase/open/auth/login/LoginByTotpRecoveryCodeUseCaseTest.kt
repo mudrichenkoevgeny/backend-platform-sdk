@@ -73,16 +73,16 @@ class LoginByTotpRecoveryCodeUseCaseTest {
             userId = userId.asHexDashString(),
             userRole = UserRole.USER.serialName,
             identifierId = identifierId.asHexDashString(),
-            type = MfaChallengeType.LOGIN_TOTP
+            type = MfaChallengeType.LOGIN_RECOVERY_CODE
         )
 
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_MFA_TOKEN) } returns AppResult.Success(Unit)
-        coEvery { mfaService.getChallenge(TEST_MFA_TOKEN, MfaChallengeType.LOGIN_TOTP) } returns AppResult.Success(mfaChallenge)
+        coEvery { mfaService.getChallenge(TEST_MFA_TOKEN, MfaChallengeType.LOGIN_RECOVERY_CODE) } returns AppResult.Success(mfaChallenge)
         coEvery { lockoutManager.getLockoutUntil(userId.asHexDashString()) } returns AppResult.Success(null)
         coEvery { totpManager.verifyTotpRecoveryCode(userId, TEST_RECOVERY_CODE) } returns AppResult.Success(Unit)
         coEvery { lockoutManager.clearLockout(userId.asHexDashString()) } returns AppResult.Success(Unit)
         coEvery { mfaService.consumeChallenge(TEST_MFA_TOKEN) } returns AppResult.Success(Unit)
-        coEvery { authManager.completeMfaAuthentication(userId, identifierId, any()) } returns AppResult.Success(authData)
+        coEvery { authManager.completeMfaAuthentication(userId, identifierId, any(), any(), any()) } returns AppResult.Success(authData)
 
         val result = useCase(context, TEST_MFA_TOKEN, TEST_RECOVERY_CODE)
 
@@ -114,7 +114,7 @@ class LoginByTotpRecoveryCodeUseCaseTest {
             userId = userId.asHexDashString(),
             userRole = UserRole.USER.serialName,
             identifierId = UserIdentifierId.generate().asHexDashString(),
-            type = MfaChallengeType.LOGIN_TOTP
+            type = MfaChallengeType.LOGIN_RECOVERY_CODE
         )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)

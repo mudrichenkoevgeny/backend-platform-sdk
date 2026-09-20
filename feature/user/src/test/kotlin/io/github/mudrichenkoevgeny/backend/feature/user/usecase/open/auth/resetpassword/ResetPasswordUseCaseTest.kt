@@ -17,9 +17,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -53,6 +56,10 @@ class ResetPasswordUseCaseTest {
     fun `successfully resets password and logs audit`() = runTest {
         val context = createTestRequestContext()
         val userId = UserId.generate()
+        val userDetails = mockk<UserDetails> {
+            every { role } returns UserRole.USER
+            every { accountStatus } returns UserAccountStatus.ACTIVE
+        }
         val identifierInternal = mockk<UserIdentifierInternal> {
             every { this@mockk.userId } returns userId
         }
@@ -68,6 +75,7 @@ class ResetPasswordUseCaseTest {
         coEvery {
             identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.EMAIL, TEST_EMAIL)
         } returns AppResult.Success(identifierInternal)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
         coEvery {
             identifierManager.updateUserIdentifierPassword(identifierInternal, TEST_PASSWORD)
         } returns AppResult.Success(userIdentifier)

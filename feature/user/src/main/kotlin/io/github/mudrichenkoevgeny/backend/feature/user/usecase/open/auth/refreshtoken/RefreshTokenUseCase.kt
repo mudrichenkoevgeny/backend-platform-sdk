@@ -6,6 +6,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.SessionToken
 import javax.inject.Inject
@@ -38,7 +40,9 @@ class RefreshTokenUseCase @Inject constructor(
      */
     suspend operator fun invoke(
         refreshToken: RefreshToken,
-        requestContext: RequestContext
+        requestContext: RequestContext,
+        allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
     ): AppResult<SessionToken> {
         val refreshTokenHashResult = refreshTokenProvider.getRefreshTokenHash(refreshToken)
         val refreshTokenHash = when (refreshTokenHashResult) {
@@ -57,7 +61,9 @@ class RefreshTokenUseCase @Inject constructor(
 
         return sessionManager.refreshSession(
             refreshToken = refreshToken,
-            clientInfo = requestContext.clientInfo
+            clientInfo = requestContext.clientInfo,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
     }
 }

@@ -43,13 +43,13 @@ class OpenRefreshTokenRouter @Inject constructor(
     }
 
     private fun registerRefreshTokenRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
 
         route.post(
             path = OpenRefreshTokenRoutes.REFRESH_TOKEN,
             builder = { refreshTokenDocs(allowedRoles, allowedAccountStatuses) },
-            body = { refreshToken() }
+            body = { refreshToken(allowedRoles, allowedAccountStatuses) }
         )
     }
 
@@ -75,13 +75,18 @@ class OpenRefreshTokenRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.refreshToken() {
+    private suspend fun RoutingContext.refreshToken(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val requestContext = call.getRequestContext()
         val request = call.validateRequest<RefreshTokenPayload>()
 
         val result = refreshTokenUseCase(
             refreshToken = RefreshToken(request.refreshToken),
-            requestContext = requestContext
+            requestContext = requestContext,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser) { sessionToken ->

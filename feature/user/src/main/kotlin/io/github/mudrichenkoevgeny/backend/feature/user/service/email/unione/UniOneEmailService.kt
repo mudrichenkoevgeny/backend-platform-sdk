@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * [EmailService] implementation backed by the UniOne API.
@@ -148,9 +149,8 @@ class UniOneEmailService @Inject constructor(
     override suspend fun fakeSendEmail(): AppResult<Unit> {
         val baseDelay = lastExecutionTime.get()
         val jitter = Random.nextLong(-50, 50)
-
-        delay((baseDelay + jitter).coerceAtLeast(100L))
-
+        val delayMillis = (baseDelay + jitter).coerceAtLeast(100L)
+        delay(delayMillis.milliseconds)
         return AppResult.Success(Unit)
     }
 

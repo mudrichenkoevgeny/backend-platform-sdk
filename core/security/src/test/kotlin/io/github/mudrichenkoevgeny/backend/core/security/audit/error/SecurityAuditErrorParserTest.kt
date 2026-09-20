@@ -88,8 +88,8 @@ class SecurityAuditErrorParserTest {
     }
 
     @Test
-    fun `parse returns MFA_REQUIRED reason for SecurityError TotpConfirmationRequired`() {
-        val error = SecurityError.TotpConfirmationRequired(mfaToken = "test-mfa-token")
+    fun `parse returns MFA_REQUIRED reason for SecurityError MfaConfirmationRequired`() {
+        val error = SecurityError.MfaConfirmationRequired(mfaToken = "test-mfa-token")
 
         val result = parser.parse(error)
 

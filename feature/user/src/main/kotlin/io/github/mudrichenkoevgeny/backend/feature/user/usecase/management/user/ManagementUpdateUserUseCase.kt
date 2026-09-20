@@ -271,7 +271,8 @@ class ManagementUpdateUserUseCase @Inject constructor(
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
             userDetails = managementUser,
-            userSession = managementUserSession
+            userSession = managementUserSession,
+            requireTotp = true
         )
         if (ensureSessionConfirmedResult is AppResult.Error) {
             return handleError(

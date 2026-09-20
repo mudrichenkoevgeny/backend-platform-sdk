@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.settings
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestOpenSecuritySettings
+import io.github.mudrichenkoevgeny.backend.core.security.domain.model.securitysettings.createTestOpenSecuritySettings
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.mockk.every
 import io.mockk.mockk

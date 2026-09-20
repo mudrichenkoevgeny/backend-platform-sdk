@@ -48,7 +48,7 @@ interface UserIdentifierRepository {
      */
     suspend fun updatePasswordHash(
         userIdentifier: UserIdentifierInternal,
-        newPasswordHash: PasswordHash
+        newPasswordHash: PasswordHash?
     ): AppResult<UserIdentifierInternal>
 
     /**

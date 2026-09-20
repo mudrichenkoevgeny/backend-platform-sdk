@@ -165,6 +165,15 @@ class IdentifierManagerImpl @Inject constructor(
         ).mapSuccess { userIdentifierInternal -> userIdentifierInternal.toUserIdentifier() }
     }
 
+    override suspend fun clearUserIdentifierPassword(
+        userIdentifier: UserIdentifierInternal
+    ): AppResult<UserIdentifier> = dbQuery {
+        userIdentifierRepository.updatePasswordHash(
+            userIdentifier = userIdentifier,
+            newPasswordHash = null
+        ).mapSuccess { userIdentifierInternal -> userIdentifierInternal.toUserIdentifier() }
+    }
+
     override suspend fun getIdentifiersPageForManagement(
         managementUserPermissionCodes: Set<PermissionCode>,
         pageParams: PageParams,

@@ -8,6 +8,7 @@ This document is the entry point for architectural and coding standards. These r
 - **SDK Nature:** This is a **foundational library**, not a standalone application. Prefer configuration (env + DI), modularity, and extensibility over hardcoded assumptions.
 - **FQN Forbidden:** Do not write fully qualified names (FQN) in expressions, types, or generics. Use imports or typealiases. Minimal FQN is allowed only if technically unavoidable (must be explained in the commit).
 - **No Comments:** Do not write comments in the code. Logic must be self-documenting through naming and structural clarity.
+- **No Trailing Commas:** Do not use trailing commas at the end of argument, parameter, or entry lists.
 - **Manual Test Execution:** AI agents must not run tests or suggest running them. Execution is always triggered explicitly by the developer.
 
 ## Module Map
@@ -36,6 +37,6 @@ This document is the entry point for architectural and coding standards. These r
 - **`docs-kdoc-basics.md`** — Language standards (English), link resolution, and KDoc Definition of Done.
 - **`docs-kdoc-type-requirements.md`** — Specific KDoc patterns for DTOs, Error Codes, Sealed classes, and Database entities.
 - **`localization.md`** — Resource directory layout (ISO codes) and naming for error/email JSON templates.
-- **`kotlin-coding-style.md`** — Naming conventions, `when` subject rules, brace requirements, and FQN/Comments ban.
+- **`kotlin-coding-style.md`** — Naming conventions, `when` subject rules, brace requirements, FQN/Comments ban, and Trailing Commas ban.
 - **`testing-conventions.md`** — JUnit 5/MockK standards, explicit Gradle dependencies, and manual execution policy.
 - **`ai-collaboration-workflow.md`** — AI constraints, Version Catalog management, and SDK vs Sample application boundaries.

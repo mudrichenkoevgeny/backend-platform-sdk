@@ -9,8 +9,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestC
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,7 +22,8 @@ class SendResetPasswordConfirmationUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val identifierManager: IdentifierManager,
     private val otpService: OtpService,
-    private val emailService: EmailService
+    private val emailService: EmailService,
+    private val userManager: UserManager
 ) {
     /**
      * Initiates the password recovery process by sending an OTP to the user's email.
@@ -43,7 +47,9 @@ class SendResetPasswordConfirmationUseCase @Inject constructor(
      */
     suspend operator fun invoke(
         email: String,
-        requestContext: RequestContext
+        requestContext: RequestContext,
+        allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
     ): AppResult<OtpConfirmation> {
         val rateLimitCheck = rateLimiter.checkRateLimit(
             action = UserRateLimitAction.SEND_OTP_EMAIL,
@@ -72,7 +78,14 @@ class SendResetPasswordConfirmationUseCase @Inject constructor(
             is AppResult.Success -> getOtpResult.data
         }
 
-        return if (identifier != null) {
+        val user = if (identifier != null) {
+            val userResult = userManager.getUserByIdForSelf(identifier.userId)
+            (userResult as? AppResult.Success)?.data
+        } else null
+
+        val isUserAllowed = user != null && user.role in allowedRoles && user.accountStatus in allowedAccountStatuses
+
+        return if (identifier != null && isUserAllowed) {
             sendConfirmationCode(email, otpConfirmationData, requestContext)
         } else {
             fakeSendConfirmationCode(otpConfirmationData)

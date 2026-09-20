@@ -14,6 +14,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.route.SecuritySwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.GetManagementSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.ResetSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.UpdateSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
@@ -35,6 +36,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
+import io.github.smiley4.ktoropenapi.post
 import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
@@ -49,6 +51,7 @@ import javax.inject.Singleton
  * Registered routes:
  * 1. [ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS] — updates settings via [UpdateSecuritySettingsUseCase].
  * 2. [ManagementSecuritySettingsRoutes.GET_MANAGEMENT_SECURITY_SETTINGS] — retrieves settings via [GetManagementSecuritySettingsUseCase].
+ * 3. [ManagementSecuritySettingsRoutes.RESET_MANAGEMENT_SECURITY_SETTINGS] — resets settings via [ResetSecuritySettingsUseCase].
  */
 @Singleton
 class ManagementSecuritySettingsRouter @Inject constructor(
@@ -58,13 +61,15 @@ class ManagementSecuritySettingsRouter @Inject constructor(
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val updateSecuritySettingsUseCase: UpdateSecuritySettingsUseCase,
-    private val getManagementSecuritySettingsUseCase: GetManagementSecuritySettingsUseCase
+    private val getManagementSecuritySettingsUseCase: GetManagementSecuritySettingsUseCase,
+    private val resetSecuritySettingsUseCase: ResetSecuritySettingsUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerUpdateSecuritySettingsRoute(this)
             registerGetSecuritySettingsRoute(this)
+            registerResetSecuritySettingsRoute(this)
         }
     }
 
@@ -196,6 +201,73 @@ class ManagementSecuritySettingsRouter @Inject constructor(
         }
     }
 
+    private fun registerResetSecuritySettingsRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
+        val requiredPermissions = setOf(SecurityPermissionCode.SECURITY_SETTINGS_UPDATE)
+
+        route.post(
+            path = ManagementSecuritySettingsRoutes.RESET_MANAGEMENT_SECURITY_SETTINGS,
+            builder = { resetSecuritySettingsDocs(allowedRoles, allowedAccountStatuses, requiredPermissions) },
+            body = { resetSecuritySettings(allowedRoles, allowedAccountStatuses, requiredPermissions) }
+        )
+    }
+
+    private fun RouteConfig.resetSecuritySettingsDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>,
+        requiredPermissions: Set<PermissionCode>
+    ) {
+        summary = RESET_SECURITY_SETTINGS_ROUTE_SUMMARY
+        operationId = RESET_SECURITY_SETTINGS_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + SecuritySwaggerTags.SECURITY_SETTINGS)
+
+        description = getFormattedDescription(
+            description = RESET_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.serialName },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            requiredPermissions = requiredPermissions.mapToSet { it.value },
+            isPublic = false
+        )
+
+        response {
+            code(HttpStatusCode.OK) {
+                body<ManagementSecuritySettingsPayload>()
+                description = RESET_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.resetSecuritySettings(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>,
+        requiredPermissions: Set<PermissionCode>
+    ) {
+        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
+            requiredPermissions = requiredPermissions
+        )
+
+        if (authorizeResult is AppResult.Error) {
+            logErrorToAudit(
+                authenticatedRequestContext = authenticatedRequestContext,
+                actionType = SecurityAuditActionType.MANAGEMENT_RESET_SECURITY_SETTINGS,
+                error = authorizeResult.error
+            )
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
+        val result = resetSecuritySettingsUseCase(authenticatedRequestContext)
+
+        call.respondResult(result, appLogger, appErrorParser) { settings ->
+            settings.toManagementSecuritySettingsPayload()
+        }
+    }
+
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
@@ -227,5 +299,10 @@ class ManagementSecuritySettingsRouter @Inject constructor(
         const val GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION = "Returns security settings."
         const val GET_SECURITY_SETTINGS_ROUTE_OPERATION_ID = "managementGetSecuritySettings"
         const val GET_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Security settings data"
+
+        const val RESET_SECURITY_SETTINGS_ROUTE_SUMMARY = "Reset security settings"
+        const val RESET_SECURITY_SETTINGS_ROUTE_DESCRIPTION = "Resets security settings to default values."
+        const val RESET_SECURITY_SETTINGS_ROUTE_OPERATION_ID = "managementResetSecuritySettings"
+        const val RESET_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Restored security settings data"
     }
 }

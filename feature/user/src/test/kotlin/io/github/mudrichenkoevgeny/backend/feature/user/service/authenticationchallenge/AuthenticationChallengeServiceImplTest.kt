@@ -8,12 +8,10 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.client.createTestClientInfo
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
@@ -86,8 +84,8 @@ class AuthenticationChallengeServiceImplTest {
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
-        assertTrue(error is SecurityError.TotpConfirmationRequired)
-        assertEquals(testMfaToken, (error as SecurityError.TotpConfirmationRequired).publicArgs?.get("mfaToken"))
+        assertTrue(error is SecurityError.MfaConfirmationRequired)
+        assertEquals(testMfaToken, (error as SecurityError.MfaConfirmationRequired).publicArgs?.get("mfaToken"))
     }
 
     @Test
@@ -106,12 +104,37 @@ class AuthenticationChallengeServiceImplTest {
         assertEquals(expectedError, (result as AppResult.Error).error)
     }
 
-    private fun createUserDetails(role: UserRole, id: UserId = UserId.generate()) = createTestUserDetails(
+    @Test
+    fun `should return success when user does not have totp enabled and requireTotp is false`() = runBlocking {
+        val userDetails = createUserDetails(UserRole.USER, isTotpEnabled = false)
+        val session = createUserSession(lastReauthenticatedAt = null)
+
+        val result = service.ensureSessionConfirmed(userDetails, session, requireTotp = false)
+
+        assertTrue(result is AppResult.Success)
+    }
+
+    @Test
+    fun `should return TotpNotEnabled error when requireTotp is true and user does not have totp enabled`() = runBlocking {
+        val userDetails = createUserDetails(UserRole.USER, isTotpEnabled = false)
+        val session = createUserSession(lastReauthenticatedAt = null)
+
+        val result = service.ensureSessionConfirmed(userDetails, session, requireTotp = true)
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is SecurityError.TotpNotEnabled)
+    }
+
+    private fun createUserDetails(
+        role: UserRole,
+        id: UserId = UserId.generate(),
+        isTotpEnabled: Boolean = true
+    ) = createTestUserDetails(
         id = id,
         role = role,
         accountStatus = UserAccountStatus.ACTIVE,
         authorityLevel = 1,
-        isTotpEnabled = true
+        isTotpEnabled = isTotpEnabled
     )
 
     private fun createUserSession(

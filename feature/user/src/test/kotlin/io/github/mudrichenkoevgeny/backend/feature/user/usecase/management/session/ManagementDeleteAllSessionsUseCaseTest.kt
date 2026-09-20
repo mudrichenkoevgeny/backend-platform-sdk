@@ -83,7 +83,7 @@ class ManagementDeleteAllSessionsUseCaseTest {
         coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
         coEvery { userManager.getUserByIdForSelf(targetUserId) } returns AppResult.Success(targetUserDetails)
         coEvery { sessionManager.getUserSessionForSystem(context.sessionId) } returns AppResult.Success(managerSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { sessionManager.getAllUserSessions(targetUserId) } returns AppResult.Success(listOf(targetSession))
         coEvery { sessionManager.deleteAllUserSessions(targetUserId) } returns AppResult.Success(Unit)
 

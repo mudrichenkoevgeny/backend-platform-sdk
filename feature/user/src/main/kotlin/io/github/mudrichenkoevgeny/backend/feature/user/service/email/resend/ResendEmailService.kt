@@ -18,10 +18,11 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.delay
-import kotlin.random.Random
 import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * [EmailService] implementation backed by the Resend API.
@@ -146,7 +147,8 @@ class ResendEmailService @Inject constructor(
     override suspend fun fakeSendEmail(): AppResult<Unit> {
         val baseDelay = lastExecutionTime.get()
         val jitter = Random.nextLong(-50, 50)
-        delay((baseDelay + jitter).coerceAtLeast(100L))
+        val delayMillis = (baseDelay + jitter).coerceAtLeast(100L)
+        delay(delayMillis.milliseconds)
         return AppResult.Success(Unit)
     }
 

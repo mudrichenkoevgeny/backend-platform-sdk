@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 
 /**
@@ -24,7 +25,7 @@ import kotlin.uuid.Uuid
  * - waits a short grace period to let the client react,
  * - disconnects the socket via [WebSocketManager].
  *
- * The scheduled job is cancelled when the socket closes to avoid leaking coroutines.
+ * The scheduled job is canceled when the socket closes to avoid leaking coroutines.
  */
 @Singleton
 class UserSessionExpirationListener @Inject constructor(
@@ -39,15 +40,20 @@ class UserSessionExpirationListener @Inject constructor(
         context: WebSocketSessionContext,
         expiresAt: Long?
     ) {
-        if (expiresAt == null) return
+        if (expiresAt == null) {
+            return
+        }
 
         val socketId = context.socketSessionId
-        val currentTime = System.currentTimeMillis()
-        val delayTime = (expiresAt - currentTime) - TOKEN_EXPIRATION_BUFFER_MS
+        val currentTimestamp = System.currentTimeMillis()
+        val delayTime = (expiresAt - currentTimestamp) - TOKEN_EXPIRATION_BUFFER_MS
 
         expirationJobs[socketId] = scope.launch {
-            if (delayTime > 0) delay(delayTime)
+            if (delayTime > 0) {
+                delay(delayTime.milliseconds)
+            }
 
+            val messageTimestamp = System.currentTimeMillis()
             webSocketManager.sendMessageToSocket(
                 socketId,
                 SocketFrame(
@@ -55,11 +61,11 @@ class UserSessionExpirationListener @Inject constructor(
                     type = UserWebSocketEventTypes.UNAUTHORIZED,
                     payload = null,
                     metadata = emptyMap(),
-                    timestamp = System.currentTimeMillis()
+                    timestamp = messageTimestamp
                 )
             )
 
-            delay(NOTIFY_BEFORE_CLOSE_DELAY_MS)
+            delay(NOTIFY_BEFORE_CLOSE_DELAY_MS.milliseconds)
 
             webSocketManager.disconnectSocket(socketId)
         }

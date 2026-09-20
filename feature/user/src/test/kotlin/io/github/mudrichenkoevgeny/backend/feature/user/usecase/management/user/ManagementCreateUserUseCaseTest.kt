@@ -81,7 +81,7 @@ class ManagementCreateUserUseCaseTest {
         coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(managerSession)
         coEvery {
-            authenticationChallengeService.ensureSessionConfirmed(any(), any())
+            authenticationChallengeService.ensureSessionConfirmed(any(), any(), any())
         } returns AppResult.Success(Unit)
 
         coEvery {
@@ -116,6 +116,64 @@ class ManagementCreateUserUseCaseTest {
                 accountStatusForUserCreation = any(),
                 authorityLevelForUserCreation = any(),
                 permissionCodesForUserCreation = any()
+            )
+        }
+    }
+
+    @Test
+    fun `successfully creates user without password`() = runTest {
+        val permission = UserPermissionCode.USER_CREATE_AS_USER
+        val managerDetails = mockk<UserDetails> {
+            every { accountStatus } returns UserAccountStatus.ACTIVE
+            every { authorityLevel } returns 100
+            every { permissionCodes } returns setOf(permission)
+        }
+        val createdUser = mockk<UserDetails> {
+            every { id } returns UserId.generate()
+        }
+        val managerSession = mockk<UserSessionInternal>()
+
+        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
+        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(managerSession)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(any(), any(), any())
+        } returns AppResult.Success(Unit)
+
+        coEvery {
+            authManager.createUserAndIdentifier(
+                userAuthProvider = UserAuthProvider.EMAIL,
+                identifier = "test@example.com",
+                password = null,
+                roleForUserCreation = UserRole.USER,
+                accountStatusForUserCreation = UserAccountStatus.ACTIVE,
+                authorityLevelForUserCreation = 50,
+                permissionCodesForUserCreation = setOf(permission)
+            )
+        } returns AppResult.Success(createdUser)
+
+        val result = useCase(
+            email = "test@example.com",
+            password = null,
+            role = UserRole.USER,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 50,
+            permissionCodes = setOf(permission),
+            authenticatedRequestContext = context
+        )
+
+        assertEquals(AppResult.Success(createdUser), result)
+        coVerify(exactly = 0) { validatePasswordUseCase(any()) }
+        coVerify {
+            authManager.createUserAndIdentifier(
+                userAuthProvider = UserAuthProvider.EMAIL,
+                identifier = "test@example.com",
+                password = null,
+                roleForUserCreation = UserRole.USER,
+                accountStatusForUserCreation = UserAccountStatus.ACTIVE,
+                authorityLevelForUserCreation = 50,
+                permissionCodesForUserCreation = setOf(permission)
             )
         }
     }

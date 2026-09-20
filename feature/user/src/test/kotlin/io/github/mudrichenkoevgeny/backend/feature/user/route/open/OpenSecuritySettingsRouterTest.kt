@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.open
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestOpenSecuritySettings
+import io.github.mudrichenkoevgeny.backend.core.security.domain.model.securitysettings.createTestOpenSecuritySettings
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.settings.GetOpenSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest

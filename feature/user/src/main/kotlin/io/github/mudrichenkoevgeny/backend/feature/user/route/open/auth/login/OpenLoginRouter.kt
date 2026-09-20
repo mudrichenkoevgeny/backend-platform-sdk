@@ -73,41 +73,41 @@ class OpenLoginRouter @Inject constructor(
     }
 
     private fun registerLoginByEmailRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
 
         route.post(
             path = OpenLoginRoutes.LOGIN_BY_EMAIL,
             builder = { loginByEmailDocs(allowedRoles, allowedAccountStatuses) },
-            body = { loginByEmail() }
+            body = { loginByEmail(allowedRoles, allowedAccountStatuses) }
         )
     }
 
     private fun registerLoginByPhoneRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
 
         route.post(
             path = OpenLoginRoutes.LOGIN_BY_PHONE,
             builder = { loginByPhoneDocs(allowedRoles, allowedAccountStatuses) },
-            body = { loginByPhone() }
+            body = { loginByPhone(allowedRoles, allowedAccountStatuses) }
         )
     }
 
     private fun registerLoginByExternalAuthProviderRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
 
         route.post(
             path = OpenLoginRoutes.LOGIN_BY_EXTERNAL_AUTH_PROVIDER,
             builder = { loginByExternalAuthProviderDocs(allowedRoles, allowedAccountStatuses) },
-            body = { loginByExternalAuthProvider() }
+            body = { loginByExternalAuthProvider(allowedRoles, allowedAccountStatuses) }
         )
     }
 
     private fun registerSendLoginConfirmationToPhoneRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
 
         route.post(
             path = OpenLoginRoutes.SEND_LOGIN_CONFIRMATION_TO_PHONE,
@@ -117,24 +117,24 @@ class OpenLoginRouter @Inject constructor(
     }
 
     private fun registerLoginByTotpRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
 
         route.post(
             path = OpenLoginRoutes.LOGIN_BY_TOTP,
             builder = { loginByTotpDocs(allowedRoles, allowedAccountStatuses) },
-            body = { loginByTotp() }
+            body = { loginByTotp(allowedRoles, allowedAccountStatuses) }
         )
     }
 
     private fun registerLoginByTotpRecoveryCodeRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
 
         route.post(
             path = OpenLoginRoutes.LOGIN_BY_TOTP_RECOVERY_CODE,
             builder = { loginByTotpRecoveryCodeDocs(allowedRoles, allowedAccountStatuses) },
-            body = { loginByTotpRecoveryCode() }
+            body = { loginByTotpRecoveryCode(allowedRoles, allowedAccountStatuses) }
         )
     }
 
@@ -160,13 +160,18 @@ class OpenLoginRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.loginByEmail() {
+    private suspend fun RoutingContext.loginByEmail(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<LoginByEmailRequest>()
 
         val result = loginByEmailUseCase(
             email = request.email,
             password = request.password,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser) { authData ->
@@ -196,13 +201,18 @@ class OpenLoginRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.loginByPhone() {
+    private suspend fun RoutingContext.loginByPhone(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<LoginByPhoneRequest>()
 
         val result = loginByPhoneUseCase(
             phoneNumber = request.phoneNumber,
             confirmationCode = request.confirmationCode,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser) { authData ->
@@ -232,7 +242,10 @@ class OpenLoginRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.loginByExternalAuthProvider() {
+    private suspend fun RoutingContext.loginByExternalAuthProvider(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<LoginByExternalAuthProviderRequest>()
 
         val authProvider = UserAuthProvider.fromValueOrNull(request.authProvider)
@@ -245,7 +258,9 @@ class OpenLoginRouter @Inject constructor(
         val result = loginByExternalAuthProviderUseCase(
             authProvider = authProvider,
             token = request.externalProviderToken,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser) { authData ->
@@ -308,13 +323,18 @@ class OpenLoginRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.loginByTotp() {
+    private suspend fun RoutingContext.loginByTotp(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<VerifyTotpPayload>()
 
         val result = loginByTotpUseCase(
             mfaToken = request.mfaToken,
             code = request.code,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser) { authData ->
@@ -344,13 +364,18 @@ class OpenLoginRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.loginByTotpRecoveryCode() {
+    private suspend fun RoutingContext.loginByTotpRecoveryCode(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<VerifyTotpPayload>()
 
         val result = loginByTotpRecoveryCodeUseCase(
             mfaToken = request.mfaToken,
             code = request.code,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser) { authData ->

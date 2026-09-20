@@ -27,13 +27,14 @@ class GlobalSettingsConfigFactoryImplTest {
         val factory = GlobalSettingsConfigFactoryImpl(envReader)
         val config = factory.create()
 
-        assertEquals("https://example.com/privacy", config.privacyPolicyUrl)
-        assertEquals("https://example.com/terms", config.termsOfServiceUrl)
-        assertEquals("support@example.com", config.contactSupportEmail)
-        assertEquals("1.0.0", config.minSupportedAppVersions.values.firstOrNull())
-        assertTrue(config.isTracingEnabled)
-        assertTrue(config.isMetricsEnabled)
-        assertFalse(config.isVerboseLoggingEnabled)
+        val settings = config.managementGlobalSettings
+        assertEquals("https://example.com/privacy", settings.privacyPolicyUrl)
+        assertEquals("https://example.com/terms", settings.termsOfServiceUrl)
+        assertEquals("support@example.com", settings.contactSupportEmail)
+        assertEquals("1.0.0", settings.minSupportedAppVersions.values.firstOrNull())
+        assertTrue(settings.isTracingEnabled)
+        assertTrue(settings.isMetricsEnabled)
+        assertFalse(settings.isVerboseLoggingEnabled)
     }
 
     @Test
@@ -43,12 +44,13 @@ class GlobalSettingsConfigFactoryImplTest {
         val factory = GlobalSettingsConfigFactoryImpl(envReader)
         val config = factory.create()
 
-        assertNull(config.privacyPolicyUrl)
-        assertNull(config.termsOfServiceUrl)
-        assertNull(config.contactSupportEmail)
-        assertTrue(config.minSupportedAppVersions.isEmpty())
-        assertFalse(config.isTracingEnabled)
-        assertFalse(config.isMetricsEnabled)
-        assertFalse(config.isVerboseLoggingEnabled)
+        val settings = config.managementGlobalSettings
+        assertNull(settings.privacyPolicyUrl)
+        assertNull(settings.termsOfServiceUrl)
+        assertNull(settings.contactSupportEmail)
+        assertTrue(settings.minSupportedAppVersions.isEmpty())
+        assertFalse(settings.isTracingEnabled)
+        assertFalse(settings.isMetricsEnabled)
+        assertFalse(settings.isVerboseLoggingEnabled)
     }
 }

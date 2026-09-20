@@ -106,4 +106,9 @@ interface AuthSettingsProvider {
      * Persists management auth settings.
      */
     suspend fun updateManagementAuthSettings(managementAuthSettings: ManagementAuthSettings): AppResult<Unit>
+
+    /**
+     * Resets management auth settings to default configuration values.
+     */
+    suspend fun resetManagementAuthSettings(): AppResult<ManagementAuthSettings>
 }

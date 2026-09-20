@@ -30,7 +30,7 @@ class SecurityAuditErrorParser @Inject constructor() : AuditErrorParser {
             is SecurityError.TotpAlreadyEnabled -> SecurityAuditMetadataDeniedReasonValues.TOTP_ALREADY_ENABLED
             is SecurityError.TotpNotEnabled -> SecurityAuditMetadataDeniedReasonValues.TOTP_NOT_ENABLED
             is SecurityError.RecoveryCodeAlreadyUsed -> SecurityAuditMetadataDeniedReasonValues.RECOVERY_CODE_ALREADY_USED
-            is SecurityError.TotpConfirmationRequired -> SecurityAuditMetadataDeniedReasonValues.MFA_REQUIRED
+            is SecurityError.MfaConfirmationRequired -> SecurityAuditMetadataDeniedReasonValues.MFA_REQUIRED
             else -> return null
         }
 

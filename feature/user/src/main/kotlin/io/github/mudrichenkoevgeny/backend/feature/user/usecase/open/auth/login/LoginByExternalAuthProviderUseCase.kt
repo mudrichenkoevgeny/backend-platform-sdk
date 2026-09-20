@@ -19,6 +19,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -62,7 +63,9 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
     suspend operator fun invoke(
         authProvider: UserAuthProvider,
         token: String,
-        requestContext: RequestContext
+        requestContext: RequestContext,
+        allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
     ): AppResult<AuthData> {
         val auditMetadata = requestContext.clientInfo.toAuditMetadata().toMutableSet()
 
@@ -128,7 +131,9 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
             clientInfo = requestContext.clientInfo,
             userAuthProvider = verificationData.authProvider,
             identifier = verificationData.externalId,
-            externalProviderEmail = verificationData.email
+            externalProviderEmail = verificationData.email,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         return when (authenticateUserResult) {

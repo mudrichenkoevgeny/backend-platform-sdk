@@ -1,5 +1,5 @@
 {
-  "TOTP_CONFIRMATION_REQUIRED": "Authentication confirmation is required. MFA token: {mfaToken}",
+  "MFA_CONFIRMATION_REQUIRED": "Authentication confirmation is required. MFA token: {mfaToken}",
   "PASSWORD_TOO_WEAK": "Password is too weak. Password too short: {passwordTooShort} (minimum length: {passwordMinLength}), No letters: {passwordNoLetter}, No uppercase letters: {passwordNoUpperCase}, No lowercase letters: {passwordNoLowerCase}, No digits: {passwordNoDigit}, No special characters: {passwordNoSpecialChar}, Password too common: {passwordTooCommon}.",
   "OTP_RETRY_TOO_SOON": "Too many attempts. Please try again in {retryAfterSeconds} seconds.",
   "TOTP_ALREADY_ENABLED": "Two-factor authentication is already enabled for this account.",

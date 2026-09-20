@@ -31,4 +31,8 @@ class TestGlobalSettingsProvider : GlobalSettingsProvider {
 
     override suspend fun updateManagementGlobalSettings(managementGlobalSettings: ManagementGlobalSettings): AppResult<Unit> =
         AppResult.Success(Unit)
+
+    override suspend fun resetManagementGlobalSettings(): AppResult<ManagementGlobalSettings> {
+        error("Not used")
+    }
 }

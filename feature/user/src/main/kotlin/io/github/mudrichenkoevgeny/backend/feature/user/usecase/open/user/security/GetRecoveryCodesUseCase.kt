@@ -114,7 +114,8 @@ class GetRecoveryCodesUseCase @Inject constructor(
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
             userDetails = currentUser,
-            userSession = currentSession
+            userSession = currentSession,
+            requireTotp = true
         )
         if (ensureSessionConfirmedResult is AppResult.Error) {
             return handleError(

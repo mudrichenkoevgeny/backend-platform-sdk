@@ -42,17 +42,17 @@ class SecurityConfigFactoryImplTest {
 
         assertEquals("TestRealm", config.authRealm)
         assertEquals("top-secret-key", config.totpEncryptionSecret)
-        assertEquals(15, config.recentAuthenticationValidityInSeconds)
-        assertEquals(45, config.recentAuthenticationValidityInSecondsForManagement)
+        assertEquals(15, config.managementSecuritySettings.recentAuthenticationValiditySecondsForOpenUser)
+        assertEquals(45, config.managementSecuritySettings.recentAuthenticationValiditySecondsForManagementUser)
 
-        assertEquals(ManagementPasswordPolicy.DEFAULT_MIN_LENGTH, config.passwordPolicy.minLength)
-        assertTrue(config.passwordPolicy.requireLetter)
-        assertFalse(config.passwordPolicy.requireUpperCase)
+        assertEquals(ManagementPasswordPolicy.DEFAULT_MIN_LENGTH, config.managementSecuritySettings.passwordPolicy.minLength)
+        assertTrue(config.managementSecuritySettings.passwordPolicy.requireLetter)
+        assertFalse(config.managementSecuritySettings.passwordPolicy.requireUpperCase)
 
-        assertEquals(6, config.otpConfirmation.numberOfSymbols)
-        assertEquals(120, config.mfaTokenExpirationSeconds)
-        assertEquals(SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS, config.accountLockoutCheckIntervalSeconds)
-        assertEquals(SecurityConfig.DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS, config.refreshTokenRotationGracePeriodSeconds)
+        assertEquals(6, config.managementSecuritySettings.otpConfirmation.numberOfSymbols)
+        assertEquals(120, config.managementSecuritySettings.mfaTokenExpirationSeconds)
+        assertEquals(SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS, config.managementSecuritySettings.accountLockoutCheckIntervalSeconds)
+        assertEquals(SecurityConfig.DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS, config.managementSecuritySettings.refreshTokenRotationGracePeriodSeconds)
     }
 
     @Test
@@ -74,16 +74,16 @@ class SecurityConfigFactoryImplTest {
 
         val config = factory.create()
 
-        assertEquals(60, config.recentAuthenticationValidityInSeconds)
-        assertEquals(90, config.recentAuthenticationValidityInSecondsForManagement)
-        assertEquals(12, config.passwordPolicy.minLength)
-        assertFalse(config.passwordPolicy.requireLetter)
-        assertTrue(config.passwordPolicy.requireUpperCase)
-        assertTrue(config.passwordPolicy.requireLowerCase)
-        assertTrue(config.passwordPolicy.requireDigit)
-        assertTrue(config.passwordPolicy.requireSpecialChar)
-        assertEquals(setOf("pass123", "qwerty", "letmein"), config.passwordPolicy.commonPasswords)
-        assertEquals(120, config.accountLockoutCheckIntervalSeconds)
-        assertEquals(45, config.refreshTokenRotationGracePeriodSeconds)
+        assertEquals(60, config.managementSecuritySettings.recentAuthenticationValiditySecondsForOpenUser)
+        assertEquals(90, config.managementSecuritySettings.recentAuthenticationValiditySecondsForManagementUser)
+        assertEquals(12, config.managementSecuritySettings.passwordPolicy.minLength)
+        assertFalse(config.managementSecuritySettings.passwordPolicy.requireLetter)
+        assertTrue(config.managementSecuritySettings.passwordPolicy.requireUpperCase)
+        assertTrue(config.managementSecuritySettings.passwordPolicy.requireLowerCase)
+        assertTrue(config.managementSecuritySettings.passwordPolicy.requireDigit)
+        assertTrue(config.managementSecuritySettings.passwordPolicy.requireSpecialChar)
+        assertEquals(setOf("pass123", "qwerty", "letmein"), config.managementSecuritySettings.passwordPolicy.commonPasswords)
+        assertEquals(120, config.managementSecuritySettings.accountLockoutCheckIntervalSeconds)
+        assertEquals(45, config.managementSecuritySettings.refreshTokenRotationGracePeriodSeconds)
     }
 }

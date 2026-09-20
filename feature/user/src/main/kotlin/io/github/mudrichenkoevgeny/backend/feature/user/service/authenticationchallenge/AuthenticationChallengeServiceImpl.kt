@@ -26,8 +26,17 @@ class AuthenticationChallengeServiceImpl @Inject constructor(
 
     override suspend fun ensureSessionConfirmed(
         userDetails: UserDetails,
-        userSession: UserSessionInternal
+        userSession: UserSessionInternal,
+        requireTotp: Boolean
     ): AppResult<Unit> {
+        if (!userDetails.isTotpEnabled) {
+            return if (requireTotp) {
+                AppResult.Error(SecurityError.TotpNotEnabled())
+            } else {
+                AppResult.Success(Unit)
+            }
+        }
+
         val validitySeconds = if (userDetails.role == UserRole.USER) {
             securitySettingsProvider.getRecentAuthenticationValidityInSeconds()
         } else {
@@ -69,7 +78,7 @@ class AuthenticationChallengeServiceImpl @Inject constructor(
         return when (mfaResult) {
             is AppResult.Error -> AppResult.Error(mfaResult.error)
             is AppResult.Success -> AppResult.Error(
-                SecurityError.TotpConfirmationRequired(mfaToken = mfaResult.data.token)
+                SecurityError.MfaConfirmationRequired(mfaToken = mfaResult.data.token)
             )
         }
     }

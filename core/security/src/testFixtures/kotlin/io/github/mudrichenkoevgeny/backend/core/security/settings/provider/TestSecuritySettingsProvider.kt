@@ -1,8 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.security.settings.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestManagementSecuritySettings
-import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestOpenSecuritySettings
+import io.github.mudrichenkoevgeny.backend.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
+import io.github.mudrichenkoevgeny.backend.core.security.domain.model.securitysettings.createTestOpenSecuritySettings
 import io.github.mudrichenkoevgeny.backend.core.security.domain.model.iprestriction.createTestIpRestrictionPolicy
 import io.github.mudrichenkoevgeny.backend.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.github.mudrichenkoevgeny.backend.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
@@ -63,4 +63,8 @@ class TestSecuritySettingsProvider : SecuritySettingsProvider {
     override suspend fun updateManagementSecuritySettings(
         managementSecuritySettings: ManagementSecuritySettings
     ): AppResult<Unit> = AppResult.Success(Unit)
+
+    override suspend fun resetManagementSecuritySettings(): AppResult<ManagementSecuritySettings> {
+        error("Not used")
+    }
 }

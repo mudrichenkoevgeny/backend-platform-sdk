@@ -100,6 +100,29 @@ class AuthManagerImplTest {
     }
 
     @Test
+    fun `authenticateExistingUser returns Error PasswordSetupRequired when email identifier has no password set`() = runTest {
+        val userId = UserId.generate()
+        val clientInfo = mockk<ClientInfo>(relaxed = true)
+        val userIdentifier = createTestUserIdentifierInternal(userId = userId, passwordHash = null)
+
+        coEvery {
+            identifierManager.getUserIdentifierInternalByProvider(any(), any())
+        } returns AppResult.Success(userIdentifier)
+
+        val result = authManager.authenticateExistingUser(
+            clientInfo = clientInfo,
+            userAuthProvider = UserAuthProvider.EMAIL,
+            identifier = TEST_EMAIL,
+            password = TEST_PASSWORD
+        )
+
+        assertTrue(result is AppResult.Error)
+        val error = (result as AppResult.Error).error
+        assertTrue(error is UserError.PasswordSetupRequired)
+        assertEquals(userId, (error as UserError.PasswordSetupRequired).userId)
+    }
+
+    @Test
     fun `provideAuthData returns Error UserBlocked when status is BANNED`() = runTest {
         val userId = UserId.generate()
         val userDetails = createTestUserDetails(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.BANNED)
@@ -219,5 +242,30 @@ class AuthManagerImplTest {
         assertTrue(result is AppResult.Success)
         coVerify(exactly = 0) { sessionManager.deleteLeastRecentlyUsedUserSession(any()) }
         coVerify(exactly = 0) { webSocketManager.sendMessageToUserSession(any(), any()) }
+    }
+
+    @Test
+    fun `authenticateExistingUser returns Error UserRoleNotAllowed when role is not in allowedRoles`() = runTest {
+        val userId = UserId.generate()
+        val clientInfo = mockk<ClientInfo>(relaxed = true)
+        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER)
+        val userIdentifier = createTestUserIdentifierInternal(userId = userId)
+
+        coEvery {
+            identifierManager.getUserIdentifierInternalByProvider(any(), any())
+        } returns AppResult.Success(userIdentifier)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+        coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
+
+        val result = authManager.authenticateExistingUser(
+            clientInfo = clientInfo,
+            userAuthProvider = UserAuthProvider.EMAIL,
+            identifier = TEST_EMAIL,
+            password = TEST_PASSWORD,
+            allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        )
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is UserError.UserRoleNotAllowed)
     }
 }

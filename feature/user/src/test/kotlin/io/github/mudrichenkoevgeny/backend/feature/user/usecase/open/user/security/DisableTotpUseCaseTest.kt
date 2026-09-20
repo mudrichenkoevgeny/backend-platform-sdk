@@ -64,7 +64,7 @@ class DisableTotpUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.USER_DISABLE_TOTP, userId.asHexDashString()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
         coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSessionInternal)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(userDetails, userSessionInternal) } returns AppResult.Success(Unit)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { totpManager.disableTotp(userId) } returns AppResult.Success(Unit)
 
         val result = useCase(context)
@@ -151,7 +151,7 @@ class DisableTotpUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
         coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSessionInternal)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { totpManager.disableTotp(any()) } returns AppResult.Error(error)
 
         val result = useCase(context)

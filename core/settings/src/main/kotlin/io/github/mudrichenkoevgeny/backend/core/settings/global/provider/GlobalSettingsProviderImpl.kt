@@ -26,37 +26,37 @@ class GlobalSettingsProviderImpl @Inject constructor(
         val defaultSettings = listOf(
             SystemSetting(
                 key = KEY_PRIVACY_POLICY,
-                value = config.privacyPolicyUrl.orEmpty(),
+                value = config.managementGlobalSettings.privacyPolicyUrl.orEmpty(),
                 type = SettingType.STRING
             ),
             SystemSetting(
                 key = KEY_TERMS_OF_SERVICE,
-                value = config.termsOfServiceUrl.orEmpty(),
+                value = config.managementGlobalSettings.termsOfServiceUrl.orEmpty(),
                 type = SettingType.STRING
             ),
             SystemSetting(
                 key = KEY_SUPPORT_EMAIL,
-                value = config.contactSupportEmail.orEmpty(),
+                value = config.managementGlobalSettings.contactSupportEmail.orEmpty(),
                 type = SettingType.STRING
             ),
             SystemSetting(
                 key = KEY_MIN_SUPPORTED_APP_VERSIONS,
-                value = FoundationJson.encodeToString(config.minSupportedAppVersions),
+                value = FoundationJson.encodeToString(config.managementGlobalSettings.minSupportedAppVersions),
                 type = SettingType.JSON
             ),
             SystemSetting(
                 key = KEY_IS_TRACING_ENABLED,
-                value = "${config.isTracingEnabled}",
+                value = "${config.managementGlobalSettings.isTracingEnabled}",
                 type = SettingType.BOOLEAN
             ),
             SystemSetting(
                 key = KEY_IS_METRICS_ENABLED,
-                value = "${config.isMetricsEnabled}",
+                value = "${config.managementGlobalSettings.isMetricsEnabled}",
                 type = SettingType.BOOLEAN
             ),
             SystemSetting(
                 key = KEY_IS_VERBOSE_LOGGING_ENABLED,
-                value = "${config.isVerboseLoggingEnabled}",
+                value = "${config.managementGlobalSettings.isVerboseLoggingEnabled}",
                 type = SettingType.BOOLEAN
             )
         )
@@ -87,33 +87,33 @@ class GlobalSettingsProviderImpl @Inject constructor(
     }
 
     override fun getPrivacyPolicyUrl(): String? {
-        return settingsService.getString(KEY_PRIVACY_POLICY) ?: config.privacyPolicyUrl
+        return settingsService.getString(KEY_PRIVACY_POLICY) ?: config.managementGlobalSettings.privacyPolicyUrl
     }
 
     override fun getTermsOfServiceUrl(): String? {
-        return settingsService.getString(KEY_TERMS_OF_SERVICE) ?: config.termsOfServiceUrl
+        return settingsService.getString(KEY_TERMS_OF_SERVICE) ?: config.managementGlobalSettings.termsOfServiceUrl
     }
 
     override fun getContactSupportEmail(): String? {
-        return settingsService.getString(KEY_SUPPORT_EMAIL) ?: config.contactSupportEmail
+        return settingsService.getString(KEY_SUPPORT_EMAIL) ?: config.managementGlobalSettings.contactSupportEmail
     }
 
     override fun getMinSupportedAppVersions(): Map<ClientType, String> {
         return settingsService.getJson(KEY_MIN_SUPPORTED_APP_VERSIONS) { json ->
             FoundationJson.decodeFromString<Map<ClientType, String>>(json)
-        } ?: config.minSupportedAppVersions
+        } ?: config.managementGlobalSettings.minSupportedAppVersions
     }
 
     override fun getIsTracingEnabled(): Boolean {
-        return settingsService.getBoolean(KEY_IS_TRACING_ENABLED) ?: config.isTracingEnabled
+        return settingsService.getBoolean(KEY_IS_TRACING_ENABLED) ?: config.managementGlobalSettings.isTracingEnabled
     }
 
     override fun getIsMetricsEnabled(): Boolean {
-        return settingsService.getBoolean(KEY_IS_METRICS_ENABLED) ?: config.isMetricsEnabled
+        return settingsService.getBoolean(KEY_IS_METRICS_ENABLED) ?: config.managementGlobalSettings.isMetricsEnabled
     }
 
     override fun getIsVerboseLoggingEnabled(): Boolean {
-        return settingsService.getBoolean(KEY_IS_VERBOSE_LOGGING_ENABLED) ?: config.isVerboseLoggingEnabled
+        return settingsService.getBoolean(KEY_IS_VERBOSE_LOGGING_ENABLED) ?: config.managementGlobalSettings.isVerboseLoggingEnabled
     }
 
     override suspend fun updateManagementGlobalSettings(
@@ -157,6 +157,11 @@ class GlobalSettingsProviderImpl @Inject constructor(
             )
         )
         return settingsService.updateSettings(settingsToUpdate).mapSuccess { }
+    }
+
+    override suspend fun resetManagementGlobalSettings(): AppResult<ManagementGlobalSettings> {
+        val defaultSettings = config.managementGlobalSettings
+        return updateManagementGlobalSettings(defaultSettings).mapSuccess { defaultSettings }
     }
 
     private companion object {

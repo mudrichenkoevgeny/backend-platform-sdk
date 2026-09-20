@@ -15,6 +15,9 @@ class TestAuthSettingsProvider : AuthSettingsProvider {
     var lastUpdatedManagementAuthSettings: ManagementAuthSettings? = null
     var updateManagementAuthSettingsResult: AppResult<Unit> = AppResult.Success(Unit)
 
+    var resetManagementAuthSettingsCalled: Boolean = false
+    var resetManagementAuthSettingsResult: AppResult<ManagementAuthSettings>? = null
+
     var currentManagementAuthSettings: ManagementAuthSettings? = null
     var currentOpenAuthSettings: OpenAuthSettings? = null
     var currentAvailableAuthProviders: AvailableAuthProviders? = null
@@ -80,5 +83,12 @@ class TestAuthSettingsProvider : AuthSettingsProvider {
         updateManagementAuthSettingsCalled = true
         lastUpdatedManagementAuthSettings = managementAuthSettings
         return updateManagementAuthSettingsResult
+    }
+
+    override suspend fun resetManagementAuthSettings(): AppResult<ManagementAuthSettings> {
+        resetManagementAuthSettingsCalled = true
+        return resetManagementAuthSettingsResult
+            ?: currentManagementAuthSettings?.let { AppResult.Success(it) }
+            ?: error("resetManagementAuthSettingsResult or currentManagementAuthSettings must be set")
     }
 }

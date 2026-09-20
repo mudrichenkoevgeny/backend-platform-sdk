@@ -53,7 +53,7 @@ class ManagementCreateUserUseCase @Inject constructor(
      * **Security:**
      * - Requires an active management session with appropriate creation permissions.
      * - Enforces MFA step-up verification for the management caller via [authenticationChallengeService].
-     * - Validates the new user's password against the system's [ValidatePasswordUseCase] policy.
+     * - Validates the new user's password against the system's [ValidatePasswordUseCase] policy if specified.
      * - Restricts the [authorityLevel] and [permissionCodes] of the new user to be within
      *   the bounds of the management caller's own authority and permissions.
      * - Protects against resource exhaustion via [UserManagementRateLimitAction.MANAGEMENT_USER_CREATE].
@@ -62,13 +62,13 @@ class ManagementCreateUserUseCase @Inject constructor(
      * 1. Validates the management caller's session, account status, and rate limits.
      * 2. Verifies that the management caller has the required [UserPermissionCode] based on the target [role].
      * 3. Ensures the management caller is not granting permissions or authority levels they do not possess.
-     * 4. Validates the provided [password] policy.
+     * 4. Validates the provided [password] policy if a password is supplied.
      * 5. Confirms the management session via [authenticationChallengeService].
      * 6. Creates the user and their authentication identity via [authManager].
      * 7. Logs the creation event via [AuditLogger] with [UserAuditActionType.MANAGEMENT_CREATE_USER].
      *
      * @param email The email address for the new user.
-     * @param password The plaintext password for the new user.
+     * @param password The optional plaintext password for the new user, or null if created without an initial password.
      * @param role The assigned role.
      * @param accountStatus The initial status for the new user.
      * @param authorityLevel The numeric authority level assigned to the user.
@@ -78,7 +78,7 @@ class ManagementCreateUserUseCase @Inject constructor(
      */
     suspend operator fun invoke(
         email: String,
-        password: String,
+        password: String?,
         role: UserRole,
         accountStatus: UserAccountStatus,
         authorityLevel: Int,
@@ -163,14 +163,16 @@ class ManagementCreateUserUseCase @Inject constructor(
             )
         }
 
-        val passwordPolicyCheckResult = validatePasswordUseCase(password)
-        if (passwordPolicyCheckResult is AppResult.Error) {
-            return handleError(
-                error = passwordPolicyCheckResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
+        if (password != null) {
+            val passwordPolicyCheckResult = validatePasswordUseCase(password)
+            if (passwordPolicyCheckResult is AppResult.Error) {
+                return handleError(
+                    error = passwordPolicyCheckResult.error,
+                    actorId = auditActorId,
+                    actorUserRole = auditActorUserRole,
+                    baseMetadata = auditMetadata
+                )
+            }
         }
 
         val policy = when (role) {
@@ -203,7 +205,8 @@ class ManagementCreateUserUseCase @Inject constructor(
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
             userDetails = managementUser,
-            userSession = managementUserSession
+            userSession = managementUserSession,
+            requireTotp = true
         )
         if (ensureSessionConfirmedResult is AppResult.Error) {
             return handleError(

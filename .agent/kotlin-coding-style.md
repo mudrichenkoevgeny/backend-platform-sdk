@@ -1,5 +1,5 @@
 ---
-description: Naming, when subject rules, brace requirements, and FQN/Comments ban
+description: Naming, when subject rules, brace requirements, FQN/Comments ban, and Trailing Commas ban
 glob: "**/*.kt"
 alwaysApply: true
 ---
@@ -18,6 +18,9 @@ This document defines the mandatory Kotlin syntax and formatting standards for t
 ### Comments
 - **Strict Ban:** Do not write or preserve comments in the code.
 - **Self-Documentation:** Logic must be clear through expressive naming and clean structure. If a complex algorithm requires explanation, refactor it into smaller, well-named functions.
+
+### Trailing Commas
+- **Strict Ban:** Do not write trailing commas at the end of argument, parameter, or entry lists.
 
 ## 2. Control Flow
 

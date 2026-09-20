@@ -48,24 +48,24 @@ class SelfManagementResetPasswordRouter @Inject constructor(
     }
 
     private fun registerSendResetPasswordConfirmationRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.post(
             path = SelfManagementResetPasswordRoutes.SEND_RESET_PASSWORD_CONFIRMATION,
             builder = { sendResetPasswordConfirmationDocs(allowedRoles, allowedAccountStatuses) },
-            body = { sendResetPasswordConfirmation() }
+            body = { sendResetPasswordConfirmation(allowedRoles, allowedAccountStatuses) }
         )
     }
 
     private fun registerResetPasswordRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.post(
             path = SelfManagementResetPasswordRoutes.RESET_PASSWORD,
             builder = { resetPasswordDocs(allowedRoles, allowedAccountStatuses) },
-            body = { resetPassword() }
+            body = { resetPassword(allowedRoles, allowedAccountStatuses) }
         )
     }
 
@@ -95,12 +95,17 @@ class SelfManagementResetPasswordRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.sendResetPasswordConfirmation() {
+    private suspend fun RoutingContext.sendResetPasswordConfirmation(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<SendResetPasswordConfirmationRequest>()
 
         val result = sendResetPasswordConfirmationUseCase(
             email = request.email,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser) { otpConfirmation ->
@@ -133,14 +138,19 @@ class SelfManagementResetPasswordRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.resetPassword() {
+    private suspend fun RoutingContext.resetPassword(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<ResetPasswordRequest>()
 
         val result = resetPasswordUseCase(
             email = request.email,
             confirmationCode = request.confirmationCode,
             newPassword = request.newPassword,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser)

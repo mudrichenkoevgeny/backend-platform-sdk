@@ -31,7 +31,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * [SecuritySettingsProvider] implementation backed by [SystemSettingsService].
+ * Default [SecuritySettingsProvider] implementation backed by [SystemSettingsService].
  */
 @Singleton
 class SecuritySettingsProviderImpl @Inject constructor(
@@ -46,62 +46,62 @@ class SecuritySettingsProviderImpl @Inject constructor(
         val defaultSettings = listOf(
             SystemSetting(
                 key = KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS,
-                value = "${config.recentAuthenticationValidityInSeconds}",
+                value = "${config.managementSecuritySettings.recentAuthenticationValiditySecondsForOpenUser}",
                 type = SettingType.INT
             ),
             SystemSetting(
                 key = KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT,
-                value = "${config.recentAuthenticationValidityInSecondsForManagement}",
+                value = "${config.managementSecuritySettings.recentAuthenticationValiditySecondsForManagementUser}",
                 type = SettingType.INT
             ),
             SystemSetting(
                 key = KEY_PASSWORD_POLICY,
-                value = FoundationJson.encodeToString(config.passwordPolicy.toManagementPasswordPolicyPayload()),
+                value = FoundationJson.encodeToString(config.managementSecuritySettings.passwordPolicy.toManagementPasswordPolicyPayload()),
                 type = SettingType.JSON
             ),
             SystemSetting(
                 key = KEY_OTP_CONFIRMATION,
-                value = FoundationJson.encodeToString(config.otpConfirmation.toOtpConfirmationPayload()),
+                value = FoundationJson.encodeToString(config.managementSecuritySettings.otpConfirmation.toOtpConfirmationPayload()),
                 type = SettingType.JSON
             ),
             SystemSetting(
                 key = KEY_ACCOUNT_LOCKOUT_POLICY,
-                value = FoundationJson.encodeToString(config.accountLockoutPolicy.toAccountLockoutPolicyPayload()),
+                value = FoundationJson.encodeToString(config.managementSecuritySettings.accountLockoutPolicy.toAccountLockoutPolicyPayload()),
                 type = SettingType.JSON
             ),
             SystemSetting(
                 key = KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS,
-                value = "${config.accountLockoutCheckIntervalSeconds}",
+                value = "${config.managementSecuritySettings.accountLockoutCheckIntervalSeconds}",
                 type = SettingType.INT
             ),
             SystemSetting(
                 key = KEY_OPEN_IP_RESTRICTION_POLICY,
-                value = FoundationJson.encodeToString(config.openIpRestrictionPolicy.toIpRestrictionPolicyPayload()),
+                value = FoundationJson.encodeToString(config.managementSecuritySettings.openIpRestrictionPolicy.toIpRestrictionPolicyPayload()),
                 type = SettingType.JSON
             ),
             SystemSetting(
                 key = KEY_MANAGEMENT_IP_RESTRICTION_POLICY,
-                value = FoundationJson.encodeToString(config.managementIpRestrictionPolicy.toIpRestrictionPolicyPayload()),
+                value = FoundationJson.encodeToString(config.managementSecuritySettings.managementIpRestrictionPolicy.toIpRestrictionPolicyPayload()),
                 type = SettingType.JSON
             ),
             SystemSetting(
                 key = KEY_MFA_TOKEN_EXPIRATION_SECONDS,
-                value = "${config.mfaTokenExpirationSeconds}",
+                value = "${config.managementSecuritySettings.mfaTokenExpirationSeconds}",
                 type = SettingType.INT
             ),
             SystemSetting(
                 key = KEY_MAX_REQUESTS_PER_PERIOD,
-                value = "${config.maxRequestsPerPeriod}",
+                value = "${config.managementSecuritySettings.maxRequestsPerPeriod}",
                 type = SettingType.INT
             ),
             SystemSetting(
                 key = KEY_RATE_LIMIT_PERIOD_SECONDS,
-                value = "${config.rateLimitPeriodSeconds}",
+                value = "${config.managementSecuritySettings.rateLimitPeriodSeconds}",
                 type = SettingType.INT
             ),
             SystemSetting(
                 key = KEY_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS,
-                value = "${config.refreshTokenRotationGracePeriodSeconds}",
+                value = "${config.managementSecuritySettings.refreshTokenRotationGracePeriodSeconds}",
                 type = SettingType.INT
             )
         )
@@ -134,18 +134,18 @@ class SecuritySettingsProviderImpl @Inject constructor(
 
     override fun getRecentAuthenticationValidityInSeconds(): Int {
         return settingsService.getInt(KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS)
-            ?: config.recentAuthenticationValidityInSeconds
+            ?: config.managementSecuritySettings.recentAuthenticationValiditySecondsForOpenUser
     }
 
     override fun getRecentAuthenticationValidityInSecondsForManagement(): Int {
         return settingsService.getInt(KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT)
-            ?: config.recentAuthenticationValidityInSecondsForManagement
+            ?: config.managementSecuritySettings.recentAuthenticationValiditySecondsForManagementUser
     }
 
     override fun getManagementPasswordPolicy(): ManagementPasswordPolicy {
         return settingsService.getJson(KEY_PASSWORD_POLICY) { json ->
             FoundationJson.decodeFromString<ManagementPasswordPolicyPayload>(json).toManagementPasswordPolicy()
-        } ?: config.passwordPolicy
+        } ?: config.managementSecuritySettings.passwordPolicy
     }
 
     override fun getOpenPasswordPolicy(): OpenPasswordPolicy {
@@ -163,23 +163,23 @@ class SecuritySettingsProviderImpl @Inject constructor(
     override fun getOtpConfirmation(): OtpConfirmation {
         return settingsService.getJson(KEY_OTP_CONFIRMATION) { json ->
             FoundationJson.decodeFromString<OtpConfirmationPayload>(json).toOtpConfirmation()
-        } ?: config.otpConfirmation
+        } ?: config.managementSecuritySettings.otpConfirmation
     }
 
     override fun getAccountLockoutPolicy(): AccountLockoutPolicy {
         return settingsService.getJson(KEY_ACCOUNT_LOCKOUT_POLICY) { json ->
             FoundationJson.decodeFromString<AccountLockoutPolicyPayload>(json).toAccountLockoutPolicy()
-        } ?: config.accountLockoutPolicy
+        } ?: config.managementSecuritySettings.accountLockoutPolicy
     }
 
     override fun getAccountLockoutCheckIntervalSeconds(): Int {
         return settingsService.getInt(KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS)
-            ?: config.accountLockoutCheckIntervalSeconds
+            ?: config.managementSecuritySettings.accountLockoutCheckIntervalSeconds
     }
 
     override fun getOpenIpRestrictionPolicy(): IpRestrictionPolicy {
         val rawJson = settingsService.getString(KEY_OPEN_IP_RESTRICTION_POLICY)
-            ?: return config.openIpRestrictionPolicy
+            ?: return config.managementSecuritySettings.openIpRestrictionPolicy
 
         val cached = openIpRestrictionPolicyCache.get()
         if (cached != null && (cached.first == rawJson)) {
@@ -191,13 +191,13 @@ class SecuritySettingsProviderImpl @Inject constructor(
             openIpRestrictionPolicyCache.set(rawJson to parsed)
             parsed
         } catch (_: Exception) {
-            config.openIpRestrictionPolicy
+            config.managementSecuritySettings.openIpRestrictionPolicy
         }
     }
 
     override fun getManagementIpRestrictionPolicy(): IpRestrictionPolicy {
         val rawJson = settingsService.getString(KEY_MANAGEMENT_IP_RESTRICTION_POLICY)
-            ?: return config.managementIpRestrictionPolicy
+            ?: return config.managementSecuritySettings.managementIpRestrictionPolicy
 
         val cached = managementIpRestrictionPolicyCache.get()
         if (cached != null && (cached.first == rawJson)) {
@@ -209,28 +209,28 @@ class SecuritySettingsProviderImpl @Inject constructor(
             managementIpRestrictionPolicyCache.set(rawJson to parsed)
             parsed
         } catch (_: Exception) {
-            config.managementIpRestrictionPolicy
+            config.managementSecuritySettings.managementIpRestrictionPolicy
         }
     }
 
     override fun getMfaTokenExpirationSeconds(): Int {
         return settingsService.getInt(KEY_MFA_TOKEN_EXPIRATION_SECONDS)
-            ?: config.mfaTokenExpirationSeconds
+            ?: config.managementSecuritySettings.mfaTokenExpirationSeconds
     }
 
     override fun getMaxRequestsPerPeriod(): Int {
         return settingsService.getInt(KEY_MAX_REQUESTS_PER_PERIOD)
-            ?: config.maxRequestsPerPeriod
+            ?: config.managementSecuritySettings.maxRequestsPerPeriod
     }
 
     override fun getRateLimitPeriodSeconds(): Int {
         return settingsService.getInt(KEY_RATE_LIMIT_PERIOD_SECONDS)
-            ?: config.rateLimitPeriodSeconds
+            ?: config.managementSecuritySettings.rateLimitPeriodSeconds
     }
 
     override fun getRefreshTokenRotationGracePeriodSeconds(): Int {
         return settingsService.getInt(KEY_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS)
-            ?: config.refreshTokenRotationGracePeriodSeconds
+            ?: config.managementSecuritySettings.refreshTokenRotationGracePeriodSeconds
     }
 
     override suspend fun updateManagementSecuritySettings(
@@ -299,6 +299,11 @@ class SecuritySettingsProviderImpl @Inject constructor(
             )
         )
         return settingsService.updateSettings(settingsToUpdate).mapSuccess { }
+    }
+
+    override suspend fun resetManagementSecuritySettings(): AppResult<ManagementSecuritySettings> {
+        val defaultSettings = config.managementSecuritySettings
+        return updateManagementSecuritySettings(defaultSettings).mapSuccess { defaultSettings }
     }
 
     private companion object {

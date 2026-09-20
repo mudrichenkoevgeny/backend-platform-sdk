@@ -16,6 +16,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toA
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -52,7 +53,9 @@ class LoginByEmailUseCase @Inject constructor(
     suspend operator fun invoke(
         email: String,
         password: String,
-        requestContext: RequestContext
+        requestContext: RequestContext,
+        allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
     ): AppResult<AuthData> {
         val auditMetadata = requestContext.clientInfo.toAuditMetadata().toMutableSet()
         auditMetadata.add(
@@ -77,7 +80,9 @@ class LoginByEmailUseCase @Inject constructor(
             clientInfo = requestContext.clientInfo,
             userAuthProvider = UserAuthProvider.EMAIL,
             identifier = email,
-            password = password
+            password = password,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         return when (authenticateUserResult) {

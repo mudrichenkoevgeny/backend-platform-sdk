@@ -18,6 +18,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthent
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.identifier.ManagementDeleteIdentifierPasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.identifier.ManagementDeleteIdentifierUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.identifier.ManagementGetIdentifierUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.identifier.ManagementGetIdentifiersUseCase
@@ -53,6 +54,7 @@ import javax.inject.Singleton
  * 1. [ManagementIdentifierRoutes.GET_IDENTIFIERS] — retrieves a filtered, paginated list of identifiers via [ManagementGetIdentifiersUseCase].
  * 2. [ManagementIdentifierRoutes.GET_IDENTIFIER] — retrieves a specific identifier's details via [ManagementGetIdentifierUseCase].
  * 3. [ManagementIdentifierRoutes.DELETE_IDENTIFIER] — removes a user identifier via [ManagementDeleteIdentifierUseCase].
+ * 4. [ManagementIdentifierRoutes.DELETE_IDENTIFIER_PASSWORD] — revokes an identifier's password via [ManagementDeleteIdentifierPasswordUseCase].
  */
 @Singleton
 class ManagementIdentifierRouter @Inject constructor(
@@ -63,7 +65,8 @@ class ManagementIdentifierRouter @Inject constructor(
     private val auditErrorConverter: AuditErrorConverter,
     private val managementGetIdentifiersUseCase: ManagementGetIdentifiersUseCase,
     private val managementGetIdentifierUseCase: ManagementGetIdentifierUseCase,
-    private val managementDeleteIdentifierUseCase: ManagementDeleteIdentifierUseCase
+    private val managementDeleteIdentifierUseCase: ManagementDeleteIdentifierUseCase,
+    private val managementDeleteIdentifierPasswordUseCase: ManagementDeleteIdentifierPasswordUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
@@ -71,6 +74,7 @@ class ManagementIdentifierRouter @Inject constructor(
             registerGetIdentifiersRoute(this)
             registerGetIdentifierRoute(this)
             registerDeleteIdentifierRoute(this)
+            registerDeleteIdentifierPasswordRoute(this)
         }
     }
 
@@ -104,6 +108,17 @@ class ManagementIdentifierRouter @Inject constructor(
             path = ManagementIdentifierRoutes.DELETE_IDENTIFIER,
             builder = { deleteIdentifierDocs(allowedRoles, allowedAccountStatuses) },
             body = { deleteIdentifier(allowedRoles, allowedAccountStatuses) }
+        )
+    }
+
+    private fun registerDeleteIdentifierPasswordRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
+
+        route.delete(
+            path = ManagementIdentifierRoutes.DELETE_IDENTIFIER_PASSWORD,
+            builder = { deleteIdentifierPasswordDocs(allowedRoles, allowedAccountStatuses) },
+            body = { deleteIdentifierPassword(allowedRoles, allowedAccountStatuses) }
         )
     }
 
@@ -279,6 +294,67 @@ class ManagementIdentifierRouter @Inject constructor(
         call.respondResult(result, appLogger, appErrorParser)
     }
 
+    private fun RouteConfig.deleteIdentifierPasswordDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        summary = DELETE_IDENTIFIER_PASSWORD_ROUTE_SUMMARY
+        operationId = DELETE_IDENTIFIER_PASSWORD_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
+        description = getFormattedDescription(
+            description = DELETE_IDENTIFIER_PASSWORD_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.serialName },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+        )
+        request {
+            pathParameter<String>(UserApiPaths.USER_ID) {
+                description = DELETE_IDENTIFIER_PASSWORD_ROUTE_PATH_USER_ID_DESCRIPTION
+            }
+            pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
+                description = DELETE_IDENTIFIER_PASSWORD_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION
+            }
+        }
+        response {
+            code(HttpStatusCode.NoContent) {
+                description = DELETE_IDENTIFIER_PASSWORD_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.deleteIdentifierPassword(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
+        )
+
+        if (authorizeResult is AppResult.Error) {
+            logErrorToAudit(
+                authenticatedRequestContext = authenticatedRequestContext,
+                actionType = UserAuditActionType.MANAGEMENT_DELETE_IDENTIFIER_PASSWORD,
+                error = authorizeResult.error
+            )
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
+        val userIdentifierId = call.validatePathParameter(UserApiPaths.USER_IDENTIFIER_ID) { userIdentifierId ->
+            userIdentifierId.toUserIdentifierIdOrThrow()
+        }
+
+        val result = managementDeleteIdentifierPasswordUseCase(
+            userIdentifierId = userIdentifierId,
+            authenticatedRequestContext = authenticatedRequestContext
+        )
+
+        call.respondResult(result, appLogger, appErrorParser)
+    }
+
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
@@ -319,5 +395,14 @@ class ManagementIdentifierRouter @Inject constructor(
         const val DELETE_IDENTIFIER_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION =
             "User identifier id (UUID string, hex with dashes)"
         const val DELETE_IDENTIFIER_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Identifier removed; no response body."
+
+        const val DELETE_IDENTIFIER_PASSWORD_ROUTE_SUMMARY = "Delete user identifier password (management)"
+        const val DELETE_IDENTIFIER_PASSWORD_ROUTE_DESCRIPTION =
+            "Revokes and removes the password credential from a specific user identifier."
+        const val DELETE_IDENTIFIER_PASSWORD_ROUTE_OPERATION_ID = "deleteManagementUserIdentifierPassword"
+        const val DELETE_IDENTIFIER_PASSWORD_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
+        const val DELETE_IDENTIFIER_PASSWORD_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION =
+            "User identifier id (UUID string, hex with dashes)"
+        const val DELETE_IDENTIFIER_PASSWORD_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Password removed; no response body."
     }
 }

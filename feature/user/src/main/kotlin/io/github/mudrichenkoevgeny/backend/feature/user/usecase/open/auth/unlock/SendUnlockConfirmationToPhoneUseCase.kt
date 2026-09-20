@@ -11,8 +11,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestC
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneService
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,7 +25,8 @@ class SendUnlockConfirmationToPhoneUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val identifierManager: IdentifierManager,
     private val otpService: OtpService,
-    private val phoneService: PhoneService
+    private val phoneService: PhoneService,
+    private val userManager: UserManager
 ) {
     /**
      * Initiates self-service account unlock by sending an OTP verification code to the user's phone.
@@ -48,7 +52,9 @@ class SendUnlockConfirmationToPhoneUseCase @Inject constructor(
      */
     suspend operator fun invoke(
         phoneNumber: String,
-        requestContext: RequestContext
+        requestContext: RequestContext,
+        allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
+        allowedAccountStatuses: Set<UserAccountStatus> = UserAccountStatus.entries.toSet()
     ): AppResult<OtpConfirmation> {
         val accountLockoutPolicy = securitySettingsProvider.getAccountLockoutPolicy()
         if (!accountLockoutPolicy.isSelfServiceUnlockEnabled) {
@@ -82,10 +88,17 @@ class SendUnlockConfirmationToPhoneUseCase @Inject constructor(
             is AppResult.Success -> getOtpResult.data
         }
 
-        return if (identifier != null) {
-            sendFakeSMS(otpConfirmationData)
-        } else {
+        val user = if (identifier != null) {
+            val userResult = userManager.getUserByIdForSelf(identifier.userId)
+            (userResult as? AppResult.Success)?.data
+        } else null
+
+        val isUserAllowed = user != null && user.role in allowedRoles && user.accountStatus in allowedAccountStatuses
+
+        return if (identifier != null && isUserAllowed) {
             sendConfirmationCode(phoneNumber, otpConfirmationData, requestContext)
+        } else {
+            sendFakeSMS(otpConfirmationData)
         }
     }
 

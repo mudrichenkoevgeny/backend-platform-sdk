@@ -20,7 +20,7 @@ class PasswordPolicyValidatorModule {
     @Provides
     @Singleton
     fun provideManagementPasswordPolicy(securityConfig: SecurityConfig): ManagementPasswordPolicy {
-        return securityConfig.passwordPolicy
+        return securityConfig.managementSecuritySettings.passwordPolicy
     }
 
     @Provides

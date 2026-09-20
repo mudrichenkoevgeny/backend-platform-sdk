@@ -9,6 +9,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutAttemptT
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateRoleAndStatus
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
@@ -62,7 +63,9 @@ class AuthManagerImpl @Inject constructor(
         roleForUserCreation: UserRole,
         accountStatusForUserCreation: UserAccountStatus,
         authorityLevelForUserCreation: Int,
-        permissionCodesForUserCreation: Set<PermissionCode>
+        permissionCodesForUserCreation: Set<PermissionCode>,
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
     ): AppResult<AuthData> = dbQuery {
         val isHoldByIdentifier = when (val holdResult = lockoutManager.isIndefiniteLockout(identifier)) {
             is AppResult.Success -> holdResult.data
@@ -100,7 +103,9 @@ class AuthManagerImpl @Inject constructor(
 
         provideAuthData(
             userIdentifier = userIdentifier,
-            clientInfo = clientInfo
+            clientInfo = clientInfo,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
     }
 
@@ -109,7 +114,9 @@ class AuthManagerImpl @Inject constructor(
         userAuthProvider: UserAuthProvider,
         identifier: String,
         password: String?,
-        externalProviderEmail: String?
+        externalProviderEmail: String?,
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
     ): AppResult<AuthData> = dbQuery {
         val resolvedUserIdResult = resolveUserIdByAuthData(
             provider = userAuthProvider,
@@ -169,7 +176,9 @@ class AuthManagerImpl @Inject constructor(
 
         provideAuthData(
             userIdentifier = userIdentifier,
-            clientInfo = clientInfo
+            clientInfo = clientInfo,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
     }
 
@@ -270,7 +279,9 @@ class AuthManagerImpl @Inject constructor(
     override suspend fun completeMfaAuthentication(
         userId: UserId,
         userIdentifierId: UserIdentifierId,
-        clientInfo: ClientInfo
+        clientInfo: ClientInfo,
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
     ): AppResult<AuthData> = dbQuery {
         val userIdentifierResult = identifierManager.getUserIdentifierByIdForSystem(userIdentifierId)
             .mapNotNullOrError(SecurityError.InvalidMfaToken())
@@ -286,7 +297,9 @@ class AuthManagerImpl @Inject constructor(
 
         provideAuthData(
             userIdentifier = userIdentifier,
-            clientInfo = clientInfo
+            clientInfo = clientInfo,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
     }
 
@@ -469,6 +482,13 @@ class AuthManagerImpl @Inject constructor(
             return AppResult.Error(UserError.InvalidCredentials())
         }
         return if (isNeedToCheckPassword) {
+            if (userIdentifierInternal.passwordHash == null) {
+                return AppResult.Error(
+                    UserError.PasswordSetupRequired(
+                        userId = userIdentifierInternal.userId
+                    )
+                )
+            }
             val isPasswordValidResult = passwordHasher.isPasswordValid(
                 password = password,
                 passwordHash = userIdentifierInternal.passwordHash
@@ -526,7 +546,9 @@ class AuthManagerImpl @Inject constructor(
     private suspend fun provideAuthData(
         userIdentifier: UserIdentifierInternal,
         clientInfo: ClientInfo,
-        existingUser: UserDetails? = null
+        existingUser: UserDetails? = null,
+        allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
     ): AppResult<AuthData> {
         val user = if (existingUser != null && existingUser.id == userIdentifier.userId) {
             existingUser
@@ -540,23 +562,8 @@ class AuthManagerImpl @Inject constructor(
             }
         }
 
-        when (user.accountStatus) {
-            UserAccountStatus.BANNED -> {
-                return AppResult.Error(
-                    UserError.UserBlocked(
-                        userId = user.id,
-                        blockedUntil = user.temporaryLockoutUntil
-                    )
-                )
-            }
-            UserAccountStatus.SECURITY_HOLD -> {
-                return AppResult.Error(UserError.UserSecurityHold(userId = user.id))
-            }
-            UserAccountStatus.PENDING_DELETION -> {
-                return AppResult.Error(UserError.UserPendingDeletion(userId = user.id))
-            }
-            UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY -> {
-            }
+        user.validateRoleAndStatus(allowedRoles, allowedAccountStatuses)?.let { error ->
+            return AppResult.Error(error)
         }
 
         if (user.lockoutType == AccountLockoutType.INDEFINITE) {

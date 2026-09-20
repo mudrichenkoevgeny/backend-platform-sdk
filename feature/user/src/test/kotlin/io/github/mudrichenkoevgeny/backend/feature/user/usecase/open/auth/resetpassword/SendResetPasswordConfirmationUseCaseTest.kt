@@ -11,11 +11,17 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTe
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -28,12 +34,14 @@ class SendResetPasswordConfirmationUseCaseTest {
     private val identifierManager = mockk<IdentifierManager>()
     private val otpService = mockk<OtpService>()
     private val emailService = mockk<EmailService>()
+    private val userManager = mockk<UserManager>()
 
     private val useCase = SendResetPasswordConfirmationUseCase(
         rateLimiter = rateLimiter,
         identifierManager = identifierManager,
         otpService = otpService,
-        emailService = emailService
+        emailService = emailService,
+        userManager = userManager
     )
 
     @Test
@@ -44,7 +52,14 @@ class SendResetPasswordConfirmationUseCaseTest {
             code = TEST_CODE,
             otpConfirmation = otpConfirmation
         )
-        val identifier = mockk<UserIdentifierInternal>()
+        val userId = UserId.generate()
+        val userDetails = mockk<UserDetails> {
+            every { role } returns UserRole.USER
+            every { accountStatus } returns UserAccountStatus.ACTIVE
+        }
+        val identifier = mockk<UserIdentifierInternal> {
+            every { this@mockk.userId } returns userId
+        }
 
         coEvery {
             rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_EMAIL, TEST_EMAIL)
@@ -52,6 +67,9 @@ class SendResetPasswordConfirmationUseCaseTest {
         coEvery {
             identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.EMAIL, TEST_EMAIL)
         } returns AppResult.Success(identifier)
+        coEvery {
+            userManager.getUserByIdForSelf(userId)
+        } returns AppResult.Success(userDetails)
         coEvery {
             otpService.getOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_PASSWORD_RESET)
         } returns AppResult.Success(otpData)
@@ -120,10 +138,22 @@ class SendResetPasswordConfirmationUseCaseTest {
         )
         val error = CommonError.Internal(Throwable())
 
+        val userId = UserId.generate()
+        val userDetails = mockk<UserDetails> {
+            every { role } returns UserRole.USER
+            every { accountStatus } returns UserAccountStatus.ACTIVE
+        }
+        val identifier = mockk<UserIdentifierInternal> {
+            every { this@mockk.userId } returns userId
+        }
+
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery {
             identifierManager.getUserIdentifierInternalByProvider(any(), any())
-        } returns AppResult.Success(mockk())
+        } returns AppResult.Success(identifier)
+        coEvery {
+            userManager.getUserByIdForSelf(userId)
+        } returns AppResult.Success(userDetails)
         coEvery { otpService.getOtp(any(), any()) } returns AppResult.Success(otpData)
         coEvery {
             emailService.sendResetPasswordVerificationCode(any(), any(), any())

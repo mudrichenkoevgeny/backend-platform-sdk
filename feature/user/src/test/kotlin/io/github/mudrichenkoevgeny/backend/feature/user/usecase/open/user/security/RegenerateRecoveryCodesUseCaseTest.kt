@@ -84,7 +84,7 @@ class RegenerateRecoveryCodesUseCaseTest {
 
         coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
         coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSessionInternal)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { totpManager.getSettings(userId) } returns AppResult.Success(settings)
         coEvery { totpCryptoProcessor.generateRecoveryCodes() } returns AppResult.Success(newDecryptedCodes)
         coEvery { totpManager.updateRecoveryCodes(userId, newDecryptedCodes) } returns AppResult.Success(newDecryptedCodes)
@@ -181,7 +181,7 @@ class RegenerateRecoveryCodesUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
         coEvery { sessionManager.getUserSessionForSystem(any()) } returns AppResult.Success(mockk())
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { totpManager.getSettings(userId) } returns AppResult.Success(settings)
 
         val result = useCase(context)
@@ -200,7 +200,7 @@ class RegenerateRecoveryCodesUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
         coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(mockk())
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Error(error)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Error(error)
 
         val result = useCase(context)
 
@@ -219,7 +219,7 @@ class RegenerateRecoveryCodesUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
         coEvery { sessionManager.getUserSessionForSystem(any()) } returns AppResult.Success(mockk())
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { totpManager.getSettings(userId) } returns AppResult.Success(settings)
         coEvery { totpCryptoProcessor.generateRecoveryCodes() } returns AppResult.Error(error)
 

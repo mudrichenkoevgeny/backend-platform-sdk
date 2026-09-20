@@ -73,7 +73,7 @@ class SelfManagementUnlockRouterTest : BaseRouterTest() {
 
         val otpConfirmation = mockk<OtpConfirmation>(relaxed = true)
         coEvery {
-            sendUnlockConfirmationToEmailUseCase(any(), any<RequestContext>())
+            sendUnlockConfirmationToEmailUseCase(any(), any<RequestContext>(), any(), any())
         } returns AppResult.Success(otpConfirmation)
 
         val response = jsonClient.post(SelfManagementUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION) {
@@ -94,7 +94,7 @@ class SelfManagementUnlockRouterTest : BaseRouterTest() {
         }
 
         coEvery {
-            unlockByEmailUseCase(any(), any(), any<RequestContext>())
+            unlockByEmailUseCase(any(), any(), any<RequestContext>(), any(), any())
         } returns AppResult.Success(Unit)
 
         val response = jsonClient.post(SelfManagementUnlockRoutes.UNLOCK_BY_EMAIL) {
@@ -116,7 +116,7 @@ class SelfManagementUnlockRouterTest : BaseRouterTest() {
 
         val otpConfirmation = mockk<OtpConfirmation>(relaxed = true)
         coEvery {
-            sendUnlockConfirmationToPhoneUseCase(any(), any<RequestContext>())
+            sendUnlockConfirmationToPhoneUseCase(any(), any<RequestContext>(), any(), any())
         } returns AppResult.Success(otpConfirmation)
 
         val response = jsonClient.post(SelfManagementUnlockRoutes.SEND_UNLOCK_PHONE_CONFIRMATION) {
@@ -137,7 +137,7 @@ class SelfManagementUnlockRouterTest : BaseRouterTest() {
         }
 
         coEvery {
-            unlockByPhoneUseCase(any(), any(), any<RequestContext>())
+            unlockByPhoneUseCase(any(), any(), any<RequestContext>(), any(), any())
         } returns AppResult.Success(Unit)
 
         val response = jsonClient.post(SelfManagementUnlockRoutes.UNLOCK_BY_PHONE) {
@@ -158,7 +158,7 @@ class SelfManagementUnlockRouterTest : BaseRouterTest() {
         }
 
         coEvery {
-            unlockByExternalAuthProviderUseCase(any(), any(), any<RequestContext>())
+            unlockByExternalAuthProviderUseCase(any(), any(), any<RequestContext>(), any(), any())
         } returns AppResult.Success(Unit)
 
         val response = jsonClient.post(SelfManagementUnlockRoutes.UNLOCK_BY_EXTERNAL_PROVIDER) {

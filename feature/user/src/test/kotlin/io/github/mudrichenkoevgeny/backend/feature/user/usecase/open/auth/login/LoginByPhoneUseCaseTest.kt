@@ -88,7 +88,9 @@ class LoginByPhoneUseCaseTest {
                 clientInfo = context.clientInfo,
                 userAuthProvider = UserAuthProvider.PHONE,
                 identifier = TEST_PHONE,
-                password = null
+                password = null,
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
             )
         } returns AppResult.Success(authData)
 
@@ -175,7 +177,19 @@ class LoginByPhoneUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { otpService.verifyOtp(any(), any(), any()) } returns AppResult.Success(true)
         coEvery {
-            authManager.authenticateOrCreateUser(any(), any(), any(), any())
+            authManager.authenticateOrCreateUser(
+                clientInfo = any(),
+                userAuthProvider = any(),
+                identifier = any(),
+                password = any(),
+                externalProviderEmail = any(),
+                roleForUserCreation = any(),
+                accountStatusForUserCreation = any(),
+                authorityLevelForUserCreation = any(),
+                permissionCodesForUserCreation = any(),
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
+            )
         } returns AppResult.Error(authError)
 
         every { auditErrorConverter.convert(authError) } returns errorLogData

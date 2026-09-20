@@ -4,8 +4,9 @@ import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLog
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.settings.config.model.createTestManagementGlobalSettings
+import io.github.mudrichenkoevgeny.backend.core.settings.domain.model.globalsettings.createTestManagementGlobalSettings
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.globalsettings.GetManagementGlobalSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.globalsettings.ResetGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.globalsettings.UpdateGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
@@ -20,6 +21,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
+import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -41,6 +43,7 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
     private val auditErrorConverter = mockk<AuditErrorConverter>()
     private val updateGlobalSettingsUseCase = mockk<UpdateGlobalSettingsUseCase>()
     private val getManagementGlobalSettingsUseCase = mockk<GetManagementGlobalSettingsUseCase>()
+    private val resetGlobalSettingsUseCase = mockk<ResetGlobalSettingsUseCase>()
 
     private val router = ManagementGlobalSettingsRouter(
         authenticationProvider = authProvider,
@@ -49,12 +52,13 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
         auditLogger = auditLogger,
         auditErrorConverter = auditErrorConverter,
         updateGlobalSettingsUseCase = updateGlobalSettingsUseCase,
-        getManagementGlobalSettingsUseCase = getManagementGlobalSettingsUseCase
+        getManagementGlobalSettingsUseCase = getManagementGlobalSettingsUseCase,
+        resetGlobalSettingsUseCase = resetGlobalSettingsUseCase
     )
 
     @BeforeEach
     fun setUp() {
-        clearMocks(updateGlobalSettingsUseCase, getManagementGlobalSettingsUseCase, auditErrorConverter)
+        clearMocks(updateGlobalSettingsUseCase, getManagementGlobalSettingsUseCase, resetGlobalSettingsUseCase, auditErrorConverter)
     }
 
     private fun sampleSettings() = createTestManagementGlobalSettings(
@@ -145,5 +149,24 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
         }
 
         assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun `reset global settings - success when admin`() = testApplication {
+        val token = setupManagementTestEnvironment(router)
+        val jsonClient = createClient {
+            install(ClientContentNegotiation) {
+                json(FoundationJson)
+            }
+        }
+
+        authProvider.shouldReturnSuccess(createTestUserDetails(role = UserRole.ADMIN))
+        coEvery { resetGlobalSettingsUseCase(any()) } returns AppResult.Success(sampleSettings())
+
+        val response = jsonClient.post(ManagementGlobalSettingsRoutes.RESET_MANAGEMENT_GLOBAL_SETTINGS) {
+            bearerAuth(token)
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
     }
 }

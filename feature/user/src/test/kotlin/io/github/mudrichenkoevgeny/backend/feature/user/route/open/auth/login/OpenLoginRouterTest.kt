@@ -87,7 +87,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         }
 
         coEvery {
-            loginByEmailUseCase(any(), any(), any<RequestContext>())
+            loginByEmailUseCase(any(), any(), any<RequestContext>(), any(), any())
         } returns AppResult.Success(testAuthData)
 
         val response = jsonClient.post(OpenLoginRoutes.LOGIN_BY_EMAIL) {
@@ -108,7 +108,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         }
 
         coEvery {
-            loginByPhoneUseCase(any(), any(), any<RequestContext>())
+            loginByPhoneUseCase(any(), any(), any<RequestContext>(), any(), any())
         } returns AppResult.Success(testAuthData)
 
         val response = jsonClient.post(OpenLoginRoutes.LOGIN_BY_PHONE) {
@@ -129,7 +129,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         }
 
         coEvery {
-            loginByExternalAuthProviderUseCase(any(), any(), any<RequestContext>())
+            loginByExternalAuthProviderUseCase(any(), any(), any<RequestContext>(), any(), any())
         } returns AppResult.Success(testAuthData)
 
         val response = jsonClient.post(OpenLoginRoutes.LOGIN_BY_EXTERNAL_AUTH_PROVIDER) {
@@ -180,7 +180,9 @@ class OpenLoginRouterTest : BaseRouterTest() {
             loginByTotpUseCase(
                 requestContext = any<RequestContext>(),
                 mfaToken = any(),
-                code = any()
+                code = any(),
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
             )
         } returns AppResult.Success(testAuthData)
 
@@ -205,7 +207,9 @@ class OpenLoginRouterTest : BaseRouterTest() {
             loginByTotpRecoveryCodeUseCase(
                 requestContext = any<RequestContext>(),
                 mfaToken = any(),
-                code = any()
+                code = any(),
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
             )
         } returns AppResult.Success(testAuthData)
 

@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.open
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.settings.config.model.createTestOpenGlobalSettings
+import io.github.mudrichenkoevgeny.backend.core.settings.domain.model.globalsettings.createTestOpenGlobalSettings
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.globalsettings.GetOpenGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest

@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionRequirement
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateRoleAndStatus
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
@@ -272,7 +273,9 @@ class SessionManagerImpl @Inject constructor(
 
     override suspend fun refreshSession(
         refreshToken: RefreshToken,
-        clientInfo: ClientInfo
+        clientInfo: ClientInfo,
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
     ): AppResult<SessionToken> = dbQuery {
         val refreshTokenHashResult = refreshTokenProvider.getRefreshTokenHash(refreshToken)
 
@@ -297,6 +300,18 @@ class SessionManagerImpl @Inject constructor(
         ) ?: false
 
         if (currentUserSession != null && isSessionValid) {
+            val userResult = userRepository.getUserDetailsById(currentUserSession.userId)
+                .mapNotNullOrError(UserError.UserNotFound())
+
+            val user = when (userResult) {
+                is AppResult.Success -> userResult.data
+                is AppResult.Error -> return@dbQuery userResult
+            }
+
+            user.validateRoleAndStatus(allowedRoles, allowedAccountStatuses)?.let { error ->
+                return@dbQuery AppResult.Error(error)
+            }
+
             userSessionRepository.deleteUserSessionById(currentUserSession.id)
 
             val newSessionResult = createSession(

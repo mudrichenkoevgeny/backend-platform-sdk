@@ -354,4 +354,39 @@ sealed class UserError(
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.LOW
     )
+
+    /**
+     * Authentication or operation failed because the account has no password set or initial password setup is required.
+     *
+     * @param userId Optional user id; stored in [secretArgs] for logging.
+     */
+    class PasswordSetupRequired(
+        val userId: UserId? = null
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.PASSWORD_SETUP_REQUIRED,
+        secretArgs = userId?.let { userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString()) },
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
+     * Operation failed because the specified identifier type does not support password credentials.
+     */
+    class UserIdentifierPasswordNotSupported : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.USER_IDENTIFIER_PASSWORD_NOT_SUPPORTED,
+        httpStatusCode = HttpStatusCode.UnprocessableEntity,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
+     * Operation failed because no password credential is set on the specified identifier record.
+     */
+    class UserIdentifierPasswordNotSet : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.USER_IDENTIFIER_PASSWORD_NOT_SET,
+        httpStatusCode = HttpStatusCode.UnprocessableEntity,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
 }

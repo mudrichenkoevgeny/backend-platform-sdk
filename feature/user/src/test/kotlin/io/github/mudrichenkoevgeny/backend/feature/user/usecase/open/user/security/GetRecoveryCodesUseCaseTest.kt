@@ -66,7 +66,7 @@ class GetRecoveryCodesUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.USER_GET_RECOVERY_CODES, userId.asHexDashString()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
         coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSessionInternal)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(userDetails, userSessionInternal) } returns AppResult.Success(Unit)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { totpManager.getDecryptedRecoveryCodes(userId) } returns AppResult.Success(decryptedRecoveryCodes)
 
         val result = useCase(context)
@@ -150,7 +150,7 @@ class GetRecoveryCodesUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
         coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSessionInternal)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Error(error)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Error(error)
 
         val result = useCase(context)
 
@@ -170,7 +170,7 @@ class GetRecoveryCodesUseCaseTest {
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
         coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSessionInternal)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { totpManager.getDecryptedRecoveryCodes(any()) } returns AppResult.Error(error)
 
         val result = useCase(context)

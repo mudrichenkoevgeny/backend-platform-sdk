@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.iprestriction.IpRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.ManagementSecuritySettings
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -143,11 +144,9 @@ class SecurityConfigFactoryImpl @Inject constructor(
             expirationSeconds = otpExpirationSeconds
         )
 
-        return SecurityConfig(
-            authRealm = authRealm,
-            totpEncryptionSecret = totpEncryptionSecret,
-            recentAuthenticationValidityInSeconds = recentAuthenticationValidityInSeconds,
-            recentAuthenticationValidityInSecondsForManagement = recentAuthenticationValidityInSecondsForManagement,
+        val managementSecuritySettings = ManagementSecuritySettings(
+            recentAuthenticationValiditySecondsForOpenUser = recentAuthenticationValidityInSeconds,
+            recentAuthenticationValiditySecondsForManagementUser = recentAuthenticationValidityInSecondsForManagement,
             passwordPolicy = passwordPolicy,
             otpConfirmation = otpConfirmation,
             accountLockoutPolicy = accountLockoutPolicy,
@@ -158,6 +157,12 @@ class SecurityConfigFactoryImpl @Inject constructor(
             maxRequestsPerPeriod = maxRequestsPerPeriod,
             rateLimitPeriodSeconds = rateLimitPeriodSeconds,
             refreshTokenRotationGracePeriodSeconds = refreshTokenRotationGracePeriodSeconds
+        )
+
+        return SecurityConfig(
+            authRealm = authRealm,
+            totpEncryptionSecret = totpEncryptionSecret,
+            managementSecuritySettings = managementSecuritySettings
         )
     }
 }

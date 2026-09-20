@@ -164,6 +164,16 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
 
         val auditResourceId = userIdentifier.id.asHexDashString()
 
+        if (userIdentifier.passwordHash == null) {
+            return handleError(
+                error = UserError.PasswordSetupRequired(userId = currentUserId),
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
+                baseMetadata = auditMetadata
+            )
+        }
+
         val isPasswordValidResult = passwordHasher.isPasswordValid(oldPassword, userIdentifier.passwordHash)
         when (isPasswordValidResult) {
             is AppResult.Error -> return handleError(

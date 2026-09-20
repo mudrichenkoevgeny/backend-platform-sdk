@@ -2,7 +2,8 @@ package io.github.mudrichenkoevgeny.backend.core.settings.global.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.settings.config.model.GlobalSettingsConfig
+import io.github.mudrichenkoevgeny.backend.core.settings.config.model.createTestGlobalSettingsConfig
+import io.github.mudrichenkoevgeny.backend.core.settings.domain.model.globalsettings.createTestManagementGlobalSettings
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SettingType
 import io.github.mudrichenkoevgeny.backend.core.settings.service.TestSystemSettingsService
 import io.github.mudrichenkoevgeny.backend.core.settings.service.RegisterDefaultCall
@@ -16,17 +17,27 @@ import org.junit.jupiter.api.Test
 
 class GlobalSettingsProviderImplTest {
 
+    private fun createEmptyGlobalSettingsConfig() = createTestGlobalSettingsConfig(
+        managementGlobalSettings = createTestManagementGlobalSettings(
+            privacyPolicyUrl = null,
+            termsOfServiceUrl = null,
+            contactSupportEmail = null
+        )
+    )
+
     @Test
     fun `initialize registers defaults using config values or empty strings`() = runBlocking {
         val service = TestSystemSettingsService()
-        val config = GlobalSettingsConfig(
-            privacyPolicyUrl = "privacy",
-            termsOfServiceUrl = null,
-            contactSupportEmail = "support@example.com",
-            minSupportedAppVersions = emptyMap(),
-            isTracingEnabled = true,
-            isMetricsEnabled = false,
-            isVerboseLoggingEnabled = false
+        val config = createTestGlobalSettingsConfig(
+            managementGlobalSettings = createTestManagementGlobalSettings(
+                privacyPolicyUrl = "privacy",
+                termsOfServiceUrl = null,
+                contactSupportEmail = "support@example.com",
+                minSupportedAppVersions = emptyMap(),
+                isTracingEnabled = true,
+                isMetricsEnabled = false,
+                isVerboseLoggingEnabled = false
+            )
         )
         val provider = GlobalSettingsProviderImpl(service, config)
 
@@ -55,10 +66,12 @@ class GlobalSettingsProviderImplTest {
                 "global.contact_support_email" to "service_support@example.com"
             )
         )
-        val config = GlobalSettingsConfig(
-            privacyPolicyUrl = "config_privacy",
-            termsOfServiceUrl = "config_tos",
-            contactSupportEmail = "config_support@example.com"
+        val config = createTestGlobalSettingsConfig(
+            managementGlobalSettings = createTestManagementGlobalSettings(
+                privacyPolicyUrl = "config_privacy",
+                termsOfServiceUrl = "config_tos",
+                contactSupportEmail = "config_support@example.com"
+            )
         )
         val provider = GlobalSettingsProviderImpl(service, config)
 
@@ -78,7 +91,7 @@ class GlobalSettingsProviderImplTest {
                 "global.is_verbose_logging_enabled" to true
             )
         )
-        val config = GlobalSettingsConfig(null, null, null)
+        val config = createEmptyGlobalSettingsConfig()
         val provider = GlobalSettingsProviderImpl(service, config)
 
         val result = provider.getManagementGlobalSettings()
@@ -91,7 +104,7 @@ class GlobalSettingsProviderImplTest {
     @Test
     fun `updateManagementGlobalSettings delegates to service updateSettings for all keys`() = runBlocking {
         val service = TestSystemSettingsService()
-        val provider = GlobalSettingsProviderImpl(service, GlobalSettingsConfig(null, null, null))
+        val provider = GlobalSettingsProviderImpl(service, createEmptyGlobalSettingsConfig())
         val payload = ManagementGlobalSettings(
             privacyPolicyUrl = "new_privacy",
             termsOfServiceUrl = "new_tos",
@@ -127,7 +140,7 @@ class GlobalSettingsProviderImplTest {
             failUpdateForKey = "global.terms_of_service_url",
             failUpdateError = error
         )
-        val provider = GlobalSettingsProviderImpl(service, GlobalSettingsConfig(null, null, null))
+        val provider = GlobalSettingsProviderImpl(service, createEmptyGlobalSettingsConfig())
         val payload = ManagementGlobalSettings(
             privacyPolicyUrl = "p",
             termsOfServiceUrl = "t",

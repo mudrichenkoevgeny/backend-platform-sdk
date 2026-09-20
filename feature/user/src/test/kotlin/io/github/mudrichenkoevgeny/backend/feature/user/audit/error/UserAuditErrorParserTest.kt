@@ -96,6 +96,15 @@ class UserAuditErrorParserTest {
             Arguments.of(
                 UserError.TotalUserIdentifiersLimitReached(10),
                 UserAuditMetadataDeniedReasonValues.TOTAL_USER_IDENTIFIERS_LIMIT_REACHED
+            ),
+            Arguments.of(UserError.PasswordSetupRequired(), UserAuditMetadataDeniedReasonValues.PASSWORD_SETUP_REQUIRED),
+            Arguments.of(
+                UserError.UserIdentifierPasswordNotSupported(),
+                UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SUPPORTED
+            ),
+            Arguments.of(
+                UserError.UserIdentifierPasswordNotSet(),
+                UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SET
             )
         )
     }

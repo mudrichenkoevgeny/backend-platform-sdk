@@ -2,11 +2,11 @@ package io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
-import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
+import io.github.mudrichenkoevgeny.backend.feature.user.config.model.createTestUserConfig
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.settings.createTestManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -20,35 +20,34 @@ import org.junit.jupiter.api.Test
 class AuthSettingsProviderImplTest {
 
     private val settingsService = mockk<SystemSettingsService>()
-    private val config = mockk<UserConfig>()
-    private val managementSettings = mockk<ManagementAuthSettings>()
 
     private val availableAuthProviders = AvailableAuthProviders(
         primary = listOf(UserAuthProvider.EMAIL),
         secondary = listOf(UserAuthProvider.GOOGLE)
     )
 
-    private lateinit var provider: AuthSettingsProviderImpl
+    private val managementSettings = createTestManagementAuthSettings(
+        availableAuthProviders = availableAuthProviders,
+        maxTotalIdentifiers = 5,
+        maxEmailIdentifiers = 1,
+        maxPhoneIdentifiers = 1,
+        maxIdentifiersPerExternalProvider = 1,
+        maxActiveSessionsForOpenUser = 3,
+        maxActiveSessionsForManagementUser = 3,
+        accessTokenExpirationSeconds = 3600,
+        refreshTokenExpirationSeconds = 2592000,
+        accountDeletionGracePeriodSeconds = 604800,
+        accountDeletionCheckIntervalSeconds = 60,
+        isRegistrationEnabled = true
+    )
+
+    private val config = createTestUserConfig(managementAuthSettings = managementSettings)
+
+    private val provider = AuthSettingsProviderImpl(settingsService, config)
 
     @BeforeEach
     fun setUp() {
-        every { config.managementAuthSettings } returns managementSettings
-        every { managementSettings.availableAuthProviders } returns availableAuthProviders
-        every { managementSettings.maxTotalIdentifiers } returns 5
-        every { managementSettings.maxEmailIdentifiers } returns 1
-        every { managementSettings.maxPhoneIdentifiers } returns 1
-        every { managementSettings.maxIdentifiersPerExternalProvider } returns 1
-        every { managementSettings.maxActiveSessionsForOpenUser } returns 3
-        every { managementSettings.maxActiveSessionsForManagementUser } returns 3
-        every { managementSettings.accessTokenExpirationSeconds } returns 3600
-        every { managementSettings.refreshTokenExpirationSeconds } returns 2592000
-        every { managementSettings.accountDeletionGracePeriodSeconds } returns 604800
-        every { managementSettings.accountDeletionCheckIntervalSeconds } returns 60
-        every { managementSettings.isRegistrationEnabled } returns true
-        every { managementSettings.openEmailRestrictionPolicy } returns createTestEmailRestrictionPolicy()
-        every { managementSettings.managementEmailRestrictionPolicy } returns createTestEmailRestrictionPolicy()
-
-        provider = AuthSettingsProviderImpl(settingsService, config)
+        clearMocks(settingsService, answers = true, recordedCalls = true, childMocks = false)
     }
 
     @Test

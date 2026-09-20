@@ -25,11 +25,11 @@ sealed class SecurityError(
      *
      * @param mfaToken The token required for the subsequent verification request.
      */
-    class TotpConfirmationRequired(
+    class MfaConfirmationRequired(
         mfaToken: String
     ) : SecurityError(
         errorId = ErrorId.generate(),
-        code = SecurityErrorCodes.TOTP_CONFIRMATION_REQUIRED,
+        code = SecurityErrorCodes.MFA_CONFIRMATION_REQUIRED,
         publicArgs = mapOf(
             SecurityErrorArgs.MFA_TOKEN to mfaToken
         ),

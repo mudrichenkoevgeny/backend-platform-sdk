@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateRoleAndStatus
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
@@ -21,7 +22,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toA
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -61,7 +64,9 @@ class UnlockByPhoneUseCase @Inject constructor(
     suspend operator fun invoke(
         phoneNumber: String,
         confirmationCode: String,
-        requestContext: RequestContext
+        requestContext: RequestContext,
+        allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
+        allowedAccountStatuses: Set<UserAccountStatus> = UserAccountStatus.entries.toSet()
     ): AppResult<Unit> {
         val auditMetadata = requestContext.clientInfo.toAuditMetadata().toMutableSet()
         auditMetadata.add(
@@ -120,6 +125,25 @@ class UnlockByPhoneUseCase @Inject constructor(
             is AppResult.Success -> identifierResult.data
             is AppResult.Error -> return handleError(
                 error = identifierResult.error,
+                baseMetadata = auditMetadata
+            )
+        }
+
+        val userResult = userManager.getUserByIdForSelf(userIdentifier.userId)
+            .mapNotNullOrError(UserError.UserNotFound())
+        val user = when (userResult) {
+            is AppResult.Success -> userResult.data
+            is AppResult.Error -> return handleError(
+                error = userResult.error,
+                baseMetadata = auditMetadata
+            )
+        }
+
+        user.validateRoleAndStatus(allowedRoles, allowedAccountStatuses)?.let { error ->
+            return handleError(
+                error = error,
+                actorId = user.id.asHexDashString(),
+                resourceId = user.id.asHexDashString(),
                 baseMetadata = auditMetadata
             )
         }

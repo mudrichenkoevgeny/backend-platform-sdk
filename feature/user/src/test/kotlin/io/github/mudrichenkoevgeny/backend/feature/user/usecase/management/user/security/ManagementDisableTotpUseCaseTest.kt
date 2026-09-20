@@ -76,7 +76,7 @@ class ManagementDisableTotpUseCaseTest {
         coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
         coEvery { userManager.getUserByIdForSelf(targetId) } returns AppResult.Success(targetDetails)
         coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(managerSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { totpManager.disableTotp(targetId) } returns AppResult.Success(Unit)
 
         val result = useCase(targetId, context)

@@ -97,7 +97,10 @@ class LoginByExternalAuthProviderUseCaseTest {
                 clientInfo = context.clientInfo,
                 userAuthProvider = provider,
                 identifier = EXTERNAL_ID,
-                externalProviderEmail = EXTERNAL_EMAIL
+                password = null,
+                externalProviderEmail = EXTERNAL_EMAIL,
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
             )
         } returns AppResult.Success(authData)
 

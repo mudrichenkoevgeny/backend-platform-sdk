@@ -65,7 +65,9 @@ class LoginByEmailUseCaseTest {
                 clientInfo = context.clientInfo,
                 userAuthProvider = UserAuthProvider.EMAIL,
                 identifier = TEST_EMAIL,
-                password = TEST_PASSWORD
+                password = TEST_PASSWORD,
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
             )
         } returns AppResult.Success(authData)
 
@@ -126,7 +128,15 @@ class LoginByEmailUseCaseTest {
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery {
-            authManager.authenticateExistingUser(any(), any(), any(), any())
+            authManager.authenticateExistingUser(
+                clientInfo = any(),
+                userAuthProvider = any(),
+                identifier = any(),
+                password = any(),
+                externalProviderEmail = any(),
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
+            )
         } returns AppResult.Error(authError)
 
         every { auditErrorConverter.convert(authError) } returns errorLogData

@@ -66,4 +66,9 @@ interface GlobalSettingsProvider {
      * Updates all global settings fields in the persistent storage.
      */
     suspend fun updateManagementGlobalSettings(managementGlobalSettings: ManagementGlobalSettings): AppResult<Unit>
+
+    /**
+     * Resets global settings to default configuration values.
+     */
+    suspend fun resetManagementGlobalSettings(): AppResult<ManagementGlobalSettings>
 }

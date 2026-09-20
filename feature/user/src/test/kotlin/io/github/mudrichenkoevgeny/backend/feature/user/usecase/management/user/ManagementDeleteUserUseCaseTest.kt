@@ -77,7 +77,7 @@ class ManagementDeleteUserUseCaseTest {
         coEvery { userManager.getUserByIdForSelf(targetId) } returns AppResult.Success(targetDetails)
         coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(managerSession)
         coEvery {
-            authenticationChallengeService.ensureSessionConfirmed(any(), any())
+            authenticationChallengeService.ensureSessionConfirmed(any(), any(), any())
         } returns AppResult.Success(Unit)
         coEvery { sessionManager.getAllUserSessions(targetId) } returns AppResult.Success(listOf(targetSession))
         coEvery { userManager.deleteUserForManagement(targetId) } returns AppResult.Success(Unit)

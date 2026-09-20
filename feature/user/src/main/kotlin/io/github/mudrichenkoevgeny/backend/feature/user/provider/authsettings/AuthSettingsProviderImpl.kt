@@ -313,6 +313,11 @@ class AuthSettingsProviderImpl @Inject constructor(
         return settingsService.updateSettings(settingsToUpdate).mapSuccess { }
     }
 
+    override suspend fun resetManagementAuthSettings(): AppResult<ManagementAuthSettings> {
+        val defaultSettings = config.managementAuthSettings
+        return updateManagementAuthSettings(defaultSettings).mapSuccess { defaultSettings }
+    }
+
     private companion object {
         const val KEY_AVAILABLE_AUTH_PROVIDERS = "auth.available_auth_providers"
         const val KEY_MAX_TOTAL_IDENTIFIERS = "auth.max_total_identifiers"

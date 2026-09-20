@@ -121,6 +121,16 @@ interface IdentifierManager {
     ): AppResult<UserIdentifier>
 
     /**
+     * Revokes and clears the password hash from the specified user identifier record.
+     *
+     * @param userIdentifier current identifier snapshot
+     * @return updated identifier snapshot or an error
+     */
+    suspend fun clearUserIdentifierPassword(
+        userIdentifier: UserIdentifierInternal
+    ): AppResult<UserIdentifier>
+
+    /**
      * Returns a paginated list of identifiers for management purposes.
      * * Applies role-scoped visibility and data masking based on [managementUserPermissionCodes].
      * This method ensures that the caller can only see identifiers of users within their

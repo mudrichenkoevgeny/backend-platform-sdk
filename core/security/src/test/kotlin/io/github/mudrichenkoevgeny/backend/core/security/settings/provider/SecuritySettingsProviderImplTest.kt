@@ -1,10 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.core.security.settings.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestManagementSecuritySettings
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestSecurityConfig
 import io.github.mudrichenkoevgeny.backend.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.github.mudrichenkoevgeny.backend.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
+import io.github.mudrichenkoevgeny.backend.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
@@ -31,10 +31,12 @@ class SecuritySettingsProviderImplTest {
     )
 
     private val config = createTestSecurityConfig(
-        passwordPolicy = defaultPolicy,
-        otpConfirmation = defaultOtpConfirmation,
-        accountLockoutCheckIntervalSeconds = 60,
-        refreshTokenRotationGracePeriodSeconds = 30
+        managementSecuritySettings = createTestManagementSecuritySettings(
+            passwordPolicy = defaultPolicy,
+            otpConfirmation = defaultOtpConfirmation,
+            accountLockoutCheckIntervalSeconds = 60,
+            refreshTokenRotationGracePeriodSeconds = 30
+        )
     )
 
     private val provider = SecuritySettingsProviderImpl(settingsService, config)

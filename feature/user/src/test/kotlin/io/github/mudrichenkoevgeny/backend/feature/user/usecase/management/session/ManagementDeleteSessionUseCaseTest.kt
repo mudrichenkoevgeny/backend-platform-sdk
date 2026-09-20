@@ -86,7 +86,7 @@ class ManagementDeleteSessionUseCaseTest {
         coEvery { sessionManager.getUserSessionForSystem(targetSessionId) } returns AppResult.Success(targetSession)
         coEvery { userManager.getUserByIdForSelf(targetUserId) } returns AppResult.Success(targetUserDetails)
         coEvery { sessionManager.getUserSessionForSystem(context.sessionId) } returns AppResult.Success(managerSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { sessionManager.deleteSessionById(targetSessionId) } returns AppResult.Success(Unit)
 
         val result = useCase(targetSessionId, context)

@@ -104,4 +104,9 @@ interface SecuritySettingsProvider {
      * Updates the stored security settings including password policy, OTP, and expiration windows.
      */
     suspend fun updateManagementSecuritySettings(managementSecuritySettings: ManagementSecuritySettings): AppResult<Unit>
+
+    /**
+     * Resets security settings to default configuration values.
+     */
+    suspend fun resetManagementSecuritySettings(): AppResult<ManagementSecuritySettings>
 }

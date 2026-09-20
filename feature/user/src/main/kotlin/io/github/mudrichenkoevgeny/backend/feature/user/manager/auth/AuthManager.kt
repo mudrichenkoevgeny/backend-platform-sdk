@@ -45,7 +45,9 @@ interface AuthManager {
         roleForUserCreation: UserRole = UserRole.USER,
         accountStatusForUserCreation: UserAccountStatus = UserAccountStatus.ACTIVE,
         authorityLevelForUserCreation: Int = 0,
-        permissionCodesForUserCreation: Set<PermissionCode> = setOf()
+        permissionCodesForUserCreation: Set<PermissionCode> = setOf(),
+        allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
     ): AppResult<AuthData>
 
     /**
@@ -66,7 +68,9 @@ interface AuthManager {
         userAuthProvider: UserAuthProvider,
         identifier: String,
         password: String? = null,
-        externalProviderEmail: String? = null
+        externalProviderEmail: String? = null,
+        allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
     ): AppResult<AuthData>
 
     /**
@@ -126,6 +130,8 @@ interface AuthManager {
     suspend fun completeMfaAuthentication(
         userId: UserId,
         userIdentifierId: UserIdentifierId,
-        clientInfo: ClientInfo
+        clientInfo: ClientInfo,
+        allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
+        allowedAccountStatuses: Set<UserAccountStatus> = UserAccountStatus.entries.toSet()
     ): AppResult<AuthData>
 }

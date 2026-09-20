@@ -39,7 +39,6 @@ import javax.inject.Singleton
 @Singleton
 class ManagementCoreUserRouter @Inject constructor(
     private val managementAuthRouter: ManagementAuthRouter,
-    private val managementAuthSettingsRouter: ManagementAuthSettingsRouter,
     private val managementIdentifierRouter: ManagementIdentifierRouter,
     private val selfManagementIdentifierRouter: SelfManagementIdentifierRouter,
     private val managementSessionRouter: ManagementSessionRouter,
@@ -59,7 +58,6 @@ class ManagementCoreUserRouter @Inject constructor(
 ) : BaseRouter {
     override fun register(route: Route) {
         managementAuthRouter.register(route)
-        managementAuthSettingsRouter.register(route)
         managementIdentifierRouter.register(route)
         selfManagementIdentifierRouter.register(route)
         managementSessionRouter.register(route)

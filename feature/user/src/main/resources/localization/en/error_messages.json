@@ -23,5 +23,8 @@
   "EXTERNAL_IDENTIFIER_LINKAGE_FAILED": "External account could not be linked.",
   "REGISTRATION_DISABLED": "User registration is currently disabled.",
   "SELF_SERVICE_UNLOCK_DISABLED": "Self-service account unlock is currently disabled.",
-  "EMAIL_NOT_ALLOWED": "Registration or usage of this email address or domain is restricted by security policy."
+  "EMAIL_NOT_ALLOWED": "Registration or usage of this email address or domain is restricted by security policy.",
+  "PASSWORD_SETUP_REQUIRED": "Initial password setup is required for this account.",
+  "USER_IDENTIFIER_PASSWORD_NOT_SUPPORTED": "This sign-in method does not support password credentials.",
+  "USER_IDENTIFIER_PASSWORD_NOT_SET": "No password credential is set for this sign-in method."
 }

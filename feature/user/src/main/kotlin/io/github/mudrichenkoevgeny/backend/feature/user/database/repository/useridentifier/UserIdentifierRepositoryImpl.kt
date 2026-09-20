@@ -93,14 +93,14 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
 
     override suspend fun updatePasswordHash(
         userIdentifier: UserIdentifierInternal,
-        newPasswordHash: PasswordHash
+        newPasswordHash: PasswordHash?
     ): AppResult<UserIdentifierInternal> {
         val updatedAt = JavaInstant.now()
 
         val updatedRows = UserIdentifiersTable.update(
             { UserIdentifiersTable.id eq userIdentifier.id.value }
         ) {
-            it[UserIdentifiersTable.passwordHash] = newPasswordHash.value
+            it[UserIdentifiersTable.passwordHash] = newPasswordHash?.value
             it[UserIdentifiersTable.updatedAt] = updatedAt
         }
 

@@ -14,6 +14,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.client.crea
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.session.createTestUserSession
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.token.RotatedRefreshTokenData
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -27,6 +28,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.cl
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
@@ -112,9 +114,11 @@ class SessionManagerImplTest {
             deviceInfo = clientInfo.deviceInfo,
             expiresAt = expiresAt
         )
+        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
 
         coEvery { refreshTokenProvider.getRefreshTokenHash(oldRefreshToken) } returns AppResult.Success(oldHash)
         coEvery { userSessionRepository.getUserSessionByHash(oldHash) } returns AppResult.Success(currentSession)
+        coEvery { userRepository.getUserDetailsById(userId) } returns AppResult.Success(userDetails)
         coEvery { userSessionRepository.deleteUserSessionById(currentSession.id) } returns AppResult.Success(Unit)
 
         coEvery { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
@@ -496,9 +500,11 @@ class SessionManagerImplTest {
         val newHash = RefreshTokenHash("new-hash")
         val currentSession = createSampleInternalSession(userId, oldHash).copy(deviceInfo = clientInfo.deviceInfo)
         val newInternalSession = createSampleInternalSession(userId, newHash)
+        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
 
         coEvery { refreshTokenProvider.getRefreshTokenHash(oldRefreshToken) } returns AppResult.Success(oldHash)
         coEvery { userSessionRepository.getUserSessionByHash(oldHash) } returns AppResult.Success(currentSession)
+        coEvery { userRepository.getUserDetailsById(userId) } returns AppResult.Success(userDetails)
         coEvery { userSessionRepository.deleteUserSessionById(currentSession.id) } returns AppResult.Success(Unit)
 
         coEvery { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
@@ -518,6 +524,33 @@ class SessionManagerImplTest {
         coVerify(exactly = 0) {
             userKnownDevicesRepository.getKnownDevice(any(), any())
         }
+    }
+
+    @Test
+    fun `refreshSession returns Error UserRoleNotAllowed when user role is not in allowedRoles`() = runTest {
+        val oldRefreshToken = RefreshToken("old-refresh-token")
+        val oldHash = RefreshTokenHash("old-hash")
+        val now = Clock.System.now()
+        val expiresAt = now + 3600.seconds
+
+        val currentSession = createSampleInternalSession(userId, oldHash).copy(
+            deviceInfo = clientInfo.deviceInfo,
+            expiresAt = expiresAt
+        )
+        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
+
+        coEvery { refreshTokenProvider.getRefreshTokenHash(oldRefreshToken) } returns AppResult.Success(oldHash)
+        coEvery { userSessionRepository.getUserSessionByHash(oldHash) } returns AppResult.Success(currentSession)
+        coEvery { userRepository.getUserDetailsById(userId) } returns AppResult.Success(userDetails)
+
+        val result = manager.refreshSession(
+            refreshToken = oldRefreshToken,
+            clientInfo = clientInfo,
+            allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        )
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is UserError.UserRoleNotAllowed)
     }
 
     private fun createSampleInternalSession(uId: UserId, hash: RefreshTokenHash) = createTestUserSessionInternal(

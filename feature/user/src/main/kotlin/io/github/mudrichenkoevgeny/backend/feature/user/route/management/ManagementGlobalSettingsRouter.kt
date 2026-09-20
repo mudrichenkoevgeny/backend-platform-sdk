@@ -14,6 +14,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.route.SettingsSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.globalsettings.GetManagementGlobalSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.globalsettings.ResetGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.globalsettings.UpdateGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
@@ -35,6 +36,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
+import io.github.smiley4.ktoropenapi.post
 import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
@@ -49,6 +51,7 @@ import javax.inject.Singleton
  * Registered routes:
  * 1. [ManagementGlobalSettingsRoutes.UPDATE_MANAGEMENT_GLOBAL_SETTINGS] — updates settings via [UpdateGlobalSettingsUseCase].
  * 2. [ManagementGlobalSettingsRoutes.GET_MANAGEMENT_GLOBAL_SETTINGS] — retrieves settings via [GetManagementGlobalSettingsUseCase].
+ * 3. [ManagementGlobalSettingsRoutes.RESET_MANAGEMENT_GLOBAL_SETTINGS] — resets settings via [ResetGlobalSettingsUseCase].
  */
 @Singleton
 class ManagementGlobalSettingsRouter @Inject constructor(
@@ -58,13 +61,15 @@ class ManagementGlobalSettingsRouter @Inject constructor(
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val updateGlobalSettingsUseCase: UpdateGlobalSettingsUseCase,
-    private val getManagementGlobalSettingsUseCase: GetManagementGlobalSettingsUseCase
+    private val getManagementGlobalSettingsUseCase: GetManagementGlobalSettingsUseCase,
+    private val resetGlobalSettingsUseCase: ResetGlobalSettingsUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerUpdateGlobalSettingsRoute(this)
             registerGetGlobalSettingsRoute(this)
+            registerResetGlobalSettingsRoute(this)
         }
     }
 
@@ -197,6 +202,74 @@ class ManagementGlobalSettingsRouter @Inject constructor(
         }
     }
 
+    private fun registerResetGlobalSettingsRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
+        val requiredPermissions = setOf(SettingsPermissionCode.GLOBAL_SETTINGS_UPDATE)
+
+        route.post(
+            path = ManagementGlobalSettingsRoutes.RESET_MANAGEMENT_GLOBAL_SETTINGS,
+            builder = { resetGlobalSettingsDocs(allowedRoles, allowedAccountStatuses, requiredPermissions) },
+            body = { resetGlobalSettings(allowedRoles, allowedAccountStatuses, requiredPermissions) }
+        )
+    }
+
+    private fun RouteConfig.resetGlobalSettingsDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>,
+        requiredPermissions: Set<PermissionCode>
+    ) {
+        summary = RESET_GLOBAL_SETTINGS_ROUTE_SUMMARY
+        operationId = RESET_GLOBAL_SETTINGS_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + SettingsSwaggerTags.GLOBAL_SETTINGS)
+
+        description = getFormattedDescription(
+            description = RESET_GLOBAL_SETTINGS_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.serialName },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            requiredPermissions = requiredPermissions.mapToSet { it.value },
+            isPublic = false
+        )
+
+        response {
+            code(HttpStatusCode.OK) {
+                body<ManagementGlobalSettingsPayload>()
+                description = RESET_GLOBAL_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.resetGlobalSettings(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>,
+        requiredPermissions: Set<PermissionCode>
+    ) {
+        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
+            requiredPermissions = requiredPermissions
+        )
+
+        if (authorizeResult is AppResult.Error) {
+            logErrorToAudit(
+                authenticatedRequestContext = authenticatedRequestContext,
+                actionType = SettingsAuditActionType.MANAGEMENT_RESET_GLOBAL_SETTINGS,
+                error = authorizeResult.error
+            )
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
+        val result = resetGlobalSettingsUseCase(authenticatedRequestContext)
+
+        call.respondResult(result, appLogger, appErrorParser) { globalSettings ->
+            globalSettings.toManagementGlobalSettingsPayload()
+        }
+    }
+
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
@@ -227,5 +300,10 @@ class ManagementGlobalSettingsRouter @Inject constructor(
         const val GET_GLOBAL_SETTINGS_ROUTE_DESCRIPTION = "Returns global system settings."
         const val GET_GLOBAL_SETTINGS_ROUTE_OPERATION_ID = "managementGetGlobalSettings"
         const val GET_GLOBAL_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Global settings data"
+
+        const val RESET_GLOBAL_SETTINGS_ROUTE_SUMMARY = "Reset global settings"
+        const val RESET_GLOBAL_SETTINGS_ROUTE_DESCRIPTION = "Resets effective global settings to default values."
+        const val RESET_GLOBAL_SETTINGS_ROUTE_OPERATION_ID = "managementResetGlobalSettings"
+        const val RESET_GLOBAL_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Restored global settings data"
     }
 }

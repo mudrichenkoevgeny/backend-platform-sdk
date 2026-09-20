@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.settings.config.envkeys.Settings
 import io.github.mudrichenkoevgeny.backend.core.settings.config.model.GlobalSettingsConfig
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.ManagementGlobalSettings
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,14 +37,19 @@ class GlobalSettingsConfigFactoryImpl @Inject constructor(
         val isMetricsEnabled = envReader.getByKeyOrNull(SettingsEnvKeys.IS_METRICS_ENABLED)?.toBooleanStrictOrNull() ?: false
         val isVerboseLoggingEnabled = envReader.getByKeyOrNull(SettingsEnvKeys.IS_VERBOSE_LOGGING_ENABLED)?.toBooleanStrictOrNull() ?: false
 
-        return GlobalSettingsConfig(
+        val managementGlobalSettings = ManagementGlobalSettings(
             privacyPolicyUrl = privacyPolicyUrl,
             termsOfServiceUrl = termsOfServiceUrl,
             contactSupportEmail = contactSupportEmail,
+            maintenanceUntilEpochMillis = null,
             minSupportedAppVersions = minSupportedAppVersions,
             isTracingEnabled = isTracingEnabled,
             isMetricsEnabled = isMetricsEnabled,
             isVerboseLoggingEnabled = isVerboseLoggingEnabled
+        )
+
+        return GlobalSettingsConfig(
+            managementGlobalSettings = managementGlobalSettings
         )
     }
 }

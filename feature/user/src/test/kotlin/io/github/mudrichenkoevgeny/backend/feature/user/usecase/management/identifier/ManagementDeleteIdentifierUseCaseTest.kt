@@ -97,7 +97,7 @@ class ManagementDeleteIdentifierUseCaseTest {
         coEvery { userManager.getUserByIdForSelf(targetUserId) } returns AppResult.Success(targetUserDetails)
         coEvery { identifierManager.getUserIdentifiersByUserId(targetUserId) } returns AppResult.Success(identifiersList)
         coEvery { sessionManager.getUserSessionForSystem(context.sessionId) } returns AppResult.Success(managerSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { sessionManager.getUserSessionsByIdentifierId(targetIdentifierId, targetUserId) } returns AppResult.Success(listOf(targetSession))
         coEvery { identifierManager.deleteUserIdentifier(targetIdentifierId) } returns AppResult.Success(Unit)
 

@@ -19,8 +19,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
@@ -66,12 +68,15 @@ class UnlockByEmailUseCaseTest {
         }
         val userDetails = mockk<UserDetails> {
             every { id } returns userId
+            every { role } returns UserRole.USER
+            every { accountStatus } returns UserAccountStatus.ACTIVE
         }
 
         every { securitySettingsProvider.getAccountLockoutPolicy() } returns lockoutPolicy
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_EMAIL) } returns AppResult.Success(Unit)
         coEvery { otpService.verifyOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_UNLOCK, TEST_CODE) } returns AppResult.Success(true)
         coEvery { identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.EMAIL, TEST_EMAIL) } returns AppResult.Success(identifier)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
         coEvery { userManager.unlockUserAccount(userId, listOf(TEST_EMAIL)) } returns AppResult.Success(userDetails)
 
         val result = useCase(TEST_EMAIL, TEST_CODE, context)

@@ -37,6 +37,9 @@ class UserAuditErrorParser @Inject constructor() : AuditErrorParser {
             is UserError.UserIllegalAccountStatus -> UserAuditMetadataDeniedReasonValues.USER_ILLEGAL_ACCOUNT_STATUS
             is UserError.UserIdentifierLimitReached -> UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_LIMIT_REACHED
             is UserError.TotalUserIdentifiersLimitReached -> UserAuditMetadataDeniedReasonValues.TOTAL_USER_IDENTIFIERS_LIMIT_REACHED
+            is UserError.PasswordSetupRequired -> UserAuditMetadataDeniedReasonValues.PASSWORD_SETUP_REQUIRED
+            is UserError.UserIdentifierPasswordNotSupported -> UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SUPPORTED
+            is UserError.UserIdentifierPasswordNotSet -> UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SET
             else -> return null
         }
 

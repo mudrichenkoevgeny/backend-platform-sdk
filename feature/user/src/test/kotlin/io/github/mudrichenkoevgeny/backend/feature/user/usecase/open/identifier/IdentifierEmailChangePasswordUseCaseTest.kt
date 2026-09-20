@@ -186,6 +186,31 @@ class IdentifierEmailChangePasswordUseCaseTest {
         assertTrue(result is AppResult.Error && result.error == policyError)
     }
 
+    @Test
+    fun `returns error PasswordSetupRequired when user identifier has no password set`() = runTest {
+        val context = createTestAuthenticatedRequestContext()
+        val userDetails = mockk<UserDetails>()
+        val sessionInternal = mockk<UserSessionInternal>()
+        val identifierId = UserIdentifierId.generate()
+        val identifierInternal = mockk<UserIdentifierInternal> {
+            every { id } returns identifierId
+            every { passwordHash } returns null
+        }
+        val errorLogData = AuditErrorLogData(status = AuditStatus.DENIED, metadata = emptySet())
+
+        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userManager.getUserByIdForSelf(any()) } returns AppResult.Success(userDetails)
+        coEvery { sessionManager.getUserSessionForSystem(any()) } returns AppResult.Success(sessionInternal)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
+        coEvery { identifierManager.getUserIdentifierInternalByProvider(any(), any()) } returns AppResult.Success(identifierInternal)
+        every { auditErrorConverter.convert(any<UserError.PasswordSetupRequired>()) } returns errorLogData
+
+        val result = useCase(TEST_EMAIL, TEST_NEW_PASS, TEST_OLD_PASS, context)
+
+        assertTrue(result is AppResult.Error && result.error is UserError.PasswordSetupRequired)
+    }
+
     companion object {
         private const val TEST_EMAIL = "test@example.com"
         private const val TEST_OLD_PASS = "OldPass123!"

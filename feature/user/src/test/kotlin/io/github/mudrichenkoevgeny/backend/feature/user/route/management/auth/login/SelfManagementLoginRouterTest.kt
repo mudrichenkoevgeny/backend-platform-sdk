@@ -70,7 +70,9 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
             loginByEmailUseCase(
                 email = TEST_EMAIL,
                 password = TEST_PASSWORD,
-                requestContext = any<RequestContext>()
+                requestContext = any<RequestContext>(),
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
             )
         } returns AppResult.Success(testAuthData)
 
@@ -95,7 +97,9 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
             loginByTotpUseCase(
                 requestContext = any<RequestContext>(),
                 mfaToken = TEST_MFA_TOKEN,
-                code = TEST_CODE
+                code = TEST_CODE,
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
             )
         } returns AppResult.Success(testAuthData)
 
@@ -120,7 +124,9 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
             loginByTotpRecoveryCodeUseCase(
                 mfaToken = TEST_MFA_TOKEN,
                 code = TEST_CODE,
-                requestContext = any<RequestContext>()
+                requestContext = any<RequestContext>(),
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
             )
         } returns AppResult.Success(testAuthData)
 

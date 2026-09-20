@@ -22,6 +22,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.toUserIdentifierIdOrNull
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -67,7 +68,9 @@ class LoginByTotpRecoveryCodeUseCase @Inject constructor(
     suspend operator fun invoke(
         requestContext: RequestContext,
         mfaToken: String,
-        code: String
+        code: String,
+        allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
     ): AppResult<AuthData> {
         val auditMetadata = requestContext.clientInfo.toAuditMetadata()
 
@@ -84,7 +87,7 @@ class LoginByTotpRecoveryCodeUseCase @Inject constructor(
 
         val getChallengeResult = mfaService.getChallenge(
             token = mfaToken,
-            type = MfaChallengeType.LOGIN_TOTP
+            type = MfaChallengeType.LOGIN_RECOVERY_CODE
         )
         val mfaChallengeData = when (getChallengeResult) {
             is AppResult.Error -> return handleError(
@@ -169,7 +172,9 @@ class LoginByTotpRecoveryCodeUseCase @Inject constructor(
         val mfaAuthenticationResult = authManager.completeMfaAuthentication(
             userId = userId,
             userIdentifierId = identifierId,
-            clientInfo = requestContext.clientInfo
+            clientInfo = requestContext.clientInfo,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         return when (mfaAuthenticationResult) {

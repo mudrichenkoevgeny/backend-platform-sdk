@@ -90,7 +90,7 @@ class LoginByTotpUseCaseTest {
         coEvery { mfaService.getChallenge(TEST_MFA_TOKEN, MfaChallengeType.LOGIN_TOTP) } returns AppResult.Success(mfaChallenge)
         coEvery { totpManager.verifyTotp(userId, TEST_TOTP_CODE) } returns AppResult.Success(Unit)
         coEvery { mfaService.consumeChallenge(TEST_MFA_TOKEN) } returns AppResult.Success(Unit)
-        coEvery { authManager.completeMfaAuthentication(userId, identifierId, any()) } returns AppResult.Success(authData)
+        coEvery { authManager.completeMfaAuthentication(userId, identifierId, any(), any(), any()) } returns AppResult.Success(authData)
 
         val result = useCase(context, TEST_MFA_TOKEN, TEST_TOTP_CODE)
 

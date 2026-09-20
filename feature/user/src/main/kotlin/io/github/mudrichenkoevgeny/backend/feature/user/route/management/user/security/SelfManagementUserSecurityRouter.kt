@@ -83,7 +83,7 @@ class SelfManagementUserSecurityRouter @Inject constructor(
     }
 
     private fun registerSetupTotpRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.USER)
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.post(
@@ -94,7 +94,7 @@ class SelfManagementUserSecurityRouter @Inject constructor(
     }
 
     private fun registerEnableTotpRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.USER)
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.post(
@@ -105,7 +105,7 @@ class SelfManagementUserSecurityRouter @Inject constructor(
     }
 
     private fun registerDisableTotpRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.USER)
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.delete(
@@ -116,7 +116,7 @@ class SelfManagementUserSecurityRouter @Inject constructor(
     }
 
     private fun registerGetRecoveryCodesRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.USER)
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.get(
@@ -127,7 +127,7 @@ class SelfManagementUserSecurityRouter @Inject constructor(
     }
 
     private fun registerRegenerateRecoveryCodesRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.USER)
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.post(

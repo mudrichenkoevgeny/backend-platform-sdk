@@ -18,6 +18,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auth.settings.GetManagementAuthSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auth.settings.ResetAuthSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auth.settings.UpdateAuthSettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
@@ -35,6 +36,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.auth.settings.ManagementAuthSettingsRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
+import io.github.smiley4.ktoropenapi.post
 import io.github.smiley4.ktoropenapi.put
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
@@ -44,11 +46,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Management HTTP routes for reading and updating authentication security policies.
+ * Management HTTP routes for reading, updating, and resetting authentication security policies.
  *
  * Registered routes:
  * 1. [ManagementAuthSettingsRoutes.GET_MANAGEMENT_AUTH_SETTINGS] — retrieves configuration via [GetManagementAuthSettingsUseCase].
  * 2. [ManagementAuthSettingsRoutes.UPDATE_MANAGEMENT_AUTH_SETTINGS] — updates security policies via [UpdateAuthSettingsUseCase].
+ * 3. [ManagementAuthSettingsRoutes.RESET_MANAGEMENT_AUTH_SETTINGS] — resets security policies via [ResetAuthSettingsUseCase].
  */
 @Singleton
 class ManagementAuthSettingsRouter @Inject constructor(
@@ -58,13 +61,15 @@ class ManagementAuthSettingsRouter @Inject constructor(
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val getManagementAuthSettingsUseCase: GetManagementAuthSettingsUseCase,
-    private val updateAuthSettingsUseCase: UpdateAuthSettingsUseCase
+    private val updateAuthSettingsUseCase: UpdateAuthSettingsUseCase,
+    private val resetAuthSettingsUseCase: ResetAuthSettingsUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetAuthSettingsManagementRoute(this)
             registerUpdateAuthSettingsRoute(this)
+            registerResetAuthSettingsRoute(this)
         }
     }
 
@@ -194,6 +199,73 @@ class ManagementAuthSettingsRouter @Inject constructor(
         call.respondResult(result, appLogger, appErrorParser)
     }
 
+    private fun registerResetAuthSettingsRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
+        val requiredPermissions = setOf(AuthSettingsPermissionCode.AUTH_SETTINGS_UPDATE)
+
+        route.post(
+            path = ManagementAuthSettingsRoutes.RESET_MANAGEMENT_AUTH_SETTINGS,
+            builder = { resetAuthSettingsDocs(allowedRoles, allowedAccountStatuses, requiredPermissions) },
+            body = { resetAuthSettings(allowedRoles, allowedAccountStatuses, requiredPermissions) }
+        )
+    }
+
+    private fun RouteConfig.resetAuthSettingsDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>,
+        requiredPermissions: Set<PermissionCode>
+    ) {
+        summary = RESET_AUTH_SETTINGS_ROUTE_SUMMARY
+        operationId = RESET_AUTH_SETTINGS_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH_SETTINGS)
+
+        description = getFormattedDescription(
+            description = RESET_AUTH_SETTINGS_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.serialName },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            requiredPermissions = requiredPermissions.mapToSet { it.value },
+            isPublic = false
+        )
+
+        response {
+            code(HttpStatusCode.OK) {
+                body<ManagementAuthSettingsPayload>()
+                description = RESET_AUTH_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.resetAuthSettings(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>,
+        requiredPermissions: Set<PermissionCode>
+    ) {
+        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
+            requiredPermissions = requiredPermissions
+        )
+
+        if (authorizeResult is AppResult.Error) {
+            logErrorToAudit(
+                authenticatedRequestContext = authenticatedRequestContext,
+                actionType = UserAuditActionType.MANAGEMENT_RESET_AUTH_SETTINGS,
+                error = authorizeResult.error
+            )
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
+        val result = resetAuthSettingsUseCase(authenticatedRequestContext)
+
+        call.respondResult(result, appLogger, appErrorParser) { management ->
+            management.toManagementAuthSettingsPayload()
+        }
+    }
+
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
@@ -226,5 +298,12 @@ class ManagementAuthSettingsRouter @Inject constructor(
         const val UPDATE_AUTH_SETTINGS_ROUTE_OPERATION_ID = "updateManagementAuthSettings"
         const val UPDATE_AUTH_SETTINGS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
             "Settings were updated successfully; no response body."
+
+        const val RESET_AUTH_SETTINGS_ROUTE_SUMMARY = "Reset auth settings"
+        const val RESET_AUTH_SETTINGS_ROUTE_DESCRIPTION =
+            "Resets global authentication settings to default values."
+        const val RESET_AUTH_SETTINGS_ROUTE_OPERATION_ID = "resetManagementAuthSettings"
+        const val RESET_AUTH_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION =
+            "Management auth settings restored to default values."
     }
 }

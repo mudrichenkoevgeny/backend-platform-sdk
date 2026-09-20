@@ -52,35 +52,35 @@ class SelfManagementLoginRouter @Inject constructor(
     }
 
     private fun registerLoginByEmailRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.post(
             path = SelfManagementLoginRoutes.LOGIN_BY_EMAIL,
             builder = { loginByEmailDocs(allowedRoles, allowedAccountStatuses) },
-            body = { loginByEmail() }
+            body = { loginByEmail(allowedRoles, allowedAccountStatuses) }
         )
     }
 
     private fun registerLoginByTotpRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.post(
             path = SelfManagementLoginRoutes.LOGIN_BY_TOTP,
             builder = { loginByTotpDocs(allowedRoles, allowedAccountStatuses) },
-            body = { loginByTotp() }
+            body = { loginByTotp(allowedRoles, allowedAccountStatuses) }
         )
     }
 
     private fun registerLoginByTotpRecoveryCodeRoute(route: Route) {
-        val allowedRoles = UserRole.entries.toSet()
-        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.post(
             path = SelfManagementLoginRoutes.LOGIN_BY_TOTP_RECOVERY_CODE,
             builder = { loginByTotpRecoveryCodeDocs(allowedRoles, allowedAccountStatuses) },
-            body = { loginByTotpRecoveryCode() }
+            body = { loginByTotpRecoveryCode(allowedRoles, allowedAccountStatuses) }
         )
     }
 
@@ -106,12 +106,18 @@ class SelfManagementLoginRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.loginByEmail() {
+    private suspend fun RoutingContext.loginByEmail(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<LoginByEmailRequest>()
 
         val result = loginByEmailUseCase(
             email = request.email,
-            password = request.password,requestContext = call.getRequestContext()
+            password = request.password,
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser) { authData ->
@@ -141,13 +147,18 @@ class SelfManagementLoginRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.loginByTotp() {
+    private suspend fun RoutingContext.loginByTotp(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<VerifyTotpPayload>()
 
         val result = loginByTotpUseCase(
             mfaToken = request.mfaToken,
             code = request.code,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser) { authData ->
@@ -177,13 +188,18 @@ class SelfManagementLoginRouter @Inject constructor(
         }
     }
 
-    private suspend fun RoutingContext.loginByTotpRecoveryCode() {
+    private suspend fun RoutingContext.loginByTotpRecoveryCode(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
         val request = call.validateRequest<VerifyTotpPayload>()
 
         val result = loginByTotpRecoveryCodeUseCase(
             mfaToken = request.mfaToken,
             code = request.code,
-            requestContext = call.getRequestContext()
+            requestContext = call.getRequestContext(),
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
 
         call.respondResult(result, appLogger, appErrorParser) { authData ->

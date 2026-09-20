@@ -96,7 +96,9 @@ class RefreshTokenUseCaseTest {
         coEvery {
             sessionManager.refreshSession(
                 refreshToken = refreshToken,
-                clientInfo = ctx.clientInfo
+                clientInfo = ctx.clientInfo,
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
             )
         } returns AppResult.Success(newSessionToken)
 
@@ -106,7 +108,12 @@ class RefreshTokenUseCaseTest {
         assertEquals(newSessionToken, (result as AppResult.Success).data)
 
         coVerify(exactly = 1) {
-            sessionManager.refreshSession(refreshToken, ctx.clientInfo)
+            sessionManager.refreshSession(
+                refreshToken = refreshToken,
+                clientInfo = ctx.clientInfo,
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
+            )
         }
     }
 
@@ -121,7 +128,7 @@ class RefreshTokenUseCaseTest {
         )
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery {
-            sessionManager.refreshSession(any(), any())
+            sessionManager.refreshSession(any(), any(), any(), any())
         } returns sessionError
 
         val result = useCase(refreshToken, ctx)
