@@ -15,7 +15,7 @@ import javax.inject.Singleton
 /**
  * Parser for user-domain errors.
  *
- * Maps user-specific access violations (blocked status, missing permissions,
+ * Maps user-specific access violations (banned status, locked status, missing permissions,
  * role mismatch) to a DENIED status.
  */
 @Singleton
@@ -27,7 +27,8 @@ class UserAuditErrorParser @Inject constructor() : AuditErrorParser {
         val deniedReasonValue = when (error) {
             is UserError.UserForbidden -> UserAuditMetadataDeniedReasonValues.USER_FORBIDDEN
             is UserError.UserReadOnly -> UserAuditMetadataDeniedReasonValues.USER_READ_ONLY
-            is UserError.UserBlocked -> UserAuditMetadataDeniedReasonValues.USER_BLOCKED
+            is UserError.UserBanned -> UserAuditMetadataDeniedReasonValues.USER_BANNED
+            is UserError.UserLocked -> UserAuditMetadataDeniedReasonValues.USER_LOCKED
             is UserError.UserSecurityHold -> UserAuditMetadataDeniedReasonValues.USER_SECURITY_HOLD
             is UserError.UserPendingDeletion -> UserAuditMetadataDeniedReasonValues.USER_PENDING_DELETION
             is UserError.UserNotFound -> UserAuditMetadataDeniedReasonValues.USER_NOT_FOUND
@@ -48,13 +49,21 @@ class UserAuditErrorParser @Inject constructor() : AuditErrorParser {
             AuditEventMetadata(CommonAuditMetadataKey.DENIED_REASON, deniedReasonValue)
         )
 
-        if (error is UserError.UserBlocked && error.blockedUntil != null) {
+        if (error is UserError.UserLocked) {
             metadata.add(
                 AuditEventMetadata(
-                    key = UserAuditMetadataKey.BLOCKED_UNTIL,
-                    value = error.blockedUntil.toEpochMilliseconds().toString()
+                    key = UserAuditMetadataKey.ACCOUNT_LOCKOUT_TYPE,
+                    value = error.lockoutType.serialName
                 )
             )
+            if (error.temporaryLockoutUntil != null) {
+                metadata.add(
+                    AuditEventMetadata(
+                        key = UserAuditMetadataKey.TEMPORARY_LOCKOUT_UNTIL,
+                        value = error.temporaryLockoutUntil.toEpochMilliseconds().toString()
+                    )
+                )
+            }
         }
 
         return AuditErrorLogData(

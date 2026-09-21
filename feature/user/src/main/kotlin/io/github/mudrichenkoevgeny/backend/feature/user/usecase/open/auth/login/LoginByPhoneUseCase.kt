@@ -5,13 +5,13 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutAttemptType
-import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
+import io.github.mudrichenkoevgeny.backend.feature.user.error.util.extractUserIdHexOrNull
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
@@ -26,7 +26,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,9 +36,8 @@ class LoginByPhoneUseCase @Inject constructor(
     private val auditErrorConverter: AuditErrorConverter,
     private val otpService: OtpService,
     private val authManager: AuthManager,
-    private val lockoutManager: LockoutManager,
-    private val identifierManager: IdentifierManager,
-    private val userManager: UserManager
+    private val userLockoutService: UserLockoutService,
+    private val identifierManager: IdentifierManager
 ) {
     /**
      * Authenticates or creates a user account using a phone number and OTP verification.
@@ -89,34 +87,20 @@ class LoginByPhoneUseCase @Inject constructor(
             )
         }
 
-        val isIndefiniteLockoutResult = lockoutManager.isIndefiniteLockout(phoneNumber)
-        val isIndefiniteLockout = when (isIndefiniteLockoutResult) {
-            is AppResult.Success -> isIndefiniteLockoutResult.data
-            is AppResult.Error -> false
-        }
-        if (isIndefiniteLockout) {
-            val identifierResult = identifierManager.getUserIdentifierInternalByProvider(
-                userAuthProvider = UserAuthProvider.PHONE,
-                identifier = phoneNumber
-            )
-            val userId = (identifierResult as? AppResult.Success)?.data?.userId
-            if (userId != null) {
-                userManager.lockUserAccountIndefinitely(userId)
-            }
+        val identifierResult = identifierManager.getUserIdentifierInternalByProvider(
+            userAuthProvider = UserAuthProvider.PHONE,
+            identifier = phoneNumber
+        )
+        val userId = (identifierResult as? AppResult.Success)?.data?.userId
+        val checkLockoutResult = userLockoutService.checkLockout(
+            identifier = phoneNumber,
+            userId = userId
+        )
+        if (checkLockoutResult is AppResult.Error) {
             return handleError(
-                error = UserError.UserBlocked(),
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val lockoutCheck = lockoutManager.getLockoutUntil(phoneNumber)
-        val lockoutUntil = when (lockoutCheck) {
-            is AppResult.Success -> lockoutCheck.data
-            is AppResult.Error -> null
-        }
-        if (lockoutUntil != null) {
-            return handleError(
-                error = UserError.UserBlocked(blockedUntil = lockoutUntil),
+                error = checkLockoutResult.error,
+                actorId = userId?.asHexDashString(),
+                resourceId = userId?.asHexDashString(),
                 baseMetadata = auditMetadata
             )
         }
@@ -136,41 +120,20 @@ class LoginByPhoneUseCase @Inject constructor(
         }
 
         if (!isConfirmationCodeCorrect) {
-            val recordResult = lockoutManager.recordFailedAttempt(
+            val recordFailedAttemptResult = userLockoutService.recordFailedAttempt(
                 identifier = phoneNumber,
-                type = LockoutAttemptType.OTP
+                type = LockoutAttemptType.OTP,
+                userId = userId
             )
-            val blockedUntil = when (recordResult) {
-                is AppResult.Success -> recordResult.data
-                is AppResult.Error -> null
-            }
-            var resolvedUserId: UserId? = null
-            if (blockedUntil != null) {
-                val identifierResult = identifierManager.getUserIdentifierInternalByProvider(
-                    userAuthProvider = UserAuthProvider.PHONE,
-                    identifier = phoneNumber
-                )
-                val identifierData = when (identifierResult) {
-                    is AppResult.Success -> identifierResult.data
-                    is AppResult.Error -> null
-                }
-                if (identifierData != null) {
-                    resolvedUserId = identifierData.userId
-                    userManager.lockUserAccount(identifierData.userId, blockedUntil)
-                }
-            }
-            val error = if (blockedUntil != null) {
-                UserError.UserBlocked(
-                    userId = resolvedUserId,
-                    blockedUntil = blockedUntil
-                )
+            val error = if (recordFailedAttemptResult is AppResult.Error) {
+                recordFailedAttemptResult.error
             } else {
                 UserError.WrongConfirmationCode()
             }
             return handleError(
                 error = error,
-                actorId = resolvedUserId?.asHexDashString(),
-                resourceId = resolvedUserId?.asHexDashString(),
+                actorId = userId?.asHexDashString(),
+                resourceId = userId?.asHexDashString(),
                 baseMetadata = auditMetadata
             )
         }
@@ -211,8 +174,8 @@ class LoginByPhoneUseCase @Inject constructor(
         baseMetadata: Set<AuditEventMetadata>
     ): AppResult<T> {
         val auditErrorLogData = auditErrorConverter.convert(error)
-        val resolvedActorId = actorId ?: (error as? UserError.UserBlocked)?.userId?.asHexDashString()
-        val resolvedResourceId = resourceId ?: (error as? UserError.UserBlocked)?.userId?.asHexDashString()
+        val resolvedActorId = actorId ?: error.extractUserIdHexOrNull()
+        val resolvedResourceId = resourceId ?: error.extractUserIdHexOrNull()
         logAudit(
             actorId = resolvedActorId,
             actorUserRole = actorUserRole,

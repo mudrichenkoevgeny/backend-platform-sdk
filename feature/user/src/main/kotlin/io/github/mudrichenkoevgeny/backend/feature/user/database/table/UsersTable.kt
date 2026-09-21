@@ -19,8 +19,8 @@ import org.jetbrains.exposed.v1.json.jsonb
 object UsersTable : BaseTable("users") {
     val role = enumerationByName("role", BaseDbConstraints.ENUM_MAX_LENGTH, UserRole::class)
     val accountStatus = enumerationByName("account_status", BaseDbConstraints.ENUM_MAX_LENGTH, UserAccountStatus::class)
-    val accountStatusBeforeDeletion = enumerationByName(
-        "account_status_before_deletion",
+    val accountStatusOnRestore = enumerationByName(
+        "account_status_on_restore",
         BaseDbConstraints.ENUM_MAX_LENGTH,
         UserAccountStatus::class
     ).nullable()

@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CommonAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataDeniedReasonValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -78,7 +79,13 @@ class UserAuditErrorParserTest {
         fun provideUserErrors(): Stream<Arguments> = Stream.of(
             Arguments.of(UserError.UserForbidden(), UserAuditMetadataDeniedReasonValues.USER_FORBIDDEN),
             Arguments.of(UserError.UserReadOnly(), UserAuditMetadataDeniedReasonValues.USER_READ_ONLY),
-            Arguments.of(UserError.UserBlocked(), UserAuditMetadataDeniedReasonValues.USER_BLOCKED),
+            Arguments.of(UserError.UserBanned(), UserAuditMetadataDeniedReasonValues.USER_BANNED),
+            Arguments.of(
+                UserError.UserLocked(
+                    lockoutType = AccountLockoutType.TEMPORARY
+                ),
+                UserAuditMetadataDeniedReasonValues.USER_LOCKED
+            ),
             Arguments.of(UserError.UserSecurityHold(), UserAuditMetadataDeniedReasonValues.USER_SECURITY_HOLD),
             Arguments.of(UserError.UserPendingDeletion(), UserAuditMetadataDeniedReasonValues.USER_PENDING_DELETION),
             Arguments.of(UserError.UserNotFound(), UserAuditMetadataDeniedReasonValues.USER_NOT_FOUND),

@@ -37,7 +37,7 @@ interface AuthenticationProvider {
      * [UserDetails.permissionCodes] (**AND** semantics). Missing any required code yields the same
      * outcome as an insufficient role (e.g. forbidden).
      * @return [AppResult.Success] with the loaded user, or [AppResult.Error] (token, not found,
-     * forbidden, blocked, read-only, security hold, pending deletion, etc.).
+     * forbidden, banned, locked, read-only, security hold, pending deletion, etc.).
      */
     suspend fun requireUser(
         call: ApplicationCall,

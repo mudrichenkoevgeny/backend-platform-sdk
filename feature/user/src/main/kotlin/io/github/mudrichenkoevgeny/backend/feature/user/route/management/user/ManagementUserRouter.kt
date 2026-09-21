@@ -244,7 +244,7 @@ class ManagementUserRouter @Inject constructor(
             sortOrder = queryParams.listing.sortOrder,
             roles = queryParams.roles,
             accountStatuses = queryParams.accountStatuses,
-            accountStatusesBeforeDeletion = queryParams.accountStatusesBeforeDeletion,
+            accountStatusesOnRestore = queryParams.accountStatusesOnRestore,
             authorityLevelFrom = queryParams.authorityLevelFrom,
             authorityLevelTo = queryParams.authorityLevelTo,
             requiredPermissionCodes = queryParams.requiredPermissionCodes,

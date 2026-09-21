@@ -41,7 +41,7 @@ class RestoreUserUseCase @Inject constructor(
      * **Workflow:**
      * 1. Checks rate limits for [UserRateLimitAction.USER_RESTORE] using the current userId.
      * 2. Requires security confirmation via [AuthenticationChallengeService] (MFA Step-up).
-     * 3. Reverts account status to [UserDetails.accountStatusBeforeDeletion].
+     * 3. Reverts account status to [UserDetails.accountStatusOnRestore].
      * 4. Logs the outcome via [AuditLogger] with [UserAuditActionType.SELF_RESTORE_USER].
      *
      * @param authenticatedRequestContext The context of the authenticated request.
@@ -113,7 +113,7 @@ class RestoreUserUseCase @Inject constructor(
 
         val restoreUserResult = userManager.restoreUserForSelf(
             userId = currentUserId,
-            newStatus = currentUser.accountStatusBeforeDeletion ?: UserAccountStatus.ACTIVE
+            newStatus = currentUser.accountStatusOnRestore ?: UserAccountStatus.ACTIVE
         )
 
         if (restoreUserResult is AppResult.Error) {

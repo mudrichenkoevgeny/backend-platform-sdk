@@ -61,7 +61,7 @@ class UserManagerImpl @Inject constructor(
             id = UserId.generate(),
             role = role,
             accountStatus = accountStatus,
-            accountStatusBeforeDeletion = accountStatus,
+            accountStatusOnRestore = accountStatus,
             authorityLevel = authorityLevel,
             permissionCodes = permissions,
             isTotpEnabled = false,
@@ -106,28 +106,30 @@ class UserManagerImpl @Inject constructor(
         lockoutType: AccountLockoutType?,
         temporaryLockoutUntil: Long?
     ): AppResult<UserDetails?> = dbQuery {
-        var statusBeforeDeletionUpdate: UpdateField<UserAccountStatus> = UpdateField.Ignore
+        var statusUpdate: UpdateField<UserAccountStatus> = accountStatus
+            ?.let { UpdateField.Set(it) } ?: UpdateField.Ignore
+        var statusOnRestoreUpdate: UpdateField<UserAccountStatus> = UpdateField.Ignore
         var scheduledDeletionUpdate: UpdateField<Instant> = UpdateField.Ignore
 
         if (accountStatus == UserAccountStatus.PENDING_DELETION
             && user.accountStatus != UserAccountStatus.PENDING_DELETION
         ) {
-            statusBeforeDeletionUpdate = UpdateField.Set(user.accountStatus)
+            statusUpdate = UpdateField.Set(UserAccountStatus.PENDING_DELETION)
+            statusOnRestoreUpdate = UpdateField.Set(user.accountStatus)
             scheduledDeletionUpdate = UpdateField.Set(getScheduledPermanentDeletionAt())
-        }
-
-        if (user.accountStatus == UserAccountStatus.PENDING_DELETION
+        } else if (user.accountStatus == UserAccountStatus.PENDING_DELETION
             && accountStatus != null
             && accountStatus != UserAccountStatus.PENDING_DELETION
         ) {
-            statusBeforeDeletionUpdate = UpdateField.Set(null)
-            scheduledDeletionUpdate = UpdateField.Set(null)
+            statusUpdate = UpdateField.Ignore
+            statusOnRestoreUpdate = UpdateField.Set(accountStatus)
+            scheduledDeletionUpdate = UpdateField.Ignore
         }
 
         userRepository.updateUser(
             userId = user.id,
-            status = accountStatus?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
-            statusBeforeDeletion = statusBeforeDeletionUpdate,
+            status = statusUpdate,
+            statusOnRestore = statusOnRestoreUpdate,
             authorityLevel = authorityLevel?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
             permissionCodes = permissions?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
             scheduledPermanentDeletionAt = scheduledDeletionUpdate,
@@ -167,7 +169,7 @@ class UserManagerImpl @Inject constructor(
         sortOrder: SortOrder,
         roles: List<UserRole>,
         accountStatuses: List<UserAccountStatus>,
-        accountStatusesBeforeDeletion: List<UserAccountStatus>,
+        accountStatusesOnRestore: List<UserAccountStatus>,
         authorityLevelFrom: Int?,
         authorityLevelTo: Int?,
         permissionCodes: Set<PermissionCode>,
@@ -182,7 +184,7 @@ class UserManagerImpl @Inject constructor(
             sortOrder = sortOrder,
             roles = roles,
             accountStatuses = accountStatuses,
-            accountStatusesBeforeDeletion = accountStatusesBeforeDeletion,
+            accountStatusesOnRestore = accountStatusesOnRestore,
             authorityLevelFrom = authorityLevelFrom,
             authorityLevelTo = authorityLevelTo,
             permissionCodes = permissionCodes,
@@ -217,7 +219,7 @@ class UserManagerImpl @Inject constructor(
         userRepository.updateUser(
             userId = userId,
             status = UpdateField.Set(newStatus),
-            statusBeforeDeletion = UpdateField.Set(null),
+            statusOnRestore = UpdateField.Set(null),
             scheduledPermanentDeletionAt = UpdateField.Set(null)
         ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
     }
@@ -229,7 +231,7 @@ class UserManagerImpl @Inject constructor(
         userRepository.updateUser(
             userId = userId,
             status = UpdateField.Set(UserAccountStatus.PENDING_DELETION),
-            statusBeforeDeletion = UpdateField.Set(currentStatus),
+            statusOnRestore = UpdateField.Set(currentStatus),
             scheduledPermanentDeletionAt = UpdateField.Set(getScheduledPermanentDeletionAt())
         ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
     }
@@ -255,11 +257,11 @@ class UserManagerImpl @Inject constructor(
         ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
     }
 
-    override suspend fun lockUserAccount(userId: UserId, blockedUntil: Instant): AppResult<UserDetails> = dbQuery {
+    override suspend fun lockUserAccount(userId: UserId, temporaryLockoutUntil: Instant): AppResult<UserDetails> = dbQuery {
         userRepository.updateUser(
             userId = userId,
             accountLockoutType = UpdateField.Set(AccountLockoutType.TEMPORARY),
-            temporaryLockoutUntil = UpdateField.Set(blockedUntil)
+            temporaryLockoutUntil = UpdateField.Set(temporaryLockoutUntil)
         ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
     }
 

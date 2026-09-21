@@ -13,9 +13,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
-import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.error.util.extractUserIdHexOrNull
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -38,8 +38,8 @@ class LoginByTotpRecoveryCodeUseCase @Inject constructor(
     private val mfaService: MfaService,
     private val totpManager: TotpManager,
     private val authManager: AuthManager,
-    private val lockoutManager: LockoutManager,
-    private val userManager: UserManager
+    private val userLockoutService: UserLockoutService,
+    private val lockoutManager: LockoutManager
 ) {
     /**
      * Completes the multifactor authentication flow using a backup recovery code.
@@ -107,29 +107,13 @@ class LoginByTotpRecoveryCodeUseCase @Inject constructor(
             )
         }
 
-        val isIndefiniteLockoutResult = lockoutManager.isIndefiniteLockout(userId.asHexDashString())
-        val isIndefiniteLockout = when (isIndefiniteLockoutResult) {
-            is AppResult.Success -> isIndefiniteLockoutResult.data
-            is AppResult.Error -> false
-        }
-        if (isIndefiniteLockout) {
-            userManager.lockUserAccountIndefinitely(userId)
+        val checkLockoutResult = userLockoutService.checkLockout(
+            identifier = userId.asHexDashString(),
+            userId = userId
+        )
+        if (checkLockoutResult is AppResult.Error) {
             return handleError(
-                error = UserError.UserBlocked(userId = userId),
-                actorId = userId.asHexDashString(),
-                actorUserRole = userRole,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val lockoutCheck = lockoutManager.getLockoutUntil(userId.asHexDashString())
-        val lockoutUntil = when (lockoutCheck) {
-            is AppResult.Success -> lockoutCheck.data
-            is AppResult.Error -> null
-        }
-        if (lockoutUntil != null) {
-            return handleError(
-                error = UserError.UserBlocked(userId = userId, blockedUntil = lockoutUntil),
+                error = checkLockoutResult.error,
                 actorId = userId.asHexDashString(),
                 actorUserRole = userRole,
                 baseMetadata = auditMetadata
@@ -141,24 +125,17 @@ class LoginByTotpRecoveryCodeUseCase @Inject constructor(
             code = code
         )
         if (verifyResult is AppResult.Error) {
-            val recordResult = lockoutManager.recordFailedAttempt(
+            val recordFailedAttemptResult = userLockoutService.recordFailedAttempt(
                 identifier = userId.asHexDashString(),
-                type = LockoutAttemptType.TOTP
+                type = LockoutAttemptType.TOTP,
+                userId = userId
             )
-            val blockedUntil = when (recordResult) {
-                is AppResult.Success -> recordResult.data
-                is AppResult.Error -> null
-            }
-            if (blockedUntil != null) {
-                userManager.lockUserAccount(userId, blockedUntil)
-            }
-            val error = if (blockedUntil != null) {
-                UserError.UserBlocked(userId = userId, blockedUntil = blockedUntil)
-            } else {
-                verifyResult.error
-            }
             return handleError(
-                error = error,
+                error = if (recordFailedAttemptResult is AppResult.Error) {
+                    recordFailedAttemptResult.error
+                } else {
+                    verifyResult.error
+                },
                 actorId = userId.asHexDashString(),
                 actorUserRole = userRole,
                 baseMetadata = auditMetadata
@@ -203,7 +180,7 @@ class LoginByTotpRecoveryCodeUseCase @Inject constructor(
         baseMetadata: Set<AuditEventMetadata>
     ): AppResult<T> {
         val auditErrorLogData = auditErrorConverter.convert(error)
-        val resolvedActorId = actorId ?: (error as? UserError.UserBlocked)?.userId?.asHexDashString()
+        val resolvedActorId = actorId ?: error.extractUserIdHexOrNull()
         logAudit(
             actorId = resolvedActorId,
             actorUserRole = actorUserRole,

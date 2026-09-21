@@ -138,7 +138,7 @@ class JwtAuthenticationProviderTest {
         )
 
         assertTrue(result is AppResult.Error)
-        assertTrue((result as AppResult.Error).error is UserError.UserBlocked)
+        assertTrue((result as AppResult.Error).error is UserError.UserBanned)
     }
 
     @Test
@@ -180,7 +180,7 @@ class JwtAuthenticationProviderTest {
         )
 
         assertTrue(result is AppResult.Error)
-        assertTrue((result as AppResult.Error).error is UserError.UserBlocked)
+        assertTrue((result as AppResult.Error).error is UserError.UserLocked)
     }
 
     @Test
@@ -205,7 +205,7 @@ class JwtAuthenticationProviderTest {
         )
 
         assertTrue(result is AppResult.Error)
-        assertTrue((result as AppResult.Error).error is UserError.UserBlocked)
+        assertTrue((result as AppResult.Error).error is UserError.UserLocked)
     }
 
     private fun createFakeUser(

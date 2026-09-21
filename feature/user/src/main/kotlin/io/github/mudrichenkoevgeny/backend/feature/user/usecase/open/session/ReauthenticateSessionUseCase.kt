@@ -6,14 +6,12 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutAttemptType
-import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
@@ -35,8 +33,7 @@ class ReauthenticateSessionUseCase @Inject constructor(
     private val mfaService: MfaService,
     private val sessionManager: SessionManager,
     private val totpManager: TotpManager,
-    private val lockoutManager: LockoutManager,
-    private val userManager: UserManager
+    private val userLockoutService: UserLockoutService
 ) {
     /**
      * Performs session re-authentication (Step-up) via TOTP to elevate the trust level.
@@ -112,24 +109,17 @@ class ReauthenticateSessionUseCase @Inject constructor(
             code = code
         )
         if (verifyResult is AppResult.Error) {
-            val recordResult = lockoutManager.recordFailedAttempt(
+            val recordFailedAttemptResult = userLockoutService.recordFailedAttempt(
                 identifier = auditActorId,
-                type = LockoutAttemptType.TOTP
+                type = LockoutAttemptType.TOTP,
+                userId = authenticatedRequestContext.userId
             )
-            val blockedUntil = when (recordResult) {
-                is AppResult.Success -> recordResult.data
-                is AppResult.Error -> null
-            }
-            if (blockedUntil != null) {
-                userManager.lockUserAccount(authenticatedRequestContext.userId, blockedUntil)
-            }
-            val error = if (blockedUntil != null) {
-                UserError.UserBlocked(userId = authenticatedRequestContext.userId, blockedUntil = blockedUntil)
-            } else {
-                verifyResult.error
-            }
             return handleError(
-                error = error,
+                error = if (recordFailedAttemptResult is AppResult.Error) {
+                    recordFailedAttemptResult.error
+                } else {
+                    verifyResult.error
+                },
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
                 sessionId = sessionId.asHexDashString(),
@@ -137,7 +127,7 @@ class ReauthenticateSessionUseCase @Inject constructor(
             )
         }
 
-        lockoutManager.clearLockout(auditActorId)
+        userLockoutService.clearLockout(listOf(auditActorId))
 
         mfaService.consumeChallenge(mfaToken)
 

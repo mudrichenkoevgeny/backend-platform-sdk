@@ -71,7 +71,7 @@ class UserRepositoryImplTest {
             repository.updateUser(
                 userId = userId,
                 status = UpdateField.Set(UserAccountStatus.BANNED),
-                statusBeforeDeletion = UpdateField.Set(UserAccountStatus.ACTIVE),
+                statusOnRestore = UpdateField.Set(UserAccountStatus.ACTIVE),
                 authorityLevel = UpdateField.Set(10),
                 permissionCodes = UpdateField.Set(permissions),
                 isTotpEnabled = UpdateField.Set(true),
@@ -83,7 +83,7 @@ class UserRepositoryImplTest {
 
         val updated = (result as AppResult.Success).data
         assertEquals(UserAccountStatus.BANNED, updated.accountStatus)
-        assertEquals(UserAccountStatus.ACTIVE, updated.accountStatusBeforeDeletion)
+        assertEquals(UserAccountStatus.ACTIVE, updated.accountStatusOnRestore)
         assertEquals(10, updated.authorityLevel)
         assertEquals(permissions, updated.permissionCodes)
         assertTrue(updated.isTotpEnabled)
@@ -115,7 +115,7 @@ class UserRepositoryImplTest {
                 sortOrder = SortOrder.DESC,
                 roles = listOf(UserRole.ADMIN),
                 accountStatuses = listOf(UserAccountStatus.ACTIVE),
-                accountStatusesBeforeDeletion = emptyList(),
+                accountStatusesOnRestore = emptyList(),
                 authorityLevelFrom = 40,
                 authorityLevelTo = 60,
                 permissionCodes = setOf(permission),

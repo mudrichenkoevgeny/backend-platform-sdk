@@ -15,6 +15,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundS
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.model.WebSocketPubSubMessage
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.websocket.mergeClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonWebSocketCloseReasons
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
@@ -289,9 +290,13 @@ class KtorWebSocketManager @Inject constructor(
                         val userDetailsPayload = FoundationJson.decodeFromJsonElement<UserDetailsPayload>(payload)
                         val userAccountStatus = UserAccountStatus
                             .fromValueOrNull(userDetailsPayload.accountStatus)
+                        val accountLockoutType = AccountLockoutType.fromValueOrNull(userDetailsPayload.lockoutType)
+
                         if (userAccountStatus == UserAccountStatus.BANNED
                             || userAccountStatus == UserAccountStatus.SECURITY_HOLD
                             || userAccountStatus == UserAccountStatus.PENDING_DELETION
+                            || accountLockoutType == AccountLockoutType.INDEFINITE
+                            || accountLockoutType == AccountLockoutType.TEMPORARY
                         ) {
                             session.closeNormal()
                         }

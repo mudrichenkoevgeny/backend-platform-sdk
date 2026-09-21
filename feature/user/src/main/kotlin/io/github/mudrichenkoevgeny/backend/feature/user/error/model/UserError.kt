@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.CommonErrorArgs
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorArgs
@@ -67,22 +68,44 @@ sealed class UserError(
     )
 
     /**
-     * User account has been blocked and cannot perform the action.
+     * User account has been banned.
      *
      * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
-     * @param blockedUntil Optional timestamp when temporary lockout expires; sent in [publicArgs].
      */
-    class UserBlocked(
-        val userId: UserId? = null,
-        val blockedUntil: Instant? = null
+    class UserBanned(
+        val userId: UserId? = null
     ) : UserError(
         errorId = ErrorId.generate(),
-        code = UserErrorCodes.USER_BLOCKED,
-        secretArgs = userId?.let {
-            userId -> mapOf(UserErrorArgs.USER_ID to userId.asHexDashString())
+        code = UserErrorCodes.USER_BANNED,
+        secretArgs = userId?.let { userId ->
+            mapOf(UserErrorArgs.USER_ID to userId.asHexDashString())
         },
-        publicArgs = blockedUntil?.let {
-            mapOf(UserErrorArgs.BLOCKED_UNTIL to it.toEpochMilliseconds().toString())
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
+     * User account is temporarily or indefinitely locked out due to security checks or failed login attempts.
+     *
+     * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
+     * @param lockoutType Category of account lockout; sent in [publicArgs].
+     * @param temporaryLockoutUntil Optional timestamp when temporary lockout expires; sent in [publicArgs].
+     */
+    class UserLocked(
+        val userId: UserId? = null,
+        val lockoutType: AccountLockoutType,
+        val temporaryLockoutUntil: Instant? = null
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.USER_LOCKED,
+        secretArgs = userId?.let { userId ->
+            mapOf(UserErrorArgs.USER_ID to userId.asHexDashString())
+        },
+        publicArgs = buildMap {
+            put(UserErrorArgs.ACCOUNT_LOCKOUT_TYPE, lockoutType.serialName)
+            temporaryLockoutUntil?.let {
+                put(UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL, it.toEpochMilliseconds().toString())
+            }
         },
         httpStatusCode = HttpStatusCode.Forbidden,
         appErrorSeverity = AppErrorSeverity.LOW

@@ -16,7 +16,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
  * @property listing Pagination, [UserSortValues.UserSortBy] field, and sort direction.
  * @property roles Filter by one or more [UserRole] (e.g., ADMIN, STAFF).
  * @property accountStatuses Filter by current [UserAccountStatus] (e.g., ACTIVE, BANNED).
- * @property accountStatusesBeforeDeletion Filter by the status a user had before moving to PENDING_DELETION.
+ * @property accountStatusesOnRestore Filter by target status assigned upon account restoration.
  * @property authorityLevelFrom Lower bound for authority level filtering (inclusive).
  * @property authorityLevelTo Upper bound for authority level filtering (inclusive).
  * @property requiredPermissionCodes Filter for users possessing all specified [PermissionCode]s.
@@ -27,7 +27,7 @@ data class UserListQueryParams(
     val listing: ListingQueryParams<UserSortValues.UserSortBy>,
     val roles: List<UserRole>,
     val accountStatuses: List<UserAccountStatus>,
-    val accountStatusesBeforeDeletion: List<UserAccountStatus>,
+    val accountStatusesOnRestore: List<UserAccountStatus>,
     val authorityLevelFrom: Int?,
     val authorityLevelTo: Int?,
     val requiredPermissionCodes: Set<PermissionCode>,

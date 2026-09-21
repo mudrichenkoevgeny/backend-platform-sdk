@@ -8,13 +8,12 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateRoleAndStatus
+import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionIdFromCredential
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
@@ -27,7 +26,6 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.time.Clock
 
 /**
  * JWT-based implementation of [AuthenticationProvider] for Ktor.
@@ -125,25 +123,9 @@ class JwtAuthenticationProvider @Inject constructor(
             is AppResult.Error -> return userResult
         }
 
-        if (user.lockoutType == AccountLockoutType.INDEFINITE) {
-            return AppResult.Error(UserError.UserBlocked(userId = userId))
-        }
-
-        if (user.lockoutType == AccountLockoutType.TEMPORARY) {
-            val now = Clock.System.now()
-            val temporaryLockoutUntil = user.temporaryLockoutUntil
-            if (temporaryLockoutUntil != null && now < temporaryLockoutUntil) {
-                return AppResult.Error(
-                    UserError.UserBlocked(
-                        userId = userId,
-                        blockedUntil = temporaryLockoutUntil
-                    )
-                )
-            }
-        }
-
-        user.validateRoleAndStatus(allowedRoles, allowedAccountStatuses)?.let { error ->
-            return AppResult.Error(error)
+        val validateResult = user.validateAccessEligibility(allowedRoles, allowedAccountStatuses)
+        if (validateResult is AppResult.Error) {
+            return AppResult.Error(validateResult.error)
         }
 
         if (requiredPermissions.isNotEmpty() && !user.permissionCodes.containsAll(requiredPermissions)) {

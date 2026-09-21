@@ -5,7 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
-import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateRoleAndStatus
+import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
@@ -139,9 +139,10 @@ class UnlockByPhoneUseCase @Inject constructor(
             )
         }
 
-        user.validateRoleAndStatus(allowedRoles, allowedAccountStatuses)?.let { error ->
+        val validateResult = user.validateAccessEligibility(allowedRoles, allowedAccountStatuses)
+        if (validateResult is AppResult.Error) {
             return handleError(
-                error = error,
+                error = validateResult.error,
                 actorId = user.id.asHexDashString(),
                 resourceId = user.id.asHexDashString(),
                 baseMetadata = auditMetadata

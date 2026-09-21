@@ -41,7 +41,7 @@ class UserListQueryParameterExtensionsTest {
             mapOf(
                 filterNames.ROLE to listOf(TEST_ROLE),
                 filterNames.ACCOUNT_STATUS to listOf(TEST_STATUS),
-                filterNames.ACCOUNT_STATUS_BEFORE_DELETION to listOf(TEST_STATUS),
+                filterNames.ACCOUNT_STATUS_ON_RESTORE to listOf(TEST_STATUS),
                 filterNames.AUTHORITY_LEVEL_FROM to listOf(TEST_LEVEL),
                 filterNames.AUTHORITY_LEVEL_TO to listOf("10"),
                 filterNames.PERMISSION_CODES to listOf(TEST_PERMISSION),
@@ -55,7 +55,7 @@ class UserListQueryParameterExtensionsTest {
 
         assertEquals(UserRole.ADMIN, result.roles.first())
         assertEquals(UserAccountStatus.ACTIVE, result.accountStatuses.first())
-        assertEquals(UserAccountStatus.ACTIVE, result.accountStatusesBeforeDeletion.first())
+        assertEquals(UserAccountStatus.ACTIVE, result.accountStatusesOnRestore.first())
         assertEquals(5, result.authorityLevelFrom)
         assertEquals(10, result.authorityLevelTo)
         assertTrue(result.requiredPermissionCodes.contains(PermissionCode(TEST_PERMISSION)))
@@ -102,14 +102,14 @@ class UserListQueryParameterExtensionsTest {
 
     @Test
     fun `should throw RequestHandlingException when account status before deletion is invalid`() {
-        setupMockParameters(mapOf(filterNames.ACCOUNT_STATUS_BEFORE_DELETION to listOf(INVALID_VAL)))
+        setupMockParameters(mapOf(filterNames.ACCOUNT_STATUS_ON_RESTORE to listOf(INVALID_VAL)))
 
         val exception = assertThrows<RequestHandlingException> {
             call.parseUsersListQueryParams()
         }
 
         val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.ACCOUNT_STATUS_BEFORE_DELETION, error.parameterName)
+        assertEquals(filterNames.ACCOUNT_STATUS_ON_RESTORE, error.parameterName)
     }
 
     @Test

@@ -119,13 +119,15 @@ interface AuthManager {
      * Completes the authentication process for a user who has successfully passed MFA.
      *
      * This method bypasses standard password verification and establishes a new session
-     * based on the provided identifier ID. It ensures the account is not blocked
+     * based on the provided identifier ID. It verifies role, account status, and lockout state
      * before generating the final authentication data.
      *
      * @param userId The unique identifier of the user.
      * @param userIdentifierId The ID of the specific identifier used for login.
      * @param clientInfo Information about the client device and environment.
-     * @return [AppResult] containing [AuthData] or an error if the user is blocked or data is invalid.
+     * @param allowedRoles Allowed roles for the authenticated user.
+     * @param allowedAccountStatuses Allowed account statuses for the authenticated user.
+     * @return [AppResult] containing [AuthData] or an error if the user is banned, locked out, or data is invalid.
      */
     suspend fun completeMfaAuthentication(
         userId: UserId,

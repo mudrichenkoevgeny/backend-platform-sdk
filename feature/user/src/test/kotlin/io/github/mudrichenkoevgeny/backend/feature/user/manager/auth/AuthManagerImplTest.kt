@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
@@ -42,6 +43,7 @@ class AuthManagerImplTest {
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val webSocketManager = mockk<WebSocketManager>()
     private val lockoutManager = mockk<LockoutManager>()
+    private val userLockoutService = mockk<UserLockoutService>(relaxed = true)
 
     private val authManager = AuthManagerImpl(
         userManager,
@@ -50,7 +52,8 @@ class AuthManagerImplTest {
         passwordHasher,
         authSettingsProvider,
         webSocketManager,
-        lockoutManager
+        lockoutManager,
+        userLockoutService
     )
 
     @BeforeEach
@@ -62,6 +65,12 @@ class AuthManagerImplTest {
         coEvery { lockoutManager.isIndefiniteLockout(any()) } returns AppResult.Success(false)
         coEvery { lockoutManager.getLockoutUntil(any()) } returns AppResult.Success(null)
         coEvery { lockoutManager.clearLockout(any()) } returns AppResult.Success(Unit)
+
+        coEvery { userLockoutService.checkLockout(any<String>(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.checkLockout(any<List<String>>(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.recordFailedAttempt(any<String>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.recordFailedAttempt(any<List<String>>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.clearLockout(any()) } returns AppResult.Success(Unit)
     }
 
     @Test
@@ -123,7 +132,7 @@ class AuthManagerImplTest {
     }
 
     @Test
-    fun `provideAuthData returns Error UserBlocked when status is BANNED`() = runTest {
+    fun `provideAuthData returns Error UserBanned when status is BANNED`() = runTest {
         val userId = UserId.generate()
         val userDetails = createTestUserDetails(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.BANNED)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
@@ -134,13 +143,18 @@ class AuthManagerImplTest {
         coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
 
         coEvery { passwordHasher.isPasswordValid(isNull(), any()) } returns AppResult.Success(true)
+        coEvery { userLockoutService.checkLockout(any<String>(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.checkLockout(any<List<String>>(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.recordFailedAttempt(any<String>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.recordFailedAttempt(any<List<String>>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.clearLockout(any()) } returns AppResult.Success(Unit)
 
         val result = authManager.authenticateExistingUser(
             mockk(relaxed = true), UserAuthProvider.GOOGLE, "ext-id", null
         )
 
         assertTrue(result is AppResult.Error)
-        assertTrue((result as AppResult.Error).error is UserError.UserBlocked)
+        assertTrue((result as AppResult.Error).error is UserError.UserBanned)
     }
 
     @Test
@@ -269,3 +283,4 @@ class AuthManagerImplTest {
         assertTrue((result as AppResult.Error).error is UserError.UserRoleNotAllowed)
     }
 }
+

@@ -26,6 +26,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.i
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -86,6 +87,7 @@ class UnlockByExternalAuthProviderUseCaseTest {
             every { id } returns userId
             every { role } returns UserRole.USER
             every { accountStatus } returns UserAccountStatus.ACTIVE
+            every { lockoutType } returns AccountLockoutType.NONE
         }
 
         every { securitySettingsProvider.getAccountLockoutPolicy() } returns lockoutPolicy

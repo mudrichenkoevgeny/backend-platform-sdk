@@ -68,7 +68,6 @@ class GlobalSettingsProviderImpl @Inject constructor(
             privacyPolicyUrl = getPrivacyPolicyUrl(),
             termsOfServiceUrl = getTermsOfServiceUrl(),
             contactSupportEmail = getContactSupportEmail(),
-            maintenanceUntilEpochMillis = null,
             minSupportedAppVersions = getMinSupportedAppVersions()
         )
     }
@@ -78,7 +77,6 @@ class GlobalSettingsProviderImpl @Inject constructor(
             privacyPolicyUrl = getPrivacyPolicyUrl(),
             termsOfServiceUrl = getTermsOfServiceUrl(),
             contactSupportEmail = getContactSupportEmail(),
-            maintenanceUntilEpochMillis = null,
             minSupportedAppVersions = getMinSupportedAppVersions(),
             isTracingEnabled = getIsTracingEnabled(),
             isMetricsEnabled = getIsMetricsEnabled(),

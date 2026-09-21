@@ -10,7 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionRequirement
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
-import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateRoleAndStatus
+import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
@@ -308,8 +308,9 @@ class SessionManagerImpl @Inject constructor(
                 is AppResult.Error -> return@dbQuery userResult
             }
 
-            user.validateRoleAndStatus(allowedRoles, allowedAccountStatuses)?.let { error ->
-                return@dbQuery AppResult.Error(error)
+            val validateResult = user.validateAccessEligibility(allowedRoles, allowedAccountStatuses)
+            if (validateResult is AppResult.Error) {
+                return@dbQuery validateResult
             }
 
             userSessionRepository.deleteUserSessionById(currentUserSession.id)

@@ -8,6 +8,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManagerImpl
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManagerImpl
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutServiceImpl
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManagerImpl
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
@@ -47,4 +49,7 @@ interface UserManagersModule {
     @Binds
     @Singleton
     fun bindTotpManager(totpManagerImpl: TotpManagerImpl): TotpManager
+    @Binds
+    @Singleton
+    fun bindUserLockoutService(impl: UserLockoutServiceImpl): UserLockoutService
 }

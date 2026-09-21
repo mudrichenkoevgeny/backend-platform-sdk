@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.user
 
+import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
@@ -94,7 +95,7 @@ class UserManagerImplTest {
             userRepository.updateUser(
                 userId = userId,
                 status = any(),
-                statusBeforeDeletion = any(),
+                statusOnRestore = any(),
                 authorityLevel = any(),
                 permissionCodes = any(),
                 scheduledPermanentDeletionAt = any()
@@ -108,6 +109,42 @@ class UserManagerImplTest {
 
         assertTrue(result is AppResult.Success)
         assertEquals(UserAccountStatus.PENDING_DELETION, (result as AppResult.Success).data?.accountStatus)
+    }
+
+    @Test
+    fun `updateUserForManagement updates accountStatusOnRestore when user is pending deletion`() = runTest {
+        val user = createSampleUserDetails(
+            uId = userId,
+            status = UserAccountStatus.PENDING_DELETION
+        ).copy(accountStatusOnRestore = UserAccountStatus.ACTIVE)
+
+        val updatedUser = user.copy(
+            accountStatus = UserAccountStatus.PENDING_DELETION,
+            accountStatusOnRestore = UserAccountStatus.BANNED
+        )
+
+        coEvery {
+            userRepository.updateUser(
+                userId = userId,
+                status = UpdateField.Ignore,
+                statusOnRestore = UpdateField.Set(UserAccountStatus.BANNED),
+                authorityLevel = any(),
+                permissionCodes = any(),
+                scheduledPermanentDeletionAt = UpdateField.Ignore,
+                accountLockoutType = any(),
+                temporaryLockoutUntil = any()
+            )
+        } returns AppResult.Success(updatedUser)
+
+        val result = userManager.updateUserForManagement(
+            user = user,
+            accountStatus = UserAccountStatus.BANNED
+        )
+
+        assertTrue(result is AppResult.Success)
+        val data = (result as AppResult.Success).data
+        assertEquals(UserAccountStatus.PENDING_DELETION, data?.accountStatus)
+        assertEquals(UserAccountStatus.BANNED, data?.accountStatusOnRestore)
     }
 
     @Test
@@ -152,7 +189,7 @@ class UserManagerImplTest {
                 sortOrder = any(),
                 roles = any(),
                 accountStatuses = any(),
-                accountStatusesBeforeDeletion = any(),
+                accountStatusesOnRestore = any(),
                 authorityLevelFrom = any(),
                 authorityLevelTo = any(),
                 permissionCodes = any(),
@@ -168,7 +205,7 @@ class UserManagerImplTest {
             sortOrder = SortOrder.DESC,
             roles = emptyList(),
             accountStatuses = emptyList(),
-            accountStatusesBeforeDeletion = emptyList(),
+            accountStatusesOnRestore = emptyList(),
             authorityLevelFrom = null,
             authorityLevelTo = null,
             permissionCodes = emptySet(),
@@ -185,7 +222,7 @@ class UserManagerImplTest {
             userRepository.updateUser(
                 userId = userId,
                 status = any(),
-                statusBeforeDeletion = any(),
+                statusOnRestore = any(),
                 scheduledPermanentDeletionAt = any()
             )
         } returns AppResult.Success(user)
@@ -203,7 +240,7 @@ class UserManagerImplTest {
             userRepository.updateUser(
                 userId = userId,
                 status = any(),
-                statusBeforeDeletion = any(),
+                statusOnRestore = any(),
                 scheduledPermanentDeletionAt = any()
             )
         } returns AppResult.Success(user)
@@ -240,7 +277,7 @@ class UserManagerImplTest {
         id = uId,
         role = role,
         accountStatus = status,
-        accountStatusBeforeDeletion = status,
+        accountStatusOnRestore = status,
         authorityLevel = 1,
         lastLoginAt = Clock.System.now(),
         lastActiveAt = Clock.System.now()

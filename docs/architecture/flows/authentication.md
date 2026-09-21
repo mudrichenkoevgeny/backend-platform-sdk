@@ -148,7 +148,7 @@ sequenceDiagram
     alt Code is incorrect
         OtpService-->>LoginOTP: false
         LoginOTP->>Lockout: recordFailedAttempt(phoneNumber, OTP)
-        LoginOTP-->>Client: 400 WrongConfirmationCode (or 403 UserBlocked)
+        LoginOTP-->>Client: 400 WrongConfirmationCode (or 403 UserLocked)
     else Code is correct
         OtpService-->>LoginOTP: true
         LoginOTP->>AuthManager: authenticateOrCreateUser(phoneNumber)

@@ -114,7 +114,7 @@ interface UserManager {
      * @param sortOrder Sorting direction.
      * @param roles Optional filters for specific user roles.
      * @param accountStatuses Optional filters for current account statuses.
-     * @param accountStatusesBeforeDeletion Optional filters for status-before-deletion.
+     * @param accountStatusesOnRestore Optional filters for target status assigned on account restore.
      * @param authorityLevelFrom inclusive lower bound for authority level.
      * @param authorityLevelTo inclusive upper bound for authority level.
      * @param permissionCodes Optional filter for users possessing ALL specified permissions.
@@ -129,7 +129,7 @@ interface UserManager {
         sortOrder: SortOrder = SortOrder.DESC,
         roles: List<UserRole> = emptyList(),
         accountStatuses: List<UserAccountStatus> = emptyList(),
-        accountStatusesBeforeDeletion: List<UserAccountStatus> = emptyList(),
+        accountStatusesOnRestore: List<UserAccountStatus> = emptyList(),
         authorityLevelFrom: Int? = null,
         authorityLevelTo: Int? = null,
         permissionCodes: Set<PermissionCode> = emptySet(),
@@ -188,15 +188,15 @@ interface UserManager {
     ): AppResult<UserDetails>
 
     /**
-     * Locks a user account temporarily until [blockedUntil].
+     * Locks a user account temporarily until [temporaryLockoutUntil].
      *
      * @param userId The ID of the user to lock.
-     * @param blockedUntil The timestamp when lockout expires.
+     * @param temporaryLockoutUntil The timestamp when lockout expires.
      * @return [AppResult.Success] with the updated [UserDetails] or an error.
      */
     suspend fun lockUserAccount(
         userId: UserId,
-        blockedUntil: Instant
+        temporaryLockoutUntil: Instant
     ): AppResult<UserDetails>
 
     /**

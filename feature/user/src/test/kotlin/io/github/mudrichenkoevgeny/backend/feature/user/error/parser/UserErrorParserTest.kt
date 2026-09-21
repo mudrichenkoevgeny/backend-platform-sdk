@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.CommonErrorP
 import io.github.mudrichenkoevgeny.backend.core.common.util.formatEpochMillisToUtcString
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.model.ApiErrorResponse
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorCodes
 import io.mockk.every
@@ -21,8 +22,8 @@ import kotlin.time.Instant
  *
  * Verifies that [UserErrorParser]:
  * - Returns null for error code and args based lookup.
- * - Correctly formats `BLOCKED_UNTIL` epoch millis into a UTC date string when processing `USER_BLOCKED` errors.
- * - Returns null when error is not `USER_BLOCKED` or lacks `BLOCKED_UNTIL`.
+ * - Correctly formats `TEMPORARY_LOCKOUT_UNTIL` epoch millis into a UTC date string when processing `USER_LOCKED` errors.
+ * - Returns null when error is not `USER_LOCKED` or lacks `TEMPORARY_LOCKOUT_UNTIL`.
  */
 class UserErrorParserTest {
 
@@ -33,7 +34,7 @@ class UserErrorParserTest {
     fun `getApiErrorResponse by code returns null`() {
         val response = parser.getApiErrorResponse(
             errorId = ErrorId.generate(),
-            code = UserErrorCodes.USER_BLOCKED,
+            code = UserErrorCodes.USER_LOCKED,
             args = null,
             locale = "en"
         )
@@ -41,23 +42,26 @@ class UserErrorParserTest {
     }
 
     @Test
-    fun `getApiErrorResponse by AppError formats epoch millis and delegates when code is USER_BLOCKED`() {
-        val blockedUntilEpoch = 1700000000000L
-        val formattedDate = blockedUntilEpoch.formatEpochMillisToUtcString()
-        val appError = UserError.UserBlocked(blockedUntil = Instant.fromEpochMilliseconds(blockedUntilEpoch))
+    fun `getApiErrorResponse by AppError formats epoch millis and delegates when code is USER_LOCKED`() {
+        val lockoutUntilEpoch = 1700000000000L
+        val formattedDate = lockoutUntilEpoch.formatEpochMillisToUtcString()
+        val appError = UserError.UserLocked(
+            lockoutType = AccountLockoutType.TEMPORARY,
+            temporaryLockoutUntil = Instant.fromEpochMilliseconds(lockoutUntilEpoch)
+        )
 
         val expectedResponse = ApiErrorResponse(
             id = appError.errorId.asHexDashString(),
-            code = UserErrorCodes.USER_BLOCKED,
-            message = "User is blocked until $formattedDate",
-            args = mapOf(UserErrorArgs.BLOCKED_UNTIL to formattedDate)
+            code = UserErrorCodes.USER_LOCKED,
+            message = "User is locked until $formattedDate",
+            args = mapOf(UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL to formattedDate)
         )
 
         every {
             commonParser.getApiErrorResponse(
                 errorId = appError.errorId,
-                code = UserErrorCodes.USER_BLOCKED,
-                args = match { map -> map[UserErrorArgs.BLOCKED_UNTIL] == formattedDate },
+                code = UserErrorCodes.USER_LOCKED,
+                args = match { map -> map[UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL] == formattedDate },
                 locale = "en"
             )
         } returns expectedResponse
@@ -68,15 +72,15 @@ class UserErrorParserTest {
         verify(exactly = 1) {
             commonParser.getApiErrorResponse(
                 errorId = appError.errorId,
-                code = UserErrorCodes.USER_BLOCKED,
-                args = match { map -> map[UserErrorArgs.BLOCKED_UNTIL] == formattedDate },
+                code = UserErrorCodes.USER_LOCKED,
+                args = match { map -> map[UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL] == formattedDate },
                 locale = "en"
             )
         }
     }
 
     @Test
-    fun `getApiErrorResponse by AppError returns null when code is not USER_BLOCKED`() {
+    fun `getApiErrorResponse by AppError returns null when code is not USER_LOCKED`() {
         val appError = createTestAppError(code = "OTHER_USER_ERROR")
 
         val response = parser.getApiErrorResponse(appError, "en")
@@ -86,8 +90,8 @@ class UserErrorParserTest {
     }
 
     @Test
-    fun `getApiErrorResponse by AppError returns null when USER_BLOCKED lacks BLOCKED_UNTIL arg`() {
-        val appError = createTestAppError(code = UserErrorCodes.USER_BLOCKED, publicArgs = emptyMap<String, Any>())
+    fun `getApiErrorResponse by AppError returns null when USER_LOCKED lacks TEMPORARY_LOCKOUT_UNTIL arg`() {
+        val appError = createTestAppError(code = UserErrorCodes.USER_LOCKED, publicArgs = emptyMap<String, Any>())
 
         val response = parser.getApiErrorResponse(appError, "en")
 

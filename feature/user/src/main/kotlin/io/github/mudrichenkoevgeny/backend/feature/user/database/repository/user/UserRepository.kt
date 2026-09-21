@@ -48,7 +48,7 @@ interface UserRepository {
      *
      * @param userId unique identifier of the user to update.
      * @param status new account status.
-     * @param statusBeforeDeletion status to preserve during the deletion process.
+     * @param statusOnRestore status assigned when user restores account from deletion.
      * @param authorityLevel new authority level.
      * @param permissionCodes new set of effective permissions.
      * @param isTotpEnabled TOTP enablement status.
@@ -62,7 +62,7 @@ interface UserRepository {
     suspend fun updateUser(
         userId: UserId,
         status: UpdateField<UserAccountStatus> = UpdateField.Ignore,
-        statusBeforeDeletion: UpdateField<UserAccountStatus> = UpdateField.Ignore,
+        statusOnRestore: UpdateField<UserAccountStatus> = UpdateField.Ignore,
         authorityLevel: UpdateField<Int> = UpdateField.Ignore,
         permissionCodes: UpdateField<Set<PermissionCode>> = UpdateField.Ignore,
         isTotpEnabled: UpdateField<Boolean> = UpdateField.Ignore,
@@ -94,7 +94,7 @@ interface UserRepository {
      * @param sortOrder Sort direction.
      * @param roles Filter by one or more roles.
      * @param accountStatuses Filter by one or more account statuses.
-     * @param accountStatusesBeforeDeletion Filter by one or more pre-deletion account statuses.
+     * @param accountStatusesOnRestore Filter by target account status assigned on restore.
      * @param authorityLevelFrom optional inclusive lower bound for authority level.
      * @param authorityLevelTo optional inclusive upper bound for authority level.
      * @param permissionCodes list of permission codes that the user MUST possess (ALL of them).
@@ -109,7 +109,7 @@ interface UserRepository {
         sortOrder: SortOrder = SortOrder.DESC,
         roles: List<UserRole> = emptyList(),
         accountStatuses: List<UserAccountStatus> = emptyList(),
-        accountStatusesBeforeDeletion: List<UserAccountStatus> = emptyList(),
+        accountStatusesOnRestore: List<UserAccountStatus> = emptyList(),
         authorityLevelFrom: Int? = null,
         authorityLevelTo: Int? = null,
         permissionCodes: Set<PermissionCode> = emptySet(),

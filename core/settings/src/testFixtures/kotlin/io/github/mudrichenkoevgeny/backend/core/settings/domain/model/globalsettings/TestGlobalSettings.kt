@@ -8,7 +8,6 @@ fun createTestManagementGlobalSettings(
     privacyPolicyUrl: String? = "https://example.com/privacy",
     termsOfServiceUrl: String? = "https://example.com/terms",
     contactSupportEmail: String? = "support@example.com",
-    maintenanceUntilEpochMillis: Long? = null,
     minSupportedAppVersions: Map<ClientType, String> = emptyMap(),
     isTracingEnabled: Boolean = false,
     isMetricsEnabled: Boolean = false,
@@ -17,7 +16,6 @@ fun createTestManagementGlobalSettings(
     privacyPolicyUrl = privacyPolicyUrl,
     termsOfServiceUrl = termsOfServiceUrl,
     contactSupportEmail = contactSupportEmail,
-    maintenanceUntilEpochMillis = maintenanceUntilEpochMillis,
     minSupportedAppVersions = minSupportedAppVersions,
     isTracingEnabled = isTracingEnabled,
     isMetricsEnabled = isMetricsEnabled,
@@ -28,12 +26,10 @@ fun createTestOpenGlobalSettings(
     privacyPolicyUrl: String? = "https://example.com/privacy",
     termsOfServiceUrl: String? = "https://example.com/terms",
     contactSupportEmail: String? = "support@example.com",
-    maintenanceUntilEpochMillis: Long? = null,
     minSupportedAppVersions: Map<ClientType, String> = emptyMap()
 ) = OpenGlobalSettings(
     privacyPolicyUrl = privacyPolicyUrl,
     termsOfServiceUrl = termsOfServiceUrl,
     contactSupportEmail = contactSupportEmail,
-    maintenanceUntilEpochMillis = maintenanceUntilEpochMillis,
     minSupportedAppVersions = minSupportedAppVersions
 )

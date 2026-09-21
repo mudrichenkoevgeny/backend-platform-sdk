@@ -41,7 +41,6 @@ class GlobalSettingsConfigFactoryImpl @Inject constructor(
             privacyPolicyUrl = privacyPolicyUrl,
             termsOfServiceUrl = termsOfServiceUrl,
             contactSupportEmail = contactSupportEmail,
-            maintenanceUntilEpochMillis = null,
             minSupportedAppVersions = minSupportedAppVersions,
             isTracingEnabled = isTracingEnabled,
             isMetricsEnabled = isMetricsEnabled,

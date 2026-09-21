@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
@@ -41,8 +42,8 @@ class LoginByPhoneUseCaseTest {
     private val otpService = mockk<OtpService>()
     private val authManager = mockk<AuthManager>()
     private val lockoutManager = mockk<LockoutManager>(relaxed = true)
-    private val identifierManager = mockk<IdentifierManager>()
-    private val userManager = mockk<UserManager>()
+    private val userLockoutService = mockk<UserLockoutService>(relaxed = true)
+    private val identifierManager = mockk<IdentifierManager>(relaxed = true)
 
     private val useCase = LoginByPhoneUseCase(
         rateLimiter = rateLimiter,
@@ -50,17 +51,17 @@ class LoginByPhoneUseCaseTest {
         auditErrorConverter = auditErrorConverter,
         otpService = otpService,
         authManager = authManager,
-        lockoutManager = lockoutManager,
-        identifierManager = identifierManager,
-        userManager = userManager
+        userLockoutService = userLockoutService,
+        identifierManager = identifierManager
     )
 
     @BeforeEach
     fun setup() {
-        coEvery { lockoutManager.isIndefiniteLockout(any()) } returns AppResult.Success(false)
-        coEvery { lockoutManager.getLockoutUntil(any()) } returns AppResult.Success(null)
-        coEvery { lockoutManager.clearLockout(any()) } returns AppResult.Success(Unit)
-        coEvery { lockoutManager.recordFailedAttempt(any(), any()) } returns AppResult.Success(null)
+        coEvery { userLockoutService.checkLockout(any<String>(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.checkLockout(any<List<String>>(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.recordFailedAttempt(any<String>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.recordFailedAttempt(any<List<String>>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.clearLockout(any()) } returns AppResult.Success(Unit)
     }
 
     @Test
@@ -171,7 +172,7 @@ class LoginByPhoneUseCaseTest {
     @Test
     fun `returns error when auth manager fails`() = runTest {
         val context = createTestRequestContext()
-        val authError = UserError.UserBlocked()
+        val authError = UserError.UserBanned()
         val errorLogData = AuditErrorLogData(status = AuditStatus.DENIED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)

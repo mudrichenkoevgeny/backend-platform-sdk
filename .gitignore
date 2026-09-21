@@ -14,6 +14,9 @@ out/
 .kotlin/
 kotlin-js-store/
 
+# --- Artifacts & Temp ---
+.artifacts/
+
 # --- OS / IDE Temp ---
 .DS_Store
 Thumbs.db

@@ -9,10 +9,11 @@ import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutAttemptT
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateRoleAndStatus
+import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
@@ -51,7 +52,8 @@ class AuthManagerImpl @Inject constructor(
     private val passwordHasher: PasswordHasher,
     private val authSettingsProvider: AuthSettingsProvider,
     private val webSocketManager: WebSocketManager,
-    private val lockoutManager: LockoutManager
+    private val lockoutManager: LockoutManager,
+    private val userLockoutService: UserLockoutService
 ) : AuthManager {
 
     override suspend fun authenticateOrCreateUser(
@@ -67,23 +69,9 @@ class AuthManagerImpl @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ): AppResult<AuthData> = dbQuery {
-        val isHoldByIdentifier = when (val holdResult = lockoutManager.isIndefiniteLockout(identifier)) {
-            is AppResult.Success -> holdResult.data
-            is AppResult.Error -> false
-        }
-        if (isHoldByIdentifier) {
-            return@dbQuery AppResult.Error(UserError.UserBlocked())
-        }
-
-        val lockoutCheck = lockoutManager.getLockoutUntil(identifier)
-        val lockoutUntilByIdentifier = when (lockoutCheck) {
-            is AppResult.Success -> lockoutCheck.data
-            is AppResult.Error -> null
-        }
-        if (lockoutUntilByIdentifier != null) {
-            return@dbQuery AppResult.Error(
-                UserError.UserBlocked(blockedUntil = lockoutUntilByIdentifier)
-            )
+        val checkLockoutResult = userLockoutService.checkLockout(identifier)
+        if (checkLockoutResult is AppResult.Error) {
+            return@dbQuery checkLockoutResult
         }
 
         val getOrCreateUserIdentifierResult = getOrCreateIdentifierForUnauthorizedUser(
@@ -129,37 +117,12 @@ class AuthManagerImpl @Inject constructor(
             is AppResult.Error -> return@dbQuery resolvedUserIdResult
         }
 
-        val isHoldByIdentifier = when (val holdResult = lockoutManager.isIndefiniteLockout(identifier)) {
-            is AppResult.Success -> holdResult.data
-            is AppResult.Error -> false
-        }
-        val isHoldByUserId = when (val holdResult = lockoutManager.isIndefiniteLockout(userId.asHexDashString())) {
-            is AppResult.Success -> holdResult.data
-            is AppResult.Error -> false
-        }
-        if (isHoldByIdentifier || isHoldByUserId) {
-            userManager.lockUserAccountIndefinitely(userId)
-            return@dbQuery AppResult.Error(UserError.UserBlocked(userId = userId))
-        }
-
-        val lockoutCheck = lockoutManager.getLockoutUntil(identifier)
-        val lockoutUntilByIdentifier = when (lockoutCheck) {
-            is AppResult.Success -> lockoutCheck.data
-            is AppResult.Error -> null
-        }
-        val lockoutCheckByUserId = lockoutManager.getLockoutUntil(userId.asHexDashString())
-        val lockoutUntilByUserId = when (lockoutCheckByUserId) {
-            is AppResult.Success -> lockoutCheckByUserId.data
-            is AppResult.Error -> null
-        }
-        val lockoutUntil = lockoutUntilByIdentifier ?: lockoutUntilByUserId
-        if (lockoutUntil != null) {
-            return@dbQuery AppResult.Error(
-                UserError.UserBlocked(
-                    userId = userId,
-                    blockedUntil = lockoutUntil
-                )
-            )
+        val checkLockoutResult = userLockoutService.checkLockout(
+            identifiers = listOf(identifier, userId.asHexDashString()),
+            userId = userId
+        )
+        if (checkLockoutResult is AppResult.Error) {
+            return@dbQuery checkLockoutResult
         }
 
         val userIdentifierResult = getIdentifierByUserId(
@@ -325,27 +288,12 @@ class AuthManagerImpl @Inject constructor(
         }
 
         if (resolvedUserId != null) {
-            val isHoldByUserId = when (val holdResult = lockoutManager.isIndefiniteLockout(resolvedUserId.asHexDashString())) {
-                is AppResult.Success -> holdResult.data
-                is AppResult.Error -> false
-            }
-            if (isHoldByUserId) {
-                userManager.lockUserAccountIndefinitely(resolvedUserId)
-                return AppResult.Error(UserError.UserBlocked(userId = resolvedUserId))
-            }
-
-            val lockoutCheckByUserId = lockoutManager.getLockoutUntil(resolvedUserId.asHexDashString())
-            val lockoutUntilByUserId = when (lockoutCheckByUserId) {
-                is AppResult.Success -> lockoutCheckByUserId.data
-                is AppResult.Error -> null
-            }
-            if (lockoutUntilByUserId != null) {
-                return AppResult.Error(
-                    UserError.UserBlocked(
-                        userId = resolvedUserId,
-                        blockedUntil = lockoutUntilByUserId
-                    )
-                )
+            val checkLockoutResult = userLockoutService.checkLockout(
+                identifier = resolvedUserId.asHexDashString(),
+                userId = resolvedUserId
+            )
+            if (checkLockoutResult is AppResult.Error) {
+                return checkLockoutResult
             }
         }
 
@@ -500,42 +448,19 @@ class AuthManagerImpl @Inject constructor(
                 }
             }
             if (!isPasswordValid) {
-                val recordResultIdentifier = lockoutManager.recordFailedAttempt(
-                    identifier = userIdentifierInternal.identifier,
-                    type = LockoutAttemptType.PASSWORD
+                val recordFailedAttemptResult = userLockoutService.recordFailedAttempt(
+                    identifiers = listOf(userIdentifierInternal.identifier, userId.asHexDashString()),
+                    type = LockoutAttemptType.PASSWORD,
+                    userId = userId
                 )
-                val recordResultUserId = lockoutManager.recordFailedAttempt(
-                    identifier = userId.asHexDashString(),
-                    type = LockoutAttemptType.PASSWORD
-                )
-
-                val blockedUntilIdentifier = when (recordResultIdentifier) {
-                    is AppResult.Success -> recordResultIdentifier.data
-                    is AppResult.Error -> null
-                }
-                val blockedUntilUserId = when (recordResultUserId) {
-                    is AppResult.Success -> recordResultUserId.data
-                    is AppResult.Error -> null
-                }
-
-                val blockedUntil = if (blockedUntilIdentifier != null && blockedUntilUserId != null) {
-                    if (blockedUntilIdentifier > blockedUntilUserId) blockedUntilIdentifier else blockedUntilUserId
-                } else {
-                    blockedUntilIdentifier ?: blockedUntilUserId
-                }
-
-                if (blockedUntil != null) {
-                    userManager.lockUserAccount(userId, blockedUntil)
-                    AppResult.Error(
-                        UserError.UserBlocked(
-                            userId = userId,
-                            blockedUntil = blockedUntil
-                        )
-                    )
-                } else {
-                    AppResult.Error(UserError.InvalidCredentials())
+                when (recordFailedAttemptResult) {
+                    is AppResult.Success -> AppResult.Error(UserError.InvalidCredentials())
+                    is AppResult.Error -> recordFailedAttemptResult
                 }
             } else {
+                userLockoutService.clearLockout(
+                    identifiers = listOf(userIdentifierInternal.identifier, userId.asHexDashString())
+                )
                 AppResult.Success(userIdentifierInternal)
             }
         } else {
@@ -562,25 +487,15 @@ class AuthManagerImpl @Inject constructor(
             }
         }
 
-        user.validateRoleAndStatus(allowedRoles, allowedAccountStatuses)?.let { error ->
-            return AppResult.Error(error)
-        }
-
-        if (user.lockoutType == AccountLockoutType.INDEFINITE) {
-            return AppResult.Error(UserError.UserBlocked(userId = user.id))
+        val validateResult = user.validateAccessEligibility(allowedRoles, allowedAccountStatuses)
+        if (validateResult is AppResult.Error) {
+            return AppResult.Error(validateResult.error)
         }
 
         if (user.lockoutType == AccountLockoutType.TEMPORARY) {
             val now = Clock.System.now()
             val temporaryLockoutUntil = user.temporaryLockoutUntil
-            if (temporaryLockoutUntil != null && now < temporaryLockoutUntil) {
-                return AppResult.Error(
-                    UserError.UserBlocked(
-                        userId = user.id,
-                        blockedUntil = temporaryLockoutUntil
-                    )
-                )
-            } else if (temporaryLockoutUntil != null && now >= temporaryLockoutUntil) {
+            if (temporaryLockoutUntil != null && now >= temporaryLockoutUntil) {
                 userManager.unlockUserAccount(
                     userId = user.id,
                     clearLockoutForIdentifiers = listOf(userIdentifier.identifier)

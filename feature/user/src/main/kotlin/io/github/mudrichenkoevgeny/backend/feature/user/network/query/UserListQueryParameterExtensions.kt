@@ -39,10 +39,10 @@ fun ApplicationCall.parseUsersListQueryParams(): UserListQueryParams {
             )
         }
 
-    val accountStatusesBeforeDeletion = getQueryValues(filterNames.ACCOUNT_STATUS_BEFORE_DELETION)
+    val accountStatusesOnRestore = getQueryValues(filterNames.ACCOUNT_STATUS_ON_RESTORE)
         .map { statusValue ->
             UserAccountStatus.fromValueOrNull(statusValue) ?: throw RequestHandlingException(
-                CommonError.InvalidParameterValue(filterNames.ACCOUNT_STATUS_BEFORE_DELETION)
+                CommonError.InvalidParameterValue(filterNames.ACCOUNT_STATUS_ON_RESTORE)
             )
         }
 
@@ -66,7 +66,7 @@ fun ApplicationCall.parseUsersListQueryParams(): UserListQueryParams {
         listing = listing,
         roles = roles,
         accountStatuses = accountStatuses,
-        accountStatusesBeforeDeletion = accountStatusesBeforeDeletion,
+        accountStatusesOnRestore = accountStatusesOnRestore,
         authorityLevelFrom = authorityLevelFrom,
         authorityLevelTo = authorityLevelTo,
         requiredPermissionCodes = requiredPermissionCodes,

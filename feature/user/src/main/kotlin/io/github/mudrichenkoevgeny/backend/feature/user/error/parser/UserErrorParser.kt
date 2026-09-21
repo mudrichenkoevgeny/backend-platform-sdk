@@ -32,13 +32,14 @@ class UserErrorParser @Inject constructor(
         appError: AppError,
         locale: String,
     ): ApiErrorResponse? {
-        if (appError.code == UserErrorCodes.USER_BLOCKED) {
-            val blockedUntilEpoch = appError.publicArgs?.get(UserErrorArgs.BLOCKED_UNTIL)?.toString()?.toLongOrNull()
-            if (blockedUntilEpoch != null) {
-                val formattedDate = blockedUntilEpoch.formatEpochMillisToUtcString()
+        if (appError.code == UserErrorCodes.USER_LOCKED) {
+            val lockoutUntilEpoch = appError.publicArgs?.get(UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL)
+                ?.toString()?.toLongOrNull()
+            if (lockoutUntilEpoch != null) {
+                val formattedDate = lockoutUntilEpoch.formatEpochMillisToUtcString()
                 
                 val newArgs = appError.publicArgs?.toMutableMap() ?: mutableMapOf()
-                newArgs[UserErrorArgs.BLOCKED_UNTIL] = formattedDate
+                newArgs[UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL] = formattedDate
 
                 return commonParser.getApiErrorResponse(
                     errorId = appError.errorId,

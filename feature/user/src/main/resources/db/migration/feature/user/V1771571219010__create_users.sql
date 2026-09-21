@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY,
     role VARCHAR(32) NOT NULL,
     account_status VARCHAR(32) NOT NULL,
-    account_status_before_deletion VARCHAR(32),
+    account_status_on_restore VARCHAR(32),
     authority_level INTEGER NOT NULL DEFAULT 0,
     permission_codes JSONB NOT NULL DEFAULT '[]'::jsonb,
     is_totp_enabled BOOLEAN NOT NULL DEFAULT FALSE,

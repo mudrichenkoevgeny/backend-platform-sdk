@@ -84,8 +84,8 @@ sequenceDiagram
         alt Count exceeds Policy Max Attempts
             Lockout->>Redis: set lockout TTL (Temporary or Indefinite)
             Lockout->>Postgres: dbQuery { lockUserAccount(SECURITY_HOLD) }
-            Lockout-->>Ktor: BlockedUntil Time
-            Ktor-->>Client: 403 User Blocked
+            Lockout-->>Ktor: TemporaryLockoutUntil Time
+            Ktor-->>Client: 403 User Locked
         else Within limits
             Lockout-->>Ktor: Success (recorded)
             Ktor-->>Client: 400 Wrong Password

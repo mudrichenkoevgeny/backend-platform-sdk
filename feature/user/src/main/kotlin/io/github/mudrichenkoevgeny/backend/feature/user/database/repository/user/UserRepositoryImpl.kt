@@ -57,7 +57,7 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             row[id] = user.id.value
             row[role] = user.role
             row[accountStatus] = user.accountStatus
-            row[accountStatusBeforeDeletion] = user.accountStatusBeforeDeletion
+            row[accountStatusOnRestore] = user.accountStatusOnRestore
             row[authorityLevel] = user.authorityLevel
             row[permissionCodes] = user.permissionCodes.map { it.value }.toSet()
             row[isTotpEnabled] = user.isTotpEnabled
@@ -87,7 +87,7 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
     override suspend fun updateUser(
         userId: UserId,
         status: UpdateField<UserAccountStatus>,
-        statusBeforeDeletion: UpdateField<UserAccountStatus>,
+        statusOnRestore: UpdateField<UserAccountStatus>,
         authorityLevel: UpdateField<Int>,
         permissionCodes: UpdateField<Set<PermissionCode>>,
         isTotpEnabled: UpdateField<Boolean>,
@@ -119,8 +119,8 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
                 updateStatement[UsersTable.accountStatus] = accountStatus
             }
 
-            statusBeforeDeletion.onSet { accountStatusBeforeDeletion ->
-                updateStatement[UsersTable.accountStatusBeforeDeletion] = accountStatusBeforeDeletion
+            statusOnRestore.onSet { accountStatusOnRestore ->
+                updateStatement[UsersTable.accountStatusOnRestore] = accountStatusOnRestore
             }
 
             authorityLevelToSet?.let { level ->
@@ -189,7 +189,7 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         sortOrder: SortOrder,
         roles: List<UserRole>,
         accountStatuses: List<UserAccountStatus>,
-        accountStatusesBeforeDeletion: List<UserAccountStatus>,
+        accountStatusesOnRestore: List<UserAccountStatus>,
         authorityLevelFrom: Int?,
         authorityLevelTo: Int?,
         permissionCodes: Set<PermissionCode>,
@@ -210,8 +210,8 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         if (accountStatuses.isNotEmpty()) {
             query.andWhere { UsersTable.accountStatus inList accountStatuses }
         }
-        if (accountStatusesBeforeDeletion.isNotEmpty()) {
-            query.andWhere { UsersTable.accountStatusBeforeDeletion inList accountStatusesBeforeDeletion }
+        if (accountStatusesOnRestore.isNotEmpty()) {
+            query.andWhere { UsersTable.accountStatusOnRestore inList accountStatusesOnRestore }
         }
 
         if (authorityLevelFrom != null) {
@@ -292,7 +292,7 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             id = UserId(this[UsersTable.id].value),
             role = this[UsersTable.role],
             accountStatus = this[UsersTable.accountStatus],
-            accountStatusBeforeDeletion = this[UsersTable.accountStatusBeforeDeletion],
+            accountStatusOnRestore = this[UsersTable.accountStatusOnRestore],
             authorityLevel = this[UsersTable.authorityLevel],
             permissionCodes = this[UsersTable.permissionCodes].map { PermissionCode(it) }.toSet(),
             isTotpEnabled = this[UsersTable.isTotpEnabled],

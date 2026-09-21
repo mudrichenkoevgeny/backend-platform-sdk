@@ -12,9 +12,8 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChalleng
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
@@ -45,7 +44,7 @@ class LoginByTotpUseCaseTest {
     private val totpManager = mockk<TotpManager>()
     private val authManager = mockk<AuthManager>()
     private val lockoutManager = mockk<LockoutManager>(relaxed = true)
-    private val userManager = mockk<UserManager>()
+    private val userLockoutService = mockk<UserLockoutService>(relaxed = true)
 
     private val useCase = LoginByTotpUseCase(
         rateLimiter = rateLimiter,
@@ -55,15 +54,16 @@ class LoginByTotpUseCaseTest {
         totpManager = totpManager,
         authManager = authManager,
         lockoutManager = lockoutManager,
-        userManager = userManager
+        userLockoutService = userLockoutService
     )
 
     @BeforeEach
     fun setup() {
-        coEvery { lockoutManager.isIndefiniteLockout(any()) } returns AppResult.Success(false)
-        coEvery { lockoutManager.getLockoutUntil(any()) } returns AppResult.Success(null)
-        coEvery { lockoutManager.clearLockout(any()) } returns AppResult.Success(Unit)
-        coEvery { lockoutManager.recordFailedAttempt(any(), any()) } returns AppResult.Success(null)
+        coEvery { userLockoutService.checkLockout(any<String>(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.checkLockout(any<List<String>>(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.recordFailedAttempt(any<String>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.recordFailedAttempt(any<List<String>>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.clearLockout(any()) } returns AppResult.Success(Unit)
     }
 
     @Test

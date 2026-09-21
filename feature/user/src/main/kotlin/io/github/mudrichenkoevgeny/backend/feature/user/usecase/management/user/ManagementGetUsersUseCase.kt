@@ -41,7 +41,7 @@ class ManagementGetUsersUseCase @Inject constructor(
      * @param sortOrder sorting direction.
      * @param roles filter by [UserDetails.role].
      * @param accountStatuses filter by [UserDetails.accountStatus].
-     * @param accountStatusesBeforeDeletion filter by [UserDetails.accountStatusBeforeDeletion].
+     * @param accountStatusesOnRestore filter by [UserDetails.accountStatusOnRestore].
      * @param authorityLevelFrom inclusive lower bound for [UserDetails.authorityLevel].
      * @param authorityLevelTo inclusive upper bound for [UserDetails.authorityLevel].
      * @param requiredPermissionCodes filter for users possessing all of these permission codes.
@@ -56,7 +56,7 @@ class ManagementGetUsersUseCase @Inject constructor(
         sortOrder: SortOrder,
         roles: List<UserRole>,
         accountStatuses: List<UserAccountStatus>,
-        accountStatusesBeforeDeletion: List<UserAccountStatus>,
+        accountStatusesOnRestore: List<UserAccountStatus>,
         authorityLevelFrom: Int?,
         authorityLevelTo: Int?,
         requiredPermissionCodes: Set<PermissionCode>,
@@ -85,7 +85,7 @@ class ManagementGetUsersUseCase @Inject constructor(
             sortOrder = sortOrder,
             roles = roles,
             accountStatuses = accountStatuses,
-            accountStatusesBeforeDeletion = accountStatusesBeforeDeletion,
+            accountStatusesOnRestore = accountStatusesOnRestore,
             authorityLevelFrom = authorityLevelFrom,
             authorityLevelTo = authorityLevelTo,
             permissionCodes = requiredPermissionCodes,

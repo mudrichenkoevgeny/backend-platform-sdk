@@ -13,6 +13,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChalleng
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
@@ -30,6 +31,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ReauthenticateSessionUseCaseTest {
@@ -40,8 +42,7 @@ class ReauthenticateSessionUseCaseTest {
     private val mfaService = mockk<MfaService>(relaxed = true)
     private val sessionManager = mockk<SessionManager>()
     private val totpManager = mockk<TotpManager>()
-    private val lockoutManager = mockk<LockoutManager>(relaxed = true)
-    private val userManager = mockk<UserManager>(relaxed = true)
+    private val userLockoutService = mockk<UserLockoutService>(relaxed = true)
 
     private val useCase = ReauthenticateSessionUseCase(
         rateLimiter = rateLimiter,
@@ -50,12 +51,20 @@ class ReauthenticateSessionUseCaseTest {
         mfaService = mfaService,
         sessionManager = sessionManager,
         totpManager = totpManager,
-        lockoutManager = lockoutManager,
-        userManager = userManager
+        userLockoutService = userLockoutService
     )
 
     private val mfaToken = "mfa-token"
     private val totpCode = "123456"
+
+    @BeforeEach
+    fun setup() {
+        coEvery { userLockoutService.checkLockout(any<String>(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.checkLockout(any<List<String>>(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.recordFailedAttempt(any<String>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.recordFailedAttempt(any<List<String>>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userLockoutService.clearLockout(any()) } returns AppResult.Success(Unit)
+    }
 
     @Test
     fun `successfully reauthenticates session`() = runTest {

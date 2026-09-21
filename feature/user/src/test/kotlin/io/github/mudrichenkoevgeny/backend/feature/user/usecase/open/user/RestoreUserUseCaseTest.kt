@@ -54,7 +54,7 @@ class RestoreUserUseCaseTest {
     @Test
     fun `successfully restores user`() = runTest {
         val userDetails = mockk<UserDetails> {
-            every { accountStatusBeforeDeletion } returns UserAccountStatus.ACTIVE
+            every { accountStatusOnRestore } returns UserAccountStatus.ACTIVE
         }
         val userSessionInternal = mockk<UserSessionInternal>()
 
@@ -141,7 +141,7 @@ class RestoreUserUseCaseTest {
     @Test
     fun `returns error when user restoration fails`() = runTest {
         val userDetails = mockk<UserDetails> {
-            every { accountStatusBeforeDeletion } returns null
+            every { accountStatusOnRestore } returns null
         }
         val userSessionInternal = mockk<UserSessionInternal>()
         val error = mockk<AppError>()
