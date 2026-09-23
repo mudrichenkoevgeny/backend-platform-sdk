@@ -132,6 +132,7 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
             userAuthProvider = verificationData.authProvider,
             identifier = verificationData.externalId,
             externalProviderEmail = verificationData.email,
+            externalProviderDisplayName = verificationData.displayName,
             allowedRoles = allowedRoles,
             allowedAccountStatuses = allowedAccountStatuses
         )

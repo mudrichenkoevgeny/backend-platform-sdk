@@ -12,5 +12,7 @@ object UserTokenClaims {
      */
     const val SESSION_ID = "sessionId"
 
+    const val IDENTIFIER_ID = "identifierId"
+
     const val USER_ROLE = "userRole"
 }

@@ -71,6 +71,7 @@ fun getFormattedDescription(
 
     val securitySection = when (securityType) {
         SecurityRequirementType.SENSITIVE_STEP_UP -> "\n\n${SwaggerDocConstants.SECURITY_STEP_UP_TEXT}"
+        SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED -> "\n\n${SwaggerDocConstants.SECURITY_TOTP_REQUIRED_TEXT}"
         SecurityRequirementType.SENSITIVE_LOGIN_CHALLENGE -> "\n\n${SwaggerDocConstants.SECURITY_LOGIN_CHALLENGE_TEXT}"
         SecurityRequirementType.NONE -> ""
     }

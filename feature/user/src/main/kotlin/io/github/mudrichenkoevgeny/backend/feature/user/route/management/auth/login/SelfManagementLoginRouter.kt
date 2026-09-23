@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.management.auth.login
 
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
+import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.model.SecurityRequirementType
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
@@ -95,7 +96,8 @@ class SelfManagementLoginRouter @Inject constructor(
             description = LOGIN_BY_EMAIL_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
-            isPublic = true
+            isPublic = true,
+            securityType = SecurityRequirementType.SENSITIVE_LOGIN_CHALLENGE
         )
         request { body<LoginByEmailRequest>() }
         response {

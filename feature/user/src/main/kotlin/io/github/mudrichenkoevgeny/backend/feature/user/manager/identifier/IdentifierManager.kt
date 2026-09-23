@@ -88,6 +88,8 @@ interface IdentifierManager {
      * @param userAuthProvider provider type
      * @param identifier identifier value
      * @param password optional password for password-based providers
+     * @param externalProviderEmail optional email from an external provider
+     * @param externalProviderDisplayName optional display name from an external provider
      * @return created identifier or an error
      */
     suspend fun createUserIdentifier(
@@ -95,7 +97,8 @@ interface IdentifierManager {
         userAuthProvider: UserAuthProvider,
         identifier: String,
         password: String? = null,
-        externalProviderEmail: String? = null
+        externalProviderEmail: String? = null,
+        externalProviderDisplayName: String? = null
     ): AppResult<UserIdentifierInternal>
 
     /**

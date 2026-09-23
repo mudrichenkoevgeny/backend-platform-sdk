@@ -57,6 +57,8 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
             userIdentifierRow[userId] = userIdentifier.userId.value
             userIdentifierRow[userAuthProvider] = userIdentifier.userAuthProvider
             userIdentifierRow[identifier] = userIdentifier.identifier
+            userIdentifierRow[displayName] = userIdentifier.displayName
+            userIdentifierRow[externalProviderEmail] = userIdentifier.externalProviderEmail
             userIdentifierRow[passwordHash] = userIdentifier.passwordHash?.value
             userIdentifierRow[createdAt] = userIdentifier.createdAt.toJavaInstant()
             userIdentifierRow[updatedAt] = userIdentifier.updatedAt?.toJavaInstant()
@@ -301,6 +303,7 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         userId = UserId(this[UserIdentifiersTable.userId].value),
         userAuthProvider = this[UserIdentifiersTable.userAuthProvider],
         identifier = this[UserIdentifiersTable.identifier],
+        displayName = this[UserIdentifiersTable.displayName],
         externalProviderEmail = this[UserIdentifiersTable.externalProviderEmail],
         passwordHash = this[UserIdentifiersTable.passwordHash]?.let { passwordHash ->
             PasswordHash(passwordHash)
@@ -314,6 +317,7 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         userId = UserId(this[UserIdentifiersTable.userId].value),
         userAuthProvider = this[UserIdentifiersTable.userAuthProvider],
         identifier = this[UserIdentifiersTable.identifier],
+        displayName = this[UserIdentifiersTable.displayName],
         externalProviderEmail = this[UserIdentifiersTable.externalProviderEmail],
         isSensitiveValuesMasked = false,
         createdAt = this[UserIdentifiersTable.createdAt].toKotlinInstant(),

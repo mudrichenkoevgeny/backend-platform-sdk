@@ -174,7 +174,9 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
             userId = currentUserId,
             userAuthProvider = verificationData.authProvider,
             identifier = verificationData.externalId,
-            password = null
+            password = null,
+            externalProviderEmail = verificationData.email,
+            externalProviderDisplayName = verificationData.displayName
         )
         when (createIdentifierForSelfResult) {
             is AppResult.Error -> {

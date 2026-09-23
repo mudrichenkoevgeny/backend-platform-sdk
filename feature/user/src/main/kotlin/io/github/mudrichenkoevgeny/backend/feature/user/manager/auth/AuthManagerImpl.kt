@@ -8,6 +8,8 @@ import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityErr
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutAttemptType
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
@@ -53,7 +55,8 @@ class AuthManagerImpl @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider,
     private val webSocketManager: WebSocketManager,
     private val lockoutManager: LockoutManager,
-    private val userLockoutService: UserLockoutService
+    private val userLockoutService: UserLockoutService,
+    private val mfaService: MfaService
 ) : AuthManager {
 
     override suspend fun authenticateOrCreateUser(
@@ -62,6 +65,7 @@ class AuthManagerImpl @Inject constructor(
         identifier: String,
         password: String?,
         externalProviderEmail: String?,
+        externalProviderDisplayName: String?,
         roleForUserCreation: UserRole,
         accountStatusForUserCreation: UserAccountStatus,
         authorityLevelForUserCreation: Int,
@@ -79,6 +83,7 @@ class AuthManagerImpl @Inject constructor(
             identifier = identifier,
             password = password,
             externalProviderEmail = externalProviderEmail,
+            externalProviderDisplayName = externalProviderDisplayName,
             roleForUserCreation = roleForUserCreation,
             accountStatusForUserCreation = accountStatusForUserCreation,
             authorityLevelForUserCreation = authorityLevelForUserCreation,
@@ -199,7 +204,9 @@ class AuthManagerImpl @Inject constructor(
         userId: UserId,
         userAuthProvider: UserAuthProvider,
         identifier: String,
-        password: String?
+        password: String?,
+        externalProviderEmail: String?,
+        externalProviderDisplayName: String?
     ): AppResult<UserIdentifier> = dbQuery {
         val getUserIdentifiersResult = identifierManager.getUserIdentifiersByUserId(userId)
         val userIdentifiersList = when (getUserIdentifiersResult) {
@@ -233,7 +240,9 @@ class AuthManagerImpl @Inject constructor(
             userId = userId,
             userAuthProvider = userAuthProvider,
             identifier = identifier,
-            password = password
+            password = password,
+            externalProviderEmail = externalProviderEmail,
+            externalProviderDisplayName = externalProviderDisplayName
         ).mapSuccess { userIdentifierInternal ->
             userIdentifierInternal.toUserIdentifier()
         }
@@ -262,7 +271,8 @@ class AuthManagerImpl @Inject constructor(
             userIdentifier = userIdentifier,
             clientInfo = clientInfo,
             allowedRoles = allowedRoles,
-            allowedAccountStatuses = allowedAccountStatuses
+            allowedAccountStatuses = allowedAccountStatuses,
+            bypassTotp = true
         )
     }
 
@@ -271,6 +281,7 @@ class AuthManagerImpl @Inject constructor(
         identifier: String,
         password: String?,
         externalProviderEmail: String?,
+        externalProviderDisplayName: String?,
         roleForUserCreation: UserRole,
         accountStatusForUserCreation: UserAccountStatus,
         authorityLevelForUserCreation: Int,
@@ -320,7 +331,9 @@ class AuthManagerImpl @Inject constructor(
             userId = userId,
             provider = userAuthProvider,
             identifier = identifier,
-            password = password
+            password = password,
+            externalProviderEmail = externalProviderEmail,
+            externalProviderDisplayName = externalProviderDisplayName
         )
     }
 
@@ -366,7 +379,9 @@ class AuthManagerImpl @Inject constructor(
         userId: UserId,
         provider: UserAuthProvider,
         identifier: String,
-        password: String?
+        password: String?,
+        externalProviderEmail: String? = null,
+        externalProviderDisplayName: String? = null
     ): AppResult<UserIdentifierInternal> {
         val getUserIdentifierResult = identifierManager.getUserIdentifierInternalByProvider(
             userAuthProvider = provider,
@@ -390,7 +405,9 @@ class AuthManagerImpl @Inject constructor(
             userId = userId,
             userAuthProvider = provider,
             identifier = identifier,
-            password = password
+            password = password,
+            externalProviderEmail = externalProviderEmail,
+            externalProviderDisplayName = externalProviderDisplayName
         )
     }
 
@@ -473,7 +490,8 @@ class AuthManagerImpl @Inject constructor(
         clientInfo: ClientInfo,
         existingUser: UserDetails? = null,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
-        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY),
+        bypassTotp: Boolean = false
     ): AppResult<AuthData> {
         val user = if (existingUser != null && existingUser.id == userIdentifier.userId) {
             existingUser
@@ -490,6 +508,22 @@ class AuthManagerImpl @Inject constructor(
         val validateResult = user.validateAccessEligibility(allowedRoles, allowedAccountStatuses)
         if (validateResult is AppResult.Error) {
             return AppResult.Error(validateResult.error)
+        }
+
+        if (!bypassTotp && user.isTotpEnabled) {
+            val mfaResult = mfaService.createChallenge(
+                userId = user.id.asHexDashString(),
+                userRole = user.role.serialName,
+                type = MfaChallengeType.LOGIN_TOTP,
+                identifierId = userIdentifier.id.asHexDashString()
+            )
+
+            return when (mfaResult) {
+                is AppResult.Success -> AppResult.Error(
+                    SecurityError.MfaConfirmationRequired(mfaToken = mfaResult.data.token)
+                )
+                is AppResult.Error -> AppResult.Error(mfaResult.error)
+            }
         }
 
         if (user.lockoutType == AccountLockoutType.TEMPORARY) {
@@ -537,6 +571,7 @@ class AuthManagerImpl @Inject constructor(
             userRole = user.role,
             identifier = userIdentifier.identifier,
             identifierId = userIdentifier.id,
+            identifierDisplayName = userIdentifier.displayName,
             identifierAuthProvider = userIdentifier.userAuthProvider,
             clientInfo = clientInfo,
             lastReauthenticatedAt = Clock.System.now()

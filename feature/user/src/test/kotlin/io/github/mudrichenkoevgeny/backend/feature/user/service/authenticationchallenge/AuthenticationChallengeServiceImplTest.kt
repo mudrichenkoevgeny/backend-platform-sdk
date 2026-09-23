@@ -148,6 +148,7 @@ class AuthenticationChallengeServiceImplTest {
         userRole = UserRole.USER,
         identifier = "test-identifier",
         identifierId = identifierId,
+        identifierDisplayName = "test-identifier",
         identifierAuthProvider = UserAuthProvider.EMAIL,
         refreshTokenHash = RefreshTokenHash("hash"),
         deviceInfo = createTestClientInfo().deviceInfo,

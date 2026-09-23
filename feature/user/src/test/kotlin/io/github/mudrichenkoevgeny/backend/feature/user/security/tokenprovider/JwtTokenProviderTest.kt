@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
@@ -41,10 +42,12 @@ class JwtTokenProviderTest {
         }
         val expiry = now + 1.hours
 
+        val identifierId = UserIdentifierId.generate()
         val tokenResult = provider.generateAccessToken(
             userId = userId,
             userRole = UserRole.ADMIN,
             sessionId = sessionId,
+            identifierId = identifierId,
             issuedAt = now,
             expiration = expiry
         )
@@ -68,6 +71,7 @@ class JwtTokenProviderTest {
             userId = userId,
             userRole = UserRole.USER,
             sessionId = UserSessionId.generate(),
+            identifierId = UserIdentifierId.generate(),
             issuedAt = pastIssuedAt,
             expiration = pastExpiry
         )

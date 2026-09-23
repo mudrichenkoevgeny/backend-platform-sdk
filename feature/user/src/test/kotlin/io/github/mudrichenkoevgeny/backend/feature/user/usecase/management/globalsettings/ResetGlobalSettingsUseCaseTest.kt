@@ -8,8 +8,13 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.core.settings.domain.model.globalsettings.createTestManagementGlobalSettings
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
+import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.OpenGlobalSettings
@@ -33,13 +38,27 @@ class ResetGlobalSettingsUseCaseTest {
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val auditErrorConverter = mockk<AuditErrorConverter>()
     private val webSocketManager = mockk<WebSocketManager>(relaxed = true)
+    private val userManager = mockk<UserManager>()
+    private val sessionManager = mockk<SessionManager>()
+    private val authenticationChallengeService = mockk<AuthenticationChallengeService>()
 
     private val useCase = ResetGlobalSettingsUseCase(
         globalSettingsProvider,
         auditLogger,
         auditErrorConverter,
-        webSocketManager
+        webSocketManager,
+        userManager,
+        sessionManager,
+        authenticationChallengeService
     )
+
+    private fun mockMfaCheckSuccess(userId: UserId) {
+        val userDetails = createTestUserDetails(id = userId)
+        val userSession = createTestUserSessionInternal(userId = userId)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+        coEvery { sessionManager.getUserSessionForSystem(any()) } returns AppResult.Success(userSession)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(userDetails, userSession, true) } returns AppResult.Success(Unit)
+    }
 
     private fun sampleSettings() = createTestManagementGlobalSettings(
         privacyPolicyUrl = "https://example.com/privacy",
@@ -53,6 +72,8 @@ class ResetGlobalSettingsUseCaseTest {
         val userId = UserId.generate()
         val context = createTestAuthenticatedRequestContext(userId = userId)
         val openGlobalSettings = mockk<OpenGlobalSettings>(relaxed = true)
+
+        mockMfaCheckSuccess(userId)
 
         coEvery { globalSettingsProvider.resetManagementGlobalSettings() } returns AppResult.Success(settings)
         every { globalSettingsProvider.getOpenGlobalSettings() } returns openGlobalSettings
@@ -93,6 +114,8 @@ class ResetGlobalSettingsUseCaseTest {
         val context = createTestAuthenticatedRequestContext(userId = userId)
         val error = CommonError.Internal(RuntimeException("Database error"))
         val errorLogData = AuditErrorLogData(AuditStatus.FAILED, emptySet())
+
+        mockMfaCheckSuccess(userId)
 
         coEvery { globalSettingsProvider.resetManagementGlobalSettings() } returns AppResult.Error(error)
         every { auditErrorConverter.convert(error) } returns errorLogData

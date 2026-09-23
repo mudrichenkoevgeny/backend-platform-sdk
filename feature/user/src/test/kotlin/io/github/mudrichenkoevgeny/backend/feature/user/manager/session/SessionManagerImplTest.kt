@@ -123,7 +123,7 @@ class SessionManagerImplTest {
 
         coEvery { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
         coEvery { authSettingsProvider.getRefreshTokenExpirationSeconds() } returns 86400
-        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any()) } returns AppResult.Success(newAccessToken)
+        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any(), any()) } returns AppResult.Success(newAccessToken)
         coEvery { refreshTokenProvider.getRefreshToken() } returns AppResult.Success(newRefreshToken)
         coEvery { refreshTokenProvider.getRefreshTokenHash(newRefreshToken) } returns AppResult.Success(newHash)
         coEvery { userSessionRepository.createUserSession(any()) } returns AppResult.Success(currentSession.copy(expiresAt = expiresAt))
@@ -163,6 +163,8 @@ class SessionManagerImplTest {
         val oldRefreshToken = RefreshToken("old-refresh-token")
         val oldHash = RefreshTokenHash("old-hash")
         val cachedSessionToken = SessionToken(
+            sessionId = UserSessionId.generate(),
+            identifierId = UserIdentifierId.generate(),
             accessToken = AccessToken("cached-access"),
             refreshToken = RefreshToken("cached-refresh"),
             expiresAt = Clock.System.now() + 3600.seconds
@@ -190,6 +192,8 @@ class SessionManagerImplTest {
         val oldRefreshToken = RefreshToken("old-refresh-token")
         val oldHash = RefreshTokenHash("old-hash")
         val cachedSessionToken = SessionToken(
+            sessionId = UserSessionId.generate(),
+            identifierId = UserIdentifierId.generate(),
             accessToken = AccessToken("cached-access"),
             refreshToken = RefreshToken("cached-refresh"),
             expiresAt = Clock.System.now() + 3600.seconds
@@ -361,7 +365,7 @@ class SessionManagerImplTest {
 
         coEvery { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
         coEvery { authSettingsProvider.getRefreshTokenExpirationSeconds() } returns 86400
-        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any()) } returns AppResult.Success(accessToken)
+        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any(), any()) } returns AppResult.Success(accessToken)
         coEvery { refreshTokenProvider.getRefreshToken() } returns AppResult.Success(refreshToken)
         coEvery { refreshTokenProvider.getRefreshTokenHash(refreshToken) } returns AppResult.Success(refreshHash)
         coEvery { userSessionRepository.createUserSession(any()) } returns AppResult.Success(internalSession)
@@ -444,7 +448,7 @@ class SessionManagerImplTest {
 
         coEvery { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
         coEvery { authSettingsProvider.getRefreshTokenExpirationSeconds() } returns 86400
-        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any()) } returns AppResult.Success(accessToken)
+        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any(), any()) } returns AppResult.Success(accessToken)
         coEvery { refreshTokenProvider.getRefreshToken() } returns AppResult.Success(refreshToken)
         coEvery { refreshTokenProvider.getRefreshTokenHash(refreshToken) } returns AppResult.Success(refreshHash)
         coEvery { userSessionRepository.createUserSession(any()) } returns AppResult.Success(internalSession)
@@ -509,7 +513,7 @@ class SessionManagerImplTest {
 
         coEvery { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
         coEvery { authSettingsProvider.getRefreshTokenExpirationSeconds() } returns 86400
-        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any()) } returns AppResult.Success(newAccessToken)
+        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any(), any()) } returns AppResult.Success(newAccessToken)
         coEvery { refreshTokenProvider.getRefreshToken() } returns AppResult.Success(newRefreshToken)
         coEvery { refreshTokenProvider.getRefreshTokenHash(newRefreshToken) } returns AppResult.Success(newHash)
         coEvery { userSessionRepository.createUserSession(any()) } returns AppResult.Success(newInternalSession)

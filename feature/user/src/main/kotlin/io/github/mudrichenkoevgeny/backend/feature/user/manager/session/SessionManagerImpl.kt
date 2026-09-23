@@ -93,6 +93,7 @@ class SessionManagerImpl @Inject constructor(
         userRole: UserRole,
         identifier: String,
         identifierId: UserIdentifierId,
+        identifierDisplayName: String,
         identifierAuthProvider: UserAuthProvider,
         clientInfo: ClientInfo,
         lastReauthenticatedAt: Instant,
@@ -105,6 +106,7 @@ class SessionManagerImpl @Inject constructor(
             userRole = userRole,
             identifier = identifier,
             identifierId = identifierId,
+            identifierDisplayName = identifierDisplayName,
             identifierAuthProvider = identifierAuthProvider,
             clientInfo = clientInfo,
             lastReauthenticatedAt = lastReauthenticatedAt,
@@ -126,6 +128,7 @@ class SessionManagerImpl @Inject constructor(
         userRole: UserRole,
         identifier: String,
         identifierId: UserIdentifierId,
+        identifierDisplayName: String,
         identifierAuthProvider: UserAuthProvider,
         clientInfo: ClientInfo,
         lastReauthenticatedAt: Instant,
@@ -142,6 +145,7 @@ class SessionManagerImpl @Inject constructor(
             userId = userId,
             userRole = userRole,
             sessionId = userSessionId,
+            identifierId = identifierId,
             issuedAt = now,
             expiration = accessExpiry
         )
@@ -168,6 +172,7 @@ class SessionManagerImpl @Inject constructor(
             userRole = userRole,
             identifier = identifier,
             identifierId = identifierId,
+            identifierDisplayName = identifierDisplayName,
             identifierAuthProvider = identifierAuthProvider,
             refreshTokenHash = refreshTokenHash,
             deviceInfo = clientInfo.deviceInfo,
@@ -218,6 +223,8 @@ class SessionManagerImpl @Inject constructor(
         when (createUserSessionResult) {
             is AppResult.Success -> AppResult.Success(
                 SessionToken(
+                    sessionId = userSessionId,
+                    identifierId = identifierId,
                     accessToken = accessToken,
                     refreshToken = refreshToken,
                     expiresAt = createUserSessionResult.data.expiresAt
@@ -320,6 +327,7 @@ class SessionManagerImpl @Inject constructor(
                 userRole = currentUserSession.userRole,
                 identifier = currentUserSession.identifier,
                 identifierId = currentUserSession.identifierId,
+                identifierDisplayName = currentUserSession.identifierDisplayName,
                 identifierAuthProvider = currentUserSession.identifierAuthProvider,
                 clientInfo = clientInfo,
                 lastReauthenticatedAt = currentUserSession.lastReauthenticatedAt,

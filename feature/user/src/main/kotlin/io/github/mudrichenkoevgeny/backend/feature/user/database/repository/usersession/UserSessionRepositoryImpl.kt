@@ -12,6 +12,7 @@ import io.github.mudrichenkoevgeny.backend.core.database.mapper.toExposedSortOrd
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserSessionsTable
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.toClientDeviceIdOrNull
@@ -67,6 +68,7 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
             userSessionRow[identifierId] = userSession.identifierId.value
             userSessionRow[identifierAuthProvider] = userSession.identifierAuthProvider
             userSessionRow[identifier] = userSession.identifier
+            userSessionRow[identifierDisplayName] = userSession.identifierDisplayName
             userSessionRow[refreshTokenHash] = userSession.refreshTokenHash.value
 
             userSessionRow[clientType] = userSession.deviceInfo.clientType
@@ -153,10 +155,14 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
     override suspend fun updateLastAccessed(
         userSessionId: UserSessionId
     ): AppResult<Unit> {
-        UserSessionsTable
-            .update( { UserSessionsTable.id eq userSessionId.value }) {
+        val updatedCount = UserSessionsTable
+            .update({ UserSessionsTable.id eq userSessionId.value }) {
                 it[UserSessionsTable.lastAccessedAt] = JavaInstant.now()
             }
+
+        if (updatedCount == 0) {
+            return AppResult.Error(UserError.InvalidSession())
+        }
 
         return AppResult.Success(Unit)
     }
@@ -164,10 +170,14 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
     override suspend fun updateLastReauthenticated(
         userSessionId: UserSessionId
     ): AppResult<Unit> {
-        UserSessionsTable
-            .update( { UserSessionsTable.id eq userSessionId.value }) {
+        val updatedCount = UserSessionsTable
+            .update({ UserSessionsTable.id eq userSessionId.value }) {
                 it[UserSessionsTable.lastReauthenticatedAt] = JavaInstant.now()
             }
+
+        if (updatedCount == 0) {
+            return AppResult.Error(UserError.InvalidSession())
+        }
 
         return AppResult.Success(Unit)
     }
@@ -422,6 +432,7 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         userRole = this[UserSessionsTable.userRole],
         identifier = this[UserSessionsTable.identifier],
         identifierId = UserIdentifierId(this[UserSessionsTable.identifierId].value),
+        identifierDisplayName = this[UserSessionsTable.identifierDisplayName],
         identifierAuthProvider = this[UserSessionsTable.identifierAuthProvider],
         refreshTokenHash = RefreshTokenHash(this[UserSessionsTable.refreshTokenHash]),
         deviceInfo = ClientDeviceInfo(
@@ -447,6 +458,7 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         userRole = this[UserSessionsTable.userRole],
         identifier = this[UserSessionsTable.identifier],
         identifierId = UserIdentifierId(this[UserSessionsTable.identifierId].value),
+        identifierDisplayName = this[UserSessionsTable.identifierDisplayName],
         identifierAuthProvider = this[UserSessionsTable.identifierAuthProvider],
         deviceInfo = ClientDeviceInfo(
             deviceId = this[UserSessionsTable.deviceId]?.toClientDeviceIdOrNull(),

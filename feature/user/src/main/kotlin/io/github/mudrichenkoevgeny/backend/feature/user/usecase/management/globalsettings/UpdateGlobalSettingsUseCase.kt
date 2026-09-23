@@ -4,24 +4,29 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
+import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.audit.action.SettingsAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.audit.resource.SettingsAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.ManagementGlobalSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toManagementGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toOpenGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.contract.SettingsWebSocketEventTypes
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.model.globalsettings.ManagementGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.model.globalsettings.OpenGlobalSettingsPayload
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.audit.action.SettingsAuditActionType
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.audit.resource.SettingsAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
@@ -39,7 +44,10 @@ class UpdateGlobalSettingsUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
-    private val webSocketManager: WebSocketManager
+    private val webSocketManager: WebSocketManager,
+    private val userManager: UserManager,
+    private val sessionManager: SessionManager,
+    private val authenticationChallengeService: AuthenticationChallengeService
 ) {
     /**
      * Updates platform-wide global settings and synchronizes all connected clients.
@@ -69,6 +77,47 @@ class UpdateGlobalSettingsUseCase @Inject constructor(
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
         val auditActorUserRole = authenticatedRequestContext.userRole
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata()
+
+        val userResult = userManager.getUserByIdForSelf(authenticatedRequestContext.userId)
+            .mapNotNullOrError(UserError.UserForbidden())
+
+        val currentUser = when (userResult) {
+            is AppResult.Error -> return handleError(
+                error = userResult.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                baseMetadata = auditMetadata
+            )
+            is AppResult.Success -> userResult.data
+        }
+
+        val userSessionResult = sessionManager.getUserSessionForSystem(
+            userSessionId = authenticatedRequestContext.sessionId
+        ).mapNotNullOrError(UserError.InvalidSession())
+
+        val currentSession = when (userSessionResult) {
+            is AppResult.Success -> userSessionResult.data
+            is AppResult.Error -> return handleError(
+                error = userSessionResult.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                baseMetadata = auditMetadata
+            )
+        }
+
+        val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
+            userDetails = currentUser,
+            userSession = currentSession,
+            requireTotp = true
+        )
+        if (ensureSessionConfirmedResult is AppResult.Error) {
+            return handleError(
+                error = ensureSessionConfirmedResult.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                baseMetadata = auditMetadata
+            )
+        }
 
         val updateGlobalSettingsResult = globalSettingsProvider.updateManagementGlobalSettings(managementGlobalSettings)
 

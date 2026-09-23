@@ -120,28 +120,42 @@ class IdentifierManagerImpl @Inject constructor(
         userAuthProvider: UserAuthProvider,
         identifier: String,
         password: String?,
-        externalProviderEmail: String?
-    ): AppResult<UserIdentifierInternal> = dbQuery {
-        val passwordHash = password?.let { password ->
-            val passwordHashResult = passwordHasher.hash(password)
-
-            when (passwordHashResult) {
-                is AppResult.Success -> passwordHashResult.data
-                is AppResult.Error -> return@dbQuery passwordHashResult
-            }
+        externalProviderEmail: String?,
+        externalProviderDisplayName: String?
+    ): AppResult<UserIdentifierInternal> {
+        val passwordHashResult = password?.let { passwordHasher.hash(it) }
+        val passwordHash = when (passwordHashResult) {
+            is AppResult.Success -> passwordHashResult.data
+            is AppResult.Error -> return passwordHashResult
+            null -> null
         }
 
-        val userIdentifier = UserIdentifierInternal(
-            userId = userId,
-            userAuthProvider = userAuthProvider,
-            identifier = identifier,
-            passwordHash = passwordHash,
-            externalProviderEmail = externalProviderEmail,
-            createdAt = Clock.System.now(),
-            updatedAt = null
-        )
+        return dbQuery {
+            val displayNameResult = createIdentifierDisplayName(
+                userId = userId,
+                userAuthProvider = userAuthProvider,
+                identifier = identifier,
+                externalProviderDisplayName = externalProviderDisplayName
+            )
+            
+            val displayName = when (displayNameResult) {
+                is AppResult.Success -> displayNameResult.data
+                is AppResult.Error -> return@dbQuery displayNameResult
+            }
 
-        userIdentifierRepository.createUserIdentifier(userIdentifier)
+            val userIdentifier = UserIdentifierInternal(
+                userId = userId,
+                userAuthProvider = userAuthProvider,
+                identifier = identifier,
+                displayName = displayName,
+                passwordHash = passwordHash,
+                externalProviderEmail = externalProviderEmail,
+                createdAt = Clock.System.now(),
+                updatedAt = null
+            )
+
+            userIdentifierRepository.createUserIdentifier(userIdentifier)
+        }
     }
 
     override suspend fun deleteUserIdentifier(userIdentifierId: UserIdentifierId): AppResult<Unit> = dbQuery {
@@ -151,18 +165,20 @@ class IdentifierManagerImpl @Inject constructor(
     override suspend fun updateUserIdentifierPassword(
         userIdentifier: UserIdentifierInternal,
         password: String
-    ): AppResult<UserIdentifier> = dbQuery {
+    ): AppResult<UserIdentifier> {
         val passwordHashResult = passwordHasher.hash(password)
 
         val passwordHash = when (passwordHashResult) {
             is AppResult.Success -> passwordHashResult.data
-            is AppResult.Error -> return@dbQuery passwordHashResult
+            is AppResult.Error -> return passwordHashResult
         }
 
-        userIdentifierRepository.updatePasswordHash(
-            userIdentifier = userIdentifier,
-            newPasswordHash = passwordHash
-        ).mapSuccess { userIdentifierInternal -> userIdentifierInternal.toUserIdentifier() }
+        return dbQuery {
+            userIdentifierRepository.updatePasswordHash(
+                userIdentifier = userIdentifier,
+                newPasswordHash = passwordHash
+            ).mapSuccess { userIdentifierInternal -> userIdentifierInternal.toUserIdentifier() }
+        }
     }
 
     override suspend fun clearUserIdentifierPassword(
@@ -292,4 +308,51 @@ class IdentifierManagerImpl @Inject constructor(
         },
         isSensitiveValuesMasked = true
     )
+
+    private suspend fun createIdentifierDisplayName(
+        userId: UserId,
+        userAuthProvider: UserAuthProvider,
+        identifier: String,
+        externalProviderDisplayName: String?
+    ): AppResult<String> {
+        return when (userAuthProvider) {
+            UserAuthProvider.EMAIL, UserAuthProvider.PHONE -> AppResult.Success(identifier)
+            else -> {
+                if (!externalProviderDisplayName.isNullOrBlank()) {
+                    AppResult.Success(externalProviderDisplayName)
+                } else {
+                    generateUniqueFallbackDisplayName(
+                        userId = userId,
+                        userAuthProvider = userAuthProvider
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun generateUniqueFallbackDisplayName(
+        userId: UserId,
+        userAuthProvider: UserAuthProvider
+    ): AppResult<String> {
+        val baseName = userAuthProvider.serialName.replaceFirstChar { it.uppercaseChar() }
+
+        val existingIdentifiersResult = userIdentifierRepository.getUserIdentifiersListByUserId(userId)
+        val existingIdentifiers = when (existingIdentifiersResult) {
+            is AppResult.Success -> existingIdentifiersResult.data
+            is AppResult.Error -> return existingIdentifiersResult
+        }
+
+        val existingDisplayNames = existingIdentifiers.mapTo(HashSet()) { it.displayName }
+
+        if (!existingDisplayNames.contains(baseName)) {
+            return AppResult.Success(baseName)
+        }
+
+        var counter = 2
+        while (existingDisplayNames.contains("$baseName $counter")) {
+            counter++
+        }
+
+        return AppResult.Success("$baseName $counter")
+    }
 }

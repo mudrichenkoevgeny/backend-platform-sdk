@@ -4,6 +4,8 @@ import com.auth0.jwt.exceptions.JWTDecodeException
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.contract.UserTokenClaims
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.toUserIdentifierIdOrNull
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.toUserSessionIdOrNull
@@ -35,6 +37,10 @@ fun JwtBuilder.withSessionIdSubject(sessionId: UserSessionId): JwtBuilder {
     return this.claim(UserTokenClaims.SESSION_ID, sessionId.asHexDashString())
 }
 
+fun JwtBuilder.withIdentifierIdClaim(identifierId: UserIdentifierId): JwtBuilder {
+    return this.claim(UserTokenClaims.IDENTIFIER_ID, identifierId.asHexDashString())
+}
+
 fun JwtBuilder.withUserRoleSubject(userRole: UserRole): JwtBuilder {
     return this.claim(UserTokenClaims.USER_ROLE, userRole.serialName)
 }
@@ -59,6 +65,12 @@ fun JWTCredential.getSessionIdFromCredential(): UserSessionId? {
     val sessionId = this.getClaim(UserTokenClaims.SESSION_ID, String::class)
         ?: return null
     return sessionId.toUserSessionIdOrNull()
+}
+
+fun JWTCredential.getIdentifierIdFromCredential(): UserIdentifierId? {
+    val identifierId = this.getClaim(UserTokenClaims.IDENTIFIER_ID, String::class)
+        ?: return null
+    return identifierId.toUserIdentifierIdOrNull()
 }
 
 /** JWTPrincipal **/
@@ -93,6 +105,12 @@ fun JWTPrincipal.getSessionId(): UserSessionId? {
     val sessionId = this.getClaim(UserTokenClaims.SESSION_ID, String::class)
         ?: return null
     return sessionId.toUserSessionIdOrNull()
+}
+
+fun JWTPrincipal.getIdentifierId(): UserIdentifierId? {
+    val identifierId = this.getClaim(UserTokenClaims.IDENTIFIER_ID, String::class)
+        ?: return null
+    return identifierId.toUserIdentifierIdOrNull()
 }
 
 /** UserId, UserSessionId **/

@@ -8,6 +8,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
@@ -81,6 +83,8 @@ class RefreshTokenUseCaseTest {
         val refreshToken = RefreshToken("old-refresh-token")
         val ctx = createTestRequestContext()
         val newSessionToken = SessionToken(
+            sessionId = UserSessionId.generate(),
+            identifierId = UserIdentifierId.generate(),
             accessToken = AccessToken("new-access"),
             refreshToken = RefreshToken("new-refresh"),
             expiresAt = Clock.System.now() + 1.hours

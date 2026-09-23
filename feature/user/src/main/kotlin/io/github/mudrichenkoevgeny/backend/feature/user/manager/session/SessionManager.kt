@@ -34,9 +34,11 @@ interface SessionManager {
      * @param userRole The role of the user to be encoded in the session data.
      * @param identifier The literal identifier value (e.g., email or phone) used for this session.
      * @param identifierId The ID of the specific identifier used to authenticate.
+     * @param identifierDisplayName The display name of the identifier.
      * @param identifierAuthProvider The authentication provider used to authenticate.
      * @param clientInfo Client metadata (device, IP, etc.) to bind to the created session.
      * @param lastReauthenticatedAt Timestamp used to track re-authentication requirements.
+     * @param checkNewDevice Whether to check for new device login.
      * @return [AppResult.Success] with [SessionToken] or an error.
      */
     suspend fun createSession(
@@ -44,6 +46,7 @@ interface SessionManager {
         userRole: UserRole,
         identifier: String,
         identifierId: UserIdentifierId,
+        identifierDisplayName: String = identifier,
         identifierAuthProvider: UserAuthProvider,
         clientInfo: ClientInfo,
         lastReauthenticatedAt: Instant,
@@ -55,6 +58,8 @@ interface SessionManager {
      *
      * @param refreshToken The refresh token used to authorize the renewal.
      * @param clientInfo Updated client metadata used for session validation.
+     * @param allowedRoles Allowed roles for the session user.
+     * @param allowedAccountStatuses Allowed account statuses for the session user.
      * @return [AppResult.Success] with a new [SessionToken] or an error.
      */
     suspend fun refreshSession(

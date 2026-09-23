@@ -1,8 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.auth
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeData
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.createTestSessionToken
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
@@ -44,6 +48,7 @@ class AuthManagerImplTest {
     private val webSocketManager = mockk<WebSocketManager>()
     private val lockoutManager = mockk<LockoutManager>()
     private val userLockoutService = mockk<UserLockoutService>(relaxed = true)
+    private val mfaService = mockk<MfaService>()
 
     private val authManager = AuthManagerImpl(
         userManager,
@@ -53,7 +58,8 @@ class AuthManagerImplTest {
         authSettingsProvider,
         webSocketManager,
         lockoutManager,
-        userLockoutService
+        userLockoutService,
+        mfaService
     )
 
     @BeforeEach
@@ -281,6 +287,47 @@ class AuthManagerImplTest {
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.UserRoleNotAllowed)
+    }
+
+    @Test
+    fun `authenticateExistingUser returns Error MfaConfirmationRequired when user has isTotpEnabled = true`() = runTest {
+        val userId = UserId.generate()
+        val clientInfo = mockk<ClientInfo>(relaxed = true)
+        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER, isTotpEnabled = true)
+        val userIdentifier = createTestUserIdentifierInternal(userId = userId)
+        val mfaChallengeData = MfaChallengeData(
+            token = "test-mfa-token",
+            userId = userId.asHexDashString(),
+            userRole = UserRole.USER.serialName,
+            identifierId = userIdentifier.id.asHexDashString(),
+            type = MfaChallengeType.LOGIN_TOTP
+        )
+
+        coEvery {
+            identifierManager.getUserIdentifierInternalByProvider(any(), any())
+        } returns AppResult.Success(userIdentifier)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+        coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
+        coEvery {
+            mfaService.createChallenge(
+                userId = userId.asHexDashString(),
+                userRole = UserRole.USER.serialName,
+                type = MfaChallengeType.LOGIN_TOTP,
+                identifierId = userIdentifier.id.asHexDashString()
+            )
+        } returns AppResult.Success(mfaChallengeData)
+
+        val result = authManager.authenticateExistingUser(
+            clientInfo = clientInfo,
+            userAuthProvider = UserAuthProvider.EMAIL,
+            identifier = TEST_EMAIL,
+            password = TEST_PASSWORD
+        )
+
+        assertTrue(result is AppResult.Error)
+        val error = (result as AppResult.Error).error
+        assertTrue(error is SecurityError.MfaConfirmationRequired)
+        assertEquals("test-mfa-token", (error as SecurityError.MfaConfirmationRequired).publicArgs?.get("mfa_token"))
     }
 }
 

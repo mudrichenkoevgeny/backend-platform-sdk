@@ -5,10 +5,12 @@ import io.github.mudrichenkoevgeny.backend.core.common.util.toJavaInstant
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
+import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.withIdentifierIdClaim
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.withSessionIdSubject
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.withUserIdSubject
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.withUserRoleSubject
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
@@ -44,6 +46,7 @@ class JwtTokenProvider @Inject constructor(
         userId: UserId,
         userRole: UserRole,
         sessionId: UserSessionId,
+        identifierId: UserIdentifierId,
         issuedAt: Instant,
         expiration: Instant
     ): AppResult<AccessToken> {
@@ -51,6 +54,7 @@ class JwtTokenProvider @Inject constructor(
             val accessToken = Jwts.builder()
                 .withUserIdSubject(userId)
                 .withSessionIdSubject(sessionId)
+                .withIdentifierIdClaim(identifierId)
                 .withUserRoleSubject(userRole)
                 .issuedAt(Date.from(issuedAt.toJavaInstant()))
                 .expiration(Date.from(expiration.toJavaInstant()))

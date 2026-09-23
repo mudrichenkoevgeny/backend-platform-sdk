@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route.open.identifier
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
+import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.model.SecurityRequirementType
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
@@ -334,7 +335,8 @@ class OpenIdentifierRouter @Inject constructor(
         description = getFormattedDescription(
             description = DELETE_USER_IDENTIFIER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
         request {
             pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
@@ -392,7 +394,8 @@ class OpenIdentifierRouter @Inject constructor(
         description = getFormattedDescription(
             description = ADD_EMAIL_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
         request { body<AddUserIdentifierEmailRequest>() }
         response {
@@ -455,7 +458,8 @@ class OpenIdentifierRouter @Inject constructor(
         description = getFormattedDescription(
             description = ADD_PHONE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
         request { body<AddUserIdentifierPhoneRequest>() }
         response {
@@ -517,7 +521,8 @@ class OpenIdentifierRouter @Inject constructor(
         description = getFormattedDescription(
             description = ADD_EXTERNAL_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
         request { body<AddUserIdentifierExternalAuthProviderRequest>() }
         response {
@@ -682,7 +687,8 @@ class OpenIdentifierRouter @Inject constructor(
         description = getFormattedDescription(
             description = IDENTIFIER_EMAIL_CHANGE_PASSWORD_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
         request { body<EmailPasswordChangeRequest>() }
         response {

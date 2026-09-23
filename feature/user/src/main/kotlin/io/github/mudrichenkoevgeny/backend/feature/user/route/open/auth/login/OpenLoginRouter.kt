@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.login
 
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
+import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.model.SecurityRequirementType
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
@@ -149,7 +150,8 @@ class OpenLoginRouter @Inject constructor(
             description = LOGIN_BY_EMAIL_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
-            isPublic = true
+            isPublic = true,
+            securityType = SecurityRequirementType.SENSITIVE_LOGIN_CHALLENGE
         )
         request { body<LoginByEmailRequest>() }
         response {
@@ -190,7 +192,8 @@ class OpenLoginRouter @Inject constructor(
             description = LOGIN_BY_PHONE_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
-            isPublic = true
+            isPublic = true,
+            securityType = SecurityRequirementType.SENSITIVE_LOGIN_CHALLENGE
         )
         request { body<LoginByPhoneRequest>() }
         response {
@@ -231,7 +234,8 @@ class OpenLoginRouter @Inject constructor(
             description = LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
-            isPublic = true
+            isPublic = true,
+            securityType = SecurityRequirementType.SENSITIVE_LOGIN_CHALLENGE
         )
         request { body<LoginByExternalAuthProviderRequest>() }
         response {

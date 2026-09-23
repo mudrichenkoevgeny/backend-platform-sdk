@@ -46,6 +46,9 @@ class GoogleAuthVerifier @Inject constructor(
                     null
                 }
 
+                val displayName = (payload.get("name") as? String)?.takeIf { it.isNotBlank() }
+                    ?: (payload.get("given_name") as? String)?.takeIf { it.isNotBlank() }
+
                 if (externalId == null) {
                     AppResult.Error(UserError.ExternalIdentifierLinkageFailed())
                 } else {
@@ -53,7 +56,8 @@ class GoogleAuthVerifier @Inject constructor(
                         ExternalAuthProviderData(
                             authProvider = provider,
                             externalId = externalId,
-                            email = email
+                            email = email,
+                            displayName = displayName
                         )
                     )
                 }

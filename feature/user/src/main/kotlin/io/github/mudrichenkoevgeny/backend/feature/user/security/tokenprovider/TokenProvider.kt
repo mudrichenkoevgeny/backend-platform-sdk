@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
@@ -25,6 +26,7 @@ interface TokenProvider {
      * @param userId authenticated user id
      * @param userRole [UserRole] to embed in the token claims for downstream authorization.
      * @param sessionId authenticated user session id
+     * @param identifierId authenticated user identifier id
      * @param issuedAt token issuance time
      * @param expiration token expiration time
      * @return [AppResult.Success] with an [AccessToken], or [AppResult.Error] on failure
@@ -33,6 +35,7 @@ interface TokenProvider {
         userId: UserId,
         userRole: UserRole,
         sessionId: UserSessionId,
+        identifierId: UserIdentifierId,
         issuedAt: Instant,
         expiration: Instant
     ): AppResult<AccessToken>

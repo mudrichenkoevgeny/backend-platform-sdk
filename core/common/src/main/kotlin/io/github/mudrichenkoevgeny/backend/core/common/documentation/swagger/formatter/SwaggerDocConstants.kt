@@ -19,7 +19,10 @@ object SwaggerDocConstants {
         "Actor's level must be strictly greater than the target's level. Actor cannot target own account."
 
     const val SECURITY_STEP_UP_TEXT =
-        "**Security:** Sensitive operation. MFA Step-up required (if enabled). Returns [SecurityErrorCodes.MFA_CONFIRMATION_REQUIRED] if additional verification is needed. Session must be verified via [OpenSessionRoutes.REAUTHENTICATE_SESSION] if stale."
+        "**Security:** Sensitive operation. MFA Step-up required (if enabled for the account). Returns [SecurityErrorCodes.MFA_CONFIRMATION_REQUIRED] if additional verification is needed. Session must be verified via re-authentication route ([OpenSessionRoutes.REAUTHENTICATE_SESSION] / [SelfManagementSessionRoutes.REAUTHENTICATE_SESSION]) if stale."
+
+    const val SECURITY_TOTP_REQUIRED_TEXT =
+        "**Security:** Sensitive operation. Requires active TOTP on the account; returns [SecurityErrorCodes.TOTP_NOT_ENABLED] if TOTP is not configured. When enabled, MFA Step-up is required via [SecurityErrorCodes.MFA_CONFIRMATION_REQUIRED]. Session must be verified via re-authentication route ([OpenSessionRoutes.REAUTHENTICATE_SESSION] / [SelfManagementSessionRoutes.REAUTHENTICATE_SESSION]) if stale."
 
     const val SECURITY_LOGIN_CHALLENGE_TEXT =
         "**Security:** Sensitive operation. If MFA is enabled for the account, this method returns a [SecurityErrorCodes.MFA_CONFIRMATION_REQUIRED] error and a challenge token. The process must be completed via [LOGIN_BY_TOTP] or [LOGIN_BY_TOTP_RECOVERY_CODE]."

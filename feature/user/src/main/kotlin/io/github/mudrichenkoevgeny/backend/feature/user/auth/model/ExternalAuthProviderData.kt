@@ -14,5 +14,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 data class ExternalAuthProviderData(
     val authProvider: UserAuthProvider,
     val externalId: String,
-    val email: String?
+    val email: String?,
+    val displayName: String? = null
 )

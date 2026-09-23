@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route.management.user
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
+import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.model.SecurityRequirementType
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
@@ -268,7 +269,8 @@ class ManagementUserRouter @Inject constructor(
         description = getFormattedDescription(
             description = CREATE_USER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
             body<CreateByEmailRequest>()
@@ -342,7 +344,8 @@ class ManagementUserRouter @Inject constructor(
         description = getFormattedDescription(
             description = UPDATE_USER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
             pathParameter<String>(UserApiPaths.USER_ID) {
@@ -422,7 +425,8 @@ class ManagementUserRouter @Inject constructor(
         description = getFormattedDescription(
             description = DELETE_USER_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
             pathParameter<String>(UserApiPaths.USER_ID) {

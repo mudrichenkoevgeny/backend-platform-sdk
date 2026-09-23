@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route.open.user.securit
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
+import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.model.SecurityRequirementType
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
@@ -259,7 +260,8 @@ class OpenUserSecurityRouter @Inject constructor(
             description = DISABLE_TOTP_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
-            isPublic = false
+            isPublic = false,
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         response {
             code(HttpStatusCode.OK) {
@@ -311,7 +313,8 @@ class OpenUserSecurityRouter @Inject constructor(
             description = GET_RECOVERY_CODES_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
-            isPublic = false
+            isPublic = false,
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         response {
             code(HttpStatusCode.OK) {
@@ -366,7 +369,8 @@ class OpenUserSecurityRouter @Inject constructor(
             description = REGENERATE_RECOVERY_CODES_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
-            isPublic = false
+            isPublic = false,
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         response {
             code(HttpStatusCode.OK) {

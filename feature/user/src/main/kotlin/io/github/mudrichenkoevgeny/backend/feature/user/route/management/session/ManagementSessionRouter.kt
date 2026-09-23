@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route.management.sessio
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
+import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.model.SecurityRequirementType
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
@@ -254,7 +255,8 @@ class ManagementSessionRouter @Inject constructor(
         description = getFormattedDescription(
             description = DELETE_SESSION_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
             pathParameter<String>(UserApiPaths.USER_ID) {
@@ -315,7 +317,8 @@ class ManagementSessionRouter @Inject constructor(
         description = getFormattedDescription(
             description = DELETE_ALL_USER_SESSIONS_ROUTE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
             pathParameter<String>(UserApiPaths.USER_ID) {

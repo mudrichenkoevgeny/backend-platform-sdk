@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route.management
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
+import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.model.SecurityRequirementType
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
@@ -110,7 +111,8 @@ class ManagementSecuritySettingsRouter @Inject constructor(
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
             requiredPermissions = requiredPermissions.mapToSet { it.value },
-            isPublic = false
+            isPublic = false,
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
 
         request {
@@ -227,7 +229,8 @@ class ManagementSecuritySettingsRouter @Inject constructor(
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
             requiredPermissions = requiredPermissions.mapToSet { it.value },
-            isPublic = false
+            isPublic = false,
+            securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
 
         response {

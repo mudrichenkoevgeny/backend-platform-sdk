@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     user_role VARCHAR(32) NOT NULL,
     identifier TEXT NOT NULL,
+    identifier_display_name TEXT NOT NULL,
     identifier_id UUID NOT NULL REFERENCES user_identifiers(id) ON DELETE CASCADE,
     identifier_auth_provider VARCHAR(32) NOT NULL,
     refresh_token_hash TEXT NOT NULL UNIQUE,

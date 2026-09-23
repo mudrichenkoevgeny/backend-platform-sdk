@@ -6,6 +6,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.contract.UserTokenClaims
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -34,11 +35,13 @@ class JwtExtensionsTest {
     fun `JwtBuilder extensions should set correct claims`() {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
+        val identifierId = UserIdentifierId.generate()
         val userRole = UserRole.ADMIN
 
         val token = Jwts.builder()
             .withUserIdSubject(userId)
             .withSessionIdSubject(sessionId)
+            .withIdentifierIdClaim(identifierId)
             .withUserRoleSubject(userRole)
             .signWith(Jwts.SIG.HS256.key().build())
             .compact()
@@ -46,6 +49,7 @@ class JwtExtensionsTest {
         val payload = JWT.decode(token)
         assertEquals(userId.asHexDashString(), payload.subject)
         assertEquals(sessionId.asHexDashString(), payload.getClaim(UserTokenClaims.SESSION_ID).asString())
+        assertEquals(identifierId.asHexDashString(), payload.getClaim(UserTokenClaims.IDENTIFIER_ID).asString())
         assertEquals(userRole.serialName, payload.getClaim(UserTokenClaims.USER_ROLE).asString())
     }
 
@@ -72,9 +76,20 @@ class JwtExtensionsTest {
     }
 
     @Test
+    fun `JWTCredential getIdentifierIdFromCredential should return identifier id or null`() {
+        val identifierId = UserIdentifierId.generate()
+        val credential = createCredential(claims = mapOf(UserTokenClaims.IDENTIFIER_ID to identifierId.asHexDashString()))
+        val missingCredential = createCredential()
+
+        assertEquals(identifierId, credential.getIdentifierIdFromCredential())
+        assertNull(missingCredential.getIdentifierIdFromCredential())
+    }
+
+    @Test
     fun `JWTPrincipal extensions should extract data correctly`() {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
+        val identifierId = UserIdentifierId.generate()
         val userRole = UserRole.USER
         val expMillis = (System.currentTimeMillis() / 1000) * 1000 + 10000
         val exp = Date(expMillis)
@@ -84,12 +99,14 @@ class JwtExtensionsTest {
             expiresAt = exp,
             claims = mapOf(
                 UserTokenClaims.SESSION_ID to sessionId.asHexDashString(),
+                UserTokenClaims.IDENTIFIER_ID to identifierId.asHexDashString(),
                 UserTokenClaims.USER_ROLE to userRole.serialName
             )
         )
 
         assertEquals(userId, principal.getUserId())
         assertEquals(sessionId, principal.getSessionId())
+        assertEquals(identifierId, principal.getIdentifierId())
         assertEquals(userRole, principal.getUserRole())
         assertEquals(exp.time, principal.getExpiresAt())
     }

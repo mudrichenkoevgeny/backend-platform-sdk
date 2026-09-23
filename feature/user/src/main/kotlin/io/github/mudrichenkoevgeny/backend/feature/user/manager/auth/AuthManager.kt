@@ -30,10 +30,13 @@ interface AuthManager {
      * @param identifier The unique string for the provider (email, phone number, or social ID).
      * @param password The raw password (required for EMAIL provider).
      * @param externalProviderEmail Optional email from an external provider to link accounts if an email identifier already exists.
+     * @param externalProviderDisplayName Optional display name from an external provider.
      * @param roleForUserCreation Role assigned if a new user is created. Defaults to [UserRole.USER].
      * @param accountStatusForUserCreation Initial status if a new user is created. Defaults to [UserAccountStatus.ACTIVE].
      * @param authorityLevelForUserCreation  Explicit authorityLevel for the new user. Defaults to 0
      * @param permissionCodesForUserCreation Set of initial permissions if a new user is created.
+     * @param allowedRoles Allowed roles for the authenticated user.
+     * @param allowedAccountStatuses Allowed account statuses for the authenticated user.
      * @return [AppResult] with [AuthData] containing user details and the session token.
      */
     suspend fun authenticateOrCreateUser(
@@ -42,6 +45,7 @@ interface AuthManager {
         identifier: String,
         password: String? = null,
         externalProviderEmail: String? = null,
+        externalProviderDisplayName: String? = null,
         roleForUserCreation: UserRole = UserRole.USER,
         accountStatusForUserCreation: UserAccountStatus = UserAccountStatus.ACTIVE,
         authorityLevelForUserCreation: Int = 0,
@@ -61,6 +65,8 @@ interface AuthManager {
      * @param identifier The identifier string (email, phone, etc.).
      * @param password The raw password (required for EMAIL provider).
      * @param externalProviderEmail Optional email to aid in resolving an existing account.
+     * @param allowedRoles Allowed roles for the authenticated user.
+     * @param allowedAccountStatuses Allowed account statuses for the authenticated user.
      * @return [AppResult] with [AuthData].
      */
     suspend fun authenticateExistingUser(
@@ -106,13 +112,17 @@ interface AuthManager {
      * @param userAuthProvider The new provider type to add.
      * @param identifier The identifier string for the new provider.
      * @param password Raw password (if adding an email provider).
+     * @param externalProviderEmail Optional email to aid in resolving or linking an external account.
+     * @param externalProviderDisplayName Optional display name from an external provider.
      * @return [AppResult] with the new [UserIdentifier].
      */
     suspend fun createIdentifierForAuthorizedUser(
         userId: UserId,
         userAuthProvider: UserAuthProvider,
         identifier: String,
-        password: String? = null
+        password: String? = null,
+        externalProviderEmail: String? = null,
+        externalProviderDisplayName: String? = null
     ): AppResult<UserIdentifier>
 
     /**

@@ -4,10 +4,15 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -39,7 +44,10 @@ class ResetAuthSettingsUseCase @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
-    private val webSocketManager: WebSocketManager
+    private val webSocketManager: WebSocketManager,
+    private val userManager: UserManager,
+    private val sessionManager: SessionManager,
+    private val authenticationChallengeService: AuthenticationChallengeService
 ) {
     /**
      * Resets global authentication settings to defaults and notifies all clients of the change.
@@ -65,6 +73,47 @@ class ResetAuthSettingsUseCase @Inject constructor(
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
         val auditActorUserRole = authenticatedRequestContext.userRole
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata()
+
+        val userResult = userManager.getUserByIdForSelf(authenticatedRequestContext.userId)
+            .mapNotNullOrError(UserError.UserForbidden())
+
+        val currentUser = when (userResult) {
+            is AppResult.Error -> return handleError(
+                error = userResult.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                baseMetadata = auditMetadata
+            )
+            is AppResult.Success -> userResult.data
+        }
+
+        val userSessionResult = sessionManager.getUserSessionForSystem(
+            userSessionId = authenticatedRequestContext.sessionId
+        ).mapNotNullOrError(UserError.InvalidSession())
+
+        val currentSession = when (userSessionResult) {
+            is AppResult.Success -> userSessionResult.data
+            is AppResult.Error -> return handleError(
+                error = userSessionResult.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                baseMetadata = auditMetadata
+            )
+        }
+
+        val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
+            userDetails = currentUser,
+            userSession = currentSession,
+            requireTotp = true
+        )
+        if (ensureSessionConfirmedResult is AppResult.Error) {
+            return handleError(
+                error = ensureSessionConfirmedResult.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                baseMetadata = auditMetadata
+            )
+        }
 
         val resetResult = authSettingsProvider.resetManagementAuthSettings()
 

@@ -104,6 +104,7 @@ class IdentifierManagerImplTest {
         val rawPassword = "plain_password"
         val hashedPassword = PasswordHash("hashed_password")
 
+        coEvery { repository.getUserIdentifiersListByUserId(userId) } returns AppResult.Success(emptyList())
         coEvery { passwordHasher.hash(rawPassword) } returns AppResult.Success(hashedPassword)
         coEvery { repository.createUserIdentifier(any()) } answers { AppResult.Success(firstArg()) }
 
@@ -116,6 +117,32 @@ class IdentifierManagerImplTest {
 
         assertTrue(result is AppResult.Success)
         assertEquals(hashedPassword, (result as AppResult.Success).data.passwordHash)
+    }
+
+    @Test
+    fun `createUserIdentifier generates unique fallback displayName for external provider when name is missing`() = runTest {
+        val existingIdentifier = createSampleIdentifier(UserIdentifierId.generate(), userId, "google_id_1").copy(
+            displayName = "Google"
+        )
+        val existingInternal = io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal(
+            id = existingIdentifier.id,
+            userId = userId,
+            userAuthProvider = UserAuthProvider.GOOGLE,
+            identifier = "google_id_1",
+            displayName = "Google"
+        )
+
+        coEvery { repository.getUserIdentifiersListByUserId(userId) } returns AppResult.Success(listOf(existingInternal))
+        coEvery { repository.createUserIdentifier(any()) } answers { AppResult.Success(firstArg()) }
+
+        val result = manager.createUserIdentifier(
+            userId = userId,
+            userAuthProvider = UserAuthProvider.GOOGLE,
+            identifier = "google_id_2"
+        )
+
+        assertTrue(result is AppResult.Success)
+        assertEquals("Google 2", (result as AppResult.Success).data.displayName)
     }
 
     @Test

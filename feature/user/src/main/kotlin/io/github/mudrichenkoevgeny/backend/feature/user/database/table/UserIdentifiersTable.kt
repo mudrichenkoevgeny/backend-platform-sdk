@@ -23,6 +23,7 @@ object UserIdentifiersTable : BaseTable("user_identifiers") {
         UserAuthProvider::class
     )
     val identifier = varchar("identifier", BaseDbConstraints.DEFAULT_MAX_LENGTH)
+    val displayName = varchar("display_name", BaseDbConstraints.DEFAULT_MAX_LENGTH)
     val externalProviderEmail = varchar("external_provider_email", BaseDbConstraints.DEFAULT_MAX_LENGTH).nullable()
     val passwordHash = varchar("password_hash", UserDbConstraints.PASSWORD_HASH_MAX_LENGTH).nullable()
 }

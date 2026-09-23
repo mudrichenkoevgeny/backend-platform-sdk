@@ -10,6 +10,7 @@ This document is the entry point for architectural and coding standards. These r
 - **No Comments:** Do not write comments in the code. Logic must be self-documenting through naming and structural clarity.
 - **No Trailing Commas:** Do not use trailing commas at the end of argument, parameter, or entry lists.
 - **Manual Test Execution:** AI agents must not run tests or suggest running them. Execution is always triggered explicitly by the developer.
+- **No Redundant Builds:** Do not run Gradle build tasks or attempt compilation after modifying documentation (KDoc), comments, or other non-executable changes that cannot possibly break the build.
 
 ## Module Map
 

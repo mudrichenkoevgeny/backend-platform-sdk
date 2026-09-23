@@ -6,10 +6,15 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.settings.createTestManagementAuthSettings
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
@@ -33,13 +38,27 @@ class UpdateAuthSettingsUseCaseTest {
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val auditErrorConverter = mockk<AuditErrorConverter>()
     private val webSocketManager = mockk<WebSocketManager>(relaxed = true)
+    private val userManager = mockk<UserManager>()
+    private val sessionManager = mockk<SessionManager>()
+    private val authenticationChallengeService = mockk<AuthenticationChallengeService>()
 
     private val useCase = UpdateAuthSettingsUseCase(
         authSettingsProvider = authSettingsProvider,
         auditLogger = auditLogger,
         auditErrorConverter = auditErrorConverter,
-        webSocketManager = webSocketManager
+        webSocketManager = webSocketManager,
+        userManager = userManager,
+        sessionManager = sessionManager,
+        authenticationChallengeService = authenticationChallengeService
     )
+
+    private fun mockMfaCheckSuccess(userId: UserId) {
+        val userDetails = createTestUserDetails(id = userId)
+        val userSession = createTestUserSessionInternal(userId = userId)
+        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+        coEvery { sessionManager.getUserSessionForSystem(any()) } returns AppResult.Success(userSession)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(userDetails, userSession, true) } returns AppResult.Success(Unit)
+    }
 
     @Test
     fun `successfully updates settings, logs audit and broadcasts via websocket`() = runTest {
@@ -47,6 +66,8 @@ class UpdateAuthSettingsUseCaseTest {
         val userId = UserId.generate()
         val context = createTestAuthenticatedRequestContext(userId = userId)
         val openAuthSettings = mockk<OpenAuthSettings>(relaxed = true)
+
+        mockMfaCheckSuccess(userId)
 
         coEvery {
             authSettingsProvider.updateManagementAuthSettings(settings)
@@ -95,6 +116,8 @@ class UpdateAuthSettingsUseCaseTest {
             status = AuditStatus.FAILED,
             metadata = emptySet()
         )
+
+        mockMfaCheckSuccess(userId)
 
         coEvery {
             authSettingsProvider.updateManagementAuthSettings(settings)

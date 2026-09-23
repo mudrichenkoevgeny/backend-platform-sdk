@@ -22,6 +22,7 @@ object UserSessionsTable : BaseTable("user_sessions") {
         UserRole::class
     )
     val identifier = text("identifier")
+    val identifierDisplayName = text("identifier_display_name")
     val identifierId = reference(
         "identifier_id",
         UserIdentifiersTable.id,
