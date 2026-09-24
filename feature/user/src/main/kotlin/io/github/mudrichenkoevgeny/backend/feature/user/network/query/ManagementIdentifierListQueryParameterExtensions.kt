@@ -23,9 +23,6 @@ fun ApplicationCall.parseManagementIdentifiersListQueryParams(): ManagementIdent
     val filterNames = UserFilterValues.UserIdentifierFilterValues
 
     val queryUserIds = getQueryValues(filterNames.USER_ID)
-    if (queryUserIds.isEmpty()) {
-        throw RequestHandlingException(CommonError.MissingRequiredParameter(filterNames.USER_ID))
-    }
     val userIds = queryUserIds.map { userId ->
         runCatching { userId.toUserIdOrThrow() }.getOrElse {
             throw RequestHandlingException(CommonError.InvalidParameterValue(filterNames.USER_ID))

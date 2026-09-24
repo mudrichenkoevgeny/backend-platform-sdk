@@ -189,9 +189,6 @@ class ManagementIdentifierRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
         )
         request {
-            pathParameter<String>(UserApiPaths.USER_ID) {
-                description = GET_IDENTIFIER_ROUTE_PATH_USER_ID_DESCRIPTION
-            }
             pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
                 description = GET_IDENTIFIER_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION
             }
@@ -248,9 +245,6 @@ class ManagementIdentifierRouter @Inject constructor(
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
-            pathParameter<String>(UserApiPaths.USER_ID) {
-                description = DELETE_IDENTIFIER_ROUTE_PATH_USER_ID_DESCRIPTION
-            }
             pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
                 description = DELETE_IDENTIFIER_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION
             }
@@ -310,9 +304,6 @@ class ManagementIdentifierRouter @Inject constructor(
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
-            pathParameter<String>(UserApiPaths.USER_ID) {
-                description = DELETE_IDENTIFIER_PASSWORD_ROUTE_PATH_USER_ID_DESCRIPTION
-            }
             pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
                 description = DELETE_IDENTIFIER_PASSWORD_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION
             }
@@ -385,16 +376,14 @@ class ManagementIdentifierRouter @Inject constructor(
         const val GET_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user identifiers"
 
         const val GET_IDENTIFIER_ROUTE_SUMMARY = "Get user identifier (management)"
-        const val GET_IDENTIFIER_ROUTE_DESCRIPTION = "Returns a single identifier for the given user."
+        const val GET_IDENTIFIER_ROUTE_DESCRIPTION = "Returns a single identifier."
         const val GET_IDENTIFIER_ROUTE_OPERATION_ID = "getManagementUserIdentifier"
-        const val GET_IDENTIFIER_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
         const val GET_IDENTIFIER_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION = "User identifier id (UUID string, hex with dashes)"
         const val GET_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION = "User identifier"
 
         const val DELETE_IDENTIFIER_ROUTE_SUMMARY = "Delete user identifier (management)"
-        const val DELETE_IDENTIFIER_ROUTE_DESCRIPTION = "Deletes a user identifier record for the given user."
+        const val DELETE_IDENTIFIER_ROUTE_DESCRIPTION = "Deletes a user identifier record."
         const val DELETE_IDENTIFIER_ROUTE_OPERATION_ID = "deleteManagementUserIdentifier"
-        const val DELETE_IDENTIFIER_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
         const val DELETE_IDENTIFIER_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION =
             "User identifier id (UUID string, hex with dashes)"
         const val DELETE_IDENTIFIER_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Identifier removed; no response body."
@@ -403,7 +392,6 @@ class ManagementIdentifierRouter @Inject constructor(
         const val DELETE_IDENTIFIER_PASSWORD_ROUTE_DESCRIPTION =
             "Revokes and removes the password credential from a specific user identifier."
         const val DELETE_IDENTIFIER_PASSWORD_ROUTE_OPERATION_ID = "deleteManagementUserIdentifierPassword"
-        const val DELETE_IDENTIFIER_PASSWORD_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
         const val DELETE_IDENTIFIER_PASSWORD_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION =
             "User identifier id (UUID string, hex with dashes)"
         const val DELETE_IDENTIFIER_PASSWORD_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Password removed; no response body."

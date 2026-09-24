@@ -546,12 +546,36 @@ class AuthManagerImpl @Inject constructor(
             is AppResult.Error -> return userSessionsResult
         }
 
+        val currentDeviceId = clientInfo.deviceInfo.deviceId
+        val remainingSessions = if (currentDeviceId != null) {
+            val matchingSessions = userSessions.filter { session ->
+                session.deviceInfo.deviceId == currentDeviceId
+            }
+            for (oldSession in matchingSessions) {
+                val deleteResult = sessionManager.deleteSessionById(oldSession.id)
+                if (deleteResult is AppResult.Success) {
+                    webSocketManager.sendMessageToUserSession(
+                        userSessionId = oldSession.id,
+                        frame = SocketFrame(
+                            type = UserWebSocketEventTypes.SESSION_DELETED,
+                            timestamp = Clock.System.now().toEpochMilliseconds(),
+                            payload = null,
+                            metadata = emptyMap()
+                        )
+                    )
+                }
+            }
+            userSessions.filter { session -> session.deviceInfo.deviceId != currentDeviceId }
+        } else {
+            userSessions
+        }
+
         val maxActiveSessions = when (user.role) {
             UserRole.USER -> authSettingsProvider.getMaxActiveSessionsForOpenUser()
             UserRole.STAFF, UserRole.ADMIN -> authSettingsProvider.getMaxActiveSessionsForManagementUser()
         }
 
-        if (userSessions.size >= maxActiveSessions) {
+        if (remainingSessions.size >= maxActiveSessions) {
             val deletedSessionResult = sessionManager.deleteLeastRecentlyUsedUserSession(user.id)
             if (deletedSessionResult is AppResult.Success) {
                 webSocketManager.sendMessageToUserSession(

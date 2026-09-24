@@ -200,9 +200,6 @@ class ManagementSessionRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
         )
         request {
-            pathParameter<String>(UserApiPaths.USER_ID) {
-                description = GET_SESSION_ROUTE_PATH_USER_ID_DESCRIPTION
-            }
             pathParameter<String>(UserApiPaths.SESSION_ID) {
                 description = GET_SESSION_ROUTE_PATH_SESSION_ID_DESCRIPTION
             }
@@ -259,9 +256,6 @@ class ManagementSessionRouter @Inject constructor(
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
-            pathParameter<String>(UserApiPaths.USER_ID) {
-                description = DELETE_SESSION_ROUTE_PATH_USER_ID_DESCRIPTION
-            }
             pathParameter<String>(UserApiPaths.SESSION_ID) {
                 description = DELETE_SESSION_ROUTE_PATH_SESSION_ID_DESCRIPTION
             }
@@ -393,16 +387,14 @@ class ManagementSessionRouter @Inject constructor(
         const val GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user sessions"
 
         const val GET_SESSION_ROUTE_SUMMARY = "Get user session (management)"
-        const val GET_SESSION_ROUTE_DESCRIPTION = "Returns a single user session by user id and session id."
+        const val GET_SESSION_ROUTE_DESCRIPTION = "Returns a single user session by session id."
         const val GET_SESSION_ROUTE_OPERATION_ID = "getManagementSession"
-        const val GET_SESSION_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
         const val GET_SESSION_ROUTE_PATH_SESSION_ID_DESCRIPTION = "Session id (UUID string, hex with dashes)"
         const val GET_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "User session"
 
         const val DELETE_SESSION_ROUTE_SUMMARY = "Delete user session (management)"
-        const val DELETE_SESSION_ROUTE_DESCRIPTION = "Force-terminates the specified session for the specified user."
+        const val DELETE_SESSION_ROUTE_DESCRIPTION = "Force-terminates the specified session by session id."
         const val DELETE_SESSION_ROUTE_OPERATION_ID = "deleteManagementSession"
-        const val DELETE_SESSION_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
         const val DELETE_SESSION_ROUTE_PATH_SESSION_ID_DESCRIPTION = "Session id (UUID string, hex with dashes)"
         const val DELETE_SESSION_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Session terminated; no response body."
 
