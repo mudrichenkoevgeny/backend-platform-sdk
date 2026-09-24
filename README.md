@@ -11,7 +11,7 @@ Use the BOM and add only the modules you need:
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation(platform("io.github.mudrichenkoevgeny:backend-platform-sdk-bom:0.0.18"))
+    implementation(platform("io.github.mudrichenkoevgeny:backend-platform-sdk-bom:0.0.19"))
     implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-common")
     implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-database")
     implementation("io.github.mudrichenkoevgeny:backend-platform-sdk-core-security")
