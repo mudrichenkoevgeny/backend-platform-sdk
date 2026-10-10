@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventSummary
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -54,7 +54,7 @@ class GetAuditEventsUseCase @Inject constructor(
      * @param statuses Filter by audit event statuses (e.g., SUCCESS, FAILURE).
      * @param messages Filter by free-text audit messages.
      * @param authenticatedRequestContext The context of the authenticated management caller.
-     * @return [AppResult] containing a [PagedResult] of [AuditEvent] within the authorized scope.
+     * @return [AppResult] containing a [PagedResult] of [AuditEventSummary] within the authorized scope.
      */
     suspend operator fun invoke(
         pageParams: PageParams,
@@ -69,10 +69,10 @@ class GetAuditEventsUseCase @Inject constructor(
         statuses: List<AuditStatus> = emptyList(),
         messages: List<String> = emptyList(),
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<PagedResult<AuditEvent>> {
+    ): AppResult<PagedResult<AuditEventSummary>> {
         val currentUserId = authenticatedRequestContext.userId
 
-        val getCurrentUserResult = userManager.getUserByIdForSelf(currentUserId)
+        val getCurrentUserResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (getCurrentUserResult) {
@@ -80,7 +80,7 @@ class GetAuditEventsUseCase @Inject constructor(
             is AppResult.Success -> getCurrentUserResult.data
         }
 
-        return auditManager.getEventsPage(
+        return auditManager.getAuditEventsSummaryPage(
             managementUserPermissionCodes = currentUser.permissionCodes,
             pageParams = pageParams,
             sortBy = sortBy,

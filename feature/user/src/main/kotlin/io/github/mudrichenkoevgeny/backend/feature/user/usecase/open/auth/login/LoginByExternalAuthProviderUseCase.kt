@@ -139,12 +139,12 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
 
         return when (authenticateUserResult) {
             is AppResult.Success -> {
-                val userDetails = authenticateUserResult.data.userDetails
+                val userPrivate = authenticateUserResult.data.userPrivate
                 logAudit(
                     status = AuditStatus.SUCCESS,
-                    actorId = userDetails.id.asHexDashString(),
-                    actorUserRole = userDetails.role,
-                    resourceId = userDetails.id.asHexDashString(),
+                    actorId = userPrivate.id.asHexDashString(),
+                    actorUserRole = userPrivate.role,
+                    resourceId = userPrivate.id.asHexDashString(),
                     metadata = auditMetadata
                 )
                 authenticateUserResult

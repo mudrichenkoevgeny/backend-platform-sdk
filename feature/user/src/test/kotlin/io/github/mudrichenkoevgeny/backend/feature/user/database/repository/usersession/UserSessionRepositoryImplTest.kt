@@ -86,8 +86,8 @@ class UserSessionRepositoryImplTest {
         assertEquals(1, deletedIds.size)
         assertEquals(deleteSession.id, deletedIds.first())
 
-        val checkKeep = suspendTransaction { repository.getUserSessionById(keepSession.id) }
-        val checkDelete = suspendTransaction { repository.getUserSessionById(deleteSession.id) }
+        val checkKeep = suspendTransaction { repository.getUserSessionInternalById(keepSession.id) }
+        val checkDelete = suspendTransaction { repository.getUserSessionInternalById(deleteSession.id) }
 
         assertNotNull((checkKeep as AppResult.Success).data)
         assertNull((checkDelete as AppResult.Success).data)
@@ -148,7 +148,7 @@ class UserSessionRepositoryImplTest {
         val userId = createTestUserInDb()
         val identifierId = createTestIdentifierInDb(userId)
         val session = createTestSession(userId, identifierId = identifierId).copy(
-            deviceInfo = ClientDeviceInfo(
+            clientDeviceInfo = ClientDeviceInfo(
                 deviceId = null,
                 deviceName = "iPhone 15",
                 clientType = ClientType.IOS,
@@ -171,7 +171,7 @@ class UserSessionRepositoryImplTest {
 
         val data = (result as AppResult.Success).data
         assertEquals(1, data.items.size)
-        assertEquals("iPhone 15", data.items.first().deviceInfo.deviceName)
+        assertEquals("iPhone 15", data.items.first().clientDeviceInfo.deviceName)
     }
 
     @Test
@@ -226,6 +226,7 @@ class UserSessionRepositoryImplTest {
                 it[UserIdentifiersTable.userId] = userId.value
                 it[userAuthProvider] = UserAuthProvider.EMAIL
                 it[identifier] = "test@example.com"
+                it[displayName] = "test@example.com"
                 it[createdAt] = JavaInstant.now()
             }
         }

@@ -25,8 +25,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import javax.inject.Inject
@@ -81,7 +82,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
         lockoutType: AccountLockoutType? = null,
         temporaryLockoutUntil: Long? = null,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<UserDetails> {
+    ): AppResult<UserPrivate> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
         val auditActorUserRole = authenticatedRequestContext.userRole
         val auditResourceId = userId.asHexDashString()
@@ -113,7 +114,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
             )
         }
 
-        val managementUserResult = userManager.getUserByIdForSelf(managementUserId)
+        val managementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val managementUser = when (managementUserResult) {
@@ -137,7 +138,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
             )
         }
 
-        val targetUserResult = userManager.getUserByIdForSelf(userId)
+        val targetUserResult = userManager.getUserInternalById(userId)
             .mapNotNullOrError(UserError.UserNotFound(userId))
 
         val targetUser = when (targetUserResult) {
@@ -254,7 +255,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
             )
         }
 
-        val managementUserSessionResult = sessionManager.getUserSessionForSystem(
+        val managementUserSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -270,7 +271,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = managementUser,
+            userInternal = managementUser,
             userSession = managementUserSession,
             requireTotp = true
         )
@@ -284,7 +285,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
             )
         }
 
-        val updateResult = userManager.updateUserForManagement(
+        val updateResult = userManager.updateUser(
             user = targetUser,
             accountStatus = accountStatus,
             authorityLevel = authorityLevel,
@@ -295,7 +296,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
 
         return when (updateResult) {
             is AppResult.Success -> {
-                val sessionsForUpdatedUser = sessionManager.getAllUserSessions(
+                val sessionsForUpdatedUser = sessionManager.getAllUserSessionsInternalList(
                     userId = userId
                 ).dataOrNull() ?: emptyList()
 
@@ -317,7 +318,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
                     resourceId = auditResourceId,
                     metadata = auditMetadata
                 )
-                updateResult
+                AppResult.Success(updateResult.data.toUserPrivate())
             }
             is AppResult.Error -> handleError(
                 error = updateResult.error,

@@ -18,7 +18,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import javax.inject.Inject
@@ -40,13 +40,13 @@ class UserManagerImpl @Inject constructor(
     private val lockoutManager: LockoutManager
 ): UserManager {
 
-    override suspend fun getUserByIdForSelf(userId: UserId): AppResult<UserDetails?> = dbQuery {
-        val userResult = userRepository.getUserDetailsById(userId)
+    override suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?> = dbQuery {
+        val userResult = userRepository.getUserInternalById(userId)
         val user = when (userResult) {
             is AppResult.Success -> userResult.data ?: return@dbQuery AppResult.Success(null)
             is AppResult.Error -> return@dbQuery userResult
         }
-        AppResult.Success(enrichUserDetailsWithLockout(user))
+        AppResult.Success(enrichUserInternalWithLockout(user))
     }
 
     override suspend fun createUser(
@@ -54,10 +54,10 @@ class UserManagerImpl @Inject constructor(
         accountStatus: UserAccountStatus,
         authorityLevel: Int,
         permissions: Set<PermissionCode>
-    ): AppResult<UserDetails> = dbQuery {
+    ): AppResult<UserInternal> = dbQuery {
         val now = Clock.System.now()
 
-        val user = UserDetails(
+        val user = UserInternal(
             id = UserId.generate(),
             role = role,
             accountStatus = accountStatus,
@@ -83,7 +83,7 @@ class UserManagerImpl @Inject constructor(
         accountStatus: UserAccountStatus,
         authorityLevel: Int,
         permissions: Set<PermissionCode>
-    ): AppResult<UserDetails> {
+    ): AppResult<UserInternal> {
         return if (userId == null) {
             createUser(
                 role = role,
@@ -92,20 +92,20 @@ class UserManagerImpl @Inject constructor(
                 permissions = permissions
             )
         } else {
-            getUserByIdForSelf(userId).mapNotNullOrError(
+            getUserInternalById(userId).mapNotNullOrError(
                 UserError.UserNotFound()
             )
         }
     }
 
-    override suspend fun updateUserForManagement(
-        user: UserDetails,
+    override suspend fun updateUser(
+        user: UserInternal,
         accountStatus: UserAccountStatus?,
         authorityLevel: Int?,
         permissions: Set<PermissionCode>?,
         lockoutType: AccountLockoutType?,
         temporaryLockoutUntil: Long?
-    ): AppResult<UserDetails?> = dbQuery {
+    ): AppResult<UserInternal?> = dbQuery {
         var statusUpdate: UpdateField<UserAccountStatus> = accountStatus
             ?.let { UpdateField.Set(it) } ?: UpdateField.Ignore
         var statusOnRestoreUpdate: UpdateField<UserAccountStatus> = UpdateField.Ignore
@@ -136,15 +136,15 @@ class UserManagerImpl @Inject constructor(
             accountLockoutType = lockoutType?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
             temporaryLockoutUntil = temporaryLockoutUntil
                 ?.let { UpdateField.Set(Instant.fromEpochMilliseconds(it)) } ?: UpdateField.Ignore
-        ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
+        ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
     }
 
-    override suspend fun getUserForManagement(
+    override suspend fun getUserInternal(
         userId: UserId,
         managementUserId: UserId,
         managementUserPermissionCodes: Set<PermissionCode>
-    ): AppResult<UserDetails?> = dbQuery {
-        val getTargetUserResult = userRepository.getUserDetailsById(userId)
+    ): AppResult<UserInternal?> = dbQuery {
+        val getTargetUserResult = userRepository.getUserInternalById(userId)
 
         when (getTargetUserResult) {
             is AppResult.Error -> getTargetUserResult
@@ -157,12 +157,12 @@ class UserManagerImpl @Inject constructor(
                     return@dbQuery AppResult.Error(UserError.UserMissingPermissions(managementUserId))
                 }
 
-                AppResult.Success(enrichUserDetailsWithLockout(targetUser))
+                AppResult.Success(enrichUserInternalWithLockout(targetUser))
             }
         }
     }
 
-    override suspend fun getUsersPageForManagement(
+    override suspend fun getUsersInternalPage(
         managementUserPermissionCodes: Set<PermissionCode>,
         pageParams: PageParams,
         sortBy: UserSortValues.UserSortBy,
@@ -175,7 +175,7 @@ class UserManagerImpl @Inject constructor(
         permissionCodes: Set<PermissionCode>,
         isTotpEnabled: Boolean?,
         accountLockoutTypes: List<AccountLockoutType>
-    ): AppResult<PagedResult<UserDetails>> = dbQuery {
+    ): AppResult<PagedResult<UserInternal>> = dbQuery {
         val accessFilter = buildAccessFilter(managementUserPermissionCodes)
         val pagedResult = userRepository.getUsersPageWithAccessFilter(
             accessFilter = accessFilter,
@@ -194,9 +194,9 @@ class UserManagerImpl @Inject constructor(
 
         val enrichedItems = when (pagedResult) {
             is AppResult.Success -> {
-                val enrichedList = mutableListOf<UserDetails>()
+                val enrichedList = mutableListOf<UserInternal>()
                 for (item in pagedResult.data.items) {
-                    enrichedList.add(enrichUserDetailsWithLockout(item))
+                    enrichedList.add(enrichUserInternalWithLockout(item))
                 }
                 PagedResult(
                     items = enrichedList,
@@ -212,38 +212,38 @@ class UserManagerImpl @Inject constructor(
         AppResult.Success(enrichedItems)
     }
 
-    override suspend fun restoreUserForSelf(
+    override suspend fun restoreUser(
         userId: UserId,
         newStatus: UserAccountStatus
-    ): AppResult<UserDetails> = dbQuery {
+    ): AppResult<UserInternal> = dbQuery {
         userRepository.updateUser(
             userId = userId,
             status = UpdateField.Set(newStatus),
             statusOnRestore = UpdateField.Set(null),
             scheduledPermanentDeletionAt = UpdateField.Set(null)
-        ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
+        ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
     }
 
-    override suspend fun scheduleUserDeletionForSelf(
+    override suspend fun scheduleUserDeletion(
         userId: UserId,
         currentStatus: UserAccountStatus
-    ): AppResult<UserDetails> = dbQuery {
+    ): AppResult<UserInternal> = dbQuery {
         userRepository.updateUser(
             userId = userId,
             status = UpdateField.Set(UserAccountStatus.PENDING_DELETION),
             statusOnRestore = UpdateField.Set(currentStatus),
             scheduledPermanentDeletionAt = UpdateField.Set(getScheduledPermanentDeletionAt())
-        ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
+        ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
     }
 
-    override suspend fun deleteUserForManagement(userId: UserId): AppResult<Unit> = dbQuery {
+    override suspend fun deleteUser(userId: UserId): AppResult<Unit> = dbQuery {
         userRepository.deleteUser(userId)
     }
 
     override suspend fun unlockUserAccount(
         userId: UserId,
         clearLockoutForIdentifiers: List<String>
-    ): AppResult<UserDetails> = dbQuery {
+    ): AppResult<UserInternal> = dbQuery {
         lockoutManager.clearLockout(userId.asHexDashString())
 
         for (identifier in clearLockoutForIdentifiers) {
@@ -254,30 +254,30 @@ class UserManagerImpl @Inject constructor(
             userId = userId,
             accountLockoutType = UpdateField.Set(AccountLockoutType.NONE),
             temporaryLockoutUntil = UpdateField.Set(null)
-        ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
+        ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
     }
 
-    override suspend fun lockUserAccount(userId: UserId, temporaryLockoutUntil: Instant): AppResult<UserDetails> = dbQuery {
+    override suspend fun lockUserAccount(userId: UserId, temporaryLockoutUntil: Instant): AppResult<UserInternal> = dbQuery {
         userRepository.updateUser(
             userId = userId,
             accountLockoutType = UpdateField.Set(AccountLockoutType.TEMPORARY),
             temporaryLockoutUntil = UpdateField.Set(temporaryLockoutUntil)
-        ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
+        ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
     }
 
-    override suspend fun lockUserAccountIndefinitely(userId: UserId): AppResult<UserDetails> = dbQuery {
+    override suspend fun lockUserAccountIndefinitely(userId: UserId): AppResult<UserInternal> = dbQuery {
         userRepository.updateUser(
             userId = userId,
             accountLockoutType = UpdateField.Set(AccountLockoutType.INDEFINITE),
             temporaryLockoutUntil = UpdateField.Set(null)
-        ).mapSuccess { userDetails -> enrichUserDetailsWithLockout(userDetails) }
+        ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
     }
 
-    override suspend fun deleteUsersDueForPermanentDeletionForSystem(): AppResult<Int> = dbQuery {
+    override suspend fun deleteUsersDueForPermanentDeletion(): AppResult<Int> = dbQuery {
         userRepository.deleteUsersDueForPermanentDeletion(Clock.System.now())
     }
 
-    override suspend fun unlockExpiredAccountLockoutsForSystem(): AppResult<Int> = dbQuery {
+    override suspend fun unlockExpiredAccountLockouts(): AppResult<Int> = dbQuery {
         val expiredUsersResult = userRepository.getExpiredTemporaryLockouts(Clock.System.now())
         val userIds = when (expiredUsersResult) {
             is AppResult.Success -> expiredUsersResult.data
@@ -294,7 +294,7 @@ class UserManagerImpl @Inject constructor(
         AppResult.Success(unlockedCount)
     }
 
-    private suspend fun enrichUserDetailsWithLockout(user: UserDetails): UserDetails {
+    private suspend fun enrichUserInternalWithLockout(user: UserInternal): UserInternal {
         val isIndefiniteResult = lockoutManager.isIndefiniteLockout(user.id.asHexDashString())
         val isIndefinite = when (isIndefiniteResult) {
             is AppResult.Success -> isIndefiniteResult.data

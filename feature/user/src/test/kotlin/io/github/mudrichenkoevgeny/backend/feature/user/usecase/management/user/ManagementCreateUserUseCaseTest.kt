@@ -7,20 +7,21 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import io.mockk.coEvery
@@ -30,6 +31,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ManagementCreateUserUseCaseTest {
@@ -62,24 +64,28 @@ class ManagementCreateUserUseCaseTest {
     private val managerId = context.userId
     private val sessionId = context.sessionId
 
+    @BeforeEach
+    fun setUp() {
+        every { authSettingsProvider.getManagementEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
+        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
+    }
+
     @Test
     fun `successfully creates user`() = runTest {
-        val permission = UserPermissionCode.USER_CREATE_AS_USER
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 100
-            every { permissionCodes } returns setOf(permission)
-        }
-        val createdUser = mockk<UserDetails> {
-            every { id } returns UserId.generate()
-        }
+        val permission = PermissionCode(UserPermissionCode.USER_CREATE_AS_USER.value)
+        val managerDetails = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 100,
+            permissionCodes = setOf(permission)
+        )
+        val createdUser = createTestUserInternal(id = UserId.generate())
         val managerSession = mockk<UserSessionInternal>()
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
-        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
         coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
-        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(managerSession)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(managerSession)
         coEvery {
             authenticationChallengeService.ensureSessionConfirmed(any(), any(), any())
         } returns AppResult.Success(Unit)
@@ -122,21 +128,19 @@ class ManagementCreateUserUseCaseTest {
 
     @Test
     fun `successfully creates user without password`() = runTest {
-        val permission = UserPermissionCode.USER_CREATE_AS_USER
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 100
-            every { permissionCodes } returns setOf(permission)
-        }
-        val createdUser = mockk<UserDetails> {
-            every { id } returns UserId.generate()
-        }
+        val permission = PermissionCode(UserPermissionCode.USER_CREATE_AS_USER.value)
+        val managerDetails = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 100,
+            permissionCodes = setOf(permission)
+        )
+        val createdUser = createTestUserInternal(id = UserId.generate())
         val managerSession = mockk<UserSessionInternal>()
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
-        every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy()
-        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(managerSession)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(managerSession)
         coEvery {
             authenticationChallengeService.ensureSessionConfirmed(any(), any(), any())
         } returns AppResult.Success(Unit)
@@ -180,13 +184,14 @@ class ManagementCreateUserUseCaseTest {
 
     @Test
     fun `returns error when authority level is too high`() = runTest {
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 50
-        }
+        val managerDetails = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 50
+        )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(
             status = AuditStatus.FAILED,
             metadata = emptySet()
@@ -207,14 +212,15 @@ class ManagementCreateUserUseCaseTest {
 
     @Test
     fun `returns error when manager lacks required creation permission`() = runTest {
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 100
-            every { permissionCodes } returns emptySet()
-        }
+        val managerDetails = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 100,
+            permissionCodes = emptySet()
+        )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(
             status = AuditStatus.FAILED,
             metadata = emptySet()
@@ -235,17 +241,24 @@ class ManagementCreateUserUseCaseTest {
 
     @Test
     fun `returns error when created email is blocked by restriction policy`() = runTest {
-        val permission = UserPermissionCode.USER_CREATE_AS_USER
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 100
-            every { permissionCodes } returns setOf(permission)
-        }
+        val permission = PermissionCode(UserPermissionCode.USER_CREATE_AS_USER.value)
+        val managerDetails = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 100,
+            permissionCodes = setOf(permission)
+        )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(mockk())
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy(
+            isBlacklistEnabled = true,
+            blacklist = listOf("tempmail.com")
+        )
+        every { authSettingsProvider.getManagementEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy(
             isBlacklistEnabled = true,
             blacklist = listOf("@tempmail.com")
         )
@@ -269,17 +282,18 @@ class ManagementCreateUserUseCaseTest {
 
     @Test
     fun `returns error when manager attempts to grant permissions they do not have`() = runTest {
-        val managerPermission = UserPermissionCode.USER_CREATE_AS_USER
-        val extraPermission = UserPermissionCode.USER_UPDATE_SECURITY_FOR_STAFF
+        val managerPermission = PermissionCode(UserPermissionCode.USER_CREATE_AS_USER.value)
+        val extraPermission = PermissionCode(UserPermissionCode.USER_UPDATE_SECURITY_FOR_STAFF.value)
 
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 100
-            every { permissionCodes } returns setOf(managerPermission)
-        }
+        val managerDetails = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 100,
+            permissionCodes = setOf(managerPermission)
+        )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(
             status = AuditStatus.FAILED,
             metadata = emptySet()
@@ -300,13 +314,14 @@ class ManagementCreateUserUseCaseTest {
 
     @Test
     fun `returns error when creating non-staff or non-user role`() = runTest {
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 100
-        }
+        val managerDetails = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 100
+        )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(
             status = AuditStatus.FAILED,
             metadata = emptySet()

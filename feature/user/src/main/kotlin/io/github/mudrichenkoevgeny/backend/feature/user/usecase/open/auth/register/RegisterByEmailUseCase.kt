@@ -142,12 +142,12 @@ class RegisterByEmailUseCase @Inject constructor(
 
         return when (registrationResult) {
             is AppResult.Success -> {
-                val userDetails = registrationResult.data.userDetails
+                val userPrivate = registrationResult.data.userPrivate
                 logAudit(
                     status = AuditStatus.SUCCESS,
-                    actorId = userDetails.id.asHexDashString(),
-                    actorUserRole = userDetails.role,
-                    resourceId = userDetails.id.asHexDashString(),
+                    actorId = userPrivate.id.asHexDashString(),
+                    actorUserRole = userPrivate.role,
+                    resourceId = userPrivate.id.asHexDashString(),
                     metadata = auditMetadata
                 )
                 registrationResult

@@ -84,8 +84,8 @@ class SendAddPhoneIdentifierConfirmationUseCase @Inject constructor(
         val sendAlreadyRegisteredResult = phoneService.sendAlreadyRegisteredPhoneNumber(
             phoneNumber = phoneNumber,
             ipAddress = context.clientInfo.ipAddress,
-            deviceName = context.clientInfo.deviceInfo.deviceName,
-            language = context.clientInfo.deviceInfo.language
+            deviceName = context.clientInfo.clientDeviceInfo.deviceName,
+            language = context.clientInfo.clientDeviceInfo.language
         )
         if (sendAlreadyRegisteredResult is AppResult.Error) return AppResult.Error(sendAlreadyRegisteredResult.error)
 
@@ -100,7 +100,7 @@ class SendAddPhoneIdentifierConfirmationUseCase @Inject constructor(
         val sendCodeResult = phoneService.sendVerificationCode(
             phoneNumber = phoneNumber,
             code = otpConfirmationData.code,
-            language = context.clientInfo.deviceInfo.language
+            language = context.clientInfo.clientDeviceInfo.language
         )
         if (sendCodeResult is AppResult.Error) return AppResult.Error(sendCodeResult.error)
 

@@ -22,7 +22,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
@@ -46,13 +46,13 @@ import javax.inject.Singleton
 /**
  * Default [UserRepository] implementation backed by Exposed and [UsersTable].
  *
- * Performs synchronous Exposed DSL operations and maps [ResultRow] values into [UserDetails].
+ * Performs synchronous Exposed DSL operations and maps [ResultRow] values into [UserInternal].
  * Returns [CommonError.Database] when inserts/updates report no affected rows.
  */
 @Singleton
 class UserRepositoryImpl @Inject constructor() : UserRepository {
 
-    override suspend fun createUser(user: UserDetails): AppResult<UserDetails> {
+    override suspend fun createUser(user: UserInternal): AppResult<UserInternal> {
         val inserted = UsersTable.insert { row ->
             row[id] = user.id.value
             row[role] = user.role
@@ -96,7 +96,7 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         scheduledPermanentDeletionAt: UpdateField<KotlinInstant>,
         accountLockoutType: UpdateField<AccountLockoutType>,
         temporaryLockoutUntil: UpdateField<KotlinInstant>
-    ): AppResult<UserDetails> {
+    ): AppResult<UserInternal> {
         val statusToSet = if (status is UpdateField.Set) {
             status.value
                 ?: return AppResult.Error(CommonError.Database("Status cannot be null"))
@@ -168,11 +168,11 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             )
         }
 
-        return getUserDetailsById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
+        return getUserInternalById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
     }
 
-    override suspend fun getUserDetailsById(userId: UserId): AppResult<UserDetails?> {
-        return AppResult.Success(getUserResultRow(userId)?.toUserDetails())
+    override suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?> {
+        return AppResult.Success(getUserResultRow(userId)?.toUserInternal())
     }
 
     private fun getUserResultRow(userId: UserId): ResultRow? {
@@ -195,7 +195,7 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         permissionCodes: Set<PermissionCode>,
         isTotpEnabled: Boolean?,
         accountLockoutTypes: List<AccountLockoutType>
-    ): AppResult<PagedResult<UserDetails>> {
+    ): AppResult<PagedResult<UserInternal>> {
         val query = UsersTable.selectAll()
 
         query.andWhere {
@@ -250,7 +250,7 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         val users = query
             .orderBy(sortColumn to sortOrder.toExposedSortOrder())
             .applyPagination(pageParams)
-            .map { it.toUserDetails() }
+            .map { it.toUserInternal() }
 
         val totalPages = getNumOfTotalPages(totalCount, pageParams.size)
 
@@ -287,8 +287,8 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         return AppResult.Success(userIds)
     }
 
-    private fun ResultRow.toUserDetails(): UserDetails {
-        return UserDetails(
+    private fun ResultRow.toUserInternal(): UserInternal {
+        return UserInternal(
             id = UserId(this[UsersTable.id].value),
             role = this[UsersTable.role],
             accountStatus = this[UsersTable.accountStatus],

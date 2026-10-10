@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,15 +30,15 @@ class GetSessionUseCase @Inject constructor(
      *
      * @param sessionId The unique identifier of the requested session.
      * @param authenticatedRequestContext The context of the authenticated request.
-     * @return [AppResult] containing the [UserSession] or a [CommonError.NotFound] error.
+     * @return [AppResult] containing the [UserSessionPrivate] or a [CommonError.NotFound] error.
      */
     suspend operator fun invoke(
         sessionId: UserSessionId,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<UserSession> {
+    ): AppResult<UserSessionPrivate> {
         val currentUserId = authenticatedRequestContext.userId
 
-        val getCurrentUserResult = userManager.getUserByIdForSelf(currentUserId)
+        val getCurrentUserResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (getCurrentUserResult) {
@@ -50,11 +50,11 @@ class GetSessionUseCase @Inject constructor(
             return AppResult.Error(UserError.UserForbidden(currentUserId))
         }
 
-        return sessionManager.getUserSessionForSelf(
+        return sessionManager.getUserSessionPrivate(
             userSessionId = sessionId
         ).mapNotNullOrError(
             CommonError.NotFound(
-                resource = UserSession::class.java.simpleName,
+                resource = UserSessionPrivate::class.java.simpleName,
                 identifier = sessionId.asHexDashString()
             )
         )

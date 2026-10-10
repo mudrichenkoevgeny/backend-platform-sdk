@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChalleng
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.createTestSessionToken
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
@@ -83,7 +83,7 @@ class AuthManagerImplTest {
     fun `authenticateExistingUser returns valid AuthData with SessionToken`() = runTest {
         val userId = UserId.generate()
         val clientInfo = mockk<ClientInfo>(relaxed = true)
-        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER)
+        val userInternal = createTestUserInternal(id = userId, role = UserRole.USER)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
         val expectedToken = createTestSessionToken()
 
@@ -91,8 +91,8 @@ class AuthManagerImplTest {
             identifierManager.getUserIdentifierInternalByProvider(any(), any())
         } returns AppResult.Success(userIdentifier)
 
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getAllUserSessions(userId) } returns AppResult.Success(emptyList())
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getAllUserSessionsInternalList(userId) } returns AppResult.Success(emptyList())
 
         coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
 
@@ -109,7 +109,7 @@ class AuthManagerImplTest {
 
         assertTrue(result is AppResult.Success)
         val data = (result as AppResult.Success).data
-        assertEquals(userId, data.userDetails.id)
+        assertEquals(userId, data.userPrivate.id)
         assertEquals(expectedToken.accessToken, data.sessionToken.accessToken)
         assertEquals(expectedToken.refreshToken, data.sessionToken.refreshToken)
     }
@@ -140,13 +140,13 @@ class AuthManagerImplTest {
     @Test
     fun `provideAuthData returns Error UserBanned when status is BANNED`() = runTest {
         val userId = UserId.generate()
-        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.BANNED)
+        val userInternal = createTestUserInternal(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.BANNED)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
 
         coEvery {
             identifierManager.getUserIdentifierInternalByProvider(any(), any())
         } returns AppResult.Success(userIdentifier)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         coEvery { passwordHasher.isPasswordValid(isNull(), any()) } returns AppResult.Success(true)
         coEvery { userLockoutService.checkLockout(any<String>(), any()) } returns AppResult.Success(Unit)
@@ -167,7 +167,7 @@ class AuthManagerImplTest {
     fun `authenticateExistingUser deletes least recently used session when open user reaches maxActiveSessionsForOpenUser`() = runTest {
         val userId = UserId.generate()
         val clientInfo = mockk<ClientInfo>(relaxed = true)
-        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER)
+        val userInternal = createTestUserInternal(id = userId, role = UserRole.USER)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
         val expectedToken = createTestSessionToken()
         val existingSessions = List(5) { createTestUserSessionInternal(userId = userId, userRole = UserRole.USER) }
@@ -176,8 +176,8 @@ class AuthManagerImplTest {
         coEvery {
             identifierManager.getUserIdentifierInternalByProvider(any(), any())
         } returns AppResult.Success(userIdentifier)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getAllUserSessions(userId) } returns AppResult.Success(existingSessions)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getAllUserSessionsInternalList(userId) } returns AppResult.Success(existingSessions)
         coEvery { sessionManager.deleteLeastRecentlyUsedUserSession(userId) } returns AppResult.Success(oldestSessionId)
         coEvery { webSocketManager.sendMessageToUserSession(oldestSessionId, any()) } returns Unit
         coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
@@ -202,7 +202,7 @@ class AuthManagerImplTest {
     fun `authenticateExistingUser deletes least recently used session when management user reaches maxActiveSessionsForManagementUser`() = runTest {
         val userId = UserId.generate()
         val clientInfo = mockk<ClientInfo>(relaxed = true)
-        val userDetails = createTestUserDetails(id = userId, role = UserRole.ADMIN)
+        val userInternal = createTestUserInternal(id = userId, role = UserRole.ADMIN)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
         val expectedToken = createTestSessionToken()
         val existingSessions = List(3) { createTestUserSessionInternal(userId = userId, userRole = UserRole.ADMIN) }
@@ -211,8 +211,8 @@ class AuthManagerImplTest {
         coEvery {
             identifierManager.getUserIdentifierInternalByProvider(any(), any())
         } returns AppResult.Success(userIdentifier)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getAllUserSessions(userId) } returns AppResult.Success(existingSessions)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getAllUserSessionsInternalList(userId) } returns AppResult.Success(existingSessions)
         coEvery { sessionManager.deleteLeastRecentlyUsedUserSession(userId) } returns AppResult.Success(oldestSessionId)
         coEvery { webSocketManager.sendMessageToUserSession(oldestSessionId, any()) } returns Unit
         coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
@@ -237,7 +237,7 @@ class AuthManagerImplTest {
     fun `authenticateExistingUser does not delete session when active sessions count is below limit`() = runTest {
         val userId = UserId.generate()
         val clientInfo = mockk<ClientInfo>(relaxed = true)
-        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER)
+        val userInternal = createTestUserInternal(id = userId, role = UserRole.USER)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
         val expectedToken = createTestSessionToken()
         val existingSessions = List(2) { createTestUserSessionInternal(userId = userId, userRole = UserRole.USER) }
@@ -245,8 +245,8 @@ class AuthManagerImplTest {
         coEvery {
             identifierManager.getUserIdentifierInternalByProvider(any(), any())
         } returns AppResult.Success(userIdentifier)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getAllUserSessions(userId) } returns AppResult.Success(existingSessions)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getAllUserSessionsInternalList(userId) } returns AppResult.Success(existingSessions)
         coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
         coEvery {
             sessionManager.createSession(userId, any(), any(), any(), any(), any(), any(), any())
@@ -268,13 +268,13 @@ class AuthManagerImplTest {
     fun `authenticateExistingUser returns Error UserRoleNotAllowed when role is not in allowedRoles`() = runTest {
         val userId = UserId.generate()
         val clientInfo = mockk<ClientInfo>(relaxed = true)
-        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER)
+        val userInternal = createTestUserInternal(id = userId, role = UserRole.USER)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
 
         coEvery {
             identifierManager.getUserIdentifierInternalByProvider(any(), any())
         } returns AppResult.Success(userIdentifier)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
 
         val result = authManager.authenticateExistingUser(
@@ -293,7 +293,7 @@ class AuthManagerImplTest {
     fun `authenticateExistingUser returns Error MfaConfirmationRequired when user has isTotpEnabled = true`() = runTest {
         val userId = UserId.generate()
         val clientInfo = mockk<ClientInfo>(relaxed = true)
-        val userDetails = createTestUserDetails(id = userId, role = UserRole.USER, isTotpEnabled = true)
+        val userInternal = createTestUserInternal(id = userId, role = UserRole.USER, isTotpEnabled = true)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
         val mfaChallengeData = MfaChallengeData(
             token = "test-mfa-token",
@@ -306,7 +306,7 @@ class AuthManagerImplTest {
         coEvery {
             identifierManager.getUserIdentifierInternalByProvider(any(), any())
         } returns AppResult.Success(userIdentifier)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(true)
         coEvery {
             mfaService.createChallenge(
@@ -327,7 +327,6 @@ class AuthManagerImplTest {
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
         assertTrue(error is SecurityError.MfaConfirmationRequired)
-        assertEquals("test-mfa-token", (error as SecurityError.MfaConfirmationRequired).publicArgs?.get("mfa_token"))
+        assertEquals("test-mfa-token", (error as SecurityError.MfaConfirmationRequired).publicArgs?.get("mfaToken"))
     }
 }
-

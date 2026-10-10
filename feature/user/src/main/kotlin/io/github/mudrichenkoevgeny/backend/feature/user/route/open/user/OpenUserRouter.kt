@@ -29,8 +29,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserDetailsPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserDetailsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.open.user.OpenUserRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
@@ -127,7 +127,7 @@ class OpenUserRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
-                body<UserDetailsPayload>()
+                body<UserPrivatePayload>()
                 description = GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -154,8 +154,8 @@ class OpenUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userDetails ->
-            userDetails.toUserDetailsPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+            userPrivate.toUserPrivatePayload()
         }
     }
 
@@ -176,7 +176,7 @@ class OpenUserRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
-                body<UserDetailsPayload>()
+                body<UserPrivatePayload>()
                 description = SCHEDULE_DELETION_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -208,8 +208,8 @@ class OpenUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userDetails ->
-            userDetails.toUserDetailsPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+            userPrivate.toUserPrivatePayload()
         }
     }
 
@@ -230,7 +230,7 @@ class OpenUserRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
-                body<UserDetailsPayload>()
+                body<UserPrivatePayload>()
                 description = RESTORE_USER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -262,8 +262,8 @@ class OpenUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userDetails ->
-            userDetails.toUserDetailsPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+            userPrivate.toUserPrivatePayload()
         }
     }
 

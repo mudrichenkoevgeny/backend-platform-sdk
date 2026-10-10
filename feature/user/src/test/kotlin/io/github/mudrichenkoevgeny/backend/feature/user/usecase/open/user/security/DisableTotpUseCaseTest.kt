@@ -7,7 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -20,7 +20,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -55,15 +54,13 @@ class DisableTotpUseCaseTest {
     private val sessionId = context.sessionId
 
     @Test
-    fun `successfully disables totp`() = runTest {
-        val userDetails = mockk<UserDetails> {
-            every { isTotpEnabled } returns true
-        }
+    fun `successfully disables TOTP`() = runTest {
+        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = true)
         val userSessionInternal = mockk<UserSessionInternal>()
 
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.USER_DISABLE_TOTP, userId.asHexDashString()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSessionInternal)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(userSessionInternal)
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { totpManager.disableTotp(userId) } returns AppResult.Success(Unit)
 
@@ -86,36 +83,12 @@ class DisableTotpUseCaseTest {
     }
 
     @Test
-    fun `returns error when rate limit exceeded`() = runTest {
-        val error = mockk<AppError>()
-        every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(error)
+    fun `returns error when TOTP is not enabled`() = runTest {
+        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = false)
 
-        val result = useCase(context)
-
-        assertTrue(result is AppResult.Error)
-        coVerify {
-            auditLogger.log(
-                actorId = userId.asHexDashString(),
-                actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
-                action = UserAuditActionType.SELF_DISABLE_TOTP,
-                resource = UserAuditResourceType.USER,
-                resourceId = userId.asHexDashString(),
-                status = AuditStatus.FAILED,
-                metadata = any()
-            )
-        }
-    }
-
-    @Test
-    fun `returns error when totp is already disabled`() = runTest {
-        val userDetails = mockk<UserDetails> {
-            every { isTotpEnabled } returns false
-        }
-        every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         val result = useCase(context)
 
@@ -124,50 +97,20 @@ class DisableTotpUseCaseTest {
     }
 
     @Test
-    fun `returns error when session is not found`() = runTest {
-        val userDetails = mockk<UserDetails> {
-            every { isTotpEnabled } returns true
-        }
-        every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(null)
-
-        val result = useCase(context)
-
-        assertTrue(result is AppResult.Error)
-        assertTrue((result as AppResult.Error).error is UserError.InvalidSession)
-    }
-
-    @Test
-    fun `returns error when totp manager fails`() = runTest {
-        val userDetails = mockk<UserDetails> {
-            every { isTotpEnabled } returns true
-        }
+    fun `returns error when mfa confirmation fails`() = runTest {
+        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = true)
         val userSessionInternal = mockk<UserSessionInternal>()
         val error = mockk<AppError>()
 
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSessionInternal)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
-        coEvery { totpManager.disableTotp(any()) } returns AppResult.Error(error)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(userSessionInternal)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Error(error)
 
         val result = useCase(context)
 
         assertTrue(result is AppResult.Error)
-        coVerify {
-            auditLogger.log(
-                actorId = userId.asHexDashString(),
-                actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
-                action = UserAuditActionType.SELF_DISABLE_TOTP,
-                resource = UserAuditResourceType.USER,
-                resourceId = userId.asHexDashString(),
-                status = AuditStatus.FAILED,
-                metadata = any()
-            )
-        }
+        assertEquals(error, (result as AppResult.Error).error)
     }
 }

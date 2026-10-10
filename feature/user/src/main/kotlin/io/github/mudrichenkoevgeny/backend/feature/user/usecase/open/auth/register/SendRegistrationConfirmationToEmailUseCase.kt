@@ -105,8 +105,8 @@ class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
         val sendEmailResult = emailService.sendAlreadyRegisteredEmail(
             email = email,
             ipAddress = context.clientInfo.ipAddress,
-            deviceName = context.clientInfo.deviceInfo.deviceName,
-            language = context.clientInfo.deviceInfo.language
+            deviceName = context.clientInfo.clientDeviceInfo.deviceName,
+            language = context.clientInfo.clientDeviceInfo.language
         )
         if (sendEmailResult is AppResult.Error) return AppResult.Error(sendEmailResult.error)
 
@@ -121,7 +121,7 @@ class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
         val sendEmailResult = emailService.sendVerificationCode(
             email = email,
             code = otpConfirmationData.code,
-            language = context.clientInfo.deviceInfo.language
+            language = context.clientInfo.clientDeviceInfo.language
         )
         if (sendEmailResult is AppResult.Error) return AppResult.Error(sendEmailResult.error)
 

@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.audit.database.table
 import io.github.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
 import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.model.event.AuditEventMetadataPayload
@@ -12,7 +12,7 @@ import kotlinx.serialization.serializer
 import org.jetbrains.exposed.v1.json.jsonb
 
 /**
- * Exposed table mapping for [AuditEvent].
+ * Exposed table mapping for [AuditEventInternal].
  * Inherits id, createdAt, updatedAt from [BaseTable].
  *
  * Schema is created by a Flyway migration in `db/migration/core/audit/`.

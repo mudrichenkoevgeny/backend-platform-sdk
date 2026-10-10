@@ -7,6 +7,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
@@ -20,10 +22,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -58,21 +58,19 @@ class AddUserIdentifierPhoneUseCaseTest {
     @Test
     fun `successfully adds phone identifier`() = runTest {
         val context = createTestAuthenticatedRequestContext()
-        val userDetails = mockk<UserDetails>()
+        val userInternal = createTestUserInternal(id = context.userId)
         val sessionInternal = mockk<UserSessionInternal>()
         val identifierId = UserIdentifierId.generate()
-        val identifier = mockk<UserIdentifier> {
-            every { id } returns identifierId
-        }
+        val identifier = createTestUserIdentifierPrivate(id = identifierId)
 
         coEvery {
             rateLimiter.checkRateLimit(UserRateLimitAction.USER_IDENTIFIER_ADD, any())
         } returns AppResult.Success(Unit)
 
-        coEvery { userManager.getUserByIdForSelf(context.userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(context.sessionId) } returns AppResult.Success(sessionInternal)
+        coEvery { userManager.getUserInternalById(context.userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(context.sessionId) } returns AppResult.Success(sessionInternal)
         coEvery {
-            authenticationChallengeService.ensureSessionConfirmed(userDetails, sessionInternal)
+            authenticationChallengeService.ensureSessionConfirmed(userInternal, sessionInternal)
         } returns AppResult.Success(Unit)
 
         coEvery {
@@ -106,14 +104,14 @@ class AddUserIdentifierPhoneUseCaseTest {
     @Test
     fun `returns error when otp verification fails`() = runTest {
         val context = createTestAuthenticatedRequestContext()
-        val userDetails = mockk<UserDetails>()
+        val userInternal = createTestUserInternal(id = context.userId)
         val sessionInternal = mockk<UserSessionInternal>()
         val error = CommonError.Internal(Throwable())
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(any()) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(any()) } returns AppResult.Success(sessionInternal)
+        coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(sessionInternal)
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
 
         coEvery { otpService.verifyOtp(any(), any(), any()) } returns AppResult.Error(error)
@@ -142,13 +140,13 @@ class AddUserIdentifierPhoneUseCaseTest {
     @Test
     fun `returns error when otp code is incorrect`() = runTest {
         val context = createTestAuthenticatedRequestContext()
-        val userDetails = mockk<UserDetails>()
+        val userInternal = createTestUserInternal(id = context.userId)
         val sessionInternal = mockk<UserSessionInternal>()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(any()) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(any()) } returns AppResult.Success(sessionInternal)
+        coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(sessionInternal)
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
 
         coEvery { otpService.verifyOtp(any(), any(), any()) } returns AppResult.Success(false)

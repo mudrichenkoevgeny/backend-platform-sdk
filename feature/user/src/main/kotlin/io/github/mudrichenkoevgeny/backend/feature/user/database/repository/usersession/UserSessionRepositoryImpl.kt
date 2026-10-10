@@ -22,7 +22,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
@@ -71,12 +70,12 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
             userSessionRow[identifierDisplayName] = userSession.identifierDisplayName
             userSessionRow[refreshTokenHash] = userSession.refreshTokenHash.value
 
-            userSessionRow[clientType] = userSession.deviceInfo.clientType
-            userSessionRow[deviceId] = userSession.deviceInfo.deviceId?.asHexDashString()
-            userSessionRow[deviceName] = userSession.deviceInfo.deviceName
-            userSessionRow[appVersion] = userSession.deviceInfo.appVersion
-            userSessionRow[operationSystemVersion] = userSession.deviceInfo.operationSystemVersion
-            userSessionRow[language] = userSession.deviceInfo.language
+            userSessionRow[clientType] = userSession.clientDeviceInfo.clientType
+            userSessionRow[deviceId] = userSession.clientDeviceInfo.deviceId?.asHexDashString()
+            userSessionRow[deviceName] = userSession.clientDeviceInfo.deviceName
+            userSessionRow[appVersion] = userSession.clientDeviceInfo.appVersion
+            userSessionRow[operationSystemVersion] = userSession.clientDeviceInfo.operationSystemVersion
+            userSessionRow[language] = userSession.clientDeviceInfo.language
 
             userSessionRow[userAgent] = userSession.userAgent
             userSessionRow[ipAddress] = userSession.ipAddress
@@ -188,12 +187,6 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         return AppResult.Success(getUserSessionResultRow(userSessionId)?.toUserSessionInternal())
     }
 
-    override suspend fun getUserSessionById(
-        userSessionId: UserSessionId
-    ): AppResult<UserSession?> {
-        return AppResult.Success(getUserSessionResultRow(userSessionId)?.toUserSession())
-    }
-
     private fun getUserSessionResultRow(
         userSessionId: UserSessionId
     ): ResultRow? {
@@ -259,7 +252,7 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         deviceNames: List<String>,
         appVersions: List<String>,
         operationSystemVersions: List<String>
-    ): AppResult<PagedResult<UserSession>> {
+    ): AppResult<PagedResult<UserSessionInternal>> {
         val query = UserSessionsTable
             .innerJoin(UsersTable, { userId }, { id })
             .selectAll()
@@ -312,7 +305,7 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         deviceNames: List<String>,
         appVersions: List<String>,
         operationSystemVersions: List<String>
-    ): AppResult<PagedResult<UserSession>> {
+    ): AppResult<PagedResult<UserSessionInternal>> {
         val query = UserSessionsTable
             .selectAll()
             .where { UserSessionsTable.userId eq userId.value }
@@ -354,7 +347,7 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         deviceNames: List<String>,
         appVersions: List<String>,
         operationSystemVersions: List<String>
-    ): AppResult<PagedResult<UserSession>> {
+    ): AppResult<PagedResult<UserSessionInternal>> {
         if (userRoles.isNotEmpty()) {
             if (query.targets.none { it == UsersTable }) {
                 query.adjustColumnSet { innerJoin(UsersTable, { UserSessionsTable.userId }, { id }) }
@@ -396,7 +389,7 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         val items = query
             .orderBy(sortColumn to sortOrder.toExposedSortOrder())
             .applyPagination(pageParams)
-            .map { it.toUserSession() }
+            .map { it.toUserSessionInternal() }
 
         return AppResult.Success(
             PagedResult(
@@ -435,7 +428,7 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         identifierDisplayName = this[UserSessionsTable.identifierDisplayName],
         identifierAuthProvider = this[UserSessionsTable.identifierAuthProvider],
         refreshTokenHash = RefreshTokenHash(this[UserSessionsTable.refreshTokenHash]),
-        deviceInfo = ClientDeviceInfo(
+        clientDeviceInfo = ClientDeviceInfo(
             deviceId = this[UserSessionsTable.deviceId]?.toClientDeviceIdOrNull(),
             deviceName = this[UserSessionsTable.deviceName],
             clientType = this[UserSessionsTable.clientType],
@@ -448,32 +441,6 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         expiresAt = this[UserSessionsTable.expiresAt].toKotlinInstant(),
         lastAccessedAt = this[UserSessionsTable.lastAccessedAt].toKotlinInstant(),
         lastReauthenticatedAt = this[UserSessionsTable.lastReauthenticatedAt].toKotlinInstant(),
-        createdAt = this[UserSessionsTable.createdAt].toKotlinInstant(),
-        updatedAt = this[UserSessionsTable.updatedAt]?.toKotlinInstant()
-    )
-
-    private fun ResultRow.toUserSession(): UserSession = UserSession(
-        id = UserSessionId(this[UserSessionsTable.id].value),
-        userId = UserId(this[UserSessionsTable.userId].value),
-        userRole = this[UserSessionsTable.userRole],
-        identifier = this[UserSessionsTable.identifier],
-        identifierId = UserIdentifierId(this[UserSessionsTable.identifierId].value),
-        identifierDisplayName = this[UserSessionsTable.identifierDisplayName],
-        identifierAuthProvider = this[UserSessionsTable.identifierAuthProvider],
-        deviceInfo = ClientDeviceInfo(
-            deviceId = this[UserSessionsTable.deviceId]?.toClientDeviceIdOrNull(),
-            deviceName = this[UserSessionsTable.deviceName],
-            clientType = this[UserSessionsTable.clientType],
-            language = this[UserSessionsTable.language],
-            appVersion = this[UserSessionsTable.appVersion],
-            operationSystemVersion = this[UserSessionsTable.operationSystemVersion]
-        ),
-        userAgent = this[UserSessionsTable.userAgent],
-        ipAddress = this[UserSessionsTable.ipAddress],
-        expiresAt = this[UserSessionsTable.expiresAt].toKotlinInstant(),
-        lastAccessedAt = this[UserSessionsTable.lastAccessedAt].toKotlinInstant(),
-        lastReauthenticatedAt = this[UserSessionsTable.lastReauthenticatedAt].toKotlinInstant(),
-        isSensitiveValuesMasked = false,
         createdAt = this[UserSessionsTable.createdAt].toKotlinInstant(),
         updatedAt = this[UserSessionsTable.updatedAt]?.toKotlinInstant()
     )

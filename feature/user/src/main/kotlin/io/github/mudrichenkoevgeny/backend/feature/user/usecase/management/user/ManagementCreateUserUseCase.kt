@@ -27,7 +27,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -74,7 +74,7 @@ class ManagementCreateUserUseCase @Inject constructor(
      * @param authorityLevel The numeric authority level assigned to the user.
      * @param permissionCodes The set of functional permissions granted to the user.
      * @param authenticatedRequestContext The context of the authenticated management request.
-     * @return [AppResult] containing the [UserDetails] of the created user.
+     * @return [AppResult] containing the [UserInternal] of the created user.
      */
     suspend operator fun invoke(
         email: String,
@@ -84,7 +84,7 @@ class ManagementCreateUserUseCase @Inject constructor(
         authorityLevel: Int,
         permissionCodes: Set<PermissionCode>,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<UserDetails> {
+    ): AppResult<UserInternal> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
         val auditActorUserRole = authenticatedRequestContext.userRole
         val managementUserId = authenticatedRequestContext.userId
@@ -110,17 +110,17 @@ class ManagementCreateUserUseCase @Inject constructor(
             )
         }
 
-        val managementUserResult = userManager.getUserByIdForSelf(managementUserId)
+        val managementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val managementUser = when (managementUserResult) {
-            is AppResult.Success -> managementUserResult.data
             is AppResult.Error -> return handleError(
                 error = managementUserResult.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+            is AppResult.Success -> managementUserResult.data
         }
 
         if (managementUser.accountStatus != UserAccountStatus.ACTIVE) {
@@ -189,7 +189,7 @@ class ManagementCreateUserUseCase @Inject constructor(
             )
         }
 
-        val managementUserSessionResult = sessionManager.getUserSessionForSystem(
+        val managementUserSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -204,7 +204,7 @@ class ManagementCreateUserUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = managementUser,
+            userInternal = managementUser,
             userSession = managementUserSession,
             requireTotp = true
         )

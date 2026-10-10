@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationc
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 
 /**
  * Service for enforcing step-up authentication policies.
@@ -14,16 +14,16 @@ interface AuthenticationChallengeService {
 
     /**
      * Verifies that the session has a fresh multifactor confirmation.
-     * * If the session is considered "stale" based on [UserDetails.role] policies,
+     * * If the session is considered "stale" based on [UserInternal.role] policies,
      * it initiates a new MFA challenge.
      *
-     * @param userDetails The domain model of the user performing the action.
+     * @param userInternal The domain model of the user performing the action.
      * @param userSession The current active session to be verified.
      * @return [AppResult.Success] if the session is still within the validity window,
      * or [AppResult.Error] (typically [SecurityError.MfaConfirmationRequired]) if a step-up is required.
      */
     suspend fun ensureSessionConfirmed(
-        userDetails: UserDetails,
+        userInternal: UserInternal,
         userSession: UserSessionInternal,
         requireTotp: Boolean = false
     ): AppResult<Unit>

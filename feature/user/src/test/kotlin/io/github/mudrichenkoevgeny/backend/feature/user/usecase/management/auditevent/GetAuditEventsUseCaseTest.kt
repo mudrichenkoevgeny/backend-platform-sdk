@@ -3,12 +3,12 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.audi
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.AuditManager
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.AuditManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventSummary
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
@@ -30,7 +30,7 @@ class GetAuditEventsUseCaseTest {
     fun `returns UserForbidden when current user is not found`() = runTest {
         val userId = UserId.generate()
         val userManager = mockk<UserManager>()
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(null)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(null)
         val useCase = GetAuditEventsUseCase(userManager, mockk(relaxed = true))
 
         val result = useCase(pageParams, authenticatedRequestContext = createTestAuthenticatedRequestContext(userId = userId))
@@ -44,7 +44,7 @@ class GetAuditEventsUseCaseTest {
         val userId = UserId.generate()
         val err = CommonError.Internal(Throwable("db"))
         val userManager = mockk<UserManager>()
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Error(err)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Error(err)
         val useCase = GetAuditEventsUseCase(userManager, mockk(relaxed = true))
 
         val result = useCase(pageParams, authenticatedRequestContext = createTestAuthenticatedRequestContext(userId = userId))
@@ -55,15 +55,15 @@ class GetAuditEventsUseCaseTest {
     @Test
     fun `delegates to audit manager with user permissions and returns result`() = runTest {
         val userId = UserId.generate()
-        val details = createTestUserDetails(id = userId, role = UserRole.ADMIN)
-        val paged = PagedResult<AuditEvent>(emptyList(), 0L, 1, 10, 0L)
+        val userInternal = createTestUserInternal(id = userId, role = UserRole.ADMIN)
+        val paged = PagedResult<AuditEventSummary>(emptyList(), 0L, 1, 10, 0L)
         val userManager = mockk<UserManager>()
         val auditManager = mockk<AuditManager>()
 
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(details)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery {
-            auditManager.getEventsPage(
-                managementUserPermissionCodes = details.permissionCodes,
+            auditManager.getAuditEventsSummaryPage(
+                managementUserPermissionCodes = userInternal.permissionCodes,
                 pageParams = any(),
                 sortBy = any(),
                 sortOrder = any(),
@@ -83,8 +83,8 @@ class GetAuditEventsUseCaseTest {
 
         assertEquals(AppResult.Success(paged), result)
         coVerify(exactly = 1) {
-            auditManager.getEventsPage(
-                managementUserPermissionCodes = details.permissionCodes,
+            auditManager.getAuditEventsSummaryPage(
+                managementUserPermissionCodes = userInternal.permissionCodes,
                 pageParams = pageParams,
                 sortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
                 sortOrder = SortOrder.DESC,

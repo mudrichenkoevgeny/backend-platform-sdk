@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
@@ -25,11 +25,11 @@ class AuthenticationChallengeServiceImpl @Inject constructor(
 ) : AuthenticationChallengeService {
 
     override suspend fun ensureSessionConfirmed(
-        userDetails: UserDetails,
+        userInternal: UserInternal,
         userSession: UserSessionInternal,
         requireTotp: Boolean
     ): AppResult<Unit> {
-        if (!userDetails.isTotpEnabled) {
+        if (!userInternal.isTotpEnabled) {
             return if (requireTotp) {
                 AppResult.Error(SecurityError.TotpNotEnabled())
             } else {
@@ -37,7 +37,7 @@ class AuthenticationChallengeServiceImpl @Inject constructor(
             }
         }
 
-        val validitySeconds = if (userDetails.role == UserRole.USER) {
+        val validitySeconds = if (userInternal.role == UserRole.USER) {
             securitySettingsProvider.getRecentAuthenticationValidityInSeconds()
         } else {
             securitySettingsProvider.getRecentAuthenticationValidityInSecondsForManagement()
@@ -48,8 +48,8 @@ class AuthenticationChallengeServiceImpl @Inject constructor(
         }
 
         return createChallenge(
-            userId = userDetails.id.asHexDashString(),
-            userRole = userDetails.role.serialName,
+            userId = userInternal.id.asHexDashString(),
+            userRole = userInternal.role.serialName,
             identifierId = userSession.identifierId.asHexDashString(),
             sessionId = userSession.id.asHexDashString()
         )

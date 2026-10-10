@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
@@ -20,7 +21,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -41,15 +43,15 @@ class RestoreUserUseCase @Inject constructor(
      * **Workflow:**
      * 1. Checks rate limits for [UserRateLimitAction.USER_RESTORE] using the current userId.
      * 2. Requires security confirmation via [AuthenticationChallengeService] (MFA Step-up).
-     * 3. Reverts account status to [UserDetails.accountStatusOnRestore].
+     * 3. Reverts account status to [UserAccountStatus].
      * 4. Logs the outcome via [AuditLogger] with [UserAuditActionType.SELF_RESTORE_USER].
      *
      * @param authenticatedRequestContext The context of the authenticated request.
-     * @return [AppResult] containing updated [UserDetails].
+     * @return [AppResult] containing updated [UserPrivate].
      */
     suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<UserDetails> {
+    ): AppResult<UserPrivate> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
         val auditActorUserRole = authenticatedRequestContext.userRole
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata()
@@ -69,7 +71,7 @@ class RestoreUserUseCase @Inject constructor(
             )
         }
 
-        val getCurrentUserResult = userManager.getUserByIdForSelf(currentUserId)
+        val getCurrentUserResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (getCurrentUserResult) {
@@ -84,7 +86,7 @@ class RestoreUserUseCase @Inject constructor(
             is AppResult.Success -> getCurrentUserResult.data
         }
 
-        val userSessionResult = sessionManager.getUserSessionForSystem(
+        val userSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -99,7 +101,7 @@ class RestoreUserUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = currentUser,
+            userInternal = currentUser,
             userSession = currentSession
         )
         if (ensureSessionConfirmedResult is AppResult.Error) {
@@ -111,7 +113,7 @@ class RestoreUserUseCase @Inject constructor(
             )
         }
 
-        val restoreUserResult = userManager.restoreUserForSelf(
+        val restoreUserResult = userManager.restoreUser(
             userId = currentUserId,
             newStatus = currentUser.accountStatusOnRestore ?: UserAccountStatus.ACTIVE
         )
@@ -132,7 +134,7 @@ class RestoreUserUseCase @Inject constructor(
             metadata = auditMetadata
         )
 
-        return restoreUserResult
+        return restoreUserResult.mapSuccess { userInternal -> userInternal.toUserPrivate() }
     }
 
     private fun <T> handleError(

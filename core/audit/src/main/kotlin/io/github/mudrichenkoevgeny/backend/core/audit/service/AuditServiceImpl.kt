@@ -6,7 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -27,7 +27,7 @@ class AuditServiceImpl @Inject constructor(
     private val appLogger: AppLogger
 ) : AuditService {
 
-    override fun log(auditEvent: AuditEvent) {
+    override fun log(auditEvent: AuditEventInternal) {
         scope.launch {
             try {
                 val createEventResult = dbQuery { auditEventRepository.createEvent(auditEvent) }

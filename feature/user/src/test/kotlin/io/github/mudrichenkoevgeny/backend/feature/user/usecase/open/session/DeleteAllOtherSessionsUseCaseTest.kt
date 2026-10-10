@@ -54,7 +54,7 @@ class DeleteAllOtherSessionsUseCaseTest {
         } returns AppResult.Success(Unit)
 
         coEvery {
-            sessionManager.deleteAllSessionsExceptOneForSelf(context.userId, context.sessionId)
+            sessionManager.deleteAllUserSessionsExceptOne(context.userId, context.sessionId)
         } returns AppResult.Success(deletedSessions)
 
         val result = useCase(context)
@@ -115,7 +115,7 @@ class DeleteAllOtherSessionsUseCaseTest {
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { sessionManager.deleteAllSessionsExceptOneForSelf(any(), any()) } returns AppResult.Error(error)
+        coEvery { sessionManager.deleteAllUserSessionsExceptOne(any(), any()) } returns AppResult.Error(error)
         every { auditErrorConverter.convert(error) } returns errorLogData
 
         val result = useCase(context)

@@ -8,7 +8,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
@@ -60,14 +59,6 @@ interface UserIdentifierRepository {
     suspend fun getUserIdentifierInternalById(userIdentifierId: UserIdentifierId): AppResult<UserIdentifierInternal?>
 
     /**
-     * Loads an identifier by id.
-     *
-     * @param userIdentifierId identifier id to look up
-     * @return identifier when found, `null` when missing, or an error
-     */
-    suspend fun getUserIdentifierById(userIdentifierId: UserIdentifierId): AppResult<UserIdentifier?>
-
-    /**
      * Returns identifiers for a user, optionally filtered by [userAuthProvider].
      *
      * @param userId user id
@@ -113,7 +104,7 @@ interface UserIdentifierRepository {
         userIds: List<UserId> = emptyList(),
         userAuthProviders: List<UserAuthProvider> = emptyList(),
         identifiers: List<String> = emptyList()
-    ): AppResult<PagedResult<UserIdentifier>>
+    ): AppResult<PagedResult<UserIdentifierInternal>>
 
     /**
      * Returns a paginated list of identifiers belonging to a specific user.
@@ -134,5 +125,5 @@ interface UserIdentifierRepository {
         sortOrder: SortOrder = SortOrder.DESC,
         userAuthProviders: List<UserAuthProvider> = emptyList(),
         identifiers: List<String> = emptyList()
-    ): AppResult<PagedResult<UserIdentifier>>
+    ): AppResult<PagedResult<UserIdentifierInternal>>
 }

@@ -58,7 +58,7 @@ class SendAddPhoneIdentifierConfirmationUseCaseTest {
         } returns AppResult.Success(otpData)
 
         coEvery {
-            phoneService.sendVerificationCode(TEST_PHONE, TEST_CODE, clientInfo.deviceInfo.language)
+            phoneService.sendVerificationCode(TEST_PHONE, TEST_CODE, clientInfo.clientDeviceInfo.language)
         } returns AppResult.Success(Unit)
 
         val result = useCase(TEST_PHONE, context)
@@ -95,8 +95,8 @@ class SendAddPhoneIdentifierConfirmationUseCaseTest {
             phoneService.sendAlreadyRegisteredPhoneNumber(
                 phoneNumber = TEST_PHONE,
                 ipAddress = clientInfo.ipAddress,
-                deviceName = clientInfo.deviceInfo.deviceName,
-                language = clientInfo.deviceInfo.language
+                deviceName = clientInfo.clientDeviceInfo.deviceName,
+                language = clientInfo.clientDeviceInfo.language
             )
         } returns AppResult.Success(Unit)
 

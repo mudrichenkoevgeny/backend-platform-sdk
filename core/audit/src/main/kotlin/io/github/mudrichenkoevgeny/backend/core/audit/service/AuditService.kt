@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.service
 
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
 
 /**
  * Fire-and-forget audit logging API.
@@ -13,7 +13,7 @@ interface AuditService {
     /**
      * Schedules [auditEvent] to be persisted in the background. Returns immediately.
      */
-    fun log(auditEvent: AuditEvent)
+    fun log(auditEvent: AuditEventInternal)
 
     /**
      * Suspends until all events previously passed to [log] have been processed.

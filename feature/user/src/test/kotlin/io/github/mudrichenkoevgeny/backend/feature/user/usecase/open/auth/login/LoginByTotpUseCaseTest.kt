@@ -10,6 +10,8 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.createTestAuthData
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserPrivate
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
@@ -20,10 +22,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -71,13 +71,9 @@ class LoginByTotpUseCaseTest {
         val context = createTestRequestContext()
         val userId = UserId.generate()
         val identifierId = UserIdentifierId.generate()
-        val userDetails = mockk<UserDetails> {
-            every { id } returns userId
-            every { role } returns UserRole.USER
-        }
-        val authData = mockk<AuthData> {
-            every { this@mockk.userDetails } returns userDetails
-        }
+        val userPrivate = createTestUserPrivate(id = userId, role = UserRole.USER)
+        val authData = createTestAuthData(userPrivate = userPrivate)
+
         val mfaChallenge = MfaChallengeData(
             token = TEST_MFA_TOKEN,
             userId = userId.asHexDashString(),

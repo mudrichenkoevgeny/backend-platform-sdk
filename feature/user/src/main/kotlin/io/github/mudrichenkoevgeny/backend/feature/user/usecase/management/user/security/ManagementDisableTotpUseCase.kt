@@ -22,7 +22,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import javax.inject.Inject
@@ -98,7 +97,7 @@ class ManagementDisableTotpUseCase @Inject constructor(
             )
         }
 
-        val managementUserResult = userManager.getUserByIdForSelf(managementUserId)
+        val managementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val managementUser = when (managementUserResult) {
@@ -122,7 +121,7 @@ class ManagementDisableTotpUseCase @Inject constructor(
             )
         }
 
-        val targetUserResult = userManager.getUserByIdForSelf(userId)
+        val targetUserResult = userManager.getUserInternalById(userId)
             .mapNotNullOrError(UserError.UserNotFound(userId))
 
         val targetUser = when (targetUserResult) {
@@ -178,7 +177,7 @@ class ManagementDisableTotpUseCase @Inject constructor(
             )
         }
 
-        val managementUserSessionResult = sessionManager.getUserSessionForSystem(
+        val managementUserSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -194,7 +193,7 @@ class ManagementDisableTotpUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = managementUser,
+            userInternal = managementUser,
             userSession = managementUserSession,
             requireTotp = true
         )

@@ -74,7 +74,7 @@ class ResetAuthSettingsUseCase @Inject constructor(
         val auditActorUserRole = authenticatedRequestContext.userRole
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata()
 
-        val userResult = userManager.getUserByIdForSelf(authenticatedRequestContext.userId)
+        val userResult = userManager.getUserInternalById(authenticatedRequestContext.userId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (userResult) {
@@ -87,7 +87,7 @@ class ResetAuthSettingsUseCase @Inject constructor(
             is AppResult.Success -> userResult.data
         }
 
-        val userSessionResult = sessionManager.getUserSessionForSystem(
+        val userSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -102,7 +102,7 @@ class ResetAuthSettingsUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = currentUser,
+            userInternal = currentUser,
             userSession = currentSession,
             requireTotp = true
         )

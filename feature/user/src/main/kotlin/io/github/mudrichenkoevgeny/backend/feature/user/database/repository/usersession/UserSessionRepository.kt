@@ -10,7 +10,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
@@ -58,7 +57,6 @@ interface UserSessionRepository {
 
     /**
      * Deletes the least recently used (LRU) session for a specific user.
-     * The target session is determined by the oldest [UserSession.lastAccessedAt] timestamp.
      * Used to free up space when the user exceeds the maximum allowed number of concurrent sessions.
      *
      * @param userId user id
@@ -89,14 +87,6 @@ interface UserSessionRepository {
      * @return session when found, `null` when missing, or an error
      */
     suspend fun getUserSessionInternalById(userSessionId: UserSessionId): AppResult<UserSessionInternal?>
-
-    /**
-     * Loads a session by id.
-     *
-     * @param userSessionId session id
-     * @return session when found, `null` when missing, or an error
-     */
-    suspend fun getUserSessionById(userSessionId: UserSessionId): AppResult<UserSession?>
 
     /**
      * Loads a session by refresh token hash.
@@ -170,7 +160,7 @@ interface UserSessionRepository {
         deviceNames: List<String> = emptyList(),
         appVersions: List<String> = emptyList(),
         operationSystemVersions: List<String> = emptyList()
-    ): AppResult<PagedResult<UserSession>>
+    ): AppResult<PagedResult<UserSessionInternal>>
 
     /**
      * Returns a paginated list of sessions belonging to a specific user.
@@ -209,5 +199,5 @@ interface UserSessionRepository {
         deviceNames: List<String> = emptyList(),
         appVersions: List<String> = emptyList(),
         operationSystemVersions: List<String> = emptyList()
-    ): AppResult<PagedResult<UserSession>>
+    ): AppResult<PagedResult<UserSessionInternal>>
 }

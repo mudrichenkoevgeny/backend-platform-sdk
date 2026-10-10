@@ -19,7 +19,7 @@ sequenceDiagram
     Client->>SetupUseCase: POST /api/v1/user/security/totp/setup
     SetupUseCase->>Redis: checkRateLimit(USER_SETUP_TOTP, userId)
     
-    SetupUseCase->>Postgres: dbQuery { getUserByIdForSelf }
+    SetupUseCase->>Postgres: dbQuery { getUserInternalById }
     Postgres-->>SetupUseCase: User details
 
     alt TOTP already enabled

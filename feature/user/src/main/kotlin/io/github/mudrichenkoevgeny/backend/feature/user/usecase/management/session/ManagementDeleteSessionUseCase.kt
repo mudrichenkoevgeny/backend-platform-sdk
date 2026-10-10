@@ -24,9 +24,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.m
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.SessionPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import javax.inject.Inject
@@ -94,7 +93,7 @@ class ManagementDeleteSessionUseCase @Inject constructor(
             )
         }
 
-        val managementUserResult = userManager.getUserByIdForSelf(managementUserId)
+        val managementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val managementUser = when (managementUserResult) {
@@ -118,10 +117,10 @@ class ManagementDeleteSessionUseCase @Inject constructor(
             )
         }
 
-        val userSessionResult = sessionManager.getUserSessionForSystem(userSessionId)
+        val userSessionResult = sessionManager.getUserSessionInternal(userSessionId)
             .mapNotNullOrError(
                 CommonError.NotFound(
-                    resource = UserSession::class.java.simpleName,
+                    resource = UserSessionPrivate::class.java.simpleName,
                     identifier = userSessionId.asHexDashString()
                 )
             )
@@ -137,7 +136,7 @@ class ManagementDeleteSessionUseCase @Inject constructor(
             )
         }
 
-        val targetUserResult = userManager.getUserByIdForSelf(userSession.userId)
+        val targetUserResult = userManager.getUserInternalById(userSession.userId)
             .mapNotNullOrError(UserError.UserNotFound(userSession.userId))
 
         val targetUser = when (targetUserResult) {
@@ -200,7 +199,7 @@ class ManagementDeleteSessionUseCase @Inject constructor(
             )
         }
 
-        val managementUserSessionResult = sessionManager.getUserSessionForSystem(
+        val managementUserSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -216,7 +215,7 @@ class ManagementDeleteSessionUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = managementUser,
+            userInternal = managementUser,
             userSession = managementUserSession,
             requireTotp = true
         )

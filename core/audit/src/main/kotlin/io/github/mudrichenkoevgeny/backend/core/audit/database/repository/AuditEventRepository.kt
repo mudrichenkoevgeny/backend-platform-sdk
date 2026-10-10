@@ -5,7 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
@@ -21,12 +21,24 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
  * with optional filters.
  */
 interface AuditEventRepository {
-    suspend fun createEvent(event: AuditEvent): AppResult<AuditEvent>
-
-    suspend fun getEventById(auditEventId: AuditEventId): AppResult<AuditEvent?>
+    /**
+     * Persists a new [AuditEventInternal] in the database.
+     *
+     * @param event The audit event data to insert.
+     * @return [AppResult] containing the inserted [AuditEventInternal] or an error.
+     */
+    suspend fun createEvent(event: AuditEventInternal): AppResult<AuditEventInternal>
 
     /**
-     * Returns a page of [AuditEvent] rows matching optional filters, ordered by [sortBy] and [sortOrder].
+     * Retrieves an [AuditEventInternal] by its unique [AuditEventId].
+     *
+     * @param auditEventId The unique identifier of the audit event.
+     * @return [AppResult] containing the [AuditEventInternal] if found, `null` if not found, or an error.
+     */
+    suspend fun getEventById(auditEventId: AuditEventId): AppResult<AuditEventInternal?>
+
+    /**
+     * Returns a page of [AuditEventInternal] rows matching optional filters, ordered by [sortBy] and [sortOrder].
      *
      * **Pagination** (same semantics as [ListingParamNames.Pagination]): [PageParams.page] is the one-based
      * page index ([ListingParamNames.Pagination.PAGE_NUMBER]); [PageParams.size] is
@@ -39,14 +51,14 @@ interface AuditEventRepository {
      * absent parameter means no filter on that axis. Non-null parameters combine as **AND**. Repeating the same
      * filter key as **OR** is not expressed here; compose that at a higher layer (e.g. HTTP handler) if needed.
      *
-     * - [actorIds] — actor ids ([AuditEvent.actorId]).
-     * - [actorTypes] — [AuditEvent.actorType] values.
-     * - [actorUserRoles] — [AuditEvent.actorUserRole] values.
-     * - [actions] — [AuditEvent.action] values (matches persisted [AuditActionType.serialName]).
-     * - [resources] — [AuditEvent.resource] values (matches persisted [AuditResourceType.serialName]).
-     * - [resourceIds] — [AuditEvent.resourceId] values.
-     * - [statuses] — [AuditEvent.status] values.
-     * - [messages] — case-insensitive substrings on [AuditEvent.message].
+     * - [actorIds] — actor ids ([AuditEventInternal.actorId]).
+     * - [actorTypes] — [AuditEventInternal.actorType] values.
+     * - [actorUserRoles] — [AuditEventInternal.actorUserRole] values.
+     * - [actions] — [AuditEventInternal.action] values (matches persisted [AuditActionType.serialName]).
+     * - [resources] — [AuditEventInternal.resource] values (matches persisted [AuditResourceType.serialName]).
+     * - [resourceIds] — [AuditEventInternal.resourceId] values.
+     * - [statuses] — [AuditEventInternal.status] values.
+     * - [messages] — case-insensitive substrings on [AuditEventInternal.message].
      *
      * @param accessFilter defines the security boundaries by restricting the database query to specific
      * actor types and user roles.
@@ -76,5 +88,5 @@ interface AuditEventRepository {
         resourceIds: List<String> = emptyList(),
         statuses: List<AuditStatus> = emptyList(),
         messages: List<String> = emptyList()
-    ): AppResult<PagedResult<AuditEvent>>
+    ): AppResult<PagedResult<AuditEventInternal>>
 }

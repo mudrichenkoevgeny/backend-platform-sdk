@@ -28,8 +28,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -83,7 +83,7 @@ class SetupTotpUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserByIdForSelf(currentUserId)
+        val userResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val user = when (userResult) {
@@ -105,11 +105,11 @@ class SetupTotpUseCase @Inject constructor(
             )
         }
 
-        val userSessionResult = sessionManager.getUserSessionForSystem(
+        val userSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(
             CommonError.NotFound(
-                resource = UserSession::class.java.simpleName,
+                resource = UserSessionPrivate::class.java.simpleName,
                 identifier = authenticatedRequestContext.sessionId.asHexDashString()
             )
         )
@@ -203,7 +203,7 @@ class SetupTotpUseCase @Inject constructor(
             return AppResult.Success(userSession.identifier)
         }
 
-        val userIdentifierResult = identifierManager.getUserIdentifierByIdForSystem(
+        val userIdentifierResult = identifierManager.getUserIdentifierInternalById(
             userIdentifierId = userSession.identifierId
         )
         val externalIdentifierEmail = when (userIdentifierResult) {

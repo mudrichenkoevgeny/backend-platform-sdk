@@ -15,7 +15,7 @@ import io.ktor.server.request.userAgent
  */
 fun ApplicationCall.extractClientInfo(): ClientInfo {
     return ClientInfo(
-        deviceInfo = ClientDeviceInfo(
+        clientDeviceInfo = ClientDeviceInfo(
             deviceId = request.headers[CommonHttpHeaders.DEVICE_ID_HEADER_NAME]?.toClientDeviceIdOrNull(),
             deviceName = request.headers[CommonHttpHeaders.DEVICE_NAME_HEADER_NAME],
             clientType = request.headers[CommonHttpHeaders.CLIENT_TYPE_HEADER_NAME]?.let { clientType ->

@@ -4,7 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditE
 import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepositoryImpl
 import io.github.mudrichenkoevgeny.backend.core.audit.database.table.AuditEventsTable
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.action.RepositoryTestAuditAction
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEvent
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEventInternal
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.resource.RepositoryTestAuditResource
 import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditActionTypeParserForRepositoryTests
 import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditMetadataKeyParserForRepositoryTests
@@ -62,7 +62,7 @@ class AuditServiceImplTest {
         val appLogger = mockk<AppLogger>(relaxed = true)
         val service = AuditServiceImpl(repository, ioBackgroundScope(), appLogger)
 
-        val event = createTestAuditEvent(
+        val event = createTestAuditEventInternal(
             actorType = AuditActorType.SYSTEM,
             action = RepositoryTestAuditAction("login"),
             resource = RepositoryTestAuditResource("session")
@@ -84,7 +84,7 @@ class AuditServiceImplTest {
         val appLogger = mockk<AppLogger>(relaxed = true)
         val service = AuditServiceImpl(repo, ioBackgroundScope(), appLogger)
 
-        val event = createTestAuditEvent(
+        val event = createTestAuditEventInternal(
             actorType = AuditActorType.SYSTEM,
             action = RepositoryTestAuditAction("action"),
             resource = RepositoryTestAuditResource("resource"),

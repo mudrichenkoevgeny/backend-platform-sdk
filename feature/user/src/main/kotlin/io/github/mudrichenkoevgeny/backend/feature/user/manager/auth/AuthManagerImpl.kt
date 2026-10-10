@@ -25,13 +25,14 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.pe
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -115,11 +116,16 @@ class AuthManagerImpl @Inject constructor(
             provider = userAuthProvider,
             identifier = identifier,
             externalProviderEmail = externalProviderEmail
-        ).mapNotNullOrError(UserError.UserNotFound())
+        ).mapNotNullOrError(UserError.InvalidCredentials())
 
         val userId = when (resolvedUserIdResult) {
             is AppResult.Success -> resolvedUserIdResult.data
-            is AppResult.Error -> return@dbQuery resolvedUserIdResult
+            is AppResult.Error -> {
+                if (userAuthProvider == UserAuthProvider.EMAIL) {
+                    passwordHasher.isPasswordValidFakeCheck(password)
+                }
+                return@dbQuery resolvedUserIdResult
+            }
         }
 
         val checkLockoutResult = userLockoutService.checkLockout(
@@ -158,7 +164,7 @@ class AuthManagerImpl @Inject constructor(
         accountStatusForUserCreation: UserAccountStatus,
         authorityLevelForUserCreation: Int,
         permissionCodesForUserCreation: Set<PermissionCode>
-    ): AppResult<UserDetails> = dbQuery {
+    ): AppResult<UserInternal> = dbQuery {
         val getUserIdentifierResult = identifierManager.getUserIdentifierInternalByProvider(
             userAuthProvider = userAuthProvider,
             identifier = identifier
@@ -190,9 +196,7 @@ class AuthManagerImpl @Inject constructor(
             userAuthProvider = userAuthProvider,
             identifier = identifier,
             password = password
-        ).mapSuccess { userIdentifierInternal ->
-            userIdentifierInternal.toUserIdentifier()
-        }
+        )
 
         when (createUserIdentifierResult) {
             is AppResult.Error -> createUserIdentifierResult
@@ -207,8 +211,8 @@ class AuthManagerImpl @Inject constructor(
         password: String?,
         externalProviderEmail: String?,
         externalProviderDisplayName: String?
-    ): AppResult<UserIdentifier> = dbQuery {
-        val getUserIdentifiersResult = identifierManager.getUserIdentifiersByUserId(userId)
+    ): AppResult<UserIdentifierPrivate> = dbQuery {
+        val getUserIdentifiersResult = identifierManager.getUserIdentifiersInternalPageByUserId(userId)
         val userIdentifiersList = when (getUserIdentifiersResult) {
             is AppResult.Success -> getUserIdentifiersResult.data
             is AppResult.Error -> return@dbQuery getUserIdentifiersResult
@@ -244,7 +248,7 @@ class AuthManagerImpl @Inject constructor(
             externalProviderEmail = externalProviderEmail,
             externalProviderDisplayName = externalProviderDisplayName
         ).mapSuccess { userIdentifierInternal ->
-            userIdentifierInternal.toUserIdentifier()
+            userIdentifierInternal.toUserIdentifierPrivate()
         }
     }
 
@@ -255,7 +259,7 @@ class AuthManagerImpl @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ): AppResult<AuthData> = dbQuery {
-        val userIdentifierResult = identifierManager.getUserIdentifierByIdForSystem(userIdentifierId)
+        val userIdentifierResult = identifierManager.getUserIdentifierInternalById(userIdentifierId)
             .mapNotNullOrError(SecurityError.InvalidMfaToken())
 
         val userIdentifier = when (userIdentifierResult) {
@@ -488,7 +492,7 @@ class AuthManagerImpl @Inject constructor(
     private suspend fun provideAuthData(
         userIdentifier: UserIdentifierInternal,
         clientInfo: ClientInfo,
-        existingUser: UserDetails? = null,
+        existingUser: UserInternal? = null,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
         allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY),
         bypassTotp: Boolean = false
@@ -496,7 +500,7 @@ class AuthManagerImpl @Inject constructor(
         val user = if (existingUser != null && existingUser.id == userIdentifier.userId) {
             existingUser
         } else {
-            val userResult = userManager.getUserByIdForSelf(userIdentifier.userId)
+            val userResult = userManager.getUserInternalById(userIdentifier.userId)
                 .mapNotNullOrError(UserError.UserNotFound())
 
             when (userResult) {
@@ -540,16 +544,16 @@ class AuthManagerImpl @Inject constructor(
         lockoutManager.clearLockout(userIdentifier.identifier)
         lockoutManager.clearLockout(user.id.asHexDashString())
 
-        val userSessionsResult = sessionManager.getAllUserSessions(user.id)
+        val userSessionsResult = sessionManager.getAllUserSessionsInternalList(user.id)
         val userSessions = when (userSessionsResult) {
             is AppResult.Success -> userSessionsResult.data
             is AppResult.Error -> return userSessionsResult
         }
 
-        val currentDeviceId = clientInfo.deviceInfo.deviceId
+        val currentDeviceId = clientInfo.clientDeviceInfo.deviceId
         val remainingSessions = if (currentDeviceId != null) {
             val matchingSessions = userSessions.filter { session ->
-                session.deviceInfo.deviceId == currentDeviceId
+                session.clientDeviceInfo.deviceId == currentDeviceId
             }
             for (oldSession in matchingSessions) {
                 val deleteResult = sessionManager.deleteSessionById(oldSession.id)
@@ -565,7 +569,7 @@ class AuthManagerImpl @Inject constructor(
                     )
                 }
             }
-            userSessions.filter { session -> session.deviceInfo.deviceId != currentDeviceId }
+            userSessions.filter { session -> session.clientDeviceInfo.deviceId != currentDeviceId }
         } else {
             userSessions
         }
@@ -607,7 +611,7 @@ class AuthManagerImpl @Inject constructor(
 
         return AppResult.Success(
             AuthData(
-                userDetails = user,
+                userPrivate = user.toUserPrivate(),
                 sessionToken = sessionToken
             )
         )
@@ -625,55 +629,27 @@ class AuthManagerImpl @Inject constructor(
                 )
             )
         }
-        val currentUserIdentifiersWithSameType = currentUserIdentifiers.filter { identifier ->
-            identifier.userAuthProvider == newIdentifierUserAuthProvider
+
+        val maxNumberOfIdentifiersForProvider = when (newIdentifierUserAuthProvider) {
+            UserAuthProvider.EMAIL -> authSettingsProvider.getMaxEmailIdentifiers()
+            UserAuthProvider.PHONE -> authSettingsProvider.getMaxPhoneIdentifiers()
+            UserAuthProvider.GOOGLE,
+            UserAuthProvider.APPLE -> authSettingsProvider.getMaxIdentifiersPerExternalProvider()
         }
-        when (newIdentifierUserAuthProvider) {
-            UserAuthProvider.EMAIL -> {
-                val maxNumberOfIdentifiers = authSettingsProvider.getMaxEmailIdentifiers()
-                if (currentUserIdentifiersWithSameType.size >= maxNumberOfIdentifiers) {
-                    return AppResult.Error(
-                        UserError.UserIdentifierLimitReached(
-                            maxNumberOfIdentifiers = maxNumberOfIdentifiers,
-                            userAuthProvider = newIdentifierUserAuthProvider
-                        )
-                    )
-                }
-            }
-            UserAuthProvider.PHONE -> {
-                val maxNumberOfIdentifiers = authSettingsProvider.getMaxPhoneIdentifiers()
-                if (currentUserIdentifiersWithSameType.size >= maxNumberOfIdentifiers) {
-                    return AppResult.Error(
-                        UserError.UserIdentifierLimitReached(
-                            maxNumberOfIdentifiers = maxNumberOfIdentifiers,
-                            userAuthProvider = newIdentifierUserAuthProvider
-                        )
-                    )
-                }
-            }
-            UserAuthProvider.GOOGLE -> {
-                val maxNumberOfIdentifiers = authSettingsProvider.getMaxIdentifiersPerExternalProvider()
-                if (currentUserIdentifiersWithSameType.size >= maxNumberOfIdentifiers) {
-                    return AppResult.Error(
-                        UserError.UserIdentifierLimitReached(
-                            maxNumberOfIdentifiers = maxNumberOfIdentifiers,
-                            userAuthProvider = newIdentifierUserAuthProvider
-                        )
-                    )
-                }
-            }
-            UserAuthProvider.APPLE -> {
-                val maxNumberOfIdentifiers = authSettingsProvider.getMaxIdentifiersPerExternalProvider()
-                if (currentUserIdentifiersWithSameType.size >= maxNumberOfIdentifiers) {
-                    return AppResult.Error(
-                        UserError.UserIdentifierLimitReached(
-                            maxNumberOfIdentifiers = maxNumberOfIdentifiers,
-                            userAuthProvider = newIdentifierUserAuthProvider
-                        )
-                    )
-                }
-            }
+
+        val currentNumberOfIdentifiersForProvider = currentUserIdentifiers.count {
+            it.userAuthProvider == newIdentifierUserAuthProvider
         }
+
+        if (currentNumberOfIdentifiersForProvider >= maxNumberOfIdentifiersForProvider) {
+            return AppResult.Error(
+                UserError.UserIdentifierLimitReached(
+                    maxNumberOfIdentifiers = maxNumberOfIdentifiersForProvider,
+                    userAuthProvider = newIdentifierUserAuthProvider
+                )
+            )
+        }
+
         return AppResult.Success(Unit)
     }
 }

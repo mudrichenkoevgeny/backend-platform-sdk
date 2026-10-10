@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -9,11 +10,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTe
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierSummary
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -33,17 +32,15 @@ class GetIdentifiersUseCaseTest {
     @Test
     fun `successfully returns paginated identifiers`() = runTest {
         val context = createTestAuthenticatedRequestContext()
-        val userDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-        }
-        val pagedResult = mockk<PagedResult<UserIdentifier>>()
+        val userInternal = createTestUserInternal(id = context.userId, accountStatus = UserAccountStatus.ACTIVE)
+        val pagedResult = mockk<PagedResult<UserIdentifierSummary>>()
 
         coEvery {
-            userManager.getUserByIdForSelf(context.userId)
-        } returns AppResult.Success(userDetails)
+            userManager.getUserInternalById(context.userId)
+        } returns AppResult.Success(userInternal)
 
         coEvery {
-            identifierManager.getIdentifiersPageForSelf(
+            identifierManager.getUserIdentifiersSummaryPage(
                 userId = context.userId,
                 pageParams = any(),
                 sortBy = any(),
@@ -68,12 +65,9 @@ class GetIdentifiersUseCaseTest {
     @Test
     fun `returns error when account status is not allowed`() = runTest {
         val context = createTestAuthenticatedRequestContext()
-        val userDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.PENDING_DELETION
-            every { id } returns context.userId
-        }
+        val userInternal = createTestUserInternal(id = context.userId, accountStatus = UserAccountStatus.PENDING_DELETION)
 
-        coEvery { userManager.getUserByIdForSelf(context.userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(context.userId) } returns AppResult.Success(userInternal)
 
         val result = useCase(
             authenticatedRequestContext = context,
@@ -93,14 +87,19 @@ class GetIdentifiersUseCaseTest {
     @Test
     fun `returns success when account status is READ_ONLY`() = runTest {
         val context = createTestAuthenticatedRequestContext()
-        val userDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.READ_ONLY
-        }
-        val pagedResult = mockk<PagedResult<UserIdentifier>>()
+        val userInternal = createTestUserInternal(id = context.userId, accountStatus = UserAccountStatus.READ_ONLY)
+        val pagedResult = mockk<PagedResult<UserIdentifierSummary>>()
 
-        coEvery { userManager.getUserByIdForSelf(context.userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(context.userId) } returns AppResult.Success(userInternal)
         coEvery {
-            identifierManager.getIdentifiersPageForSelf(any(), any(), any(), any(), any(), any())
+            identifierManager.getUserIdentifiersSummaryPage(
+                userId = any(),
+                pageParams = any(),
+                sortBy = any(),
+                sortOrder = any(),
+                userAuthProviders = any(),
+                identifiers = any()
+            )
         } returns AppResult.Success(pagedResult)
 
         val result = useCase(

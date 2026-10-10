@@ -15,7 +15,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionSummary
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -58,7 +58,7 @@ class ManagementGetSessionsUseCase @Inject constructor(
      * @param appVersions optional filters for application versions.
      * @param operationSystemVersions optional filters for OS versions.
      * @param authenticatedRequestContext context containing the ID of the management caller performing the search.
-     * @return [AppResult] containing [PagedResult] of [UserSession] within the caller's authorized scope.
+     * @return [AppResult] containing [PagedResult] of [UserSessionSummary] within the caller's authorized scope.
      */
     suspend operator fun invoke(
         pageParams: PageParams,
@@ -78,10 +78,10 @@ class ManagementGetSessionsUseCase @Inject constructor(
         appVersions: List<String>,
         operationSystemVersions: List<String>,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<PagedResult<UserSession>> {
+    ): AppResult<PagedResult<UserSessionSummary>> {
         val managementUserId = authenticatedRequestContext.userId
 
-        val getManagementUserResult = userManager.getUserByIdForSelf(managementUserId)
+        val getManagementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val managementUser = when (getManagementUserResult) {
@@ -93,7 +93,7 @@ class ManagementGetSessionsUseCase @Inject constructor(
             return AppResult.Error(UserError.UserIllegalAccountStatus(managementUserId))
         }
 
-        return sessionManager.getSessionsPageForManagement(
+        return sessionManager.getUserSessionsSummaryPage(
             managementUserPermissionCodes = managementUser.permissionCodes,
             pageParams = pageParams,
             sortBy = sortBy,

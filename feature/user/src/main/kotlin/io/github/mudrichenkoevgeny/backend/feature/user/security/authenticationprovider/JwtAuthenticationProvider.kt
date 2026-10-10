@@ -16,14 +16,18 @@ import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFr
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserAuthSpec
 import io.ktor.http.auth.HttpAuthHeader
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
-import io.ktor.server.response.*
+import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.install
+import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.jwt.jwt
+import io.ktor.server.auth.parseAuthorizationHeader
+import io.ktor.server.response.respond
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -103,7 +107,7 @@ class JwtAuthenticationProvider @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>,
         requiredPermissions: Set<PermissionCode>
-    ): AppResult<UserDetails> {
+    ): AppResult<UserInternal> {
         val userIdResult = call.getUserIdFromPayload()
         val userId = when (userIdResult) {
             is AppResult.Success -> {
@@ -114,7 +118,7 @@ class JwtAuthenticationProvider @Inject constructor(
             }
         }
 
-        val userResult = userManager.getUserByIdForSelf(
+        val userResult = userManager.getUserInternalById(
             userId = userId
         ).mapNotNullOrError(UserError.UserNotFound(userId))
 

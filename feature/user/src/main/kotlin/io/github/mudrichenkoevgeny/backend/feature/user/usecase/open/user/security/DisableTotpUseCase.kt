@@ -75,7 +75,7 @@ class DisableTotpUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserByIdForSelf(currentUserId)
+        val userResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (userResult) {
@@ -97,7 +97,7 @@ class DisableTotpUseCase @Inject constructor(
             )
         }
 
-        val userSessionResult = sessionManager.getUserSessionForSystem(
+        val userSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -112,7 +112,7 @@ class DisableTotpUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = currentUser,
+            userInternal = currentUser,
             userSession = currentSession,
             requireTotp = true
         )

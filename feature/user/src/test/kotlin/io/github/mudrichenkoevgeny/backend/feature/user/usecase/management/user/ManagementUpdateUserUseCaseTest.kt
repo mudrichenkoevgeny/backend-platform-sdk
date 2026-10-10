@@ -5,6 +5,8 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserPrivate
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -16,7 +18,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import io.mockk.coEvery
@@ -57,17 +58,19 @@ class ManagementUpdateUserUseCaseTest {
     fun `successfully updates user permissions and notifies sessions`() = runTest {
         val permission = UserPermissionCode.USER_UPDATE_PERMISSIONS_FOR_USER
         val newPermission = UserPermissionCode.USER_CREATE_AS_USER
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 100
-            every { permissionCodes } returns setOf(permission, newPermission)
-        }
-        val targetDetails = mockk<UserDetails> {
-            every { id } returns targetId
-            every { authorityLevel } returns 50
-            every { role } returns UserRole.USER
-        }
-        val updatedUser = mockk<UserDetails>()
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 100,
+            permissionCodes = setOf(permission, newPermission)
+        )
+        val targetInternal = createTestUserInternal(
+            id = targetId,
+            role = UserRole.USER,
+            authorityLevel = 50
+        )
+        val updatedUserInternal = createTestUserInternal(id = targetId, permissionCodes = setOf(newPermission))
+        val expectedUserPrivate = createTestUserPrivate(id = targetId, permissionCodes = setOf(newPermission))
         val managerSession = mockk<UserSessionInternal>()
 
         val targetSessionId = UserSessionId.generate()
@@ -76,16 +79,16 @@ class ManagementUpdateUserUseCaseTest {
         }
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
-        coEvery { userManager.getUserByIdForSelf(targetId) } returns AppResult.Success(targetDetails)
-        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(managerSession)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
+        coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(managerSession)
         coEvery {
             authenticationChallengeService.ensureSessionConfirmed(any(), any(), any())
         } returns AppResult.Success(Unit)
-        coEvery { sessionManager.getAllUserSessions(targetId) } returns AppResult.Success(listOf(targetSession))
+        coEvery { sessionManager.getAllUserSessionsInternalList(targetId) } returns AppResult.Success(listOf(targetSession))
         coEvery {
-            userManager.updateUserForManagement(any(), any(), any(), any(), any(), any())
-        } returns AppResult.Success(updatedUser)
+            userManager.updateUser(any(), any(), any(), any(), any(), any())
+        } returns AppResult.Success(updatedUserInternal)
 
         val result = useCase(
             userId = targetId,
@@ -93,7 +96,7 @@ class ManagementUpdateUserUseCaseTest {
             authenticatedRequestContext = context
         )
 
-        assertEquals(AppResult.Success(updatedUser), result)
+        assertEquals(AppResult.Success(expectedUserPrivate), result)
 
         coVerify {
             hint(UserSessionId::class)
@@ -106,17 +109,19 @@ class ManagementUpdateUserUseCaseTest {
 
     @Test
     fun `returns error when manager authority level is not higher than target`() = runTest {
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 50
-        }
-        val targetDetails = mockk<UserDetails> {
-            every { authorityLevel } returns 50
-        }
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 50
+        )
+        val targetInternal = createTestUserInternal(
+            id = targetId,
+            authorityLevel = 50
+        )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
-        coEvery { userManager.getUserByIdForSelf(targetId) } returns AppResult.Success(targetDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
+        coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         val result = useCase(targetId, authorityLevel = 40, authenticatedRequestContext = context)
@@ -128,19 +133,21 @@ class ManagementUpdateUserUseCaseTest {
     fun `returns error when manager grants permission they do not have`() = runTest {
         val permission = UserPermissionCode.USER_UPDATE_PERMISSIONS_FOR_USER
         val forbiddenPermission = UserPermissionCode.USER_UPDATE_SECURITY_FOR_STAFF
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 100
-            every { permissionCodes } returns setOf(permission)
-        }
-        val targetDetails = mockk<UserDetails> {
-            every { authorityLevel } returns 50
-            every { role } returns UserRole.USER
-        }
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 100,
+            permissionCodes = setOf(permission)
+        )
+        val targetInternal = createTestUserInternal(
+            id = targetId,
+            role = UserRole.USER,
+            authorityLevel = 50
+        )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
-        coEvery { userManager.getUserByIdForSelf(targetId) } returns AppResult.Success(targetDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
+        coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         val result = useCase(
@@ -154,19 +161,21 @@ class ManagementUpdateUserUseCaseTest {
 
     @Test
     fun `returns error when manager lacks specific status update permission for staff`() = runTest {
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 100
-            every { permissionCodes } returns emptySet()
-        }
-        val targetDetails = mockk<UserDetails> {
-            every { authorityLevel } returns 50
-            every { role } returns UserRole.STAFF
-        }
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 100,
+            permissionCodes = emptySet()
+        )
+        val targetInternal = createTestUserInternal(
+            id = targetId,
+            role = UserRole.STAFF,
+            authorityLevel = 50
+        )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
-        coEvery { userManager.getUserByIdForSelf(targetId) } returns AppResult.Success(targetDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
+        coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         val result = useCase(
@@ -180,17 +189,19 @@ class ManagementUpdateUserUseCaseTest {
 
     @Test
     fun `returns error when new authority level is equal to manager's`() = runTest {
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 80
-        }
-        val targetDetails = mockk<UserDetails> {
-            every { authorityLevel } returns 50
-        }
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 80
+        )
+        val targetInternal = createTestUserInternal(
+            id = targetId,
+            authorityLevel = 50
+        )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
-        coEvery { userManager.getUserByIdForSelf(targetId) } returns AppResult.Success(targetDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
+        coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         val result = useCase(

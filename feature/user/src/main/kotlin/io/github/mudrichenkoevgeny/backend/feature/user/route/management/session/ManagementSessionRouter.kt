@@ -35,9 +35,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.toUserSessionIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.toUserIdOrThrow
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.UserSessionPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.UserSessionPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.UserSessionSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.session.ManagementSessionRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
@@ -138,7 +140,7 @@ class ManagementSessionRouter @Inject constructor(
         )
         response {
             code(HttpStatusCode.OK) {
-                body<PagedResult<UserSessionPayload>>()
+                body<PagedResult<UserSessionSummaryPayload>>()
                 description = GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -183,7 +185,7 @@ class ManagementSessionRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) { pagedSessions ->
-            pagedSessions.mapItems { userSession -> userSession.toUserSessionPayload() }
+            pagedSessions.mapItems { userSessionSummary -> userSessionSummary.toUserSessionSummaryPayload() }
         }
     }
 
@@ -206,7 +208,7 @@ class ManagementSessionRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.OK) {
-                body<UserSessionPayload>()
+                body<UserSessionPrivatePayload>()
                 description = GET_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -237,8 +239,8 @@ class ManagementSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { session ->
-            session.toUserSessionPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userSessionPrivate ->
+            userSessionPrivate.toUserSessionPrivatePayload()
         }
     }
 

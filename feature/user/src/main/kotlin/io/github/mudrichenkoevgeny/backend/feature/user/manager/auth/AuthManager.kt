@@ -6,10 +6,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.pe
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 
 /**
@@ -91,7 +91,7 @@ interface AuthManager {
      * @param accountStatusForUserCreation Explicit status for the new user.
      * @param authorityLevelForUserCreation  Explicit authorityLevel for the new user.
      * @param permissionCodesForUserCreation Initial permissions.
-     * @return [AppResult] with the created [UserDetails].
+     * @return [AppResult] with the created [UserInternal].
      */
     suspend fun createUserAndIdentifier(
         userAuthProvider: UserAuthProvider,
@@ -101,7 +101,7 @@ interface AuthManager {
         accountStatusForUserCreation: UserAccountStatus,
         authorityLevelForUserCreation: Int,
         permissionCodesForUserCreation: Set<PermissionCode>
-    ): AppResult<UserDetails>
+    ): AppResult<UserInternal>
 
     /**
      * Adds a new authentication identifier to an already authenticated user account.
@@ -114,7 +114,7 @@ interface AuthManager {
      * @param password Raw password (if adding an email provider).
      * @param externalProviderEmail Optional email to aid in resolving or linking an external account.
      * @param externalProviderDisplayName Optional display name from an external provider.
-     * @return [AppResult] with the new [UserIdentifier].
+     * @return [AppResult] with the new [UserIdentifierPrivate].
      */
     suspend fun createIdentifierForAuthorizedUser(
         userId: UserId,
@@ -123,7 +123,7 @@ interface AuthManager {
         password: String? = null,
         externalProviderEmail: String? = null,
         externalProviderDisplayName: String? = null
-    ): AppResult<UserIdentifier>
+    ): AppResult<UserIdentifierPrivate>
 
     /**
      * Completes the authentication process for a user who has successfully passed MFA.

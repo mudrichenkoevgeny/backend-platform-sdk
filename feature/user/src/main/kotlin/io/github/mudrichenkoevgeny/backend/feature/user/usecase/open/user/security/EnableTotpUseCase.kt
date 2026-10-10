@@ -79,7 +79,7 @@ class EnableTotpUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserByIdForSelf(currentUserId)
+        val userResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val user = when (userResult) {

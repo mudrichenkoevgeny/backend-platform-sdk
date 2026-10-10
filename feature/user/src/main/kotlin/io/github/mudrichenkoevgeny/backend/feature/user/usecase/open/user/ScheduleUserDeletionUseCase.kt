@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
@@ -20,7 +21,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,11 +48,11 @@ class ScheduleUserDeletionUseCase @Inject constructor(
      * 4. Logs the outcome via [AuditLogger] with [UserAuditActionType.SELF_SCHEDULE_USER_DELETION].
      *
      * @param authenticatedRequestContext The context of the authenticated request.
-     * @return [AppResult] containing updated [UserDetails].
+     * @return [AppResult] containing updated [UserPrivate].
      */
     suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<UserDetails> {
+    ): AppResult<UserPrivate> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
         val auditActorUserRole = authenticatedRequestContext.userRole
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata()
@@ -70,7 +72,7 @@ class ScheduleUserDeletionUseCase @Inject constructor(
             )
         }
 
-        val getCurrentUserResult = userManager.getUserByIdForSelf(currentUserId)
+        val getCurrentUserResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (getCurrentUserResult) {
@@ -85,7 +87,7 @@ class ScheduleUserDeletionUseCase @Inject constructor(
             is AppResult.Success -> getCurrentUserResult.data
         }
 
-        val userSessionResult = sessionManager.getUserSessionForSystem(
+        val userSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -100,7 +102,7 @@ class ScheduleUserDeletionUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = currentUser,
+            userInternal = currentUser,
             userSession = currentSession
         )
         if (ensureSessionConfirmedResult is AppResult.Error) {
@@ -112,7 +114,7 @@ class ScheduleUserDeletionUseCase @Inject constructor(
             )
         }
 
-        val scheduleUserDeletionResult = userManager.scheduleUserDeletionForSelf(
+        val scheduleUserDeletionResult = userManager.scheduleUserDeletion(
             userId = currentUserId,
             currentStatus = currentUser.accountStatus
         )
@@ -133,7 +135,7 @@ class ScheduleUserDeletionUseCase @Inject constructor(
             metadata = auditMetadata
         )
 
-        return scheduleUserDeletionResult
+        return scheduleUserDeletionResult.mapSuccess { userInternal -> userInternal.toUserPrivate() }
     }
 
     private fun <T> handleError(

@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,7 +19,7 @@ class ManagementGetSessionUseCase @Inject constructor(
     private val sessionManager: SessionManager
 ) {
     /**
-     * Retrieves specific [UserSession] details within the management scope.
+     * Retrieves specific [UserSessionPrivate] details within the management scope.
      *
      * **Allowed Account Statuses:** [UserAccountStatus.ACTIVE], [UserAccountStatus.READ_ONLY]
      * for the management caller.
@@ -31,20 +31,20 @@ class ManagementGetSessionUseCase @Inject constructor(
      *
      * **Workflow:**
      * 1. Validates the management caller's existence and status.
-     * 2. Fetches the [UserSession] via [sessionManager], which enforces visibility rules and
+     * 2. Fetches the [UserSessionPrivate] via [sessionManager], which enforces visibility rules and
      *    permission-based masking of sensitive session data.
      *
      * @param userSessionId The ID of the session to retrieve.
      * @param authenticatedRequestContext The context of the authenticated management request.
-     * @return [AppResult] containing the [UserSession] if found and authorized.
+     * @return [AppResult] containing the [UserSessionPrivate] if found and authorized.
      */
     suspend operator fun invoke(
         userSessionId: UserSessionId,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<UserSession> {
+    ): AppResult<UserSessionPrivate> {
         val managementUserId = authenticatedRequestContext.userId
 
-        val getManagementUserResult = userManager.getUserByIdForSelf(managementUserId)
+        val getManagementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val managementUser = when (getManagementUserResult) {
@@ -56,13 +56,13 @@ class ManagementGetSessionUseCase @Inject constructor(
             return AppResult.Error(UserError.UserIllegalAccountStatus(managementUserId))
         }
 
-        return sessionManager.getUserSessionForManagement(
+        return sessionManager.getUserSessionPrivate(
             userSessionId = userSessionId,
             managementUserId = managementUserId,
             managementUserPermissionCodes = managementUser.permissionCodes
         ).mapNotNullOrError(
             CommonError.NotFound(
-                resource = UserSession::class.java.simpleName,
+                resource = UserSessionPrivate::class.java.simpleName,
                 identifier = userSessionId.asHexDashString()
             )
         )

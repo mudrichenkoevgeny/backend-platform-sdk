@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.sess
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -10,10 +11,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionSummary
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -36,7 +35,7 @@ class ManagementGetSessionsUseCaseTest {
     fun `successfully retrieves paginated sessions`() = runTest {
         val managementUserId = defaultContext.userId
         val pageParams = PageParams(page = 1, size = 20)
-        val pagedResult = PagedResult<UserSession>(
+        val pagedResult = PagedResult<UserSessionSummary>(
             items = emptyList(),
             totalCount = 0,
             pageNumber = 1,
@@ -44,14 +43,15 @@ class ManagementGetSessionsUseCaseTest {
             totalPages = 1
         )
 
-        val managementUser = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { permissionCodes } returns emptySet()
-        }
+        val managementUser = createTestUserInternal(
+            id = managementUserId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            permissionCodes = emptySet()
+        )
 
-        coEvery { userManager.getUserByIdForSelf(managementUserId) } returns AppResult.Success(managementUser)
+        coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
         coEvery {
-            sessionManager.getSessionsPageForManagement(
+            sessionManager.getUserSessionsSummaryPage(
                 managementUserPermissionCodes = any(),
                 pageParams = pageParams,
                 sortBy = any(),
@@ -98,11 +98,12 @@ class ManagementGetSessionsUseCaseTest {
     @Test
     fun `returns error when management user is not active`() = runTest {
         val managementUserId = defaultContext.userId
-        val managementUser = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.BANNED
-        }
+        val managementUser = createTestUserInternal(
+            id = managementUserId,
+            accountStatus = UserAccountStatus.BANNED
+        )
 
-        coEvery { userManager.getUserByIdForSelf(managementUserId) } returns AppResult.Success(managementUser)
+        coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
 
         val result = useCase(
             pageParams = PageParams(0, 20),
@@ -129,7 +130,7 @@ class ManagementGetSessionsUseCaseTest {
 
     @Test
     fun `returns error when management user not found`() = runTest {
-        coEvery { userManager.getUserByIdForSelf(any()) } returns AppResult.Success(null)
+        coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(null)
 
         val result = useCase(
             pageParams = PageParams(0, 20),

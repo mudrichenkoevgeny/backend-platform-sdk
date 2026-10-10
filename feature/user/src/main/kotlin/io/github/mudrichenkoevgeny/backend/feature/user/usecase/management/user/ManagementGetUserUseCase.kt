@@ -2,13 +2,15 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +19,7 @@ class ManagementGetUserUseCase @Inject constructor(
     private val userManager: UserManager
 ) {
     /**
-     * Retrieves [UserDetails] for a specific user within the management scope.
+     * Retrieves [UserPrivate] for a specific user within the management scope.
      *
      * **Allowed Account Statuses:** [UserAccountStatus.ACTIVE], [UserAccountStatus.READ_ONLY]
      * for the management caller.
@@ -33,15 +35,15 @@ class ManagementGetUserUseCase @Inject constructor(
      *
      * @param userId The ID of the target user to retrieve.
      * @param authenticatedRequestContext The context of the authenticated management request.
-     * @return [AppResult] containing [UserDetails] if found and authorized.
+     * @return [AppResult] containing [UserPrivate] if found and authorized.
      */
     suspend operator fun invoke(
         userId: UserId,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<UserDetails> {
+    ): AppResult<UserPrivate> {
         val managementUserId = authenticatedRequestContext.userId
 
-        val getManagementUserResult = userManager.getUserByIdForSelf(managementUserId)
+        val getManagementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val managementUser = when (getManagementUserResult) {
@@ -53,10 +55,11 @@ class ManagementGetUserUseCase @Inject constructor(
             return AppResult.Error(UserError.UserIllegalAccountStatus(managementUserId))
         }
 
-        return userManager.getUserForManagement(
+        return userManager.getUserInternal(
             userId = userId,
             managementUserId = managementUserId,
             managementUserPermissionCodes = managementUser.permissionCodes
         ).mapNotNullOrError(UserError.UserNotFound(userId))
+            .mapSuccess { userInternal -> userInternal.toUserPrivate() }
     }
 }

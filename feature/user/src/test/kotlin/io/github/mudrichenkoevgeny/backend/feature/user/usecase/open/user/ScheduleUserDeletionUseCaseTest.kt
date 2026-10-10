@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -19,7 +20,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -53,20 +54,19 @@ class ScheduleUserDeletionUseCaseTest {
 
     @Test
     fun `successfully schedules user deletion`() = runTest {
-        val userDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-        }
+        val userInternal = createTestUserInternal(id = userId, accountStatus = UserAccountStatus.ACTIVE)
+        val expectedUserPrivate = userInternal.toUserPrivate()
         val userSessionInternal = mockk<UserSessionInternal>()
 
         coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.USER_SCHEDULE_DELETION, userId.asHexDashString()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSessionInternal)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(userDetails, userSessionInternal) } returns AppResult.Success(Unit)
-        coEvery { userManager.scheduleUserDeletionForSelf(userId, UserAccountStatus.ACTIVE) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(userSessionInternal)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(userInternal, userSessionInternal) } returns AppResult.Success(Unit)
+        coEvery { userManager.scheduleUserDeletion(userId, UserAccountStatus.ACTIVE) } returns AppResult.Success(userInternal)
 
         val result = useCase(context)
 
-        assertEquals(AppResult.Success(userDetails), result)
+        assertEquals(AppResult.Success(expectedUserPrivate), result)
 
         coVerify {
             auditLogger.log(
@@ -110,7 +110,7 @@ class ScheduleUserDeletionUseCaseTest {
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(null)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(null)
 
         val result = useCase(context)
 
@@ -120,12 +120,12 @@ class ScheduleUserDeletionUseCaseTest {
 
     @Test
     fun `returns error when session is invalid or missing`() = runTest {
-        val userDetails = mockk<UserDetails>()
+        val userInternal = createTestUserInternal(id = userId)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(null)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(null)
 
         val result = useCase(context)
 
@@ -135,14 +135,14 @@ class ScheduleUserDeletionUseCaseTest {
 
     @Test
     fun `returns error when mfa confirmation fails`() = runTest {
-        val userDetails = mockk<UserDetails>()
+        val userInternal = createTestUserInternal(id = userId)
         val userSessionInternal = mockk<UserSessionInternal>()
         val error = mockk<AppError>()
 
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSessionInternal)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(userSessionInternal)
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Error(error)
 
         val result = useCase(context)
@@ -153,18 +153,16 @@ class ScheduleUserDeletionUseCaseTest {
 
     @Test
     fun `returns error when scheduling deletion fails in manager`() = runTest {
-        val userDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.READ_ONLY
-        }
+        val userInternal = createTestUserInternal(id = userId, accountStatus = UserAccountStatus.READ_ONLY)
         val userSessionInternal = mockk<UserSessionInternal>()
         val error = mockk<AppError>()
 
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSessionInternal)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(userSessionInternal)
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.scheduleUserDeletionForSelf(any(), any()) } returns AppResult.Error(error)
+        coEvery { userManager.scheduleUserDeletion(any(), any()) } returns AppResult.Error(error)
 
         val result = useCase(context)
 

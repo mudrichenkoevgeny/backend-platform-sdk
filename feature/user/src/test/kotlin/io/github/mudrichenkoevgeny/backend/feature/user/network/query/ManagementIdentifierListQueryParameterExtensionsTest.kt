@@ -10,6 +10,7 @@ import io.ktor.server.request.ApplicationRequest
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -50,15 +51,12 @@ class ManagementIdentifierListQueryParameterExtensionsTest {
     }
 
     @Test
-    fun `should throw RequestHandlingException when user id is missing`() {
+    fun `should return empty userIds when user id parameter is missing`() {
         setupMockParameters(emptyMap())
 
-        val exception = assertThrows<RequestHandlingException> {
-            call.parseManagementIdentifiersListQueryParams()
-        }
+        val result = call.parseManagementIdentifiersListQueryParams()
 
-        val error = exception.error as CommonError.MissingRequiredParameter
-        assertEquals(filterNames.USER_ID, error.parameterName)
+        assertTrue(result.userIds.isEmpty())
     }
 
     @Test

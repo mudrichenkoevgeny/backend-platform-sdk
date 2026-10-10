@@ -95,7 +95,7 @@ class DeleteUserIdentifierUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserByIdForSelf(currentUserId)
+        val userResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (userResult) {
@@ -109,7 +109,7 @@ class DeleteUserIdentifierUseCase @Inject constructor(
             is AppResult.Success -> userResult.data
         }
 
-        val userSessionResult = sessionManager.getUserSessionForSystem(
+        val userSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = currentSessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -125,7 +125,7 @@ class DeleteUserIdentifierUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = currentUser,
+            userInternal = currentUser,
             userSession = currentSession
         )
         if (ensureSessionConfirmedResult is AppResult.Error) {
@@ -138,7 +138,7 @@ class DeleteUserIdentifierUseCase @Inject constructor(
             )
         }
 
-        val userIdentifiersListResult = identifierManager.getUserIdentifiersByUserId(currentUserId)
+        val userIdentifiersListResult = identifierManager.getUserIdentifiersInternalPageByUserId(currentUserId)
         val userIdentifiersList = when (userIdentifiersListResult) {
             is AppResult.Success -> userIdentifiersListResult.data
             is AppResult.Error -> return handleError(
@@ -162,7 +162,7 @@ class DeleteUserIdentifierUseCase @Inject constructor(
             )
         }
 
-        val userSessionsResult = sessionManager.getAllUserSessions(currentUserId)
+        val userSessionsResult = sessionManager.getAllUserSessionsInternalList(currentUserId)
         val userSessions = when (userSessionsResult) {
             is AppResult.Success -> userSessionsResult.data
             is AppResult.Error -> return handleError(

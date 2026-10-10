@@ -1,15 +1,16 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager
 
 import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepository
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEvent
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEventInternal
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -32,33 +33,33 @@ class AuditManagerImplTest {
     }
 
     @Test
-    fun `getEventById returns Success when user has UNMASKED permission`() = runTest {
-        val event = createTestAuditEvent(actorType = AuditActorType.SYSTEM)
+    fun `getAuditEventPrivateById returns Success when user has UNMASKED permission`() = runTest {
+        val event = createTestAuditEventInternal(actorType = AuditActorType.SYSTEM)
         coEvery { repository.getEventById(event.id) } returns AppResult.Success(event)
 
         val permissions = setOf(AuditPermissionCode.AUDIT_GET_FOR_SYSTEM_ACTOR_UNMASKED)
 
-        val result = auditManager.getEventById(event.id, userId, permissions)
+        val result = auditManager.getAuditEventPrivateById(event.id, userId, permissions)
 
         assertTrue(result is AppResult.Success)
-        assertEquals(event, (result as AppResult.Success).data)
+        assertEquals(event.toAuditEventPrivate(), (result as AppResult.Success).data)
     }
 
     @Test
-    fun `getEventById returns Error UserMissingPermissions when user has no permissions`() = runTest {
-        val event = createTestAuditEvent(actorType = AuditActorType.SYSTEM)
+    fun `getAuditEventPrivateById returns Error UserMissingPermissions when user has no permissions`() = runTest {
+        val event = createTestAuditEventInternal(actorType = AuditActorType.SYSTEM)
         coEvery { repository.getEventById(event.id) } returns AppResult.Success(event)
 
-        val result = auditManager.getEventById(event.id, userId, emptySet())
+        val result = auditManager.getAuditEventPrivateById(event.id, userId, emptySet())
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.UserMissingPermissions)
     }
 
     @Test
-    fun `getEventsPage filters out forbidden events from the list`() = runTest {
-        val eventSystem = createTestAuditEvent(actorType = AuditActorType.SYSTEM)
-        val eventService = createTestAuditEvent(actorType = AuditActorType.SERVICE)
+    fun `getAuditEventsSummaryPage filters out forbidden events from the list`() = runTest {
+        val eventSystem = createTestAuditEventInternal(actorType = AuditActorType.SYSTEM)
+        val eventService = createTestAuditEventInternal(actorType = AuditActorType.SERVICE)
 
         val pagedResult = PagedResult(
             items = listOf(eventSystem, eventService),
@@ -87,7 +88,7 @@ class AuditManagerImplTest {
 
         val permissions = setOf(AuditPermissionCode.AUDIT_GET_FOR_SYSTEM_ACTOR_UNMASKED)
 
-        val result = auditManager.getEventsPage(
+        val result = auditManager.getAuditEventsSummaryPage(
             managementUserPermissionCodes = permissions,
             pageParams = PageParams(1, 10),
             sortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,

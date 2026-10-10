@@ -2,10 +2,12 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,13 +25,15 @@ class GetUserUseCase @Inject constructor(
      * 2. Fetches user details via [UserManager].
      *
      * @param authenticatedRequestContext The context of the authenticated request.
-     * @return [AppResult] containing [UserDetails].
+     * @return [AppResult] containing [UserPrivate].
      */
     suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<UserDetails> {
+    ): AppResult<UserPrivate> {
         val currentUserId = authenticatedRequestContext.userId
 
-        return userManager.getUserByIdForSelf(currentUserId).mapNotNullOrError(UserError.UserForbidden())
+        return userManager.getUserInternalById(currentUserId)
+            .mapNotNullOrError(UserError.UserForbidden())
+            .mapSuccess { userInternal -> userInternal.toUserPrivate() }
     }
 }

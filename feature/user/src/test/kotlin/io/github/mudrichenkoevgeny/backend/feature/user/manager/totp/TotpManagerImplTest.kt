@@ -6,18 +6,18 @@ import io.github.mudrichenkoevgeny.backend.core.security.aescryptor.AesCryptor
 import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.TotpCryptoProcessor
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usertotpsettings.UserTotpSettingsRepository
-import io.github.mudrichenkoevgeny.backend.feature.user.model.totp.UserTotpSettings
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.model.totp.createTestUserTotpSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -58,7 +58,7 @@ class TotpManagerImplTest {
         val decryptedCodes = listOf(DecryptedString("code1"))
         val encryptedCodes = listOf(EncryptedString("enc1"))
         val settings = createSampleSettings(userId, isConfirmed = true)
-        val userDetails = createSampleUserDetails(userId)
+        val userDetails = createSampleUserInternal(userId)
 
         coEvery { aesCryptor.encrypt(any()) } returns AppResult.Success(encryptedCodes.first())
         coEvery {
@@ -75,7 +75,7 @@ class TotpManagerImplTest {
 
     @Test
     fun `disableTotp success flow`() = runTest {
-        val userDetails = createSampleUserDetails(userId)
+        val userDetails = createSampleUserInternal(userId)
 
         coEvery { userTotpSettingsRepository.deleteSettings(userId) } returns AppResult.Success(Unit)
         coEvery {
@@ -176,7 +176,7 @@ class TotpManagerImplTest {
         isConfirmed = isConfirmed
     )
 
-    private fun createSampleUserDetails(uId: UserId) = createTestUserDetails(
+    private fun createSampleUserInternal(uId: UserId) = createTestUserInternal(
         id = uId,
         role = UserRole.USER,
         accountStatus = UserAccountStatus.ACTIVE,

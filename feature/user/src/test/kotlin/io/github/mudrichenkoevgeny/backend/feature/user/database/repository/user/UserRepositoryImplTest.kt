@@ -6,14 +6,14 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.Database
@@ -45,11 +45,11 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    fun `createUser persists and getUserDetailsById returns same user`() = runBlocking {
+    fun `createUser persists and getUserInternalById returns same user`() = runBlocking {
         val user = createTestUser(UserId.generate())
 
         suspendTransaction { repository.createUser(user) }
-        val result = suspendTransaction { repository.getUserDetailsById(user.id) }
+        val result = suspendTransaction { repository.getUserInternalById(user.id) }
 
         val success = result as AppResult.Success
         assertNotNull(success.data)
@@ -172,8 +172,8 @@ class UserRepositoryImplTest {
 
         assertEquals(1, (deletedResult as AppResult.Success).data)
 
-        val checkExpired = suspendTransaction { repository.getUserDetailsById(expired.id) }
-        val checkActive = suspendTransaction { repository.getUserDetailsById(notExpired.id) }
+        val checkExpired = suspendTransaction { repository.getUserInternalById(expired.id) }
+        val checkActive = suspendTransaction { repository.getUserInternalById(notExpired.id) }
 
         assertNull((checkExpired as AppResult.Success).data)
         assertNotNull((checkActive as AppResult.Success).data)
@@ -185,12 +185,12 @@ class UserRepositoryImplTest {
         suspendTransaction { repository.createUser(createTestUser(userId)) }
 
         suspendTransaction { repository.deleteUser(userId) }
-        val result = suspendTransaction { repository.getUserDetailsById(userId) }
+        val result = suspendTransaction { repository.getUserInternalById(userId) }
 
         assertNull((result as AppResult.Success).data)
     }
 
-    private fun createTestUser(userId: UserId) = createTestUserDetails(
+    private fun createTestUser(userId: UserId): UserInternal = createTestUserInternal(
         id = userId,
         role = UserRole.USER,
         accountStatus = UserAccountStatus.ACTIVE,

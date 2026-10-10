@@ -40,35 +40,35 @@ class UserScheduledJobsImplTest {
     fun `should invoke delete and unlock immediately on start and then after interval`() = runTest {
         every { authSettingsProvider.getAccountDeletionCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
         every { securitySettingsProvider.getAccountLockoutCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
-        coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } returns AppResult.Success(1)
-        coEvery { userManager.unlockExpiredAccountLockoutsForSystem() } returns AppResult.Success(2)
+        coEvery { userManager.deleteUsersDueForPermanentDeletion() } returns AppResult.Success(1)
+        coEvery { userManager.unlockExpiredAccountLockouts() } returns AppResult.Success(2)
         val jobs = createJobs(backgroundScope)
 
         jobs.start()
 
         advanceTimeBy(1.seconds)
-        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
-        coVerify(exactly = 1) { userManager.unlockExpiredAccountLockoutsForSystem() }
+        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletion() }
+        coVerify(exactly = 1) { userManager.unlockExpiredAccountLockouts() }
 
         advanceTimeBy(TEST_INTERVAL_SECONDS.seconds)
-        coVerify(exactly = 2) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
-        coVerify(exactly = 2) { userManager.unlockExpiredAccountLockoutsForSystem() }
+        coVerify(exactly = 2) { userManager.deleteUsersDueForPermanentDeletion() }
+        coVerify(exactly = 2) { userManager.unlockExpiredAccountLockouts() }
     }
 
     @Test
     fun `should not launch second loops if already active`() = runTest {
         every { authSettingsProvider.getAccountDeletionCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
         every { securitySettingsProvider.getAccountLockoutCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
-        coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } returns AppResult.Success(0)
-        coEvery { userManager.unlockExpiredAccountLockoutsForSystem() } returns AppResult.Success(0)
+        coEvery { userManager.deleteUsersDueForPermanentDeletion() } returns AppResult.Success(0)
+        coEvery { userManager.unlockExpiredAccountLockouts() } returns AppResult.Success(0)
         val jobs = createJobs(backgroundScope)
 
         jobs.start()
         jobs.start()
 
         advanceTimeBy(1.seconds)
-        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
-        coVerify(exactly = 1) { userManager.unlockExpiredAccountLockoutsForSystem() }
+        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletion() }
+        coVerify(exactly = 1) { userManager.unlockExpiredAccountLockouts() }
     }
 
     @Test
@@ -76,8 +76,8 @@ class UserScheduledJobsImplTest {
         val error = CommonError.Internal(Exception("DB error"))
         every { authSettingsProvider.getAccountDeletionCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
         every { securitySettingsProvider.getAccountLockoutCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
-        coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } returns AppResult.Error(error)
-        coEvery { userManager.unlockExpiredAccountLockoutsForSystem() } returns AppResult.Error(error)
+        coEvery { userManager.deleteUsersDueForPermanentDeletion() } returns AppResult.Error(error)
+        coEvery { userManager.unlockExpiredAccountLockouts() } returns AppResult.Error(error)
         val jobs = createJobs(backgroundScope)
 
         jobs.start()
@@ -91,8 +91,8 @@ class UserScheduledJobsImplTest {
         val exception = RuntimeException("Unexpected")
         every { authSettingsProvider.getAccountDeletionCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
         every { securitySettingsProvider.getAccountLockoutCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
-        coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } throws exception
-        coEvery { userManager.unlockExpiredAccountLockoutsForSystem() } returns AppResult.Success(0)
+        coEvery { userManager.deleteUsersDueForPermanentDeletion() } throws exception
+        coEvery { userManager.unlockExpiredAccountLockouts() } returns AppResult.Success(0)
         val jobs = createJobs(backgroundScope)
 
         jobs.start()
@@ -109,21 +109,21 @@ class UserScheduledJobsImplTest {
     fun `loops should stop when scope is cancelled`() = runTest {
         every { authSettingsProvider.getAccountDeletionCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
         every { securitySettingsProvider.getAccountLockoutCheckIntervalSeconds() } returns TEST_INTERVAL_SECONDS
-        coEvery { userManager.deleteUsersDueForPermanentDeletionForSystem() } returns AppResult.Success(0)
-        coEvery { userManager.unlockExpiredAccountLockoutsForSystem() } returns AppResult.Success(0)
+        coEvery { userManager.deleteUsersDueForPermanentDeletion() } returns AppResult.Success(0)
+        coEvery { userManager.unlockExpiredAccountLockouts() } returns AppResult.Success(0)
 
         val testScope = CoroutineScope(coroutineContext + SupervisorJob())
         val jobs = createJobs(testScope)
 
         jobs.start()
         advanceTimeBy(1.seconds)
-        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
-        coVerify(exactly = 1) { userManager.unlockExpiredAccountLockoutsForSystem() }
+        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletion() }
+        coVerify(exactly = 1) { userManager.unlockExpiredAccountLockouts() }
 
         testScope.cancel()
         advanceTimeBy(TEST_INTERVAL_SECONDS.seconds)
 
-        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletionForSystem() }
-        coVerify(exactly = 1) { userManager.unlockExpiredAccountLockoutsForSystem() }
+        coVerify(exactly = 1) { userManager.deleteUsersDueForPermanentDeletion() }
+        coVerify(exactly = 1) { userManager.unlockExpiredAccountLockouts() }
     }
 }

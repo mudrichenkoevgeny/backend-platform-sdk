@@ -2,19 +2,18 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.iden
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -38,16 +37,17 @@ class ManagementGetIdentifierUseCaseTest {
         val targetIdentifierId = UserIdentifierId.generate()
         val permissions = setOf(PermissionCode("management.view"))
 
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { permissionCodes } returns permissions
-        }
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            permissionCodes = permissions
+        )
 
-        val identifier = mockk<UserIdentifier>()
+        val identifier = createTestUserIdentifierPrivate(id = targetIdentifierId)
 
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery {
-            identifierManager.getUserIdentifierByIdForManagement(
+            identifierManager.getUserIdentifierPrivateById(
                 userIdentifierId = targetIdentifierId,
                 managementUserId = managerId,
                 managementUserPermissionCodes = permissions
@@ -65,16 +65,17 @@ class ManagementGetIdentifierUseCaseTest {
         val context = createTestAuthenticatedRequestContext(userId = managerId)
         val targetIdentifierId = UserIdentifierId.generate()
 
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.BANNED
-        }
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.BANNED
+        )
 
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 
         val result = useCase(targetIdentifierId, context)
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserIllegalAccountStatus)
-        coVerify(exactly = 0) { identifierManager.getUserIdentifierByIdForManagement(any(), any(), any()) }
+        coVerify(exactly = 0) { identifierManager.getUserIdentifierPrivateById(any(), any(), any()) }
     }
 
     @Test
@@ -83,7 +84,7 @@ class ManagementGetIdentifierUseCaseTest {
         val context = createTestAuthenticatedRequestContext(userId = managerId)
         val targetIdentifierId = UserIdentifierId.generate()
 
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(null)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(null)
 
         val result = useCase(targetIdentifierId, context)
 
@@ -97,14 +98,15 @@ class ManagementGetIdentifierUseCaseTest {
         val targetIdentifierId = UserIdentifierId.generate()
         val permissions = setOf(PermissionCode("management.view"))
 
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { permissionCodes } returns permissions
-        }
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            permissionCodes = permissions
+        )
 
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery {
-            identifierManager.getUserIdentifierByIdForManagement(any(), any(), any())
+            identifierManager.getUserIdentifierPrivateById(any(), any(), any())
         } returns AppResult.Success(null)
 
         val result = useCase(targetIdentifierId, context)

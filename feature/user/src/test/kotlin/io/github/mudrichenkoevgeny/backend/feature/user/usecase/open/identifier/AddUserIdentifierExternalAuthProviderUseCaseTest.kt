@@ -7,6 +7,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.model.ExternalAuthProviderData
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
@@ -21,10 +23,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -68,12 +68,10 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
     @Test
     fun `successfully adds external identifier`() = runTest {
         val context = createTestAuthenticatedRequestContext()
-        val userDetails = mockk<UserDetails>()
+        val userInternal = createTestUserInternal(id = context.userId)
         val sessionInternal = mockk<UserSessionInternal>()
         val identifierId = UserIdentifierId.generate()
-        val identifier = mockk<UserIdentifier> {
-            every { id } returns identifierId
-        }
+        val identifier = createTestUserIdentifierPrivate(id = identifierId)
 
         val authData = ExternalAuthProviderData(
             authProvider = UserAuthProvider.GOOGLE,
@@ -95,15 +93,15 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
         } returns availableAuthProviders
 
         coEvery {
-            userManager.getUserByIdForSelf(context.userId)
-        } returns AppResult.Success(userDetails)
+            userManager.getUserInternalById(context.userId)
+        } returns AppResult.Success(userInternal)
 
         coEvery {
-            sessionManager.getUserSessionForSystem(context.sessionId)
+            sessionManager.getUserSessionInternal(context.sessionId)
         } returns AppResult.Success(sessionInternal)
 
         coEvery {
-            authenticationChallengeService.ensureSessionConfirmed(userDetails, sessionInternal)
+            authenticationChallengeService.ensureSessionConfirmed(userInternal, sessionInternal)
         } returns AppResult.Success(Unit)
 
         coEvery { externalAuthVerifier.verify(TEST_TOKEN) } returns AppResult.Success(authData)
@@ -113,7 +111,8 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
                 userId = context.userId,
                 userAuthProvider = UserAuthProvider.GOOGLE,
                 identifier = "ext_google_123",
-                password = null
+                password = null,
+                externalProviderEmail = "test@google.com"
             )
         } returns AppResult.Success(identifier)
 
@@ -171,7 +170,7 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
     @Test
     fun `returns error when session is not confirmed`() = runTest {
         val context = createTestAuthenticatedRequestContext()
-        val userDetails = mockk<UserDetails>()
+        val userInternal = createTestUserInternal(id = context.userId)
         val sessionInternal = mockk<UserSessionInternal>()
         val error = UserError.UserForbidden()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
@@ -183,8 +182,8 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         every { authSettingsProvider.getAvailableAuthProviders() } returns availableAuthProviders
-        coEvery { userManager.getUserByIdForSelf(any()) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(any()) } returns AppResult.Success(sessionInternal)
+        coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(sessionInternal)
 
         coEvery {
             authenticationChallengeService.ensureSessionConfirmed(any(), any())

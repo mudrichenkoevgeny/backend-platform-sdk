@@ -26,10 +26,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.m
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import javax.inject.Inject
@@ -102,7 +101,7 @@ class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
             )
         }
 
-        val managementUserResult = userManager.getUserByIdForSelf(managementUserId)
+        val managementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val managementUser = when (managementUserResult) {
@@ -126,10 +125,10 @@ class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
             )
         }
 
-        val userIdentifierResult = identifierManager.getUserIdentifierByIdForSystem(userIdentifierId)
+        val userIdentifierResult = identifierManager.getUserIdentifierInternalById(userIdentifierId)
             .mapNotNullOrError(
                 CommonError.NotFound(
-                    resource = UserIdentifier::class.java.simpleName,
+                    resource = UserIdentifierPrivate::class.java.simpleName,
                     identifier = userIdentifierId.asHexDashString()
                 )
             )
@@ -145,7 +144,7 @@ class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
             )
         }
 
-        val targetUserResult = userManager.getUserByIdForSelf(userIdentifier.userId)
+        val targetUserResult = userManager.getUserInternalById(userIdentifier.userId)
             .mapNotNullOrError(UserError.UserNotFound(userIdentifier.userId))
 
         val targetUser = when (targetUserResult) {
@@ -228,7 +227,7 @@ class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
             )
         }
 
-        val managementUserSessionResult = sessionManager.getUserSessionForSystem(
+        val managementUserSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -244,7 +243,7 @@ class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = managementUser,
+            userInternal = managementUser,
             userSession = managementUserSession,
             requireTotp = true
         )
@@ -258,7 +257,7 @@ class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
             )
         }
 
-        val sessionsForIdentifier = sessionManager.getUserSessionsByIdentifierId(
+        val sessionsForIdentifier = sessionManager.getUserSessionsInternalListByIdentifierId(
             userIdentifierId = userIdentifierId,
             userId = targetUser.id
         ).dataOrNull() ?: emptyList()

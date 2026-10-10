@@ -157,8 +157,8 @@ class LoginByTotpUseCase @Inject constructor(
             is AppResult.Success -> {
                 logAudit(
                     status = AuditStatus.SUCCESS,
-                    actorId = mfaAuthenticationResult.data.userDetails.id.asHexDashString(),
-                    actorUserRole = mfaAuthenticationResult.data.userDetails.role,
+                    actorId = mfaAuthenticationResult.data.userPrivate.id.asHexDashString(),
+                    actorUserRole = mfaAuthenticationResult.data.userPrivate.role,
                     metadata = auditMetadata
                 )
                 mfaAuthenticationResult

@@ -6,7 +6,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.cl
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 
 fun createTestClientInfo(
-    deviceInfo: ClientDeviceInfo = ClientDeviceInfo(
+    clientDeviceInfo: ClientDeviceInfo = ClientDeviceInfo(
         deviceId = ClientDeviceId.generate(),
         deviceName = "Test Device",
         clientType = ClientType.ANDROID,
@@ -20,7 +20,7 @@ fun createTestClientInfo(
     origin: String? = "http://localhost",
     apiVersion: String? = "1.0"
 ) = ClientInfo(
-    deviceInfo = deviceInfo,
+    clientDeviceInfo = clientDeviceInfo,
     userAgent = userAgent,
     ipAddress = ipAddress,
     host = host,

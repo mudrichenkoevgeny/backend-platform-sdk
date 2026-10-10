@@ -59,7 +59,7 @@ class SendLoginConfirmationToPhoneUseCase @Inject constructor(
         val sendCodeResult = phoneService.sendVerificationCode(
             phoneNumber = phoneNumber,
             code = otpConfirmationData.code,
-            language = requestContext.clientInfo.deviceInfo.language
+            language = requestContext.clientInfo.clientDeviceInfo.language
         )
         if (sendCodeResult is AppResult.Error) return AppResult.Error(sendCodeResult.error)
 

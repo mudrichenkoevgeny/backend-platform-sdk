@@ -24,7 +24,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserDetailsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserPrivatePayload
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
@@ -287,10 +287,10 @@ class KtorWebSocketManager @Inject constructor(
                 }
                 if (frame.type == UserWebSocketEventTypes.USER_UPDATED) {
                     frame.payload?.let { payload ->
-                        val userDetailsPayload = FoundationJson.decodeFromJsonElement<UserDetailsPayload>(payload)
+                        val userPrivatePayload = FoundationJson.decodeFromJsonElement<UserPrivatePayload>(payload)
                         val userAccountStatus = UserAccountStatus
-                            .fromValueOrNull(userDetailsPayload.accountStatus)
-                        val accountLockoutType = AccountLockoutType.fromValueOrNull(userDetailsPayload.lockoutType)
+                            .fromValueOrNull(userPrivatePayload.accountStatus)
+                        val accountLockoutType = AccountLockoutType.fromValueOrNull(userPrivatePayload.lockoutType)
 
                         if (userAccountStatus == UserAccountStatus.BANNED
                             || userAccountStatus == UserAccountStatus.SECURITY_HOLD

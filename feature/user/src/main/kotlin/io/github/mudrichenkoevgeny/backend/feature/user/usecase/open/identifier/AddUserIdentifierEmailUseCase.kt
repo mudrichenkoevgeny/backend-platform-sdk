@@ -27,7 +27,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestricti
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -75,7 +75,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
         password: String,
         confirmationCode: String,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<UserIdentifier> {
+    ): AppResult<UserIdentifierPrivate> {
         val currentUserId = authenticatedRequestContext.userId
         val currentSessionId = authenticatedRequestContext.sessionId
 
@@ -121,7 +121,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserByIdForSelf(currentUserId)
+        val userResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (userResult) {
@@ -134,7 +134,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
             is AppResult.Success -> userResult.data
         }
 
-        val userSessionResult = sessionManager.getUserSessionForSystem(
+        val userSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -149,7 +149,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = currentUser,
+            userInternal = currentUser,
             userSession = currentSession
         )
         if (ensureSessionConfirmedResult is AppResult.Error) {

@@ -24,7 +24,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.m
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -62,14 +62,14 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
      * @param newPassword The new password string.
      * @param oldPassword The current password for verification.
      * @param authenticatedRequestContext The context of the authenticated request.
-     * @return [AppResult] containing the updated [UserIdentifier].
+     * @return [AppResult] containing the updated [UserIdentifierPrivate].
      */
     suspend operator fun invoke(
         email: String,
         newPassword: String,
         oldPassword: String,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<UserIdentifier> {
+    ): AppResult<UserIdentifierPrivate> {
         val currentUserId = authenticatedRequestContext.userId
         val currentSessionId = authenticatedRequestContext.sessionId
 
@@ -97,7 +97,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserByIdForSelf(currentUserId)
+        val userResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (userResult) {
@@ -110,7 +110,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
             is AppResult.Success -> userResult.data
         }
 
-        val userSessionResult = sessionManager.getUserSessionForSystem(
+        val userSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = currentSessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -125,7 +125,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = currentUser,
+            userInternal = currentUser,
             userSession = currentSession
         )
         if (ensureSessionConfirmedResult is AppResult.Error) {

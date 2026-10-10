@@ -13,9 +13,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.i
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.DeletedSessions
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionSummary
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.SessionToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -110,18 +111,17 @@ interface SessionManager {
      * @param userSessionId The ID of the session that should remain active.
      * @return [AppResult.Success] with [DeletedSessions] summary or an error.
      */
-    suspend fun deleteAllSessionsExceptOneForSelf(
+    suspend fun deleteAllUserSessionsExceptOne(
         userId: UserId,
         userSessionId: UserSessionId
     ): AppResult<DeletedSessions>
 
     /**
      * Deletes the least recently used (LRU) session for a specific user.
-     * The target session is determined by the oldest [UserSession.lastAccessedAt] timestamp.
      * Used to free up space when the user exceeds the maximum allowed number of concurrent sessions.
      *
      * @param userId user id
-     * @return the ID of the deleted session or an error
+     * @return [AppResult.Success] with the ID of the deleted session or an error.
      */
     suspend fun deleteLeastRecentlyUsedUserSession(userId: UserId): AppResult<UserSessionId>
 
@@ -133,17 +133,15 @@ interface SessionManager {
      * @param userSessionId The ID of the session to retrieve.
      * @return [AppResult.Success] with [UserSessionInternal] if found, null otherwise, or an error.
      */
-    suspend fun getUserSessionForSystem(userSessionId: UserSessionId): AppResult<UserSessionInternal?>
+    suspend fun getUserSessionInternal(userSessionId: UserSessionId): AppResult<UserSessionInternal?>
 
     /**
-     * Loads a session by its ID for the current user.
-     *
-     * Technical details may be masked or omitted based on security policies for the "Self" scope.
+     * Loads a session by its ID for the current user's self-service access.
      *
      * @param userSessionId The ID of the session to retrieve.
-     * @return [AppResult.Success] with [UserSession] if found, null otherwise, or an error.
+     * @return [AppResult.Success] with [UserSessionPrivate] if found, null otherwise, or an error.
      */
-    suspend fun getUserSessionForSelf(userSessionId: UserSessionId): AppResult<UserSession?>
+    suspend fun getUserSessionPrivate(userSessionId: UserSessionId): AppResult<UserSessionPrivate?>
 
     /**
      * Loads all sessions for a user as internal models.
@@ -151,7 +149,7 @@ interface SessionManager {
      * @param userId The unique identifier of the user.
      * @return [AppResult.Success] with a list of [UserSessionInternal] or an error.
      */
-    suspend fun getAllUserSessions(userId: UserId): AppResult<List<UserSessionInternal>>
+    suspend fun getAllUserSessionsInternalList(userId: UserId): AppResult<List<UserSessionInternal>>
 
     /**
      * Loads sessions associated with a specific identifier ID, with an optional owner filter.
@@ -160,36 +158,33 @@ interface SessionManager {
      * @param userId Optional owner filter to ensure sessions belong to the specified user.
      * @return [AppResult.Success] with a list of [UserSessionInternal] or an error.
      */
-    suspend fun getUserSessionsByIdentifierId(
+    suspend fun getUserSessionsInternalListByIdentifierId(
         userIdentifierId: UserIdentifierId,
         userId: UserId? = null
     ): AppResult<List<UserSessionInternal>>
 
     /**
-     * Loads a session by ID with permission-aware masking for administrative use.
+     * Loads a session by ID with permission-aware access checks for administrative use.
      *
-     * [managementUserPermissionCodes] define visibility rules and whether technical fields
-     * are returned in plain text or masked.
+     * [managementUserPermissionCodes] define visibility rules.
      *
      * @param userSessionId The ID of the session to retrieve.
      * @param managementUserId The ID of the manager/admin performing the request.
-     * @param managementUserPermissionCodes Permissions used to derive access and masking rules.
-     * @return [AppResult.Success] with [UserSession] (potentially masked), null if not found,
-     * or [AppResult.Error].
+     * @param managementUserPermissionCodes Permissions used to derive access rules.
+     * @return [AppResult.Success] with [UserSessionPrivate], null if not found, or [AppResult.Error].
      */
-    suspend fun getUserSessionForManagement(
+    suspend fun getUserSessionPrivate(
         userSessionId: UserSessionId,
         managementUserId: UserId,
         managementUserPermissionCodes: Set<PermissionCode>
-    ): AppResult<UserSession?>
+    ): AppResult<UserSessionPrivate?>
 
     /**
-     * Returns a paginated list of user sessions for management purposes.
+     * Returns a paginated list of user session summaries for management purposes.
      *
-     * Applies role-scoped visibility and data masking based on [managementUserPermissionCodes].
-     * Ensures the caller can only view sessions within their administrative scope.
+     * Applies role-scoped visibility based on [managementUserPermissionCodes].
      *
-     * @param managementUserPermissionCodes Caller permissions used to derive access and masking rules.
+     * @param managementUserPermissionCodes Caller permissions used to derive access rules.
      * @param pageParams Pagination settings (page index and size).
      * @param sortBy Field to sort the results by.
      * @param sortOrder Sorting direction (ASC/DESC).
@@ -206,9 +201,9 @@ interface SessionManager {
      * @param deviceNames Optional filter for human-readable device names.
      * @param appVersions Optional filter for application versions.
      * @param operationSystemVersions Optional filter for OS versions.
-     * @return [AppResult.Success] with [PagedResult] of potentially masked sessions or an error.
+     * @return [AppResult.Success] with [PagedResult] of session summaries or an error.
      */
-    suspend fun getSessionsPageForManagement(
+    suspend fun getUserSessionsSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
         pageParams: PageParams,
         sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
@@ -226,12 +221,12 @@ interface SessionManager {
         deviceNames: List<String> = emptyList(),
         appVersions: List<String> = emptyList(),
         operationSystemVersions: List<String> = emptyList()
-    ): AppResult<PagedResult<UserSession>>
+    ): AppResult<PagedResult<UserSessionSummary>>
 
     /**
-     * Returns a paginated list of sessions belonging to the current user.
+     * Returns a paginated list of session summaries belonging to the current user.
      *
-     * Designed for "Self" service scenarios. Applies data masking based on the user's permissions.
+     * Designed for "Self" service scenarios.
      *
      * @param userId The ID of the user requesting their own sessions.
      * @param pageParams Pagination settings (page index and size).
@@ -248,9 +243,9 @@ interface SessionManager {
      * @param deviceNames Optional filter for device names.
      * @param appVersions Optional filter for application versions.
      * @param operationSystemVersions Optional filter for OS versions.
-     * @return [AppResult.Success] with [PagedResult] of the user's sessions or an error.
+     * @return [AppResult.Success] with [PagedResult] of the user's session summaries or an error.
      */
-    suspend fun getSessionsPageForSelf(
+    suspend fun getUserSessionsSummaryPage(
         userId: UserId,
         pageParams: PageParams,
         sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
@@ -266,5 +261,5 @@ interface SessionManager {
         deviceNames: List<String> = emptyList(),
         appVersions: List<String> = emptyList(),
         operationSystemVersions: List<String> = emptyList()
-    ): AppResult<PagedResult<UserSession>>
+    ): AppResult<PagedResult<UserSessionSummary>>
 }

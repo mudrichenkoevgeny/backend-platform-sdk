@@ -14,6 +14,9 @@ out/
 .kotlin/
 kotlin-js-store/
 
+# Local configuration
+local.properties
+
 # --- Artifacts & Temp ---
 .artifacts/
 
@@ -31,6 +34,7 @@ captures/
 
 # --- Local Maven Cache ---
 .m2/
+sample/deploy/docker/m2/
 
 # --- SECRETS ---
 sample/deploy/secrets/UNIONE_API_KEY

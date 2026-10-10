@@ -1,15 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -43,33 +43,29 @@ class ManagementGetUserUseCaseTest {
 
     @Test
     fun `successfully returns user details when manager is active and authorized`() = runTest {
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { permissionCodes } returns emptySet()
-        }
-        val targetDetails = mockk<UserDetails>()
+        val managerInternal = createTestUserInternal(id = managerId, accountStatus = UserAccountStatus.ACTIVE)
+        val targetInternal = createTestUserInternal(id = targetId)
+        val expectedTargetPrivate = targetInternal.toUserPrivate()
 
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery {
-            userManager.getUserForManagement(
+            userManager.getUserInternal(
                 userId = targetId,
                 managementUserId = managerId,
                 managementUserPermissionCodes = any()
             )
-        } returns AppResult.Success(targetDetails)
+        } returns AppResult.Success(targetInternal)
 
         val result = useCase(targetId, context)
 
-        assertEquals(AppResult.Success(targetDetails), result)
+        assertEquals(AppResult.Success(expectedTargetPrivate), result)
     }
 
     @Test
     fun `returns error when manager is not active`() = runTest {
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.BANNED
-        }
+        val managerInternal = createTestUserInternal(id = managerId, accountStatus = UserAccountStatus.BANNED)
 
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 
         val result = useCase(targetId, context)
 
@@ -78,7 +74,7 @@ class ManagementGetUserUseCaseTest {
 
     @Test
     fun `returns error when manager is not found`() = runTest {
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(null)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(null)
 
         val result = useCase(targetId, context)
 
@@ -87,14 +83,11 @@ class ManagementGetUserUseCaseTest {
 
     @Test
     fun `returns error when target user is not found or not authorized`() = runTest {
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { permissionCodes } returns emptySet()
-        }
+        val managerInternal = createTestUserInternal(id = managerId, accountStatus = UserAccountStatus.ACTIVE)
 
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery {
-            userManager.getUserForManagement(
+            userManager.getUserInternal(
                 userId = targetId,
                 managementUserId = managerId,
                 managementUserPermissionCodes = any()

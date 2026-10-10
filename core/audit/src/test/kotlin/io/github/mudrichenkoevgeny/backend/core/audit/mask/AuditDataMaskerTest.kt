@@ -1,11 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.mask
 
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.action.RepositoryTestAuditAction
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEvent
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEventInternal
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.resource.RepositoryTestAuditResource
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CommonAuditMetadataKey
@@ -111,7 +111,7 @@ class AuditDataMaskerTest {
         assertEquals(emptySet<AuditEventMetadata>(), masked.metadata)
     }
 
-    private fun baseEvent(): AuditEvent = createTestAuditEvent(
+    private fun baseEvent(): AuditEventInternal = createTestAuditEventInternal(
         actorType = AuditActorType.SYSTEM,
         action = RepositoryTestAuditAction("mask_test_action"),
         resource = RepositoryTestAuditResource("mask_test_resource"),

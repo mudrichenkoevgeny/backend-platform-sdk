@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import kotlin.time.Instant
 
@@ -21,14 +21,14 @@ import kotlin.time.Instant
  */
 interface UserManager {
     /**
-     * Loads a user by their ID for self-service scenarios.
+     * Loads a user by their ID as an internal domain model.
      *
      * @param userId The unique identifier of the user.
-     * @return [AppResult.Success] with [UserDetails] when found, null when missing, or an error.
+     * @return [AppResult.Success] with [UserInternal] when found, null when missing, or an error.
      */
-    suspend fun getUserByIdForSelf(
+    suspend fun getUserInternalById(
         userId: UserId
-    ): AppResult<UserDetails?>
+    ): AppResult<UserInternal?>
 
     /**
      * Creates a new user entity.
@@ -37,14 +37,14 @@ interface UserManager {
      * @param accountStatus Initial account status.
      * @param authorityLevel The numerical rank of the user's authority.
      * @param permissions Explicit permission codes assigned to the new user.
-     * @return [AppResult.Success] with the created [UserDetails] or an error.
+     * @return [AppResult.Success] with the created [UserInternal] or an error.
      */
     suspend fun createUser(
         role: UserRole,
         accountStatus: UserAccountStatus,
         authorityLevel: Int,
         permissions: Set<PermissionCode>
-    ): AppResult<UserDetails>
+    ): AppResult<UserInternal>
 
     /**
      * Loads an existing user by [userId] or creates a new one if [userId] is null.
@@ -56,7 +56,7 @@ interface UserManager {
      * @param accountStatus Status used if a new user is created. Defaults to [UserAccountStatus.ACTIVE].
      * @param authorityLevel The numerical rank of the user's authority.
      * @param permissions Permission codes assigned if a new user is created.
-     * @return [AppResult.Success] with the loaded or created [UserDetails], or an error.
+     * @return [AppResult.Success] with the loaded or created [UserInternal], or an error.
      */
     suspend fun getOrCreateUser(
         userId: UserId? = null,
@@ -64,32 +64,32 @@ interface UserManager {
         accountStatus: UserAccountStatus = UserAccountStatus.ACTIVE,
         authorityLevel: Int,
         permissions: Set<PermissionCode>
-    ): AppResult<UserDetails>
+    ): AppResult<UserInternal>
 
     /**
      * Updates user details from an administrative context.
      *
      * Allows modification of sensitive fields like status, authority level, and permissions.
      *
-     * @param user The current user details to update.
+     * @param user The current internal user instance to update.
      * @param accountStatus New account status if update is requested.
      * @param authorityLevel New authority level if update is requested.
      * @param permissions New set of permission codes if update is requested.
      * @param lockoutType New account lockout type if update is requested.
      * @param temporaryLockoutUntil New temporary lockout expiration timestamp in epoch milliseconds if update is requested.
-     * @return [AppResult.Success] with the updated [UserDetails], null if user not found, or an error.
+     * @return [AppResult.Success] with the updated [UserInternal], null if user not found, or an error.
      */
-    suspend fun updateUserForManagement(
-        user: UserDetails,
+    suspend fun updateUser(
+        user: UserInternal,
         accountStatus: UserAccountStatus? = null,
         authorityLevel: Int? = null,
         permissions: Set<PermissionCode>? = null,
         lockoutType: AccountLockoutType? = null,
         temporaryLockoutUntil: Long? = null,
-    ): AppResult<UserDetails?>
+    ): AppResult<UserInternal?>
 
     /**
-     * Returns a single user's details for management purposes.
+     * Returns a single user's internal model for management purposes.
      *
      * Applies role-scoped visibility checks: if the target user's role is not within
      * the caller's allowed administrative scope, an error is returned.
@@ -97,16 +97,16 @@ interface UserManager {
      * @param userId The ID of the user to retrieve.
      * @param managementUserId The ID of the manager/admin performing the request.
      * @param managementUserPermissionCodes Permissions used to derive access boundaries.
-     * @return [AppResult.Success] with [UserDetails] if accessible, null if not found, or an error.
+     * @return [AppResult.Success] with [UserInternal] if accessible, null if not found, or an error.
      */
-    suspend fun getUserForManagement(
+    suspend fun getUserInternal(
         userId: UserId,
         managementUserId: UserId,
         managementUserPermissionCodes: Set<PermissionCode>
-    ): AppResult<UserDetails?>
+    ): AppResult<UserInternal?>
 
     /**
-     * Returns a paginated list of users visible to the caller based on management scope.
+     * Returns a paginated list of internal user models visible to the caller based on management scope.
      *
      * @param managementUserPermissionCodes Caller permission codes used to derive access boundaries.
      * @param pageParams Pagination settings (page index and size).
@@ -120,9 +120,9 @@ interface UserManager {
      * @param permissionCodes Optional filter for users possessing ALL specified permissions.
      * @param isTotpEnabled filter by TOTP enablement status.
      * @param accountLockoutTypes Filter by account lockout types.
-     * @return [AppResult.Success] with a [PagedResult] of users or an error.
+     * @return [AppResult.Success] with a [PagedResult] of [UserInternal] or an error.
      */
-    suspend fun getUsersPageForManagement(
+    suspend fun getUsersInternalPage(
         managementUserPermissionCodes: Set<PermissionCode>,
         pageParams: PageParams,
         sortBy: UserSortValues.UserSortBy = UserSortValues.UserSortBy.CREATED_AT,
@@ -135,19 +135,19 @@ interface UserManager {
         permissionCodes: Set<PermissionCode> = emptySet(),
         isTotpEnabled: Boolean? = null,
         accountLockoutTypes: List<AccountLockoutType> = emptyList()
-    ): AppResult<PagedResult<UserDetails>>
+    ): AppResult<PagedResult<UserInternal>>
 
     /**
      * Restores a user who was previously scheduled for deletion.
      *
      * @param userId The ID of the user to restore.
      * @param newStatus The account status to set after restoration.
-     * @return [AppResult.Success] with the restored [UserDetails] or an error.
+     * @return [AppResult.Success] with the restored [UserInternal] or an error.
      */
-    suspend fun restoreUserForSelf(
+    suspend fun restoreUser(
         userId: UserId,
         newStatus: UserAccountStatus
-    ): AppResult<UserDetails>
+    ): AppResult<UserInternal>
 
     /**
      * Schedules a user account for permanent deletion at a future date.
@@ -156,12 +156,12 @@ interface UserManager {
      *
      * @param userId The ID of the user requesting deletion.
      * @param currentStatus The current status of the user before scheduling.
-     * @return [AppResult.Success] with the updated [UserDetails] or an error.
+     * @return [AppResult.Success] with the updated [UserInternal] or an error.
      */
-    suspend fun scheduleUserDeletionForSelf(
+    suspend fun scheduleUserDeletion(
         userId: UserId,
         currentStatus: UserAccountStatus
-    ): AppResult<UserDetails>
+    ): AppResult<UserInternal>
 
     /**
      * Permanently deletes a user record from the system immediately.
@@ -171,7 +171,7 @@ interface UserManager {
      * @param userId The ID of the user to delete.
      * @return [AppResult.Success] containing [Unit] or an error.
      */
-    suspend fun deleteUserForManagement(
+    suspend fun deleteUser(
         userId: UserId
     ): AppResult<Unit>
 
@@ -180,34 +180,34 @@ interface UserManager {
      *
      * @param userId The ID of the user to unlock.
      * @param clearLockoutForIdentifiers Optional list of identifiers (e.g., email, phone) to clear from lockout cache.
-     * @return [AppResult.Success] with the updated [UserDetails] or an error.
+     * @return [AppResult.Success] with the updated [UserInternal] or an error.
      */
     suspend fun unlockUserAccount(
         userId: UserId,
         clearLockoutForIdentifiers: List<String> = emptyList()
-    ): AppResult<UserDetails>
+    ): AppResult<UserInternal>
 
     /**
      * Locks a user account temporarily until [temporaryLockoutUntil].
      *
      * @param userId The ID of the user to lock.
      * @param temporaryLockoutUntil The timestamp when lockout expires.
-     * @return [AppResult.Success] with the updated [UserDetails] or an error.
+     * @return [AppResult.Success] with the updated [UserInternal] or an error.
      */
     suspend fun lockUserAccount(
         userId: UserId,
         temporaryLockoutUntil: Instant
-    ): AppResult<UserDetails>
+    ): AppResult<UserInternal>
 
     /**
      * Locks a user account indefinitely under an indefinite lockout.
      *
      * @param userId The ID of the user to lock indefinitely.
-     * @return [AppResult.Success] with the updated [UserDetails] or an error.
+     * @return [AppResult.Success] with the updated [UserInternal] or an error.
      */
     suspend fun lockUserAccountIndefinitely(
         userId: UserId
-    ): AppResult<UserDetails>
+    ): AppResult<UserInternal>
 
     /**
      * Identifies and removes users whose scheduled permanent deletion timestamp has passed.
@@ -216,7 +216,7 @@ interface UserManager {
      *
      * @return [AppResult.Success] with the count of deleted rows or an error.
      */
-    suspend fun deleteUsersDueForPermanentDeletionForSystem(): AppResult<Int>
+    suspend fun deleteUsersDueForPermanentDeletion(): AppResult<Int>
 
     /**
      * Identifies and unlocks user accounts whose temporary lockout timestamp has passed.
@@ -225,5 +225,5 @@ interface UserManager {
      *
      * @return [AppResult.Success] with the count of unlocked accounts or an error.
      */
-    suspend fun unlockExpiredAccountLockoutsForSystem(): AppResult<Int>
+    suspend fun unlockExpiredAccountLockouts(): AppResult<Int>
 }

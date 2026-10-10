@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
@@ -24,7 +25,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.i
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
 import io.mockk.coEvery
@@ -66,24 +66,24 @@ class ManagementDeleteIdentifierUseCaseTest {
         val targetSessionId = UserSessionId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
 
-        val managerDetails = mockk<UserDetails> {
-            every { id } returns managerId
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 100
-            every { role } returns UserRole.ADMIN
-            every { permissionCodes } returns setOf(PermissionCode(IdentifierPermissionCode.IDENTIFIER_DELETE_FOR_USER.value))
-        }
+        val managerDetails = createTestUserInternal(
+            id = managerId,
+            role = UserRole.ADMIN,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 100,
+            permissionCodes = setOf(PermissionCode(IdentifierPermissionCode.IDENTIFIER_DELETE_FOR_USER.value))
+        )
 
         val targetIdentifier = mockk<UserIdentifierInternal> {
             every { userId } returns targetUserId
         }
 
-        val targetUserDetails = mockk<UserDetails> {
-            every { id } returns targetUserId
-            every { role } returns UserRole.USER
-            every { authorityLevel } returns 50
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-        }
+        val targetUserDetails = createTestUserInternal(
+            id = targetUserId,
+            role = UserRole.USER,
+            authorityLevel = 50,
+            accountStatus = UserAccountStatus.ACTIVE
+        )
 
         val identifiersList = listOf(targetIdentifier, mockk<UserIdentifierInternal>())
         val managerSession = mockk<UserSessionInternal>()
@@ -92,13 +92,13 @@ class ManagementDeleteIdentifierUseCaseTest {
         }
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
-        coEvery { identifierManager.getUserIdentifierByIdForSystem(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
-        coEvery { userManager.getUserByIdForSelf(targetUserId) } returns AppResult.Success(targetUserDetails)
-        coEvery { identifierManager.getUserIdentifiersByUserId(targetUserId) } returns AppResult.Success(identifiersList)
-        coEvery { sessionManager.getUserSessionForSystem(context.sessionId) } returns AppResult.Success(managerSession)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
+        coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserDetails)
+        coEvery { identifierManager.getUserIdentifiersInternalPageByUserId(targetUserId) } returns AppResult.Success(identifiersList)
+        coEvery { sessionManager.getUserSessionInternal(context.sessionId) } returns AppResult.Success(managerSession)
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
-        coEvery { sessionManager.getUserSessionsByIdentifierId(targetIdentifierId, targetUserId) } returns AppResult.Success(listOf(targetSession))
+        coEvery { sessionManager.getUserSessionsInternalListByIdentifierId(targetIdentifierId, targetUserId) } returns AppResult.Success(listOf(targetSession))
         coEvery { identifierManager.deleteUserIdentifier(targetIdentifierId) } returns AppResult.Success(Unit)
 
         val result = useCase(targetIdentifierId, context)
@@ -126,19 +126,19 @@ class ManagementDeleteIdentifierUseCaseTest {
         val targetIdentifierId = UserIdentifierId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
 
-        val managerDetails = mockk<UserDetails> {
-            every { id } returns managerId
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 100
-        }
+        val managerDetails = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 100
+        )
 
         val targetIdentifier = mockk<UserIdentifierInternal> {
             every { userId } returns managerId
         }
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
-        coEvery { identifierManager.getUserIdentifierByIdForSystem(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         val result = useCase(targetIdentifierId, context)
@@ -153,26 +153,26 @@ class ManagementDeleteIdentifierUseCaseTest {
         val targetIdentifierId = UserIdentifierId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
 
-        val managerDetails = mockk<UserDetails> {
-            every { id } returns managerId
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 50
-        }
+        val managerDetails = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 50
+        )
 
         val targetIdentifier = mockk<UserIdentifierInternal> {
             every { userId } returns targetUserId
         }
 
-        val targetUserDetails = mockk<UserDetails> {
-            every { id } returns targetUserId
-            every { authorityLevel } returns 100
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-        }
+        val targetUserDetails = createTestUserInternal(
+            id = targetUserId,
+            authorityLevel = 100,
+            accountStatus = UserAccountStatus.ACTIVE
+        )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
-        coEvery { identifierManager.getUserIdentifierByIdForSystem(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
-        coEvery { userManager.getUserByIdForSelf(targetUserId) } returns AppResult.Success(targetUserDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
+        coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserDetails)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         val result = useCase(targetIdentifierId, context)
@@ -187,32 +187,32 @@ class ManagementDeleteIdentifierUseCaseTest {
         val targetIdentifierId = UserIdentifierId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
 
-        val managerDetails = mockk<UserDetails> {
-            every { id } returns managerId
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { authorityLevel } returns 100
-            every { role } returns UserRole.ADMIN
-            every { permissionCodes } returns setOf(PermissionCode(IdentifierPermissionCode.IDENTIFIER_DELETE_FOR_USER.value))
-        }
+        val managerDetails = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 100,
+            role = UserRole.ADMIN,
+            permissionCodes = setOf(PermissionCode(IdentifierPermissionCode.IDENTIFIER_DELETE_FOR_USER.value))
+        )
 
         val targetIdentifier = mockk<UserIdentifierInternal> {
             every { userId } returns targetUserId
         }
 
-        val targetUserDetails = mockk<UserDetails> {
-            every { id } returns targetUserId
-            every { role } returns UserRole.USER
-            every { authorityLevel } returns 50
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-        }
+        val targetUserDetails = createTestUserInternal(
+            id = targetUserId,
+            role = UserRole.USER,
+            authorityLevel = 50,
+            accountStatus = UserAccountStatus.ACTIVE
+        )
 
         val identifiersList = listOf(targetIdentifier)
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
-        coEvery { identifierManager.getUserIdentifierByIdForSystem(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
-        coEvery { userManager.getUserByIdForSelf(targetUserId) } returns AppResult.Success(targetUserDetails)
-        coEvery { identifierManager.getUserIdentifiersByUserId(targetUserId) } returns AppResult.Success(identifiersList)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
+        coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserDetails)
+        coEvery { identifierManager.getUserIdentifiersInternalPageByUserId(targetUserId) } returns AppResult.Success(identifiersList)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         val result = useCase(targetIdentifierId, context)

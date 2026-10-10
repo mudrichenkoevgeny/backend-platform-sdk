@@ -8,8 +8,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorPars
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
+import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseSelfSessionsListQueryParams
@@ -39,10 +39,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.toUserSessionIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toDeletedSessionsPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.DeletedSessionsPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.UserSessionPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.UserSessionPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.UserSessionSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.session.SelfManagementSessionRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
@@ -222,7 +224,7 @@ class SelfManagementSessionRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
-                body<PagedResult<UserSessionPayload>>()
+                body<PagedResult<UserSessionSummaryPayload>>()
                 description = GET_SELF_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -265,7 +267,7 @@ class SelfManagementSessionRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) { pagedSessions ->
-            pagedSessions.mapItems { it.toUserSessionPayload() }
+            pagedSessions.mapItems { userSessionSummary -> userSessionSummary.toUserSessionSummaryPayload() }
         }
     }
 
@@ -291,7 +293,7 @@ class SelfManagementSessionRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.OK) {
-                body<UserSessionPayload>()
+                body<UserSessionPrivatePayload>()
                 description = GET_SELF_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -323,8 +325,8 @@ class SelfManagementSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userSession ->
-            userSession.toUserSessionPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userSessionPrivate ->
+            userSessionPrivate.toUserSessionPrivatePayload()
         }
     }
 

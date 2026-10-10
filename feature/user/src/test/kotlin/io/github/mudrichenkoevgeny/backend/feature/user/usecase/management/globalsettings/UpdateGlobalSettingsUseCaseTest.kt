@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.core.settings.domain.model.globalsettings.createTestManagementGlobalSettings
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.session.createTestUserSessionInternal
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
@@ -53,11 +53,11 @@ class UpdateGlobalSettingsUseCaseTest {
     )
 
     private fun mockMfaCheckSuccess(userId: UserId) {
-        val userDetails = createTestUserDetails(id = userId)
+        val userInternal = createTestUserInternal(id = userId)
         val userSession = createTestUserSessionInternal(userId = userId)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(any()) } returns AppResult.Success(userSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(userDetails, userSession, true) } returns AppResult.Success(Unit)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(userSession)
+        coEvery { authenticationChallengeService.ensureSessionConfirmed(userInternal, userSession, true) } returns AppResult.Success(Unit)
     }
 
     private fun sampleSettings() = createTestManagementGlobalSettings(

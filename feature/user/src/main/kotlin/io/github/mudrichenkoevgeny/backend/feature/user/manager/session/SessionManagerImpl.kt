@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionRequirement
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
@@ -36,6 +37,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.cl
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
@@ -46,13 +48,16 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.i
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.DeletedSessions
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionSummary
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.SessionToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.SessionPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionSummary
 import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -175,7 +180,7 @@ class SessionManagerImpl @Inject constructor(
             identifierDisplayName = identifierDisplayName,
             identifierAuthProvider = identifierAuthProvider,
             refreshTokenHash = refreshTokenHash,
-            deviceInfo = clientInfo.deviceInfo,
+            clientDeviceInfo = clientInfo.clientDeviceInfo,
             userAgent = clientInfo.userAgent,
             ipAddress = clientInfo.ipAddress,
             expiresAt = refreshExpiry,
@@ -235,7 +240,7 @@ class SessionManagerImpl @Inject constructor(
     }
 
     private fun resolveDeviceId(userId: UserId, clientInfo: ClientInfo): String {
-        val rawDeviceId = clientInfo.deviceInfo.deviceId?.asHexDashString()
+        val rawDeviceId = clientInfo.clientDeviceInfo.deviceId?.asHexDashString()
         if (!rawDeviceId.isNullOrBlank()) {
             return rawDeviceId
         }
@@ -260,7 +265,7 @@ class SessionManagerImpl @Inject constructor(
                 emailService.sendNewDeviceLoginEmail(
                     email = emailIdentifier.identifier,
                     ipAddress = clientInfo.ipAddress,
-                    deviceName = clientInfo.deviceInfo.deviceName,
+                    deviceName = clientInfo.clientDeviceInfo.deviceName,
                     userAgent = clientInfo.userAgent
                 )
             }
@@ -302,13 +307,13 @@ class SessionManagerImpl @Inject constructor(
         val now = Clock.System.now()
 
         val isSessionValid = currentUserSession?.isValid(
-            clientDeviceId = clientInfo.deviceInfo.deviceId,
+            clientDeviceId = clientInfo.clientDeviceInfo.deviceId,
             now = now
         ) ?: false
 
         if (currentUserSession != null && isSessionValid) {
-            val userResult = userRepository.getUserDetailsById(currentUserSession.userId)
-                .mapNotNullOrError(UserError.UserNotFound())
+            val userResult = userManager.getUserInternalById(currentUserSession.userId)
+                .mapNotNullOrError(UserError.UserNotFound(currentUserSession.userId))
 
             val user = when (userResult) {
                 is AppResult.Success -> userResult.data
@@ -417,19 +422,19 @@ class SessionManagerImpl @Inject constructor(
         userSessionRepository.deleteAllUserSessions(userId)
     }
 
-    override suspend fun getUserSessionForSystem(userSessionId: UserSessionId): AppResult<UserSessionInternal?> = dbQuery {
+    override suspend fun getUserSessionInternal(userSessionId: UserSessionId): AppResult<UserSessionInternal?> = dbQuery {
         userSessionRepository.getUserSessionInternalById(userSessionId)
     }
 
-    override suspend fun getUserSessionForSelf(userSessionId: UserSessionId): AppResult<UserSession?> = dbQuery {
-        userSessionRepository.getUserSessionById(userSessionId)
+    override suspend fun getUserSessionPrivate(userSessionId: UserSessionId): AppResult<UserSessionPrivate?> = dbQuery {
+        userSessionRepository.getUserSessionInternalById(userSessionId).mapSuccess { it?.toUserSessionPrivate() }
     }
 
-    override suspend fun getAllUserSessions(userId: UserId): AppResult<List<UserSessionInternal>> = dbQuery {
+    override suspend fun getAllUserSessionsInternalList(userId: UserId): AppResult<List<UserSessionInternal>> = dbQuery {
         userSessionRepository.getAllUserSessions(userId)
     }
 
-    override suspend fun getUserSessionsByIdentifierId(
+    override suspend fun getUserSessionsInternalListByIdentifierId(
         userIdentifierId: UserIdentifierId,
         userId: UserId?
     ): AppResult<List<UserSessionInternal>> = dbQuery {
@@ -439,7 +444,7 @@ class SessionManagerImpl @Inject constructor(
         )
     }
 
-    override suspend fun deleteAllSessionsExceptOneForSelf(
+    override suspend fun deleteAllUserSessionsExceptOne(
         userId: UserId,
         userSessionId: UserSessionId
     ): AppResult<DeletedSessions> = dbQuery {
@@ -459,18 +464,18 @@ class SessionManagerImpl @Inject constructor(
         userSessionRepository.deleteLeastRecentlyUsedUserSession(userId)
     }
 
-    override suspend fun getUserSessionForManagement(
+    override suspend fun getUserSessionPrivate(
         userSessionId: UserSessionId,
         managementUserId: UserId,
         managementUserPermissionCodes: Set<PermissionCode>
-    ): AppResult<UserSession?> = dbQuery {
-        val getSessionResult = userSessionRepository.getUserSessionById(userSessionId)
+    ): AppResult<UserSessionPrivate?> = dbQuery {
+        val getSessionResult = userSessionRepository.getUserSessionInternalById(userSessionId)
 
         when (getSessionResult) {
             is AppResult.Error -> getSessionResult
             is AppResult.Success -> {
                 val userSession = getSessionResult.data ?: return@dbQuery AppResult.Success(null)
-                val getTargetUserResult = userManager.getUserByIdForSelf(userSession.userId)
+                val getTargetUserResult = userManager.getUserInternalById(userSession.userId)
                     .mapNotNullOrError(UserError.UserNotFound(userSession.userId))
 
                 when (getTargetUserResult) {
@@ -483,7 +488,7 @@ class SessionManagerImpl @Inject constructor(
                         }
 
                         when (determinePermissionRequirement(targetUser.role, managementUserPermissionCodes)) {
-                            PermissionRequirement.UNMASKED -> AppResult.Success(userSession)
+                            PermissionRequirement.UNMASKED -> AppResult.Success(userSession.toUserSessionPrivate())
                             PermissionRequirement.MASKED -> AppResult.Success(userSession.maskSensitiveData())
                             PermissionRequirement.FORBIDDEN -> AppResult.Error(UserError.UserMissingPermissions(managementUserId))
                         }
@@ -493,7 +498,7 @@ class SessionManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun getSessionsPageForManagement(
+    override suspend fun getUserSessionsSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
         pageParams: PageParams,
         sortBy: UserSortValues.UserSessionSortBy,
@@ -511,7 +516,7 @@ class SessionManagerImpl @Inject constructor(
         deviceNames: List<String>,
         appVersions: List<String>,
         operationSystemVersions: List<String>
-    ): AppResult<PagedResult<UserSession>> = dbQuery {
+    ): AppResult<PagedResult<UserSessionSummary>> = dbQuery {
         val accessFilter = buildAccessFilter(managementUserPermissionCodes)
 
         val getSessionsResult = userSessionRepository.getUserSessionsPageWithAccessFilter(
@@ -542,7 +547,7 @@ class SessionManagerImpl @Inject constructor(
 
                 val resultedItems = paged.items.mapNotNull { session ->
                     val targetRole = userRoleCache[session.userId] ?: run {
-                        val targetUserResult = userManager.getUserByIdForSelf(session.userId)
+                        val targetUserResult = userManager.getUserInternalById(session.userId)
                             .mapNotNullOrError(UserError.UserNotFound(session.userId))
 
                         when (targetUserResult) {
@@ -554,18 +559,26 @@ class SessionManagerImpl @Inject constructor(
                     }
 
                     when (determinePermissionRequirement(targetRole, managementUserPermissionCodes)) {
-                        PermissionRequirement.UNMASKED -> session
-                        PermissionRequirement.MASKED -> session.maskSensitiveData()
+                        PermissionRequirement.UNMASKED -> session.toUserSessionSummary()
+                        PermissionRequirement.MASKED -> session.maskSensitiveDataToSummary()
                         PermissionRequirement.FORBIDDEN -> null
                     }
                 }
 
-                AppResult.Success(paged.copy(items = resultedItems))
+                AppResult.Success(
+                    PagedResult(
+                        items = resultedItems,
+                        totalCount = paged.totalCount,
+                        pageNumber = paged.pageNumber,
+                        pageSize = paged.pageSize,
+                        totalPages = paged.totalPages
+                    )
+                )
             }
         }
     }
 
-    override suspend fun getSessionsPageForSelf(
+    override suspend fun getUserSessionsSummaryPage(
         userId: UserId,
         pageParams: PageParams,
         sortBy: UserSortValues.UserSessionSortBy,
@@ -581,8 +594,8 @@ class SessionManagerImpl @Inject constructor(
         deviceNames: List<String>,
         appVersions: List<String>,
         operationSystemVersions: List<String>
-    ): AppResult<PagedResult<UserSession>> = dbQuery {
-        userSessionRepository.getUserSessionsPageByUserId(
+    ): AppResult<PagedResult<UserSessionSummary>> = dbQuery {
+        val result = userSessionRepository.getUserSessionsPageByUserId(
             userId = userId,
             pageParams = pageParams,
             sortBy = sortBy,
@@ -599,6 +612,12 @@ class SessionManagerImpl @Inject constructor(
             appVersions = appVersions,
             operationSystemVersions = operationSystemVersions
         )
+
+        result.mapSuccess { paged ->
+            paged.mapItems { sessionInternal ->
+                sessionInternal.toUserSessionSummary()
+            }
+        }
     }
 
     private fun determinePermissionRequirement(
@@ -641,30 +660,35 @@ class SessionManagerImpl @Inject constructor(
         return UserRoleAccessFilter(allowedUserRoles = allowedUserRoles)
     }
 
-    private fun UserSession.maskSensitiveData(): UserSession = copy(
-        identifier = when (identifierAuthProvider) {
-            UserAuthProvider.EMAIL -> DataMasker.maskEmail(identifier)
-            UserAuthProvider.PHONE -> DataMasker.maskPhone(identifier)
-            else -> DataMasker.maskId(identifier)
-        },
-        userAgent = userAgent?.let { userAgent -> DataMasker.maskPartialValue(userAgent) },
-        ipAddress = ipAddress?.let { ipAddress -> DataMasker.maskIpAddress(ipAddress) },
-        deviceInfo = deviceInfo.copy(
-            deviceName = deviceInfo.deviceName?.let { deviceName ->
-                DataMasker.maskPartialValue(deviceName)
+    private fun UserSessionInternal.maskSensitiveData(): UserSessionPrivate {
+        return this.toUserSessionPrivate(isSensitiveValuesMasked = true).copy(
+            identifier = when (identifierAuthProvider) {
+                UserAuthProvider.EMAIL -> DataMasker.maskEmail(identifier)
+                UserAuthProvider.PHONE -> DataMasker.maskPhone(identifier)
+                else -> DataMasker.maskId(identifier)
             },
-            language = deviceInfo.language?.let { language ->
-                DataMasker.maskPartialValue(language)
-            },
-            appVersion = deviceInfo.appVersion?.let { appVersion ->
-                DataMasker.maskPartialValue(appVersion)
-            },
-            operationSystemVersion = deviceInfo.operationSystemVersion?.let { osVersion ->
-                DataMasker.maskPartialValue(osVersion)
-            }
-        ),
-        isSensitiveValuesMasked = true
-    )
+            userAgent = userAgent?.let { DataMasker.maskPartialValue(it) },
+            ipAddress = ipAddress?.let { DataMasker.maskIpAddress(it) },
+            clientDeviceInfo = clientDeviceInfo.copy(
+                deviceName = clientDeviceInfo.deviceName?.let { DataMasker.maskPartialValue(it) },
+                language = clientDeviceInfo.language?.let { DataMasker.maskPartialValue(it) },
+                appVersion = clientDeviceInfo.appVersion?.let { DataMasker.maskPartialValue(it) },
+                operationSystemVersion = clientDeviceInfo.operationSystemVersion?.let { DataMasker.maskPartialValue(it) }
+            )
+        )
+    }
+
+    private fun UserSessionInternal.maskSensitiveDataToSummary(): UserSessionSummary {
+        return this.toUserSessionSummary().copy(
+            identifierDisplayName = DataMasker.maskPartialValue(identifierDisplayName),
+            clientDeviceInfo = clientDeviceInfo.copy(
+                deviceName = clientDeviceInfo.deviceName?.let { DataMasker.maskPartialValue(it) },
+                language = clientDeviceInfo.language?.let { DataMasker.maskPartialValue(it) },
+                appVersion = clientDeviceInfo.appVersion?.let { DataMasker.maskPartialValue(it) },
+                operationSystemVersion = clientDeviceInfo.operationSystemVersion?.let { DataMasker.maskPartialValue(it) }
+            )
+        )
+    }
 
     private fun buildRotatedRefreshKey(hashValue: String): String = "auth:rotated_refresh:$hashValue"
 }

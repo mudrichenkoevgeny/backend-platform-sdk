@@ -1,13 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth
 
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.SessionToken
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserPrivate
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
@@ -27,9 +27,9 @@ fun createTestSessionToken(
 )
 
 fun createTestAuthData(
-    userDetails: UserDetails = createTestUserDetails(),
+    userPrivate: UserPrivate = createTestUserPrivate(),
     sessionToken: SessionToken = createTestSessionToken()
 ) = AuthData(
-    userDetails = userDetails,
+    userPrivate = userPrivate,
     sessionToken = sessionToken
 )

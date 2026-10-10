@@ -131,7 +131,7 @@ class UnlockByEmailUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserByIdForSelf(userIdentifier.userId)
+        val userResult = userManager.getUserInternalById(userIdentifier.userId)
             .mapNotNullOrError(UserError.UserNotFound())
         val user = when (userResult) {
             is AppResult.Success -> userResult.data

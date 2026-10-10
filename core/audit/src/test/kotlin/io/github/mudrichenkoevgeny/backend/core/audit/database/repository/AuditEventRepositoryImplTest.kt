@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.audit.database.repository
 import io.github.mudrichenkoevgeny.backend.core.audit.database.table.AuditEventsTable
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditAccessFilter
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.action.RepositoryTestAuditAction
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEvent
+import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEventInternal
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.resource.RepositoryTestAuditResource
 import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditActionTypeParserForRepositoryTests
 import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditMetadataKeyParserForRepositoryTests
@@ -51,7 +51,7 @@ class AuditEventRepositoryImplTest {
 
     @Test
     fun `createEvent persists and getEventById returns same event`() = runBlocking {
-        val event = createTestAuditEvent(
+        val event = createTestAuditEventInternal(
             actorType = AuditActorType.SYSTEM,
             action = RepositoryTestAuditAction("login"),
             resource = RepositoryTestAuditResource("session"),
@@ -81,7 +81,7 @@ class AuditEventRepositoryImplTest {
 
     @Test
     fun `getEventsList applies access filter for system actor`() = runBlocking {
-        val event = createTestAuditEvent(
+        val event = createTestAuditEventInternal(
             actorType = AuditActorType.SYSTEM,
             action = RepositoryTestAuditAction("list_sys"),
             resource = RepositoryTestAuditResource("r"),
@@ -105,7 +105,7 @@ class AuditEventRepositoryImplTest {
     fun `getEventsList returns no rows when access filter is empty`() = runBlocking {
         suspendTransaction {
             repository.createEvent(
-                createTestAuditEvent(
+                createTestAuditEventInternal(
                     actorType = AuditActorType.SYSTEM,
                     action = RepositoryTestAuditAction("invisible"),
                     resource = RepositoryTestAuditResource("x"),
@@ -129,7 +129,7 @@ class AuditEventRepositoryImplTest {
     @Test
     fun `getEventsList filters by actorIds`() = runBlocking {
         val actorId = UUID.randomUUID().toString()
-        val event = createTestAuditEvent(
+        val event = createTestAuditEventInternal(
             actorId = actorId,
             actorType = AuditActorType.SYSTEM,
             action = RepositoryTestAuditAction("by_actor"),
@@ -154,7 +154,7 @@ class AuditEventRepositoryImplTest {
     @Test
     fun `getEventsList filters by messages using ILIKE`() = runBlocking {
         val message = "Sensitive data leak"
-        val event = createTestAuditEvent(
+        val event = createTestAuditEventInternal(
             actorId = null,
             actorType = AuditActorType.SYSTEM,
             action = RepositoryTestAuditAction("alert"),

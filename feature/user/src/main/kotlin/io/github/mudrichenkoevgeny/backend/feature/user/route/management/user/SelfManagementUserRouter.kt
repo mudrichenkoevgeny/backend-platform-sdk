@@ -15,8 +15,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationp
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.GetUserUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserDetailsPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserDetailsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.user.SelfManagementUserRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
@@ -74,7 +74,7 @@ class SelfManagementUserRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
-                body<UserDetailsPayload>()
+                body<UserPrivatePayload>()
                 description = GET_SELF_USER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -101,8 +101,8 @@ class SelfManagementUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userDetails ->
-            userDetails.toUserDetailsPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+            userPrivate.toUserPrivatePayload()
         }
     }
 

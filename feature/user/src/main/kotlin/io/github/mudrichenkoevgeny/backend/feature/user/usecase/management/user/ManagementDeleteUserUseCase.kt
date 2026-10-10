@@ -19,7 +19,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.met
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
@@ -109,7 +108,7 @@ class ManagementDeleteUserUseCase @Inject constructor(
             )
         }
 
-        val managementUserResult = userManager.getUserByIdForSelf(managementUserId)
+        val managementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val managementUser = when (managementUserResult) {
@@ -133,7 +132,7 @@ class ManagementDeleteUserUseCase @Inject constructor(
             )
         }
 
-        val targetUserResult = userManager.getUserByIdForSelf(userId)
+        val targetUserResult = userManager.getUserInternalById(userId)
             .mapNotNullOrError(UserError.UserNotFound(userId))
 
         val targetUser = when (targetUserResult) {
@@ -179,7 +178,7 @@ class ManagementDeleteUserUseCase @Inject constructor(
             )
         }
 
-        val managementUserSessionResult = sessionManager.getUserSessionForSystem(
+        val managementUserSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -195,7 +194,7 @@ class ManagementDeleteUserUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = managementUser,
+            userInternal = managementUser,
             userSession = managementUserSession,
             requireTotp = true
         )
@@ -209,11 +208,11 @@ class ManagementDeleteUserUseCase @Inject constructor(
             )
         }
 
-        val sessionsToDelete = sessionManager.getAllUserSessions(
+        val sessionsToDelete = sessionManager.getAllUserSessionsInternalList(
             userId = userId
         ).dataOrNull() ?: emptyList()
 
-        val deleteResult = userManager.deleteUserForManagement(userId)
+        val deleteResult = userManager.deleteUser(userId)
 
         return when (deleteResult) {
             is AppResult.Success -> {

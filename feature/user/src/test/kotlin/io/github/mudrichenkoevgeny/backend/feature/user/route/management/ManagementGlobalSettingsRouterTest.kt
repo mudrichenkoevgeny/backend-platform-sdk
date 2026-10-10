@@ -5,16 +5,15 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.domain.model.globalsettings.createTestManagementGlobalSettings
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.globalsettings.GetManagementGlobalSettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.globalsettings.ResetGlobalSettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.globalsettings.UpdateGlobalSettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupManagementTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.globalsettings.GetManagementGlobalSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.globalsettings.ResetGlobalSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.globalsettings.UpdateGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.ManagementGlobalSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toManagementGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.route.management.globalsettings.ManagementGlobalSettingsRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -76,7 +75,7 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
             }
         }
 
-        authProvider.shouldReturnSuccess(createTestUserDetails(role = UserRole.ADMIN))
+        authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
         every { getManagementGlobalSettingsUseCase() } returns AppResult.Success(sampleSettings())
 
         val response = jsonClient.get(ManagementGlobalSettingsRoutes.GET_MANAGEMENT_GLOBAL_SETTINGS) {
@@ -95,7 +94,7 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
             }
         }
 
-        authProvider.shouldReturnSuccess(createTestUserDetails(role = UserRole.ADMIN))
+        authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
         coEvery { updateGlobalSettingsUseCase(any(), any()) } returns AppResult.Success(Unit)
 
         val response = jsonClient.put(ManagementGlobalSettingsRoutes.UPDATE_MANAGEMENT_GLOBAL_SETTINGS) {
@@ -160,7 +159,7 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
             }
         }
 
-        authProvider.shouldReturnSuccess(createTestUserDetails(role = UserRole.ADMIN))
+        authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
         coEvery { resetGlobalSettingsUseCase(any()) } returns AppResult.Success(sampleSettings())
 
         val response = jsonClient.post(ManagementGlobalSettingsRoutes.RESET_MANAGEMENT_GLOBAL_SETTINGS) {

@@ -1,11 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -26,18 +27,19 @@ class GetUserUseCaseTest {
 
     @Test
     fun `successfully returns user details`() = runTest {
-        val userDetails = mockk<UserDetails>()
+        val userInternal = createTestUserInternal(id = userId)
+        val expectedUserPrivate = userInternal.toUserPrivate()
 
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = useCase(context)
 
-        assertEquals(AppResult.Success(userDetails), result)
+        assertEquals(AppResult.Success(expectedUserPrivate), result)
     }
 
     @Test
     fun `returns forbidden error when user manager returns null`() = runTest {
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(null)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(null)
 
         val result = useCase(context)
 
@@ -48,7 +50,7 @@ class GetUserUseCaseTest {
     @Test
     fun `returns error when user manager fails`() = runTest {
         val error = UserError.UserNotFound(userId)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Error(error)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Error(error)
 
         val result = useCase(context)
 

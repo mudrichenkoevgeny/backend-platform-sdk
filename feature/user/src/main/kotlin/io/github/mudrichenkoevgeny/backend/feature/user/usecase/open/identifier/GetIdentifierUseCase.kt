@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.Ident
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -26,20 +26,20 @@ class GetIdentifierUseCase @Inject constructor(
      * **Workflow:**
      * 1. Validates the existence and accessibility of the user via [UserManager].
      * 2. Verifies that the account status permits data retrieval.
-     * 3. Fetches the identifier details via [IdentifierManager.getUserIdentifierByIdForSelf].
+     * 3. Fetches the identifier details via [IdentifierManager.getUserIdentifierPrivateById].
      * 4. Ensures the identifier exists and belongs to the caller.
      *
      * @param identifierId The unique identifier of the requested record.
      * @param authenticatedRequestContext The context of the authenticated request.
-     * @return [AppResult] containing the [UserIdentifier] or a [CommonError.NotFound] error.
+     * @return [AppResult] containing the [UserIdentifierPrivate] or a [CommonError.NotFound] error.
      */
     suspend operator fun invoke(
         identifierId: UserIdentifierId,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<UserIdentifier> {
+    ): AppResult<UserIdentifierPrivate> {
         val currentUserId = authenticatedRequestContext.userId
 
-        val getCurrentUserResult = userManager.getUserByIdForSelf(currentUserId)
+        val getCurrentUserResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (getCurrentUserResult) {
@@ -51,10 +51,10 @@ class GetIdentifierUseCase @Inject constructor(
             return AppResult.Error(UserError.UserForbidden(currentUserId))
         }
 
-        return identifierManager.getUserIdentifierByIdForSelf(identifierId)
+        return identifierManager.getUserIdentifierPrivateById(identifierId)
             .mapNotNullOrError(
                 CommonError.NotFound(
-                    resource = UserIdentifier::class.java.simpleName,
+                    resource = UserIdentifierPrivate::class.java.simpleName,
                     identifier = identifierId.asHexDashString()
                 )
             )

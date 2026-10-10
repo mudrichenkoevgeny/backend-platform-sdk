@@ -28,6 +28,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.user.
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.user.ManagementUpdateUserUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
@@ -37,12 +38,17 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.toUserIdOrThrow
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserDetailsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserDetailsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.create.CreateByEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.UpdateUserRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.user.ManagementUserRoutes
@@ -166,7 +172,7 @@ class ManagementUserRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.OK) {
-                body<UserDetailsPayload>()
+                body<UserPrivatePayload>()
                 description = GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -196,8 +202,8 @@ class ManagementUserRouter @Inject constructor(
             userId = userId,
             authenticatedRequestContext = authenticatedRequestContext
         )
-        call.respondResult(result, appLogger, appErrorParser) { userDetails ->
-            userDetails.toUserDetailsPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+            userPrivate.toUserPrivatePayload()
         }
     }
 
@@ -215,7 +221,7 @@ class ManagementUserRouter @Inject constructor(
         )
         response {
             code(HttpStatusCode.OK) {
-                body<PagedResult<UserDetailsPayload>>()
+                body<PagedResult<UserSummaryPayload>>()
                 description = GET_USERS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -255,7 +261,7 @@ class ManagementUserRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) { pagedUsers ->
-            pagedUsers.mapItems { userDetails -> userDetails.toUserDetailsPayload() }
+            pagedUsers.mapItems { userSummary -> userSummary.toUserSummaryPayload() }
         }
     }
 
@@ -277,7 +283,7 @@ class ManagementUserRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.Created) {
-                body<UserDetailsPayload>()
+                body<UserPrivatePayload>()
                 description = CREATE_USER_ROUTE_RESPONSE_CREATED_DESCRIPTION
             }
         }
@@ -329,8 +335,8 @@ class ManagementUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userDetails ->
-            userDetails.toUserDetailsPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userInternal: UserInternal ->
+            userInternal.toUserPrivate().toUserPrivatePayload()
         }
     }
 
@@ -355,7 +361,7 @@ class ManagementUserRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.OK) {
-                body<UserDetailsPayload>()
+                body<UserPrivatePayload>()
                 description = UPDATE_USER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -410,8 +416,8 @@ class ManagementUserRouter @Inject constructor(
             temporaryLockoutUntil = request.temporaryLockoutUntil,
             authenticatedRequestContext = authenticatedRequestContext
         )
-        call.respondResult(result, appLogger, appErrorParser) { userDetails ->
-            userDetails.toUserDetailsPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userPrivate: UserPrivate ->
+            userPrivate.toUserPrivatePayload()
         }
     }
 
@@ -470,6 +476,7 @@ class ManagementUserRouter @Inject constructor(
             userId = userId,
             authenticatedRequestContext = authenticatedRequestContext
         )
+
         call.respondResult(result, appLogger, appErrorParser)
     }
 
@@ -487,39 +494,39 @@ class ManagementUserRouter @Inject constructor(
             actorUserRole = authenticatedRequestContext.userRole.serialName,
             action = actionType,
             resource = UserAuditResourceType.USER,
+            resourceId = authenticatedRequestContext.userId.asHexDashString(),
             status = AuditStatus.DENIED,
             metadata = metadata
         )
     }
 
     companion object {
-        const val GET_USER_ROUTE_SUMMARY = "Get user (management)"
-        const val GET_USER_ROUTE_DESCRIPTION = "Returns the user for the given identifier."
-        const val GET_USER_ROUTE_OPERATION_ID = "getManagementUser"
-        const val GET_USER_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
-        const val GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User details"
+        const val GET_USER_ROUTE_SUMMARY = "Get user details"
+        const val GET_USER_ROUTE_DESCRIPTION = "Retrieves information for a specific user."
+        const val GET_USER_ROUTE_OPERATION_ID = "managementGetUser"
+        const val GET_USER_ROUTE_PATH_USER_ID_DESCRIPTION = "The ID of the user to retrieve."
+        const val GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User details retrieved successfully"
 
-        const val GET_USERS_ROUTE_SUMMARY = "List users (management)"
-        const val GET_USERS_ROUTE_DESCRIPTION = "Returns a paginated list of users. Access is restricted based " +
-                "on the caller's permissions and target roles."
-        const val GET_USERS_ROUTE_OPERATION_ID = "getManagementUsers"
-        const val GET_USERS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user details"
+        const val GET_USERS_ROUTE_SUMMARY = "List users"
+        const val GET_USERS_ROUTE_DESCRIPTION = "Retrieves a paginated and filtered list of users."
+        const val GET_USERS_ROUTE_OPERATION_ID = "managementGetUsers"
+        const val GET_USERS_ROUTE_RESPONSE_OK_DESCRIPTION = "List of users retrieved successfully"
 
-        const val CREATE_USER_ROUTE_SUMMARY = "Create user (management)"
-        const val CREATE_USER_ROUTE_DESCRIPTION = "Creates a new user account with specified role and permissions."
-        const val CREATE_USER_ROUTE_OPERATION_ID = "createManagementUser"
-        const val CREATE_USER_ROUTE_RESPONSE_CREATED_DESCRIPTION = "User created successfully"
+        const val CREATE_USER_ROUTE_SUMMARY = "Create user"
+        const val CREATE_USER_ROUTE_DESCRIPTION = "Creates a new user account with specified attributes."
+        const val CREATE_USER_ROUTE_OPERATION_ID = "managementCreateUser"
+        const val CREATE_USER_ROUTE_RESPONSE_CREATED_DESCRIPTION = "User account created successfully"
 
-        const val UPDATE_USER_ROUTE_SUMMARY = "Update user (management)"
-        const val UPDATE_USER_ROUTE_DESCRIPTION = "Partially updates user's account status and/or permissions."
-        const val UPDATE_USER_ROUTE_OPERATION_ID = "updateManagementUser"
-        const val UPDATE_USER_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
-        const val UPDATE_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User updated successfully"
+        const val UPDATE_USER_ROUTE_SUMMARY = "Update user"
+        const val UPDATE_USER_ROUTE_DESCRIPTION = "Performs partial updates on user status, authority, or permissions."
+        const val UPDATE_USER_ROUTE_OPERATION_ID = "managementUpdateUser"
+        const val UPDATE_USER_ROUTE_PATH_USER_ID_DESCRIPTION = "The ID of the user to update."
+        const val UPDATE_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User account updated successfully"
 
-        const val DELETE_USER_ROUTE_SUMMARY = "Delete user (management)"
-        const val DELETE_USER_ROUTE_DESCRIPTION = "Deletes the user account for the given identifier."
-        const val DELETE_USER_ROUTE_OPERATION_ID = "deleteManagementUser"
-        const val DELETE_USER_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
-        const val DELETE_USER_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "User removed; no response body."
+        const val DELETE_USER_ROUTE_SUMMARY = "Delete user"
+        const val DELETE_USER_ROUTE_DESCRIPTION = "Permanently deletes a user account immediately."
+        const val DELETE_USER_ROUTE_OPERATION_ID = "managementDeleteUser"
+        const val DELETE_USER_ROUTE_PATH_USER_ID_DESCRIPTION = "The ID of the user to delete."
+        const val DELETE_USER_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "User account deleted successfully"
     }
 }

@@ -19,9 +19,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationp
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.toAuditEventIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CompositeAuditResourceTypeParser
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.contract.AuditApiPaths
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.model.event.AuditEventPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.model.event.AuditEventPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.model.event.AuditEventSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.route.management.ManagementAuditRoutes
@@ -100,7 +102,7 @@ class ManagementAuditRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
-                body<PagedResult<AuditEventPayload>>()
+                body<PagedResult<AuditEventSummaryPayload>>()
                 description = GET_AUDIT_EVENTS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -144,8 +146,8 @@ class ManagementAuditRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) { pagedAuditEvent ->
-            pagedAuditEvent.mapItems { auditEvent ->
-                auditEvent.toAuditEventPayload()
+            pagedAuditEvent.mapItems { auditEventSummary ->
+                auditEventSummary.toAuditEventSummaryPayload()
             }
         }
     }
@@ -172,7 +174,7 @@ class ManagementAuditRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.OK) {
-                body<AuditEventPayload>()
+                body<AuditEventPrivatePayload>()
                 description = GET_AUDIT_EVENT_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -204,7 +206,7 @@ class ManagementAuditRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) { event ->
-            event.toAuditEventPayload()
+            event.toAuditEventPrivatePayload()
         }
     }
 

@@ -34,9 +34,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.toUserIdentifierIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.identifier.UserIdentifierPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.identifier.UserIdentifierPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.identifier.UserIdentifierSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.password.EmailPasswordChangeRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.identifier.SelfManagementIdentifierRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
@@ -129,7 +131,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.OK) {
-                body<UserIdentifierPayload>()
+                body<UserIdentifierPrivatePayload>()
                 description = GET_IDENTIFIER_RESPONSE_DESCRIPTION
             }
         }
@@ -161,7 +163,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
-            userIdentifier.toUserIdentifierPayload()
+            userIdentifier.toUserIdentifierPrivatePayload()
         }
     }
 
@@ -179,7 +181,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
         )
         response {
             code(HttpStatusCode.OK) {
-                body<PagedResult<UserIdentifierPayload>>()
+                body<PagedResult<UserIdentifierSummaryPayload>>()
                 description = GET_IDENTIFIERS_RESPONSE_DESCRIPTION
             }
         }
@@ -213,7 +215,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) { pagedIdentifiers ->
-            pagedIdentifiers.mapItems { userIdentifier -> userIdentifier.toUserIdentifierPayload() }
+            pagedIdentifiers.mapItems { userIdentifierSummary -> userIdentifierSummary.toUserIdentifierSummaryPayload() }
         }
     }
 
@@ -233,7 +235,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
         request { body<EmailPasswordChangeRequest>() }
         response {
             code(HttpStatusCode.OK) {
-                body<UserIdentifierPayload>()
+                body<UserIdentifierPrivatePayload>()
                 description = CHANGE_PASSWORD_RESPONSE_DESCRIPTION
             }
         }
@@ -270,7 +272,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
-            userIdentifier.toUserIdentifierPayload()
+            userIdentifier.toUserIdentifierPrivatePayload()
         }
     }
 

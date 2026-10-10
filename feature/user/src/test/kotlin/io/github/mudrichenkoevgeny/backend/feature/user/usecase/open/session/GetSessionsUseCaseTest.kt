@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.session
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -11,10 +12,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionSummary
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -38,14 +37,12 @@ class GetSessionsUseCaseTest {
 
     @Test
     fun `successfully returns paged sessions when user is active`() = runTest {
-        val userInternal = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-        }
-        val pagedResult = mockk<PagedResult<UserSession>>()
+        val userInternal = createTestUserInternal(id = userId, accountStatus = UserAccountStatus.ACTIVE)
+        val pagedResult = mockk<PagedResult<UserSessionSummary>>()
 
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userInternal)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery {
-            sessionManager.getSessionsPageForSelf(
+            sessionManager.getUserSessionsSummaryPage(
                 userId = userId,
                 pageParams = defaultPageParams,
                 sortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
@@ -87,11 +84,9 @@ class GetSessionsUseCaseTest {
 
     @Test
     fun `returns forbidden error when account status is not allowed`() = runTest {
-        val userInternal = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.PENDING_DELETION
-        }
+        val userInternal = createTestUserInternal(id = userId, accountStatus = UserAccountStatus.PENDING_DELETION)
 
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userInternal)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = useCase(
             pageParams = defaultPageParams,
@@ -118,7 +113,7 @@ class GetSessionsUseCaseTest {
     @Test
     fun `returns error when user manager fails`() = runTest {
         val error = UserError.UserNotFound(userId)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Error(error)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Error(error)
 
         val result = useCase(
             pageParams = defaultPageParams,

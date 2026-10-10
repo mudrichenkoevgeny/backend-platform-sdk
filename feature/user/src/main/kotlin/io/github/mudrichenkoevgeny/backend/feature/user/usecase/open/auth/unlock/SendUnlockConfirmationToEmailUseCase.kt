@@ -89,7 +89,7 @@ class SendUnlockConfirmationToEmailUseCase @Inject constructor(
         }
 
         val user = if (identifier != null) {
-            val userResult = userManager.getUserByIdForSelf(identifier.userId)
+            val userResult = userManager.getUserInternalById(identifier.userId)
             (userResult as? AppResult.Success)?.data
         } else null
 
@@ -119,7 +119,7 @@ class SendUnlockConfirmationToEmailUseCase @Inject constructor(
         val sendEmailResult = emailService.sendUnlockAccountVerificationCode(
             email = email,
             code = otpConfirmationData.code,
-            language = context.clientInfo.deviceInfo.language
+            language = context.clientInfo.clientDeviceInfo.language
         )
         if (sendEmailResult is AppResult.Error) return AppResult.Error(sendEmailResult.error)
 

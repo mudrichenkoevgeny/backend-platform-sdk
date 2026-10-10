@@ -15,7 +15,7 @@ import io.github.mudrichenkoevgeny.backend.core.database.mapper.toExposedSortOrd
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CompositeAuditMetadataKeyParser
@@ -52,7 +52,7 @@ class AuditEventRepositoryImpl @Inject constructor(
     private val compositeAuditMetadataKeyParser: CompositeAuditMetadataKeyParser
 ) : AuditEventRepository {
 
-    override suspend fun createEvent(event: AuditEvent): AppResult<AuditEvent> {
+    override suspend fun createEvent(event: AuditEventInternal): AppResult<AuditEventInternal> {
         val inserted = AuditEventsTable.insert { auditEventRow ->
             auditEventRow[id] = event.id.value
             auditEventRow[actorId] = event.actorId
@@ -68,6 +68,7 @@ class AuditEventRepositoryImpl @Inject constructor(
             }
             auditEventRow[message] = event.message
             auditEventRow[createdAt] = event.createdAt.toJavaInstant()
+            auditEventRow[updatedAt] = event.updatedAt?.toJavaInstant()
         }
 
         if (inserted.insertedCount == 0) {
@@ -79,13 +80,13 @@ class AuditEventRepositoryImpl @Inject constructor(
         return AppResult.Success(event)
     }
 
-    override suspend fun getEventById(auditEventId: AuditEventId): AppResult<AuditEvent?> {
+    override suspend fun getEventById(auditEventId: AuditEventId): AppResult<AuditEventInternal?> {
         val resultRow = AuditEventsTable
             .selectAll()
             .where { AuditEventsTable.id eq auditEventId.value }
             .singleOrNull()
 
-        return AppResult.Success(resultRow?.toAuditEvent())
+        return AppResult.Success(resultRow?.toAuditEventInternal())
     }
 
     override suspend fun getEventsPageWithAccessFilter(
@@ -101,7 +102,7 @@ class AuditEventRepositoryImpl @Inject constructor(
         resourceIds: List<String>,
         statuses: List<AuditStatus>,
         messages: List<String>
-    ): AppResult<PagedResult<AuditEvent>> {
+    ): AppResult<PagedResult<AuditEventInternal>> {
         var query = AuditEventsTable.selectAll()
 
         query = query.andWhere {
@@ -156,13 +157,14 @@ class AuditEventRepositoryImpl @Inject constructor(
 
         val sortColumn = when (sortBy) {
             AuditSortValues.AuditEventSortBy.CREATED_AT -> AuditEventsTable.createdAt
+            AuditSortValues.AuditEventSortBy.UPDATED_AT -> AuditEventsTable.updatedAt
         }
         val exposedSortOrder = sortOrder.toExposedSortOrder()
 
         val events = query
             .orderBy(sortColumn to exposedSortOrder)
             .applyPagination(pageParams)
-            .map { it.toAuditEvent() }
+            .map { it.toAuditEventInternal() }
 
         val totalPages = getNumOfTotalPages(totalCount, pageParams.size)
 
@@ -177,7 +179,7 @@ class AuditEventRepositoryImpl @Inject constructor(
         )
     }
 
-    private fun ResultRow.toAuditEvent(): AuditEvent = AuditEvent(
+    private fun ResultRow.toAuditEventInternal(): AuditEventInternal = AuditEventInternal(
         id = AuditEventId(this[AuditEventsTable.id].value),
         actorId = this[AuditEventsTable.actorId],
         actorType = this[AuditEventsTable.actorType],
@@ -191,6 +193,7 @@ class AuditEventRepositoryImpl @Inject constructor(
             auditEventMetadataPayload.toAuditEventMetadata(compositeAuditMetadataKeyParser)
         },
         message = this[AuditEventsTable.message],
-        createdAt = this[AuditEventsTable.createdAt].toKotlinInstant()
+        createdAt = this[AuditEventsTable.createdAt].toKotlinInstant(),
+        updatedAt = this[AuditEventsTable.updatedAt]?.toKotlinInstant()
     )
 }

@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.audit.logger
 import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
@@ -13,7 +13,7 @@ import javax.inject.Singleton
 import kotlin.time.Clock
 
 /**
- * Default [AuditLogger]: builds an [AuditEvent] and forwards it to [AuditService.log].
+ * Default [AuditLogger]: builds an [AuditEventInternal] and forwards it to [AuditService.log].
  */
 @Singleton
 class AuditLoggerImpl @Inject constructor(
@@ -33,7 +33,7 @@ class AuditLoggerImpl @Inject constructor(
         message: String?
     ) {
         auditService.log(
-            AuditEvent(
+            AuditEventInternal(
                 actorId = actorId,
                 actorType = actorType,
                 actorUserRole = actorUserRole,
@@ -44,7 +44,8 @@ class AuditLoggerImpl @Inject constructor(
                 status = status,
                 metadata = metadata,
                 message = message,
-                createdAt = Clock.System.now()
+                createdAt = Clock.System.now(),
+                updatedAt = null
             )
         )
     }

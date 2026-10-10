@@ -60,3 +60,31 @@ Performs a complete deployment workflow, including uploading, closing the stagin
 ```bash
 ./gradlew publishAndReleaseToMavenCentral
 ```
+
+## Testing Local Builds (`shared-foundation`)
+
+To test a locally built version of the `shared-foundation` KMP library in this project:
+
+### 1. Publish Shared Library to Local Maven Cache
+In the `shared-foundation` project repository, run:
+
+```bash
+./gradlew publishToMavenLocal
+```
+
+### 2. Connect in Consumer Project (`backend-platform-sdk`)
+1. Ensure `mavenLocal()` is declared at the top of `dependencyResolutionManagement.repositories` in [settings.gradle.kts](file:///C:/Users/Loop/IdeaProjects/backend-platform-sdk/settings.gradle.kts):
+   ```kotlin
+   dependencyResolutionManagement {
+       repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+       repositories {
+           mavenLocal()
+           mavenCentral()
+       }
+   }
+   ```
+2. Rebuild with `--refresh-dependencies` to force Gradle to pick up the locally published artifacts:
+   ```bash
+   ./gradlew build --refresh-dependencies
+   ```
+

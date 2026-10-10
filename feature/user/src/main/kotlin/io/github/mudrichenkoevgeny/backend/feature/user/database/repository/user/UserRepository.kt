@@ -11,7 +11,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import kotlin.time.Instant
 
@@ -26,10 +26,10 @@ interface UserRepository {
     /**
      * Persists a new user record.
      *
-     * @param user user details model to create.
-     * @return [AppResult] containing the created [UserDetails] or an error.
+     * @param user user internal model to create.
+     * @return [AppResult] containing the created [UserInternal] or an error.
      */
-    suspend fun createUser(user: UserDetails): AppResult<UserDetails>
+    suspend fun createUser(user: UserInternal): AppResult<UserInternal>
 
     /**
      * Deletes a user record by the unique user identifier.
@@ -57,7 +57,7 @@ interface UserRepository {
      * @param scheduledPermanentDeletionAt timestamp for the final removal of the account.
      * @param accountLockoutType account lockout type.
      * @param temporaryLockoutUntil timestamp when temporary lockout expires.
-     * @return [AppResult] containing the updated [UserDetails].
+     * @return [AppResult] containing the updated [UserInternal].
      */
     suspend fun updateUser(
         userId: UserId,
@@ -71,18 +71,18 @@ interface UserRepository {
         scheduledPermanentDeletionAt: UpdateField<Instant> = UpdateField.Ignore,
         accountLockoutType: UpdateField<AccountLockoutType> = UpdateField.Ignore,
         temporaryLockoutUntil: UpdateField<Instant> = UpdateField.Ignore
-    ): AppResult<UserDetails>
+    ): AppResult<UserInternal>
 
     /**
-     * Retrieves user details by the unique user identifier.
+     * Retrieves user internal model by the unique user identifier.
      *
      * @param userId unique user identifier.
-     * @return [AppResult] containing [UserDetails] when found, `null` when missing, or an error.
+     * @return [AppResult] containing [UserInternal] when found, `null` when missing, or an error.
      */
-    suspend fun getUserDetailsById(userId: UserId): AppResult<UserDetails?>
+    suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?>
 
     /**
-     * Returns a page of [UserDetails] rows matching optional filters, ordered by [sortBy] and [sortOrder].
+     * Returns a page of [UserInternal] rows matching optional filters, ordered by [sortBy] and [sortOrder].
      *
      * **Filters** align with the management user list API:
      * Empty list means no filter on that axis. Non-empty categories combine as **AND**,
@@ -115,12 +115,12 @@ interface UserRepository {
         permissionCodes: Set<PermissionCode> = emptySet(),
         isTotpEnabled: Boolean? = null,
         accountLockoutTypes: List<AccountLockoutType> = emptyList()
-    ): AppResult<PagedResult<UserDetails>>
+    ): AppResult<PagedResult<UserInternal>>
 
     /**
      * Deletes users whose scheduled permanent deletion time has passed relative to [asOf].
      *
-     * A row matches when [UserDetails.scheduledPermanentDeletionAt] is non-null and
+     * A row matches when [UserInternal.scheduledPermanentDeletionAt] is non-null and
      * `scheduledPermanentDeletionAt <= asOf` (same instant semantics as on the wire / domain model).
      *
      * Callers typically pass `Clock.System.now()` from a scheduled job; a fixed [asOf] keeps tests deterministic.
@@ -131,7 +131,7 @@ interface UserRepository {
     suspend fun deleteUsersDueForPermanentDeletion(asOf: Instant): AppResult<Int>
 
     /**
-     * Finds users with an active temporary lockout whose [UserDetails.temporaryLockoutUntil] has passed relative to [asOf].
+     * Finds users with an active temporary lockout whose [UserInternal.temporaryLockoutUntil] has passed relative to [asOf].
      *
      * @param asOf Upper bound instant for lockout expiration (inclusive).
      * @return List of matching [UserId]s, or an error.

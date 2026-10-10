@@ -7,7 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChalleng
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.client.createTestClientInfo
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -45,10 +45,10 @@ class AuthenticationChallengeServiceImplTest {
 
     @Test
     fun `should return success when user session is within validity window`() = runBlocking {
-        val userDetails = createUserDetails(UserRole.USER)
+        val userInternal = createUserInternal(UserRole.USER)
         val session = createUserSession(lastReauthenticatedAt = Clock.System.now() - 10.seconds)
 
-        val result = service.ensureSessionConfirmed(userDetails, session)
+        val result = service.ensureSessionConfirmed(userInternal, session)
 
         assertTrue(result is AppResult.Success)
     }
@@ -59,7 +59,7 @@ class AuthenticationChallengeServiceImplTest {
         val sessionId = UserSessionId.generate()
         val identifierId = UserIdentifierId.generate()
 
-        val userDetails = createUserDetails(UserRole.USER, userId)
+        val userInternal = createUserInternal(UserRole.USER, userId)
         val session = createUserSession(
             lastReauthenticatedAt = Clock.System.now() - 2.hours,
             userId = userId,
@@ -80,7 +80,7 @@ class AuthenticationChallengeServiceImplTest {
             mfaService.createChallenge(any(), any(), MfaChallengeType.STEP_UP, any(), any())
         } returns AppResult.Success(expectedChallengeData)
 
-        val result = service.ensureSessionConfirmed(userDetails, session)
+        val result = service.ensureSessionConfirmed(userInternal, session)
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
@@ -90,7 +90,7 @@ class AuthenticationChallengeServiceImplTest {
 
     @Test
     fun `should forward error when mfa service fails`() = runBlocking {
-        val userDetails = createUserDetails(UserRole.USER)
+        val userInternal = createUserInternal(UserRole.USER)
         val session = createUserSession(lastReauthenticatedAt = null)
         val expectedError = SecurityError.InvalidMfaToken()
 
@@ -98,7 +98,7 @@ class AuthenticationChallengeServiceImplTest {
             mfaService.createChallenge(any(), any(), any(), any(), any())
         } returns AppResult.Error(expectedError)
 
-        val result = service.ensureSessionConfirmed(userDetails, session)
+        val result = service.ensureSessionConfirmed(userInternal, session)
 
         assertTrue(result is AppResult.Error)
         assertEquals(expectedError, (result as AppResult.Error).error)
@@ -106,30 +106,30 @@ class AuthenticationChallengeServiceImplTest {
 
     @Test
     fun `should return success when user does not have totp enabled and requireTotp is false`() = runBlocking {
-        val userDetails = createUserDetails(UserRole.USER, isTotpEnabled = false)
+        val userInternal = createUserInternal(UserRole.USER, isTotpEnabled = false)
         val session = createUserSession(lastReauthenticatedAt = null)
 
-        val result = service.ensureSessionConfirmed(userDetails, session, requireTotp = false)
+        val result = service.ensureSessionConfirmed(userInternal, session, requireTotp = false)
 
         assertTrue(result is AppResult.Success)
     }
 
     @Test
     fun `should return TotpNotEnabled error when requireTotp is true and user does not have totp enabled`() = runBlocking {
-        val userDetails = createUserDetails(UserRole.USER, isTotpEnabled = false)
+        val userInternal = createUserInternal(UserRole.USER, isTotpEnabled = false)
         val session = createUserSession(lastReauthenticatedAt = null)
 
-        val result = service.ensureSessionConfirmed(userDetails, session, requireTotp = true)
+        val result = service.ensureSessionConfirmed(userInternal, session, requireTotp = true)
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is SecurityError.TotpNotEnabled)
     }
 
-    private fun createUserDetails(
+    private fun createUserInternal(
         role: UserRole,
         id: UserId = UserId.generate(),
         isTotpEnabled: Boolean = true
-    ) = createTestUserDetails(
+    ) = createTestUserInternal(
         id = id,
         role = role,
         accountStatus = UserAccountStatus.ACTIVE,
@@ -151,7 +151,7 @@ class AuthenticationChallengeServiceImplTest {
         identifierDisplayName = "test-identifier",
         identifierAuthProvider = UserAuthProvider.EMAIL,
         refreshTokenHash = RefreshTokenHash("hash"),
-        deviceInfo = createTestClientInfo().deviceInfo,
+        clientDeviceInfo = createTestClientInfo().clientDeviceInfo,
         userAgent = null,
         ipAddress = null,
         expiresAt = Clock.System.now() + 1.hours,

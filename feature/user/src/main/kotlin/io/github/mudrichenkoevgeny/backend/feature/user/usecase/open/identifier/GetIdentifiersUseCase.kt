@@ -11,7 +11,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierSummary
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,7 +37,7 @@ class GetIdentifiersUseCase @Inject constructor(
      * @param sortOrder Sorting direction (ASC/DESC).
      * @param userAuthProviders Optional filter by authentication provider types (EMAIL, PHONE, etc.).
      * @param identifiers Optional filter by specific identifier substrings.
-     * @return [AppResult] with [PagedResult] of [UserIdentifier].
+     * @return [AppResult] with [PagedResult] of [UserIdentifierSummary].
      */
     suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext,
@@ -46,10 +46,10 @@ class GetIdentifiersUseCase @Inject constructor(
         sortOrder: SortOrder,
         userAuthProviders: List<UserAuthProvider>,
         identifiers: List<String>
-    ): AppResult<PagedResult<UserIdentifier>> {
+    ): AppResult<PagedResult<UserIdentifierSummary>> {
         val currentUserId = authenticatedRequestContext.userId
 
-        val getCurrentUserResult = userManager.getUserByIdForSelf(currentUserId)
+        val getCurrentUserResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (getCurrentUserResult) {
@@ -61,7 +61,7 @@ class GetIdentifiersUseCase @Inject constructor(
             return AppResult.Error(UserError.UserForbidden(currentUserId))
         }
 
-        return identifierManager.getIdentifiersPageForSelf(
+        return identifierManager.getUserIdentifiersSummaryPage(
             userId = currentUserId,
             pageParams = pageParams,
             sortBy = sortBy,

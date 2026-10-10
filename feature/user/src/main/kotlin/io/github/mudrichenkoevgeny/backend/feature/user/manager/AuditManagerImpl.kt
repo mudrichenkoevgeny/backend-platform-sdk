@@ -4,22 +4,26 @@ import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditE
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditAccessFilter
 import io.github.mudrichenkoevgeny.backend.core.audit.mask.AuditDataMasker.maskSensitiveData
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionRequirement
+import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
-import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
-import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionRequirement
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventSummary
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventSummary
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import javax.inject.Inject
@@ -33,15 +37,15 @@ class AuditManagerImpl @Inject constructor(
     private val auditRepository: AuditEventRepository
 ) : AuditManager {
 
-    override suspend fun createEvent(auditEvent: AuditEvent): AppResult<AuditEvent> = dbQuery {
+    override suspend fun createEvent(auditEvent: AuditEventInternal): AppResult<AuditEventInternal> = dbQuery {
         auditRepository.createEvent(auditEvent)
     }
 
-    override suspend fun getEventById(
+    override suspend fun getAuditEventPrivateById(
         eventId: AuditEventId,
         userId: UserId,
         userPermissionCodes: Set<PermissionCode>
-    ): AppResult<AuditEvent?> = dbQuery {
+    ): AppResult<AuditEventPrivate?> = dbQuery {
         val getEventResult = auditRepository.getEventById(eventId)
 
         when (getEventResult) {
@@ -50,7 +54,7 @@ class AuditManagerImpl @Inject constructor(
                 val auditEvent = getEventResult.data ?: return@dbQuery AppResult.Success(null)
 
                 when (determinePermissionRequirement(auditEvent, userPermissionCodes)) {
-                    PermissionRequirement.UNMASKED -> AppResult.Success(auditEvent)
+                    PermissionRequirement.UNMASKED -> AppResult.Success(auditEvent.toAuditEventPrivate())
                     PermissionRequirement.MASKED -> AppResult.Success(auditEvent.maskSensitiveData())
                     PermissionRequirement.FORBIDDEN -> AppResult.Error(UserError.UserMissingPermissions(userId))
                 }
@@ -58,7 +62,7 @@ class AuditManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun getEventsPage(
+    override suspend fun getAuditEventsSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
         pageParams: PageParams,
         sortBy: AuditSortValues.AuditEventSortBy,
@@ -71,7 +75,7 @@ class AuditManagerImpl @Inject constructor(
         resourceIds: List<String>,
         statuses: List<AuditStatus>,
         messages: List<String>
-    ): AppResult<PagedResult<AuditEvent>> = dbQuery {
+    ): AppResult<PagedResult<AuditEventSummary>> = dbQuery {
         val accessFilter = buildAccessFilter(managementUserPermissionCodes)
 
         val getEventsResult = auditRepository.getEventsPageWithAccessFilter(
@@ -95,12 +99,20 @@ class AuditManagerImpl @Inject constructor(
                 val pagedResult = getEventsResult.data
                 val finalItems = pagedResult.items.mapNotNull { auditEvent ->
                     when (determinePermissionRequirement(auditEvent, managementUserPermissionCodes)) {
-                        PermissionRequirement.UNMASKED -> auditEvent
-                        PermissionRequirement.MASKED -> auditEvent.maskSensitiveData()
+                        PermissionRequirement.UNMASKED -> auditEvent.toAuditEventSummary()
+                        PermissionRequirement.MASKED -> auditEvent.maskSensitiveData().toAuditEventSummary()
                         PermissionRequirement.FORBIDDEN -> null
                     }
                 }
-                AppResult.Success(pagedResult.copy(items = finalItems))
+                AppResult.Success(
+                    PagedResult(
+                        items = finalItems,
+                        totalCount = pagedResult.totalCount,
+                        pageNumber = pagedResult.pageNumber,
+                        pageSize = pagedResult.pageSize,
+                        totalPages = pagedResult.totalPages
+                    )
+                )
             }
         }
     }
@@ -147,7 +159,7 @@ class AuditManagerImpl @Inject constructor(
     }
 
     private fun determinePermissionRequirement(
-        auditEvent: AuditEvent,
+        auditEvent: AuditEventInternal,
         userPermissionCodes: Set<PermissionCode>
     ): PermissionRequirement {
         val permissionSet = getRequiredPermissionsForEvent(auditEvent) ?: return PermissionRequirement.FORBIDDEN
@@ -159,7 +171,7 @@ class AuditManagerImpl @Inject constructor(
         }
     }
 
-    private fun getRequiredPermissionsForEvent(auditEvent: AuditEvent): PermissionSet? {
+    private fun getRequiredPermissionsForEvent(auditEvent: AuditEventInternal): PermissionSet? {
         return when (auditEvent.actorType) {
             AuditActorType.SYSTEM -> PermissionSet(
                 masked = AuditPermissionCode.AUDIT_GET_FOR_SYSTEM_ACTOR_MASKED,

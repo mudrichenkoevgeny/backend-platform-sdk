@@ -74,7 +74,7 @@ class SendAddEmailIdentifierConfirmationUseCaseTest {
         } returns AppResult.Success(otpData)
 
         coEvery {
-            emailService.sendVerificationCode(TEST_EMAIL, TEST_CODE, clientInfo.deviceInfo.language)
+            emailService.sendVerificationCode(TEST_EMAIL, TEST_CODE, clientInfo.clientDeviceInfo.language)
         } returns AppResult.Success(Unit)
 
         val result = useCase(TEST_EMAIL, context)
@@ -111,8 +111,8 @@ class SendAddEmailIdentifierConfirmationUseCaseTest {
             emailService.sendAlreadyRegisteredEmail(
                 email = TEST_EMAIL,
                 ipAddress = clientInfo.ipAddress,
-                deviceName = clientInfo.deviceInfo.deviceName,
-                language = clientInfo.deviceInfo.language
+                deviceName = clientInfo.clientDeviceInfo.deviceName,
+                language = clientInfo.clientDeviceInfo.language
             )
         } returns AppResult.Success(Unit)
 

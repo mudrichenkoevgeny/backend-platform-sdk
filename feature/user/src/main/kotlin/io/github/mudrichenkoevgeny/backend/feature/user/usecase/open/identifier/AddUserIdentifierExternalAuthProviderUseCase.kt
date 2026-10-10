@@ -24,7 +24,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -62,13 +62,13 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
      * @param authProvider The external provider type to be linked.
      * @param token The identity token or authorization code from the external provider.
      * @param authenticatedRequestContext The context of the authenticated request.
-     * @return [AppResult] containing the newly created [UserIdentifier].
+     * @return [AppResult] containing the newly created [UserIdentifierPrivate].
      */
     suspend operator fun invoke(
         authProvider: UserAuthProvider,
         token: String,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<UserIdentifier> {
+    ): AppResult<UserIdentifierPrivate> {
         val currentUserId = authenticatedRequestContext.userId
         val currentSessionId = authenticatedRequestContext.sessionId
 
@@ -110,7 +110,7 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserByIdForSelf(currentUserId)
+        val userResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (userResult) {
@@ -123,7 +123,7 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
             is AppResult.Success -> userResult.data
         }
 
-        val userSessionResult = sessionManager.getUserSessionForSystem(
+        val userSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -138,7 +138,7 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = currentUser,
+            userInternal = currentUser,
             userSession = currentSession
         )
         if (ensureSessionConfirmedResult is AppResult.Error) {
@@ -170,7 +170,7 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
             )
         )
 
-        val createIdentifierForSelfResult = authManager.createIdentifierForAuthorizedUser(
+        val createIdentifierForAuthorizedUserResult = authManager.createIdentifierForAuthorizedUser(
             userId = currentUserId,
             userAuthProvider = verificationData.authProvider,
             identifier = verificationData.externalId,
@@ -178,10 +178,10 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
             externalProviderEmail = verificationData.email,
             externalProviderDisplayName = verificationData.displayName
         )
-        when (createIdentifierForSelfResult) {
+        when (createIdentifierForAuthorizedUserResult) {
             is AppResult.Error -> {
                 return handleError(
-                    error = createIdentifierForSelfResult.error,
+                    error = createIdentifierForAuthorizedUserResult.error,
                     actorId = auditActorId,
                     actorUserRole = auditActorUserRole,
                     baseMetadata = auditMetadata
@@ -191,14 +191,14 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
                 logAudit(
                     actorId = auditActorId,
                     actorUserRole = auditActorUserRole,
-                    resourceId = createIdentifierForSelfResult.data.id.asHexDashString(),
+                    resourceId = createIdentifierForAuthorizedUserResult.data.id.asHexDashString(),
                     status = AuditStatus.SUCCESS,
                     metadata = auditMetadata
                 )
             }
         }
 
-        return createIdentifierForSelfResult
+        return createIdentifierForAuthorizedUserResult
     }
 
     private fun <T> handleError(

@@ -4,7 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.action.TestAu
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.resource.TestAuditResource
 import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CommonAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -21,8 +21,8 @@ class AuditLoggerImplTest {
     private val logger = AuditLoggerImpl(auditService = auditService)
 
     @Test
-    fun `log builds AuditEvent and forwards to auditService`() {
-        val eventSlot = slot<AuditEvent>()
+    fun `log builds AuditEventInternal and forwards to auditService`() {
+        val eventSlot = slot<AuditEventInternal>()
         val metadata = setOf(AuditEventMetadata(CommonAuditMetadataKey.ERROR_CODE, "E42"))
 
         logger.log(

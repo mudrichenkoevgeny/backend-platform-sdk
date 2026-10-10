@@ -79,7 +79,7 @@ class DeleteAllOtherSessionsUseCase @Inject constructor(
             )
         }
 
-        val deleteSessionsResult = sessionManager.deleteAllSessionsExceptOneForSelf(
+        val deleteSessionsResult = sessionManager.deleteAllUserSessionsExceptOne(
             userId = currentUserId,
             userSessionId = currentSessionId
         )

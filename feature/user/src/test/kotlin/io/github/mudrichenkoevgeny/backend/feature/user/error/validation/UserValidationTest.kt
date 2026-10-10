@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.error.validation
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -19,7 +19,7 @@ class UserValidationTest {
 
     @Test
     fun `validateRoleAndStatus returns Success when role, status, and lockout are valid`() {
-        val user = createTestUserDetails(
+        val user = createTestUserInternal(
             role = UserRole.USER,
             accountStatus = UserAccountStatus.ACTIVE,
             lockoutType = AccountLockoutType.NONE
@@ -32,7 +32,7 @@ class UserValidationTest {
 
     @Test
     fun `validateRoleAndStatus returns Error UserRoleNotAllowed when role is not in allowedRoles`() {
-        val user = createTestUserDetails(role = UserRole.STAFF)
+        val user = createTestUserInternal(role = UserRole.STAFF)
 
         val result = user.validateAccessEligibility(setOf(UserRole.USER), defaultAllowedStatuses)
 
@@ -44,7 +44,7 @@ class UserValidationTest {
 
     @Test
     fun `validateRoleAndStatus returns Error UserReadOnly when status is READ_ONLY and not allowed`() {
-        val user = createTestUserDetails(accountStatus = UserAccountStatus.READ_ONLY)
+        val user = createTestUserInternal(accountStatus = UserAccountStatus.READ_ONLY)
 
         val result = user.validateAccessEligibility(defaultAllowedRoles, setOf(UserAccountStatus.ACTIVE))
 
@@ -56,7 +56,7 @@ class UserValidationTest {
 
     @Test
     fun `validateRoleAndStatus returns Error UserBanned when status is BANNED`() {
-        val user = createTestUserDetails(accountStatus = UserAccountStatus.BANNED)
+        val user = createTestUserInternal(accountStatus = UserAccountStatus.BANNED)
 
         val result = user.validateAccessEligibility(defaultAllowedRoles, defaultAllowedStatuses)
 
@@ -68,7 +68,7 @@ class UserValidationTest {
 
     @Test
     fun `validateRoleAndStatus returns Error UserSecurityHold when status is SECURITY_HOLD`() {
-        val user = createTestUserDetails(accountStatus = UserAccountStatus.SECURITY_HOLD)
+        val user = createTestUserInternal(accountStatus = UserAccountStatus.SECURITY_HOLD)
 
         val result = user.validateAccessEligibility(defaultAllowedRoles, defaultAllowedStatuses)
 
@@ -80,7 +80,7 @@ class UserValidationTest {
 
     @Test
     fun `validateRoleAndStatus returns Error UserPendingDeletion when status is PENDING_DELETION`() {
-        val user = createTestUserDetails(accountStatus = UserAccountStatus.PENDING_DELETION)
+        val user = createTestUserInternal(accountStatus = UserAccountStatus.PENDING_DELETION)
 
         val result = user.validateAccessEligibility(defaultAllowedRoles, defaultAllowedStatuses)
 
@@ -92,7 +92,7 @@ class UserValidationTest {
 
     @Test
     fun `validateRoleAndStatus returns Error UserLocked when lockoutType is INDEFINITE`() {
-        val user = createTestUserDetails(
+        val user = createTestUserInternal(
             role = UserRole.USER,
             accountStatus = UserAccountStatus.ACTIVE,
             lockoutType = AccountLockoutType.INDEFINITE
@@ -109,7 +109,7 @@ class UserValidationTest {
     @Test
     fun `validateRoleAndStatus returns Error UserLocked when lockoutType is TEMPORARY and time is in future`() {
         val futureTime = Clock.System.now() + 1.hours
-        val user = createTestUserDetails(
+        val user = createTestUserInternal(
             role = UserRole.USER,
             accountStatus = UserAccountStatus.ACTIVE,
             lockoutType = AccountLockoutType.TEMPORARY,
@@ -128,7 +128,7 @@ class UserValidationTest {
 
     @Test
     fun `validateRoleAndStatus returns Error UserLocked when lockoutType is TEMPORARY and time is null`() {
-        val user = createTestUserDetails(
+        val user = createTestUserInternal(
             role = UserRole.USER,
             accountStatus = UserAccountStatus.ACTIVE,
             lockoutType = AccountLockoutType.TEMPORARY,
@@ -146,7 +146,7 @@ class UserValidationTest {
     @Test
     fun `validateRoleAndStatus returns Success when lockoutType is TEMPORARY but time is in past`() {
         val pastTime = Clock.System.now() - 1.hours
-        val user = createTestUserDetails(
+        val user = createTestUserInternal(
             role = UserRole.USER,
             accountStatus = UserAccountStatus.ACTIVE,
             lockoutType = AccountLockoutType.TEMPORARY,

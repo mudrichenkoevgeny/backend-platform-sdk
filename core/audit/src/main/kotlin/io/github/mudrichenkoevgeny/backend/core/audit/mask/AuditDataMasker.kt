@@ -6,30 +6,34 @@ import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker.maskFullV
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker.maskIpAddress
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker.maskPartialValue
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker.maskPhone
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventPrivate
 
 /**
- * Redacts sensitive fields on [AuditEvent] for display or API responses.
+ * Redacts sensitive fields on [AuditEventInternal] for display or API responses, converting them into [AuditEventPrivate].
  *
- * Uses the shared foundation model’s sensitivity hints:
- * - [AuditEvent.resourceId] is masked according to [AuditEvent.resourceValueSensitivity].
- * - Each metadata entry’s value is masked using that entry’s [AuditEventMetadata.key] sensitivity (same [AuditValueSensitivity]
- *   enum as for [AuditEvent.resourceValueSensitivity]).
+ * Uses the shared foundation model's sensitivity hints:
+ * - [AuditEventPrivate.resourceId] is masked according to [AuditEventInternal.resourceValueSensitivity].
+ * - Each metadata entry's value is masked using that entry's [AuditEventMetadata.key] sensitivity (same [AuditValueSensitivity]
+ *   enum as for [AuditEventInternal.resourceValueSensitivity]).
  *
  * Masking delegates to [DataMasker] (email, phone, IP, partial/full).
- * Call sites that need “masked vs unmasked” views (for example `feature/user` after permission checks) apply
- * [AuditEvent.maskSensitiveData] only when the caller has masked-read permission.
+ * Converts internal domain audit events ([AuditEventInternal]) into sanitized private models ([AuditEventPrivate])
+ * when callers require masked views.
  */
 object AuditDataMasker {
 
     /**
-     * Returns a copy of this event with resourceId and metadata values transformed per their sensitivity;
-     * non-sensitive values are unchanged.
+     * Transforms this [AuditEventInternal] into a sanitized [AuditEventPrivate] with sensitive fields
+     * (such as `resourceId` and metadata values) redacted per their defined [AuditValueSensitivity].
+     *
+     * @return [AuditEventPrivate] containing masked sensitive data.
      */
-    fun AuditEvent.maskSensitiveData(): AuditEvent {
-        return this.copy(
+    fun AuditEventInternal.maskSensitiveData(): AuditEventPrivate {
+        val maskedAuditEventInternal = this.copy(
             resourceId = resourceId?.let {
                 maskBySensitivity(it, resourceValueSensitivity)
             },
@@ -42,6 +46,8 @@ object AuditDataMasker {
                 )
             }.toSet()
         )
+
+        return maskedAuditEventInternal.toAuditEventPrivate()
     }
 
     /**

@@ -7,18 +7,18 @@ import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.Password
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifier
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
 import io.mockk.coEvery
@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.time.Clock
 
 class IdentifierManagerImplTest {
 
@@ -47,16 +46,16 @@ class IdentifierManagerImplTest {
     }
 
     @Test
-    fun `getUserIdentifierByIdForManagement returns UNMASKED when user has permission`() = runTest {
+    fun `getUserIdentifierPrivateById returns UNMASKED when user has permission`() = runTest {
         val identifierId = UserIdentifierId.generate()
         val identifier = createSampleIdentifier(identifierId, userId, "test@test.com")
-        val targetUser = createSampleUserDetails(userId, UserRole.USER)
+        val targetUser = createSampleUserInternal(userId, UserRole.USER)
 
-        coEvery { repository.getUserIdentifierById(identifierId) } returns AppResult.Success(identifier)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(targetUser)
+        coEvery { repository.getUserIdentifierInternalById(identifierId) } returns AppResult.Success(identifier)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(targetUser)
 
         val permissions = setOf(IdentifierPermissionCode.IDENTIFIER_GET_OF_USER_UNMASKED)
-        val result = manager.getUserIdentifierByIdForManagement(identifierId, managementUserId, permissions)
+        val result = manager.getUserIdentifierPrivateById(identifierId, managementUserId, permissions)
 
         assertTrue(result is AppResult.Success)
         val data = (result as AppResult.Success).data
@@ -65,17 +64,17 @@ class IdentifierManagerImplTest {
     }
 
     @Test
-    fun `getUserIdentifierByIdForManagement returns MASKED when user has only masked permission`() = runTest {
+    fun `getUserIdentifierPrivateById returns MASKED when user has only masked permission`() = runTest {
         val identifierId = UserIdentifierId.generate()
         val rawEmail = "secret@example.com"
         val identifier = createSampleIdentifier(identifierId, userId, rawEmail)
-        val targetUser = createSampleUserDetails(userId, UserRole.USER)
+        val targetUser = createSampleUserInternal(userId, UserRole.USER)
 
-        coEvery { repository.getUserIdentifierById(identifierId) } returns AppResult.Success(identifier)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(targetUser)
+        coEvery { repository.getUserIdentifierInternalById(identifierId) } returns AppResult.Success(identifier)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(targetUser)
 
         val permissions = setOf(IdentifierPermissionCode.IDENTIFIER_GET_OF_USER_MASKED)
-        val result = manager.getUserIdentifierByIdForManagement(identifierId, managementUserId, permissions)
+        val result = manager.getUserIdentifierPrivateById(identifierId, managementUserId, permissions)
 
         assertTrue(result is AppResult.Success)
         val data = (result as AppResult.Success).data
@@ -84,16 +83,16 @@ class IdentifierManagerImplTest {
     }
 
     @Test
-    fun `getUserIdentifierByIdForManagement returns Error when target is ADMIN`() = runTest {
+    fun `getUserIdentifierPrivateById returns Error when target is ADMIN`() = runTest {
         val identifierId = UserIdentifierId.generate()
         val identifier = createSampleIdentifier(identifierId, userId)
-        val targetUser = createSampleUserDetails(userId, UserRole.ADMIN)
+        val targetUser = createSampleUserInternal(userId, UserRole.ADMIN)
 
-        coEvery { repository.getUserIdentifierById(identifierId) } returns AppResult.Success(identifier)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(targetUser)
+        coEvery { repository.getUserIdentifierInternalById(identifierId) } returns AppResult.Success(identifier)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(targetUser)
 
         val permissions = setOf(IdentifierPermissionCode.IDENTIFIER_GET_OF_USER_UNMASKED)
-        val result = manager.getUserIdentifierByIdForManagement(identifierId, managementUserId, permissions)
+        val result = manager.getUserIdentifierPrivateById(identifierId, managementUserId, permissions)
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.UserMissingPermissions)
@@ -124,15 +123,8 @@ class IdentifierManagerImplTest {
         val existingIdentifier = createSampleIdentifier(UserIdentifierId.generate(), userId, "google_id_1").copy(
             displayName = "Google"
         )
-        val existingInternal = io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal(
-            id = existingIdentifier.id,
-            userId = userId,
-            userAuthProvider = UserAuthProvider.GOOGLE,
-            identifier = "google_id_1",
-            displayName = "Google"
-        )
 
-        coEvery { repository.getUserIdentifiersListByUserId(userId) } returns AppResult.Success(listOf(existingInternal))
+        coEvery { repository.getUserIdentifiersListByUserId(userId) } returns AppResult.Success(listOf(existingIdentifier))
         coEvery { repository.createUserIdentifier(any()) } answers { AppResult.Success(firstArg()) }
 
         val result = manager.createUserIdentifier(
@@ -146,7 +138,7 @@ class IdentifierManagerImplTest {
     }
 
     @Test
-    fun `getIdentifiersPageForManagement filters and masks items correctly`() = runTest {
+    fun `getUserIdentifiersSummaryPage filters and masks items correctly`() = runTest {
         val user1Id = UserId.generate()
         val user2Id = UserId.generate()
 
@@ -165,15 +157,15 @@ class IdentifierManagerImplTest {
             repository.getUserIdentifiersPageWithAccessFilter(any(), any(), any(), any(), any(), any(), any())
         } returns AppResult.Success(pagedResult)
         coEvery {
-            userManager.getUserByIdForSelf(user1Id)
-        } returns AppResult.Success(createSampleUserDetails(user1Id, UserRole.USER))
+            userManager.getUserInternalById(user1Id)
+        } returns AppResult.Success(createSampleUserInternal(user1Id, UserRole.USER))
         coEvery {
-            userManager.getUserByIdForSelf(user2Id)
-        } returns AppResult.Success(createSampleUserDetails(user2Id, UserRole.STAFF))
+            userManager.getUserInternalById(user2Id)
+        } returns AppResult.Success(createSampleUserInternal(user2Id, UserRole.STAFF))
 
         val permissions = setOf(IdentifierPermissionCode.IDENTIFIER_GET_OF_USER_UNMASKED)
 
-        val result = manager.getIdentifiersPageForManagement(
+        val result = manager.getUserIdentifiersSummaryPage(
             managementUserPermissionCodes = permissions,
             pageParams = PageParams(1, 10),
             sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
@@ -189,16 +181,18 @@ class IdentifierManagerImplTest {
         assertEquals("user@test.com", data.items.first().identifier)
     }
 
-    private fun createSampleIdentifier(id: UserIdentifierId, uId: UserId, value: String = "test") = createTestUserIdentifier(
-        id = id,
-        userId = uId,
-        identifier = value
-    )
+    private fun createSampleIdentifier(id: UserIdentifierId, uId: UserId, value: String = "test"): UserIdentifierInternal =
+        createTestUserIdentifierInternal(
+            id = id,
+            userId = uId,
+            identifier = value
+        )
 
-    private fun createSampleUserDetails(uId: UserId, role: UserRole) = createTestUserDetails(
-        id = uId,
-        role = role,
-        accountStatus = UserAccountStatus.ACTIVE,
-        authorityLevel = 1
-    )
+    private fun createSampleUserInternal(uId: UserId, role: UserRole): UserInternal =
+        createTestUserInternal(
+            id = uId,
+            role = role,
+            accountStatus = UserAccountStatus.ACTIVE,
+            authorityLevel = 1
+        )
 }

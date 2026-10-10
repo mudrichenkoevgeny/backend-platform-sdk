@@ -9,12 +9,13 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
-import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
-import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
-import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateFieldValue
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
+import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
+import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseSelfIdentifiersListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
@@ -45,12 +46,15 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.m
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.toUserIdentifierIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.identifier.UserIdentifierPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.identifier.UserIdentifierPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.identifier.UserIdentifierSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToPhoneRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.password.EmailPasswordChangeRequest
@@ -237,7 +241,7 @@ class OpenIdentifierRouter @Inject constructor(
         }
         response {
             code(HttpStatusCode.OK) {
-                body<UserIdentifierPayload>()
+                body<UserIdentifierPrivatePayload>()
                 description = GET_USER_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -269,7 +273,7 @@ class OpenIdentifierRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
-            userIdentifier.toUserIdentifierPayload()
+            userIdentifier.toUserIdentifierPrivatePayload()
         }
     }
 
@@ -287,7 +291,7 @@ class OpenIdentifierRouter @Inject constructor(
         )
         response {
             code(HttpStatusCode.OK) {
-                body<PagedResult<UserIdentifierPayload>>()
+                body<PagedResult<UserIdentifierSummaryPayload>>()
                 description = GET_USER_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -321,7 +325,7 @@ class OpenIdentifierRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) { pagedIdentifiers ->
-            pagedIdentifiers.mapItems { userIdentifier -> userIdentifier.toUserIdentifierPayload() }
+            pagedIdentifiers.mapItems { userIdentifierSummary -> userIdentifierSummary.toUserIdentifierSummaryPayload() }
         }
     }
 
@@ -400,7 +404,7 @@ class OpenIdentifierRouter @Inject constructor(
         request { body<AddUserIdentifierEmailRequest>() }
         response {
             code(HttpStatusCode.OK) {
-                body<UserIdentifierPayload>()
+                body<UserIdentifierPrivatePayload>()
                 description = ADD_IDENTIFIER_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -443,8 +447,8 @@ class OpenIdentifierRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
-            userIdentifier.toUserIdentifierPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userIdentifierPrivate ->
+            userIdentifierPrivate.toUserIdentifierPrivatePayload()
         }
     }
 
@@ -464,7 +468,7 @@ class OpenIdentifierRouter @Inject constructor(
         request { body<AddUserIdentifierPhoneRequest>() }
         response {
             code(HttpStatusCode.OK) {
-                body<UserIdentifierPayload>()
+                body<UserIdentifierPrivatePayload>()
                 description = ADD_IDENTIFIER_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -506,8 +510,8 @@ class OpenIdentifierRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
-            userIdentifier.toUserIdentifierPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userIdentifierPrivate ->
+            userIdentifierPrivate.toUserIdentifierPrivatePayload()
         }
     }
 
@@ -527,7 +531,7 @@ class OpenIdentifierRouter @Inject constructor(
         request { body<AddUserIdentifierExternalAuthProviderRequest>() }
         response {
             code(HttpStatusCode.OK) {
-                body<UserIdentifierPayload>()
+                body<UserIdentifierPrivatePayload>()
                 description = ADD_IDENTIFIER_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -576,8 +580,8 @@ class OpenIdentifierRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
-            userIdentifier.toUserIdentifierPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userIdentifierPrivate ->
+            userIdentifierPrivate.toUserIdentifierPrivatePayload()
         }
     }
 
@@ -585,11 +589,11 @@ class OpenIdentifierRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
-        summary = SEND_ADD_EMAIL_CONFIRMATION_SUMMARY
-        operationId = SEND_ADD_EMAIL_CONFIRMATION_OPERATION_ID
+        summary = SEND_ADD_EMAIL_SUMMARY
+        operationId = SEND_ADD_EMAIL_OPERATION_ID
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
-            description = SEND_ADD_EMAIL_CONFIRMATION_DESCRIPTION,
+            description = SEND_ADD_EMAIL_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
         )
@@ -597,7 +601,7 @@ class OpenIdentifierRouter @Inject constructor(
         response {
             code(HttpStatusCode.OK) {
                 body<OtpConfirmationPayload>()
-                description = CONFIRMATION_SENT_DESCRIPTION
+                description = SEND_CONFIRMATION_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -633,11 +637,11 @@ class OpenIdentifierRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
-        summary = SEND_ADD_PHONE_CONFIRMATION_SUMMARY
-        operationId = SEND_ADD_PHONE_CONFIRMATION_OPERATION_ID
+        summary = SEND_ADD_PHONE_SUMMARY
+        operationId = SEND_ADD_PHONE_OPERATION_ID
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
-            description = SEND_ADD_PHONE_CONFIRMATION_DESCRIPTION,
+            description = SEND_ADD_PHONE_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
         )
@@ -645,7 +649,7 @@ class OpenIdentifierRouter @Inject constructor(
         response {
             code(HttpStatusCode.OK) {
                 body<OtpConfirmationPayload>()
-                description = CONFIRMATION_SENT_DESCRIPTION
+                description = SEND_CONFIRMATION_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -681,11 +685,11 @@ class OpenIdentifierRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
-        summary = IDENTIFIER_EMAIL_CHANGE_PASSWORD_SUMMARY
-        operationId = IDENTIFIER_EMAIL_CHANGE_PASSWORD_OPERATION_ID
+        summary = CHANGE_PASSWORD_SUMMARY
+        operationId = CHANGE_PASSWORD_OPERATION_ID
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
-            description = IDENTIFIER_EMAIL_CHANGE_PASSWORD_DESCRIPTION,
+            description = CHANGE_PASSWORD_DESCRIPTION,
             allowedRoles = allowedRoles.mapToSet { it.serialName },
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP
@@ -693,8 +697,8 @@ class OpenIdentifierRouter @Inject constructor(
         request { body<EmailPasswordChangeRequest>() }
         response {
             code(HttpStatusCode.OK) {
-                body<UserIdentifierPayload>()
-                description = IDENTIFIER_EMAIL_CHANGE_PASSWORD_RESPONSE_DESCRIPTION
+                body<UserIdentifierPrivatePayload>()
+                description = CHANGE_PASSWORD_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -730,8 +734,8 @@ class OpenIdentifierRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
-            userIdentifier.toUserIdentifierPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userIdentifierPrivate ->
+            userIdentifierPrivate.toUserIdentifierPrivatePayload()
         }
     }
 
@@ -765,49 +769,49 @@ class OpenIdentifierRouter @Inject constructor(
 
     companion object {
         const val GET_USER_IDENTIFIER_ROUTE_SUMMARY = "Get user identifier"
-        const val GET_USER_IDENTIFIER_ROUTE_DESCRIPTION = "Retrieves specific identifier details linked to the current account."
+        const val GET_USER_IDENTIFIER_ROUTE_DESCRIPTION = "Retrieves information for a specific user identifier."
         const val GET_USER_IDENTIFIER_ROUTE_OPERATION_ID = "openGetUserIdentifier"
-        const val GET_USER_IDENTIFIER_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The unique identifier ID"
-        const val GET_USER_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION = "Identifier details"
+        const val GET_USER_IDENTIFIER_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the identifier to retrieve."
+        const val GET_USER_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION = "Identifier details retrieved successfully"
 
-        const val GET_USER_IDENTIFIERS_ROUTE_SUMMARY = "Get user identifiers"
-        const val GET_USER_IDENTIFIERS_ROUTE_DESCRIPTION = "Returns all authentication identifiers of the current user."
-        const val GET_USER_IDENTIFIERS_ROUTE_OPERATION_ID = "openGetIdentifiers"
-        const val GET_USER_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION = "Success"
+        const val GET_USER_IDENTIFIERS_ROUTE_SUMMARY = "List user identifiers"
+        const val GET_USER_IDENTIFIERS_ROUTE_DESCRIPTION = "Retrieves a paginated list of authentication identifiers belonging to the current user."
+        const val GET_USER_IDENTIFIERS_ROUTE_OPERATION_ID = "openGetUserIdentifiers"
+        const val GET_USER_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION = "List of user identifiers retrieved successfully"
 
         const val DELETE_USER_IDENTIFIER_ROUTE_SUMMARY = "Delete user identifier"
-        const val DELETE_USER_IDENTIFIER_ROUTE_DESCRIPTION = "Deletes a user authentication identifier."
+        const val DELETE_USER_IDENTIFIER_ROUTE_DESCRIPTION = "Unlinks a specific authentication method from the user's account."
         const val DELETE_USER_IDENTIFIER_ROUTE_OPERATION_ID = "openDeleteUserIdentifier"
-        const val DELETE_USER_IDENTIFIER_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "ID of the user identifier to delete"
-        const val DELETE_USER_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION = "Deleted"
+        const val DELETE_USER_IDENTIFIER_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the identifier to delete."
+        const val DELETE_USER_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION = "User identifier unlinked successfully"
 
-        const val ADD_EMAIL_SUMMARY = "Add email user identifier"
-        const val ADD_EMAIL_DESCRIPTION = "Adds email as a new authentication identifier."
+        const val ADD_EMAIL_SUMMARY = "Add email identifier"
+        const val ADD_EMAIL_DESCRIPTION = "Links a new email address to the current user's account."
         const val ADD_EMAIL_OPERATION_ID = "openAddUserIdentifierEmail"
 
-        const val ADD_PHONE_SUMMARY = "Add phone user identifier"
-        const val ADD_PHONE_DESCRIPTION = "Adds phone number as a new authentication identifier."
+        const val ADD_PHONE_SUMMARY = "Add phone identifier"
+        const val ADD_PHONE_DESCRIPTION = "Links a new phone number to the current user's account."
         const val ADD_PHONE_OPERATION_ID = "openAddUserIdentifierPhone"
 
         const val ADD_EXTERNAL_SUMMARY = "Add external auth provider identifier"
-        const val ADD_EXTERNAL_DESCRIPTION = "Adds external authentication provider as a new authentication identifier."
+        const val ADD_EXTERNAL_DESCRIPTION = "Links an external provider account (e.g. Google) to the user's account."
         const val ADD_EXTERNAL_OPERATION_ID = "openAddUserIdentifierExternalAuthProvider"
 
-        const val ADD_IDENTIFIER_RESPONSE_OK_DESCRIPTION = "Success. User identifier added."
+        const val ADD_IDENTIFIER_RESPONSE_OK_DESCRIPTION = "Identifier linked successfully"
 
-        const val SEND_ADD_EMAIL_CONFIRMATION_SUMMARY = "Send email confirmation (identity add)"
-        const val SEND_ADD_EMAIL_CONFIRMATION_DESCRIPTION = "Sends a code to a new email to link it to the current account."
-        const val SEND_ADD_EMAIL_CONFIRMATION_OPERATION_ID = "openSendEmailIdentifierConfirmationCode"
+        const val SEND_ADD_EMAIL_SUMMARY = "Send add email confirmation"
+        const val SEND_ADD_EMAIL_DESCRIPTION = "Sends an OTP code to verify ownership of a new email address before linking."
+        const val SEND_ADD_EMAIL_OPERATION_ID = "openSendAddEmailIdentifierConfirmation"
 
-        const val SEND_ADD_PHONE_CONFIRMATION_SUMMARY = "Send phone confirmation (identity add)"
-        const val SEND_ADD_PHONE_CONFIRMATION_DESCRIPTION = "Sends a code to a new phone number to link it to the current account."
-        const val SEND_ADD_PHONE_CONFIRMATION_OPERATION_ID = "openSendPhoneIdentifierConfirmationCode"
+        const val SEND_ADD_PHONE_SUMMARY = "Send add phone confirmation"
+        const val SEND_ADD_PHONE_DESCRIPTION = "Sends an SMS OTP code to verify ownership of a new phone number before linking."
+        const val SEND_ADD_PHONE_OPERATION_ID = "openSendAddPhoneIdentifierConfirmation"
 
-        const val CONFIRMATION_SENT_DESCRIPTION = "Success. Confirmation code sent."
+        const val SEND_CONFIRMATION_RESPONSE_OK_DESCRIPTION = "Confirmation code sent successfully"
 
-        const val IDENTIFIER_EMAIL_CHANGE_PASSWORD_SUMMARY = "Change email password"
-        const val IDENTIFIER_EMAIL_CHANGE_PASSWORD_DESCRIPTION = "Changes the current user's email password."
-        const val IDENTIFIER_EMAIL_CHANGE_PASSWORD_OPERATION_ID = "openIdentifierEmailChangePassword"
-        const val IDENTIFIER_EMAIL_CHANGE_PASSWORD_RESPONSE_DESCRIPTION = "Email password changed successfully."
+        const val CHANGE_PASSWORD_SUMMARY = "Change email identifier password"
+        const val CHANGE_PASSWORD_DESCRIPTION = "Updates the password associated with an email identifier."
+        const val CHANGE_PASSWORD_OPERATION_ID = "openIdentifierEmailChangePassword"
+        const val CHANGE_PASSWORD_RESPONSE_OK_DESCRIPTION = "Password updated successfully"
     }
 }

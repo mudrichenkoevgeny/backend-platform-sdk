@@ -18,8 +18,8 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * Runs background maintenance jobs for the user feature:
- * 1. [UserManager.deleteUsersDueForPermanentDeletionForSystem] on a configurable interval.
- * 2. [UserManager.unlockExpiredAccountLockoutsForSystem] on a configurable interval.
+ * 1. [UserManager.deleteUsersDueForPermanentDeletion] on a configurable interval.
+ * 2. [UserManager.unlockExpiredAccountLockouts] on a configurable interval.
  */
 @Singleton
 class UserScheduledJobsImpl @Inject constructor(
@@ -53,7 +53,7 @@ class UserScheduledJobsImpl @Inject constructor(
         accountDeletionJob = scope.launch {
             while (isActive) {
                 try {
-                    val deleteUsersResult = userManager.deleteUsersDueForPermanentDeletionForSystem()
+                    val deleteUsersResult = userManager.deleteUsersDueForPermanentDeletion()
                     if (deleteUsersResult is AppResult.Error) {
                         appLogger.logError(deleteUsersResult.error)
                     }
@@ -76,7 +76,7 @@ class UserScheduledJobsImpl @Inject constructor(
         accountLockoutCheckJob = scope.launch {
             while (isActive) {
                 try {
-                    val unlockResult = userManager.unlockExpiredAccountLockoutsForSystem()
+                    val unlockResult = userManager.unlockExpiredAccountLockouts()
                     if (unlockResult is AppResult.Error) {
                         appLogger.logError(unlockResult.error)
                     }

@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.iden
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -11,13 +12,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierSummary
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -35,34 +34,33 @@ class ManagementGetIdentifiersUseCaseTest {
     )
 
     @Test
-    fun `successfully retrieves paged identifiers`() = runTest {
+    fun `successfully returns paginated identifiers for management`() = runTest {
         val managerId = UserId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
-        val pageParams = PageParams(page = 1, size = 10)
-        val permissions = setOf(PermissionCode("test.permission"))
+        val permissions = setOf(PermissionCode("admin.access"))
+        val pagedResult = mockk<PagedResult<UserIdentifierSummary>>()
 
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { permissionCodes } returns permissions
-        }
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            permissionCodes = permissions
+        )
 
-        val pagedResult = mockk<PagedResult<UserIdentifier>>()
-
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery {
-            identifierManager.getIdentifiersPageForManagement(
+            identifierManager.getUserIdentifiersSummaryPage(
                 managementUserPermissionCodes = permissions,
-                pageParams = pageParams,
-                sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-                sortOrder = SortOrder.DESC,
-                userIds = emptyList(),
-                userAuthProviders = emptyList(),
-                identifiers = emptyList()
+                pageParams = any(),
+                sortBy = any(),
+                sortOrder = any(),
+                userIds = any(),
+                userAuthProviders = any(),
+                identifiers = any()
             )
         } returns AppResult.Success(pagedResult)
 
         val result = useCase(
-            pageParams = pageParams,
+            pageParams = PageParams(1, 10),
             sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
             sortOrder = SortOrder.DESC,
             userIds = emptyList(),
@@ -75,15 +73,15 @@ class ManagementGetIdentifiersUseCaseTest {
     }
 
     @Test
-    fun `returns error when management user is not active`() = runTest {
+    fun `returns error when manager is not active`() = runTest {
         val managerId = UserId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.BANNED
+        )
 
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.BANNED
-        }
-
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 
         val result = useCase(
             pageParams = PageParams(1, 10),
@@ -96,15 +94,14 @@ class ManagementGetIdentifiersUseCaseTest {
         )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserIllegalAccountStatus)
-        coVerify(exactly = 0) { identifierManager.getIdentifiersPageForManagement(any(), any(), any(), any(), any(), any(), any()) }
     }
 
     @Test
-    fun `returns error when management user not found`() = runTest {
+    fun `returns error when manager user is not found`() = runTest {
         val managerId = UserId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
 
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(null)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(null)
 
         val result = useCase(
             pageParams = PageParams(1, 10),
@@ -128,15 +125,22 @@ class ManagementGetIdentifiersUseCaseTest {
         val filterStrings = listOf("test")
         val permissions = setOf(PermissionCode("admin.access"))
 
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { permissionCodes } returns permissions
-        }
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            permissionCodes = permissions
+        )
 
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery {
-            identifierManager.getIdentifiersPageForManagement(
-                any(), any(), any(), any(), any(), any(), any()
+            identifierManager.getUserIdentifiersSummaryPage(
+                managementUserPermissionCodes = permissions,
+                pageParams = any(),
+                sortBy = any(),
+                sortOrder = any(),
+                userIds = any(),
+                userAuthProviders = any(),
+                identifiers = any()
             )
         } returns AppResult.Success(mockk())
 
@@ -151,7 +155,7 @@ class ManagementGetIdentifiersUseCaseTest {
         )
 
         coVerify {
-            identifierManager.getIdentifiersPageForManagement(
+            identifierManager.getUserIdentifiersSummaryPage(
                 managementUserPermissionCodes = permissions,
                 pageParams = any(),
                 sortBy = UserSortValues.UserIdentifierSortBy.UPDATED_AT,

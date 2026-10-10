@@ -2,16 +2,15 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.sess
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.session.createTestUserSessionPrivate
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,16 +33,17 @@ class ManagementGetSessionUseCaseTest {
     fun `successfully retrieves user session for management`() = runTest {
         val targetSessionId = UserSessionId.generate()
         val managementUserId = defaultContext.userId
-        val expectedSession = mockk<UserSession>()
+        val expectedSession = createTestUserSessionPrivate(id = targetSessionId)
 
-        val managementUser = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { permissionCodes } returns emptySet()
-        }
+        val managementUser = createTestUserInternal(
+            id = managementUserId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            permissionCodes = emptySet()
+        )
 
-        coEvery { userManager.getUserByIdForSelf(managementUserId) } returns AppResult.Success(managementUser)
+        coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
         coEvery {
-            sessionManager.getUserSessionForManagement(
+            sessionManager.getUserSessionPrivate(
                 userSessionId = targetSessionId,
                 managementUserId = managementUserId,
                 managementUserPermissionCodes = any()
@@ -60,14 +60,15 @@ class ManagementGetSessionUseCaseTest {
         val targetSessionId = UserSessionId.generate()
         val managementUserId = defaultContext.userId
 
-        val managementUser = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { permissionCodes } returns emptySet()
-        }
+        val managementUser = createTestUserInternal(
+            id = managementUserId,
+            accountStatus = UserAccountStatus.ACTIVE,
+            permissionCodes = emptySet()
+        )
 
-        coEvery { userManager.getUserByIdForSelf(managementUserId) } returns AppResult.Success(managementUser)
+        coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
         coEvery {
-            sessionManager.getUserSessionForManagement(any(), any(), any())
+            sessionManager.getUserSessionPrivate(any(), any(), any())
         } returns AppResult.Success(null)
 
         val result = useCase(targetSessionId, defaultContext)
@@ -79,11 +80,12 @@ class ManagementGetSessionUseCaseTest {
     fun `returns error when management user is not active`() = runTest {
         val targetSessionId = UserSessionId.generate()
         val managementUserId = defaultContext.userId
-        val managementUser = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.BANNED
-        }
+        val managementUser = createTestUserInternal(
+            id = managementUserId,
+            accountStatus = UserAccountStatus.BANNED
+        )
 
-        coEvery { userManager.getUserByIdForSelf(managementUserId) } returns AppResult.Success(managementUser)
+        coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
 
         val result = useCase(targetSessionId, defaultContext)
 
@@ -93,7 +95,7 @@ class ManagementGetSessionUseCaseTest {
     @Test
     fun `returns error when management user not found`() = runTest {
         val targetSessionId = UserSessionId.generate()
-        coEvery { userManager.getUserByIdForSelf(any()) } returns AppResult.Success(null)
+        coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(null)
 
         val result = useCase(targetSessionId, defaultContext)
 

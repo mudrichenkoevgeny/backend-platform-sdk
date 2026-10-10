@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
@@ -10,10 +11,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserSummary
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -50,15 +50,26 @@ class ManagementGetUsersUseCaseTest {
 
     @Test
     fun `successfully returns paged users when manager is active`() = runTest {
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.ACTIVE
-            every { permissionCodes } returns emptySet()
-        }
-        val pagedResult = mockk<PagedResult<UserDetails>>()
+        val managerInternal = createTestUserInternal(id = managerId, accountStatus = UserAccountStatus.ACTIVE)
+        val userInternal = createTestUserInternal()
+        val pagedInternalResult = PagedResult(
+            items = listOf(userInternal),
+            totalCount = 1,
+            pageNumber = 1,
+            pageSize = 20,
+            totalPages = 1
+        )
+        val expectedPagedResult = PagedResult(
+            items = listOf(userInternal.toUserSummary()),
+            totalCount = 1,
+            pageNumber = 1,
+            pageSize = 20,
+            totalPages = 1
+        )
 
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery {
-            userManager.getUsersPageForManagement(
+            userManager.getUsersInternalPage(
                 managementUserPermissionCodes = any(),
                 pageParams = any(),
                 sortBy = any(),
@@ -72,7 +83,7 @@ class ManagementGetUsersUseCaseTest {
                 isTotpEnabled = any(),
                 accountLockoutTypes = any()
             )
-        } returns AppResult.Success(pagedResult)
+        } returns AppResult.Success(pagedInternalResult)
 
         val result = useCase(
             pageParams = defaultPageParams,
@@ -89,16 +100,14 @@ class ManagementGetUsersUseCaseTest {
             authenticatedRequestContext = context
         )
 
-        assertEquals(AppResult.Success(pagedResult), result)
+        assertEquals(AppResult.Success(expectedPagedResult), result)
     }
 
     @Test
     fun `returns error when manager is not active`() = runTest {
-        val managerDetails = mockk<UserDetails> {
-            every { accountStatus } returns UserAccountStatus.BANNED
-        }
+        val managerInternal = createTestUserInternal(id = managerId, accountStatus = UserAccountStatus.BANNED)
 
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 
         val result = useCase(
             pageParams = defaultPageParams,
@@ -120,7 +129,7 @@ class ManagementGetUsersUseCaseTest {
 
     @Test
     fun `returns error when manager not found`() = runTest {
-        coEvery { userManager.getUserByIdForSelf(managerId) } returns AppResult.Success(null)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(null)
 
         val result = useCase(
             pageParams = defaultPageParams,

@@ -39,10 +39,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.toUserSessionIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toDeletedSessionsPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.DeletedSessionsPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.UserSessionPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.UserSessionPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.UserSessionSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.open.session.OpenSessionRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
@@ -179,8 +181,8 @@ class OpenSessionRouter @Inject constructor(
         )
 
         response {
-            code(HttpStatusCode.NoContent) {
-                description = LOGOUT_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION
+            code(HttpStatusCode.OK) {
+                description = LOGOUT_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -232,7 +234,7 @@ class OpenSessionRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
-                body<PagedResult<UserSessionPayload>>()
+                body<PagedResult<UserSessionSummaryPayload>>()
                 description = GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -275,7 +277,7 @@ class OpenSessionRouter @Inject constructor(
         )
 
         call.respondResult(result, appLogger, appErrorParser) { pagedSessions ->
-            pagedSessions.mapItems { userSession -> userSession.toUserSessionPayload() }
+            pagedSessions.mapItems { userSessionSummary -> userSessionSummary.toUserSessionSummaryPayload() }
         }
     }
 
@@ -302,7 +304,7 @@ class OpenSessionRouter @Inject constructor(
 
         response {
             code(HttpStatusCode.OK) {
-                body<UserSessionPayload>()
+                body<UserSessionPrivatePayload>()
                 description = GET_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
@@ -334,8 +336,8 @@ class OpenSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userSession ->
-            userSession.toUserSessionPayload()
+        call.respondResult(result, appLogger, appErrorParser) { userSessionPrivate ->
+            userSessionPrivate.toUserSessionPrivatePayload()
         }
     }
 
@@ -551,36 +553,36 @@ class OpenSessionRouter @Inject constructor(
     }
 
     companion object {
-        const val LOGOUT_ROUTE_SUMMARY = "Logout from current session"
-        const val LOGOUT_ROUTE_DESCRIPTION = "Terminates the current user session and invalidates the associated authentication tokens."
-        const val LOGOUT_ROUTE_OPERATION_ID = "logout"
-        const val LOGOUT_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Success. Current session has been terminated."
+        const val LOGOUT_ROUTE_SUMMARY = "Logout current user"
+        const val LOGOUT_ROUTE_DESCRIPTION = "Terminates the current active session."
+        const val LOGOUT_ROUTE_OPERATION_ID = "openLogout"
+        const val LOGOUT_ROUTE_RESPONSE_OK_DESCRIPTION = "Logged out successfully"
 
-        const val GET_SESSIONS_ROUTE_SUMMARY = "Get all active sessions"
-        const val GET_SESSIONS_ROUTE_DESCRIPTION = "Returns a list of all active sessions for the current user, including device info and login method."
-        const val GET_SESSIONS_ROUTE_OPERATION_ID = "getSessions"
-        const val GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "List of active sessions"
+        const val GET_SESSIONS_ROUTE_SUMMARY = "List active user sessions"
+        const val GET_SESSIONS_ROUTE_DESCRIPTION = "Retrieves a paginated list of active sessions."
+        const val GET_SESSIONS_ROUTE_OPERATION_ID = "openGetSessions"
+        const val GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Active sessions retrieved successfully"
 
-        const val GET_SESSION_ROUTE_SUMMARY = "Get specific session"
-        const val GET_SESSION_ROUTE_DESCRIPTION = "Retrieves specific session details by its identifier."
-        const val GET_SESSION_ROUTE_OPERATION_ID = "getSession"
-        const val GET_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "ID of the session to retrieve"
+        const val GET_SESSION_ROUTE_SUMMARY = "Get active user session"
+        const val GET_SESSION_ROUTE_DESCRIPTION = "Retrieves details of a specific active session."
+        const val GET_SESSION_ROUTE_OPERATION_ID = "openGetSession"
+        const val GET_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the session to retrieve."
         const val GET_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session details retrieved successfully"
 
-        const val DELETE_SESSION_ROUTE_SUMMARY = "Delete a specific session"
-        const val DELETE_SESSION_ROUTE_DESCRIPTION = "Deletes a session by its ID. The current session cannot be deleted using this endpoint."
-        const val DELETE_SESSION_ROUTE_OPERATION_ID = "deleteSession"
-        const val DELETE_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "ID of the session to delete"
+        const val DELETE_SESSION_ROUTE_SUMMARY = "Delete active user session"
+        const val DELETE_SESSION_ROUTE_DESCRIPTION = "Terminates a specific active session by ID."
+        const val DELETE_SESSION_ROUTE_OPERATION_ID = "openDeleteSession"
+        const val DELETE_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the session to delete."
         const val DELETE_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session deleted successfully"
 
-        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_SUMMARY = "Logout from all other sessions"
-        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_DESCRIPTION = "Deletes all user sessions except for the current one."
-        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_OPERATION_ID = "deleteAllOtherSessions"
-        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. All other sessions have been deleted."
+        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_SUMMARY = "Delete all other active user sessions"
+        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_DESCRIPTION = "Terminates all active sessions except the current one."
+        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_OPERATION_ID = "openDeleteAllOtherSessions"
+        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "All other sessions deleted successfully"
 
-        const val REAUTHENTICATE_SESSION_ROUTE_SUMMARY = "Re-authenticate session"
-        const val REAUTHENTICATE_SESSION_ROUTE_DESCRIPTION = "Performs re-authentication via TOTP to update the session's trust level."
-        const val REAUTHENTICATE_SESSION_ROUTE_OPERATION_ID = "reauthenticateSession"
-        const val REAUTHENTICATE_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session re-authenticated successfully"
+        const val REAUTHENTICATE_SESSION_ROUTE_SUMMARY = "Reauthenticate session with TOTP"
+        const val REAUTHENTICATE_SESSION_ROUTE_DESCRIPTION = "Verifies TOTP code to confirm session security."
+        const val REAUTHENTICATE_SESSION_ROUTE_OPERATION_ID = "openReauthenticateSession"
+        const val REAUTHENTICATE_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session reauthenticated successfully"
     }
 }

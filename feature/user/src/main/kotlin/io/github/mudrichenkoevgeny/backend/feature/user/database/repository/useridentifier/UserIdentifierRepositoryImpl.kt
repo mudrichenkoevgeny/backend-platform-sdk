@@ -16,7 +16,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
@@ -128,12 +127,6 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         return AppResult.Success(getIdentifierResultRow(userIdentifierId)?.toUserIdentifierInternal())
     }
 
-    override suspend fun getUserIdentifierById(
-        userIdentifierId: UserIdentifierId
-    ): AppResult<UserIdentifier?> {
-        return AppResult.Success(getIdentifierResultRow(userIdentifierId)?.toUserIdentifier())
-    }
-
     private fun getIdentifierResultRow(
         userIdentifierId: UserIdentifierId
     ): ResultRow? {
@@ -192,7 +185,7 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         userIds: List<UserId>,
         userAuthProviders: List<UserAuthProvider>,
         identifiers: List<String>
-    ): AppResult<PagedResult<UserIdentifier>> {
+    ): AppResult<PagedResult<UserIdentifierInternal>> {
         var query = UserIdentifiersTable.selectAll()
 
         query = query.andWhere {
@@ -236,7 +229,7 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         sortOrder: SortOrder,
         userAuthProviders: List<UserAuthProvider>,
         identifiers: List<String>
-    ): AppResult<PagedResult<UserIdentifier>> {
+    ): AppResult<PagedResult<UserIdentifierInternal>> {
         val query = UserIdentifiersTable
             .selectAll()
             .where { UserIdentifiersTable.userId eq userId.value }
@@ -258,7 +251,7 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         sortOrder: SortOrder,
         userAuthProviders: List<UserAuthProvider>,
         identifiers: List<String>
-    ): AppResult<PagedResult<UserIdentifier>> {
+    ): AppResult<PagedResult<UserIdentifierInternal>> {
         if (userAuthProviders.isNotEmpty()) {
             query.andWhere { UserIdentifiersTable.userAuthProvider inList userAuthProviders }
         }
@@ -285,7 +278,7 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         val items = query
             .orderBy(sortColumn to sortOrder.toExposedSortOrder())
             .applyPagination(params)
-            .map { it.toUserIdentifier() }
+            .map { it.toUserIdentifierInternal() }
 
         return AppResult.Success(
             PagedResult(
@@ -308,18 +301,6 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         passwordHash = this[UserIdentifiersTable.passwordHash]?.let { passwordHash ->
             PasswordHash(passwordHash)
         },
-        createdAt = this[UserIdentifiersTable.createdAt].toKotlinInstant(),
-        updatedAt = this[UserIdentifiersTable.updatedAt]?.toKotlinInstant()
-    )
-
-    private fun ResultRow.toUserIdentifier(): UserIdentifier = UserIdentifier(
-        id = UserIdentifierId(this[UserIdentifiersTable.id].value),
-        userId = UserId(this[UserIdentifiersTable.userId].value),
-        userAuthProvider = this[UserIdentifiersTable.userAuthProvider],
-        identifier = this[UserIdentifiersTable.identifier],
-        displayName = this[UserIdentifiersTable.displayName],
-        externalProviderEmail = this[UserIdentifiersTable.externalProviderEmail],
-        isSensitiveValuesMasked = false,
         createdAt = this[UserIdentifiersTable.createdAt].toKotlinInstant(),
         updatedAt = this[UserIdentifiersTable.updatedAt]?.toKotlinInstant()
     )

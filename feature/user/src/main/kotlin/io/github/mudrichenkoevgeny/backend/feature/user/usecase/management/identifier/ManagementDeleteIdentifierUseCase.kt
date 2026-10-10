@@ -25,10 +25,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import javax.inject.Inject
@@ -55,7 +55,7 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
      * - Requires an active management session (STAFF or ADMIN) with appropriate identifier deletion permissions.
      * - Enforces MFA step-up verification for the management caller via [authenticationChallengeService].
      * - Validates authority level hierarchy: the management caller must have a strictly higher
-     *   [UserDetails.authorityLevel] than the identifier owner.
+     *   [UserInternal.authorityLevel] than the identifier owner.
      * - Prevents self-identifier deletion via management routes.
      * - Enforces a safety check: a user must have at least one remaining identifier; deletion is
      *   rejected if it is the last one.
@@ -63,7 +63,7 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
      *
      * **Workflow:**
      * 1. Validates the management caller's status, identity (no self-targeting), and rate limits.
-     * 2. Retrieves the [UserIdentifier] and target user to verify hierarchy and permissions.
+     * 2. Retrieves the identifier and target user to verify hierarchy and permissions.
      * 3. Checks the required [IdentifierPermissionCode] based on the target user's role.
      * 4. Ensures the user retains at least one identifier after deletion.
      * 5. Confirms the management caller's session via MFA step-up.
@@ -102,7 +102,7 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
             )
         }
 
-        val managementUserResult = userManager.getUserByIdForSelf(managementUserId)
+        val managementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val managementUser = when (managementUserResult) {
@@ -126,10 +126,10 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
             )
         }
 
-        val userIdentifierResult = identifierManager.getUserIdentifierByIdForSystem(userIdentifierId)
+        val userIdentifierResult = identifierManager.getUserIdentifierInternalById(userIdentifierId)
             .mapNotNullOrError(
                 CommonError.NotFound(
-                    resource = UserIdentifier::class.java.simpleName,
+                    resource = UserIdentifierPrivate::class.java.simpleName,
                     identifier = userIdentifierId.asHexDashString()
                 )
             )
@@ -145,7 +145,7 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
             )
         }
 
-        val targetUserResult = userManager.getUserByIdForSelf(userIdentifier.userId)
+        val targetUserResult = userManager.getUserInternalById(userIdentifier.userId)
             .mapNotNullOrError(UserError.UserNotFound(userIdentifier.userId))
 
         val targetUser = when (targetUserResult) {
@@ -208,7 +208,7 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
             )
         }
 
-        val userIdentifiersListResult = identifierManager.getUserIdentifiersByUserId(targetUser.id)
+        val userIdentifiersListResult = identifierManager.getUserIdentifiersInternalPageByUserId(targetUser.id)
         val userIdentifiersList = when (userIdentifiersListResult) {
             is AppResult.Success -> userIdentifiersListResult.data
             is AppResult.Error -> return handleError(
@@ -230,7 +230,7 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
             )
         }
 
-        val managementUserSessionResult = sessionManager.getUserSessionForSystem(
+        val managementUserSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
 
@@ -246,7 +246,7 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
         }
 
         val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userDetails = managementUser,
+            userInternal = managementUser,
             userSession = managementUserSession,
             requireTotp = true
         )
@@ -260,7 +260,7 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
             )
         }
 
-        val sessionsForDeletedIdentifier = sessionManager.getUserSessionsByIdentifierId(
+        val sessionsForDeletedIdentifier = sessionManager.getUserSessionsInternalListByIdentifierId(
             userIdentifierId = userIdentifierId,
             userId = targetUser.id
         ).dataOrNull() ?: emptyList()

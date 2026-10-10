@@ -5,13 +5,13 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.GetManagementSecuritySettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.ResetSecuritySettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.UpdateSecuritySettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserDetails
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupManagementTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.GetManagementSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.ResetSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.UpdateSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toManagementSecuritySettingsPayload
@@ -69,7 +69,7 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
             }
         }
 
-        authProvider.shouldReturnSuccess(createTestUserDetails(role = UserRole.ADMIN))
+        authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
         every { getManagementSecuritySettingsUseCase() } returns AppResult.Success(createTestManagementSecuritySettings())
 
         val response = jsonClient.get(ManagementSecuritySettingsRoutes.GET_MANAGEMENT_SECURITY_SETTINGS) {
@@ -88,7 +88,7 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
             }
         }
 
-        authProvider.shouldReturnSuccess(createTestUserDetails(role = UserRole.ADMIN))
+        authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
         coEvery { updateSecuritySettingsUseCase(any(), any()) } returns AppResult.Success(Unit)
 
         val response = jsonClient.put(ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS) {
@@ -154,7 +154,7 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
             }
         }
 
-        authProvider.shouldReturnSuccess(createTestUserDetails(role = UserRole.ADMIN))
+        authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
         coEvery { resetSecuritySettingsUseCase(any()) } returns AppResult.Success(createTestManagementSecuritySettings())
 
         val response = jsonClient.post(ManagementSecuritySettingsRoutes.RESET_MANAGEMENT_SECURITY_SETTINGS) {

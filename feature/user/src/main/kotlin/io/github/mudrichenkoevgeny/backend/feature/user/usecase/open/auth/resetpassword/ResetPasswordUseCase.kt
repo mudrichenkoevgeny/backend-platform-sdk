@@ -24,7 +24,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.m
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -132,7 +131,7 @@ class ResetPasswordUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserByIdForSelf(userIdentifier.userId)
+        val userResult = userManager.getUserInternalById(userIdentifier.userId)
             .mapNotNullOrError(UserError.UserNotFound())
         val user = when (userResult) {
             is AppResult.Success -> userResult.data

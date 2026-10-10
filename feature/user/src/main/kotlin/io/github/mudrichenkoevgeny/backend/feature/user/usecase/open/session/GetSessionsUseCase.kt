@@ -14,7 +14,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSession
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionSummary
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,8 +30,7 @@ class GetSessionsUseCase @Inject constructor(
      *
      * **Workflow:**
      * 1. Validates the existence and accessibility of the caller via [UserManager].
-     * 2. Fetches a paged result of [UserSession] from [SessionManager] using provided filters and pagination params.
-     * 3. Masks sensitive technical data in the result based on the user's session context.
+     * 2. Fetches a paged result of [UserSessionSummary] from [SessionManager] using provided filters and pagination params.
      *
      * @param pageParams Pagination settings (index and size).
      * @param sortBy Field to sort the results by.
@@ -48,7 +47,7 @@ class GetSessionsUseCase @Inject constructor(
      * @param appVersions Optional filters for application versions.
      * @param operationSystemVersions Optional filters for OS versions.
      * @param authenticatedRequestContext The context of the authenticated request.
-     * @return [AppResult] with [PagedResult] of [UserSession].
+     * @return [AppResult] with [PagedResult] of [UserSessionSummary].
      */
     suspend operator fun invoke(
         pageParams: PageParams,
@@ -66,10 +65,10 @@ class GetSessionsUseCase @Inject constructor(
         appVersions: List<String>,
         operationSystemVersions: List<String>,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<PagedResult<UserSession>> {
+    ): AppResult<PagedResult<UserSessionSummary>> {
         val currentUserId = authenticatedRequestContext.userId
 
-        val getCurrentUserResult = userManager.getUserByIdForSelf(currentUserId)
+        val getCurrentUserResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (getCurrentUserResult) {
@@ -81,7 +80,7 @@ class GetSessionsUseCase @Inject constructor(
             return AppResult.Error(UserError.UserForbidden(currentUserId))
         }
 
-        return sessionManager.getSessionsPageForSelf(
+        return sessionManager.getUserSessionsSummaryPage(
             userId = currentUserId,
             pageParams = pageParams,
             sortBy = sortBy,

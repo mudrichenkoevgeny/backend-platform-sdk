@@ -5,14 +5,14 @@ import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import kotlin.time.Clock
 
 /**
  * Validates if the user has an allowed role, account status, and is not locked out.
  * Returns [AppResult.Success] if validation passes, or [AppResult.Error] with an appropriate [UserError] if it fails.
  */
-fun UserDetails.validateAccessEligibility(
+fun UserInternal.validateAccessEligibility(
     allowedRoles: Set<UserRole>,
     allowedAccountStatuses: Set<UserAccountStatus>
 ): AppResult<Unit> {

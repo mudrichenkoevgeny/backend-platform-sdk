@@ -11,7 +11,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifier
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierSummary
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import javax.inject.Inject
@@ -45,7 +45,7 @@ class ManagementGetIdentifiersUseCase @Inject constructor(
      * @param userAuthProviders optional filter by authentication provider types.
      * @param identifiers optional filter by identifier strings (e.g., specific email fragments).
      * @param authenticatedRequestContext context containing the ID of the management caller performing the search.
-     * @return [AppResult] containing [PagedResult] of [UserIdentifier] within the caller's authorized scope.
+     * @return [AppResult] containing [PagedResult] of [UserIdentifierSummary] within the caller's authorized scope.
      */
     suspend operator fun invoke(
         pageParams: PageParams,
@@ -55,10 +55,10 @@ class ManagementGetIdentifiersUseCase @Inject constructor(
         userAuthProviders: List<UserAuthProvider>,
         identifiers: List<String>,
         authenticatedRequestContext: AuthenticatedRequestContext,
-    ): AppResult<PagedResult<UserIdentifier>> {
+    ): AppResult<PagedResult<UserIdentifierSummary>> {
         val managementUserId = authenticatedRequestContext.userId
 
-        val getManagementUserResult = userManager.getUserByIdForSelf(managementUserId)
+        val getManagementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val managementUser = when (getManagementUserResult) {
@@ -70,7 +70,7 @@ class ManagementGetIdentifiersUseCase @Inject constructor(
             return AppResult.Error(UserError.UserIllegalAccountStatus(managementUserId))
         }
 
-        return identifierManager.getIdentifiersPageForManagement(
+        return identifierManager.getUserIdentifiersSummaryPage(
             managementUserPermissionCodes = managementUser.permissionCodes,
             pageParams = pageParams,
             sortBy = sortBy,

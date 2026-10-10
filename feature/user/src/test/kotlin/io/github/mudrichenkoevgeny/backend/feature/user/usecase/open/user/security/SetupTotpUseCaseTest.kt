@@ -12,6 +12,8 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChalleng
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.TotpCryptoProcessor
 import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.model.GeneratedTotpSecret
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
@@ -26,10 +28,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserDetails
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -70,10 +70,11 @@ class SetupTotpUseCaseTest {
 
     @Test
     fun `successfully initiates totp setup`() = runTest {
-        val userDetails = mockk<UserDetails> {
-            every { isTotpEnabled } returns false
-            every { role } returns UserRole.USER
-        }
+        val userInternal = createTestUserInternal(
+            id = userId,
+            isTotpEnabled = false,
+            role = UserRole.USER
+        )
 
         val userSession = mockk<UserSessionInternal> {
             every { identifierAuthProvider } returns UserAuthProvider.EMAIL
@@ -100,8 +101,8 @@ class SetupTotpUseCaseTest {
             rateLimiter.checkRateLimit(UserRateLimitAction.USER_SETUP_TOTP, any())
         } returns AppResult.Success(Unit)
 
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSession)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(userSession)
         coEvery { totpCryptoProcessor.generateNewSecret("test@example.com") } returns AppResult.Success(generatedTotp)
         coEvery { totpManager.initiateTotpSetup(userId, generatedTotp.encryptedSecret) } returns AppResult.Success(mockk())
 
@@ -165,12 +166,10 @@ class SetupTotpUseCaseTest {
 
     @Test
     fun `returns error when totp is already enabled`() = runTest {
-        val userDetails = mockk<UserDetails> {
-            every { isTotpEnabled } returns true
-        }
+        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = true)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = useCase(context)
 
@@ -180,10 +179,11 @@ class SetupTotpUseCaseTest {
 
     @Test
     fun `successfully handles external auth provider with email`() = runTest {
-        val userDetails = mockk<UserDetails> {
-            every { isTotpEnabled } returns false
-            every { role } returns UserRole.USER
-        }
+        val userInternal = createTestUserInternal(
+            id = userId,
+            isTotpEnabled = false,
+            role = UserRole.USER
+        )
 
         val userSession = mockk<UserSessionInternal> {
             every { identifierAuthProvider } returns UserAuthProvider.GOOGLE
@@ -191,14 +191,16 @@ class SetupTotpUseCaseTest {
             every { identifierId } returns this@SetupTotpUseCaseTest.identifierId
         }
 
-        val identifierInternal = mockk<UserIdentifierInternal> {
-            every { externalProviderEmail } returns "google-user@gmail.com"
-        }
+        val identifierInternal = createTestUserIdentifierInternal(
+            id = identifierId,
+            userId = userId,
+            externalProviderEmail = "google-user@gmail.com"
+        )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserByIdForSelf(userId) } returns AppResult.Success(userDetails)
-        coEvery { sessionManager.getUserSessionForSystem(sessionId) } returns AppResult.Success(userSession)
-        coEvery { identifierManager.getUserIdentifierByIdForSystem(identifierId) } returns AppResult.Success(identifierInternal)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(userSession)
+        coEvery { identifierManager.getUserIdentifierInternalById(identifierId) } returns AppResult.Success(identifierInternal)
 
         coEvery {
             totpCryptoProcessor.generateNewSecret("Google: google-user@gmail.com")

@@ -7,8 +7,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.AuditManager
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import javax.inject.Inject
@@ -33,20 +33,20 @@ class GetAuditEventUseCase @Inject constructor(
      *
      * **Workflow:**
      * 1. Validates the existence and status of the management caller.
-     * 2. Fetches the [AuditEvent] via [auditManager], which handles permission-based filtering
+     * 2. Fetches the [AuditEventPrivate] via [auditManager], which handles permission-based filtering
      *    and data masking.
      *
      * @param auditEventId The unique ID of the audit event to retrieve.
      * @param authenticatedRequestContext The context of the authenticated management caller.
-     * @return [AppResult] containing the [AuditEvent] if found and authorized.
+     * @return [AppResult] containing the [AuditEventPrivate] if found and authorized.
      */
     suspend operator fun invoke(
         auditEventId: AuditEventId,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<AuditEvent> {
+    ): AppResult<AuditEventPrivate> {
         val currentUserId = authenticatedRequestContext.userId
 
-        val getCurrentUserResult = userManager.getUserByIdForSelf(currentUserId)
+        val getCurrentUserResult = userManager.getUserInternalById(currentUserId)
             .mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (getCurrentUserResult) {
@@ -54,13 +54,13 @@ class GetAuditEventUseCase @Inject constructor(
             is AppResult.Success -> getCurrentUserResult.data
         }
 
-        return auditManager.getEventById(
+        return auditManager.getAuditEventPrivateById(
             eventId = auditEventId,
             userId = currentUserId,
             userPermissionCodes = currentUser.permissionCodes
         ).mapNotNullOrError(
             CommonError.NotFound(
-                resource = AuditEvent::class.java.simpleName,
+                resource = AuditEventPrivate::class.java.simpleName,
                 identifier = auditEventId.asHexDashString()
             )
         )
