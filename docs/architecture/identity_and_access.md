@@ -52,7 +52,7 @@ stateDiagram-v2
     PENDING_DELETION --> [*] : Background Task (Hard Delete)
 ```
 
-## 4. User Identifiers (`UserIdentifier`)
+## 4. User Identifiers
 
 An identifier represents a login method linked to a core `UserId`.
 - **Providers (`UserAuthProvider`)**: `EMAIL`, `PHONE`, `GOOGLE`, `APPLE`, etc.
@@ -60,7 +60,7 @@ An identifier represents a login method linked to a core `UserId`.
 - **Constraints**: The system strictly enforces uniqueness. A specific provider + identifier string (e.g., `EMAIL` + `user@example.com`) can only map to one user in the database.
 - **Security**: Identifiers securely hold password hashes (for `EMAIL` or `PHONE` if a password is set) or external IDs (for OAuth).
 
-## 5. User Sessions (`UserSession`)
+## 5. User Sessions
 
 Represents an active, authenticated login on a specific device.
 - **Tokens**: Associated with a short-lived `SessionToken` (JWT) and a long-lived `RefreshToken` (persisted as a secure cryptographic hash in the database to prevent theft).

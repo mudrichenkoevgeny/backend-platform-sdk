@@ -45,7 +45,7 @@ class ManagementDisableTotpUseCase @Inject constructor(
      * **Security:**
      * - Requires an active management session (STAFF or ADMIN) with appropriate security update permissions.
      * - Enforces MFA step-up verification for the management caller via [authenticationChallengeService].
-     * - Validates authority level hierarchy: the management caller's [UserDetails.authorityLevel] must be strictly
+     * - Validates authority level hierarchy: the management caller's [UserInternal.authorityLevel] must be strictly
      *   greater than the target's.
      * - Prevents self-disabling of TOTP via management routes.
      * - Protects against abuse via [UserManagementRateLimitAction.MANAGEMENT_USER_UPDATE].

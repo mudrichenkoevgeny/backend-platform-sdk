@@ -72,7 +72,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
      * @param lockoutType The new account lockout type, if provided.
      * @param temporaryLockoutUntil The new temporary lockout expiration timestamp in epoch milliseconds, if provided.
      * @param authenticatedRequestContext The context of the authenticated management request.
-     * @return [AppResult] containing the updated [UserDetails].
+     * @return [AppResult] containing the updated [UserPrivate].
      */
     suspend operator fun invoke(
         userId: UserId,

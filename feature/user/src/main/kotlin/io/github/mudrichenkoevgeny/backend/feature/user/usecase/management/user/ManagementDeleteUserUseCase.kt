@@ -50,7 +50,7 @@ class ManagementDeleteUserUseCase @Inject constructor(
      * - Requires an active management session (STAFF or ADMIN) with specific deletion permissions.
      * - Enforces MFA step-up verification for the **caller** via [authenticationChallengeService].
      * - Validates authority level hierarchy: the **caller** must have a strictly higher
-     *   [UserDetails.authorityLevel] than the target user.
+     *   [UserInternal.authorityLevel] than the target user.
      * - Prevents self-deletion via management routes.
      * - Protects against abuse via [UserManagementRateLimitAction.MANAGEMENT_USER_DELETE].
      *

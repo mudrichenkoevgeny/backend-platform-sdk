@@ -51,13 +51,13 @@ class ManagementDeleteSessionUseCase @Inject constructor(
      * - Requires an active management session (STAFF or ADMIN) with specific session deletion permissions.
      * - Enforces MFA step-up verification for the management caller via [authenticationChallengeService].
      * - Validates authority level hierarchy: the management caller must have a strictly higher
-     *   [UserDetails.authorityLevel] than the session owner.
+     *   [UserInternal.authorityLevel] than the session owner.
      * - Prevents self-session revocation via management routes.
      * - Protects against abuse via [UserManagementRateLimitAction.MANAGEMENT_SESSION_DELETE].
      *
      * **Workflow:**
      * 1. Validates the management caller's status and rate limits.
-     * 2. Retrieves the target [UserSession] and its owner to verify hierarchy and permissions.
+     * 2. Retrieves the target [UserSessionInternal] and its owner to verify hierarchy and permissions.
      * 3. Determines required [SessionPermissionCode] based on the target user's role.
      * 4. Ensures the management caller's session is confirmed via MFA step-up.
      * 5. Deletes the session via [sessionManager].

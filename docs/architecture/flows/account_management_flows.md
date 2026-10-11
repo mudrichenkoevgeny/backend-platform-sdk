@@ -30,7 +30,7 @@ sequenceDiagram
         Challenge-->>DeleteUseCase: Success
         
         DeleteUseCase->>Postgres: dbQuery { lock account -> PENDING_DELETION }
-        Postgres-->>DeleteUseCase: Updated UserDetails
+        Postgres-->>DeleteUseCase: Updated UserInternal
         
         DeleteUseCase->>Session: deleteAllUserSessions(userId)
         Session->>Postgres: dbQuery { delete sessions }
@@ -54,11 +54,11 @@ sequenceDiagram
     RestoreUseCase->>UserManager: restoreUser(userId)
     
     UserManager->>Postgres: dbQuery { get user }
-    Postgres-->>UserManager: UserDetails (status = PENDING_DELETION)
+    Postgres-->>UserManager: UserInternal (status = PENDING_DELETION)
     
     UserManager->>Postgres: dbQuery { update status -> ACTIVE }
-    Postgres-->>UserManager: Updated UserDetails
+    Postgres-->>UserManager: Updated UserInternal
     
     UserManager-->>RestoreUseCase: Success
-    RestoreUseCase-->>Client: 200 OK (UserDetails restored)
+    RestoreUseCase-->>Client: 200 OK (UserPrivate restored)
 ```

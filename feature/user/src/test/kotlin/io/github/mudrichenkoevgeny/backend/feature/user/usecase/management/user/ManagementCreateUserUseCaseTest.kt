@@ -73,7 +73,7 @@ class ManagementCreateUserUseCaseTest {
     @Test
     fun `successfully creates user`() = runTest {
         val permission = PermissionCode(UserPermissionCode.USER_CREATE_AS_USER.value)
-        val managerDetails = createTestUserInternal(
+        val managerInternal = createTestUserInternal(
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 100,
@@ -83,7 +83,7 @@ class ManagementCreateUserUseCaseTest {
         val managerSession = mockk<UserSessionInternal>()
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(managerSession)
         coEvery {
@@ -129,7 +129,7 @@ class ManagementCreateUserUseCaseTest {
     @Test
     fun `successfully creates user without password`() = runTest {
         val permission = PermissionCode(UserPermissionCode.USER_CREATE_AS_USER.value)
-        val managerDetails = createTestUserInternal(
+        val managerInternal = createTestUserInternal(
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 100,
@@ -139,7 +139,7 @@ class ManagementCreateUserUseCaseTest {
         val managerSession = mockk<UserSessionInternal>()
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(managerSession)
         coEvery {
             authenticationChallengeService.ensureSessionConfirmed(any(), any(), any())
@@ -184,14 +184,14 @@ class ManagementCreateUserUseCaseTest {
 
     @Test
     fun `returns error when authority level is too high`() = runTest {
-        val managerDetails = createTestUserInternal(
+        val managerInternal = createTestUserInternal(
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 50
         )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(
             status = AuditStatus.FAILED,
             metadata = emptySet()
@@ -212,7 +212,7 @@ class ManagementCreateUserUseCaseTest {
 
     @Test
     fun `returns error when manager lacks required creation permission`() = runTest {
-        val managerDetails = createTestUserInternal(
+        val managerInternal = createTestUserInternal(
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 100,
@@ -220,7 +220,7 @@ class ManagementCreateUserUseCaseTest {
         )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(
             status = AuditStatus.FAILED,
             metadata = emptySet()
@@ -242,7 +242,7 @@ class ManagementCreateUserUseCaseTest {
     @Test
     fun `returns error when created email is blocked by restriction policy`() = runTest {
         val permission = PermissionCode(UserPermissionCode.USER_CREATE_AS_USER.value)
-        val managerDetails = createTestUserInternal(
+        val managerInternal = createTestUserInternal(
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 100,
@@ -250,7 +250,7 @@ class ManagementCreateUserUseCaseTest {
         )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(mockk())
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
@@ -285,7 +285,7 @@ class ManagementCreateUserUseCaseTest {
         val managerPermission = PermissionCode(UserPermissionCode.USER_CREATE_AS_USER.value)
         val extraPermission = PermissionCode(UserPermissionCode.USER_UPDATE_SECURITY_FOR_STAFF.value)
 
-        val managerDetails = createTestUserInternal(
+        val managerInternal = createTestUserInternal(
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 100,
@@ -293,7 +293,7 @@ class ManagementCreateUserUseCaseTest {
         )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(
             status = AuditStatus.FAILED,
             metadata = emptySet()
@@ -314,14 +314,14 @@ class ManagementCreateUserUseCaseTest {
 
     @Test
     fun `returns error when creating non-staff or non-user role`() = runTest {
-        val managerDetails = createTestUserInternal(
+        val managerInternal = createTestUserInternal(
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 100
         )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(
             status = AuditStatus.FAILED,
             metadata = emptySet()

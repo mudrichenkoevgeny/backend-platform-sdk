@@ -59,7 +59,7 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
      * @param phoneNumber The phone number to be linked.
      * @param confirmationCode The OTP code received by the user.
      * @param authenticatedRequestContext The context of the authenticated request.
-     * @return [AppResult] containing the newly created [UserIdentifier].
+     * @return [AppResult] containing the newly created [UserIdentifierPrivate].
      */
     suspend operator fun invoke(
         phoneNumber: String,

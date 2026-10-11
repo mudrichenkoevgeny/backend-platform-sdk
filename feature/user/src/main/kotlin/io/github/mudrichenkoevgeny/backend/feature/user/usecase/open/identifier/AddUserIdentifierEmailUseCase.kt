@@ -68,7 +68,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
      * @param password The password to be associated with this identifier.
      * @param confirmationCode The OTP code received by the user via email.
      * @param authenticatedRequestContext The context of the authenticated request.
-     * @return [AppResult] containing the newly created [UserIdentifier].
+     * @return [AppResult] containing the newly created [UserIdentifierPrivate].
      */
     suspend operator fun invoke(
         email: String,

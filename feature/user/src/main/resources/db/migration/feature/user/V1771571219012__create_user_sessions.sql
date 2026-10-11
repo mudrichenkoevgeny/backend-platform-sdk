@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     device_name TEXT,
     app_version VARCHAR(64),
     operation_system_version VARCHAR(64),
-    language VARCHAR(16),
+    language VARCHAR(255),
 
     user_agent VARCHAR(255),
     ip_address VARCHAR(64),

@@ -4,6 +4,8 @@ ARG JRE_IMAGE=eclipse-temurin:21-jre-jammy
 FROM ${GRADLE_IMAGE} AS build
 WORKDIR /app
 
+COPY sample/deploy/docker/m2 /root/.m2/repository
+
 COPY gradlew settings.gradle.kts build.gradle.kts gradle.properties ./
 COPY gradle ./gradle
 

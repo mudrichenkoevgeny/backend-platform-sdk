@@ -52,7 +52,7 @@ class ResetPasswordUseCase @Inject constructor(
      * 1. Checks rate limits for the provided email.
      * 2. Validates the [newPassword] against the system's security policy.
      * 3. Verifies the [confirmationCode] for the [UserOtpVerificationType.EMAIL_PASSWORD_RESET] type.
-     * 4. Resolves the user's [UserIdentifier] associated with the provided email.
+     * 4. Resolves the user's [UserIdentifierInternal] associated with the provided email.
      * 5. Updates the identifier's password hash via [IdentifierManager].
      * 6. Logs the security event via [AuditLogger] with [UserAuditActionType.RESET_PASSWORD].
      *

@@ -112,11 +112,11 @@ class SessionManagerImplTest {
             clientDeviceInfo = clientInfo.clientDeviceInfo,
             expiresAt = expiresAt
         )
-        val userDetails = createTestUserInternal(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
+        val userInternal = createTestUserInternal(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
 
         coEvery { refreshTokenProvider.getRefreshTokenHash(oldRefreshToken) } returns AppResult.Success(oldHash)
         coEvery { userSessionRepository.getUserSessionByHash(oldHash) } returns AppResult.Success(currentSession)
-        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { userSessionRepository.deleteUserSessionById(currentSession.id) } returns AppResult.Success(Unit)
 
         every { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
@@ -502,11 +502,11 @@ class SessionManagerImplTest {
         val newHash = RefreshTokenHash("new-hash")
         val currentSession = createSampleInternalSession(userId, oldHash).copy(clientDeviceInfo = clientInfo.clientDeviceInfo)
         val newInternalSession = createSampleInternalSession(userId, newHash)
-        val userDetails = createTestUserInternal(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
+        val userInternal = createTestUserInternal(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
 
         coEvery { refreshTokenProvider.getRefreshTokenHash(oldRefreshToken) } returns AppResult.Success(oldHash)
         coEvery { userSessionRepository.getUserSessionByHash(oldHash) } returns AppResult.Success(currentSession)
-        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { userSessionRepository.deleteUserSessionById(currentSession.id) } returns AppResult.Success(Unit)
 
         every { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
@@ -539,11 +539,11 @@ class SessionManagerImplTest {
             clientDeviceInfo = clientInfo.clientDeviceInfo,
             expiresAt = expiresAt
         )
-        val userDetails = createTestUserInternal(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
+        val userInternal = createTestUserInternal(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
 
         coEvery { refreshTokenProvider.getRefreshTokenHash(oldRefreshToken) } returns AppResult.Success(oldHash)
         coEvery { userSessionRepository.getUserSessionByHash(oldHash) } returns AppResult.Success(currentSession)
-        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = manager.refreshSession(
             refreshToken = oldRefreshToken,

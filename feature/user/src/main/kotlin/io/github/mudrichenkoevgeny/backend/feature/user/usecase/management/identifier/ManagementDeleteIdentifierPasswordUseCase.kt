@@ -56,13 +56,13 @@ class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
      * - Requires an active management session (STAFF or ADMIN) with appropriate password deletion permissions.
      * - Enforces MFA step-up verification for the management caller via [authenticationChallengeService].
      * - Validates authority level hierarchy: the management caller must have a strictly higher
-     *   [UserDetails.authorityLevel] than the identifier owner.
+     *   [UserInternal.authorityLevel] than the identifier owner.
      * - Prevents self-targeting via management routes.
      * - Protects against abuse via [UserManagementRateLimitAction.MANAGEMENT_IDENTIFIER_DELETE_PASSWORD].
      *
      * **Workflow:**
      * 1. Validates the management caller's status, identity (no self-targeting), and rate limits.
-     * 2. Retrieves the [UserIdentifier] and target user to verify hierarchy and permissions.
+     * 2. Retrieves the [UserIdentifierInternal] and target user to verify hierarchy and permissions.
      * 3. Checks the required [IdentifierPermissionCode] based on the target user's role.
      * 4. Verifies that the identifier supports passwords and currently has a password credential set.
      * 5. Confirms the management caller's session via MFA step-up.

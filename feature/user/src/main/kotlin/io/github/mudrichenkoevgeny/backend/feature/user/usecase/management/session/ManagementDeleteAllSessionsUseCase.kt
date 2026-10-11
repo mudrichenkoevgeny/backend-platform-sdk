@@ -50,7 +50,7 @@ class ManagementDeleteAllSessionsUseCase @Inject constructor(
      * - Requires an active management session (STAFF or ADMIN) with appropriate session deletion permissions.
      * - Enforces MFA step-up verification for the management caller via [authenticationChallengeService].
      * - Validates authority level hierarchy: the management caller must have a strictly higher
-     *   [UserDetails.authorityLevel] than the target user.
+     *   [UserInternal.authorityLevel] than the target user.
      * - Prevents bulk session deletion for the caller's own account via management routes.
      * - Protects against abuse via [UserManagementRateLimitAction.MANAGEMENT_SESSION_DELETE_ALL].
      *

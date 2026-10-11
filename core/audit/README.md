@@ -1,12 +1,12 @@
 # core/audit
 
-Audit events: persistence, background logging, and shared masking helpers. Domain types such as `AuditEvent`, `AuditEventId`, and `AuditStatus` live in the **shared foundation** library this SDK depends on—not in this module.
+Audit events: persistence, background logging, and shared masking helpers. Domain types such as `AuditEventInternal`, `AuditEventId`, and `AuditStatus` live in the **shared foundation** library this SDK depends on—not in this module.
 
 ## What it provides
 
 - **[AuditEventRepository]** — insert and query `audit_events` (Exposed, [AuditEventsTable]). List queries take an **[AuditAccessFilter]** so SQL enforces which actor types and user roles the caller may see. Supports extensive filtering (actors, actions, resources, statuses) and search by message.
 - **[AuditService]** — fire-and-forget logging: `log(event)` runs `createEvent` on a background scope inside `dbQuery`; `awaitAll()` for tests or shutdown.
-- **[AuditLogger]** — convenience API that builds an `AuditEvent` with current timestamp and forwards it to `AuditService.log`.
+- **[AuditLogger]** — convenience API that builds an `AuditEventInternal` with current timestamp and forwards it to `AuditService.log`.
 - **[AuditErrorConverter]** — transforms `AppError` into audit-ready data using a chain of **[AuditErrorParser]** implementations.
 - **[AuditDataMasker]** — redacts `resourceId` and metadata values based on `AuditValueSensitivity` (Email, Phone, IP, etc.) before exposing events to external APIs.
 

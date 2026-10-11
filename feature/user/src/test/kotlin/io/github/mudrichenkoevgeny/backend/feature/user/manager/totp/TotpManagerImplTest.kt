@@ -58,7 +58,7 @@ class TotpManagerImplTest {
         val decryptedCodes = listOf(DecryptedString("code1"))
         val encryptedCodes = listOf(EncryptedString("enc1"))
         val settings = createSampleSettings(userId, isConfirmed = true)
-        val userDetails = createSampleUserInternal(userId)
+        val userInternal = createSampleUserInternal(userId)
 
         coEvery { aesCryptor.encrypt(any()) } returns AppResult.Success(encryptedCodes.first())
         coEvery {
@@ -66,7 +66,7 @@ class TotpManagerImplTest {
         } returns AppResult.Success(settings)
         coEvery {
             userRepository.updateUser(userId, isTotpEnabled = UpdateField.Set(true))
-        } returns AppResult.Success(userDetails)
+        } returns AppResult.Success(userInternal)
 
         val result = manager.confirmTotp(userId, decryptedCodes)
 
@@ -75,12 +75,12 @@ class TotpManagerImplTest {
 
     @Test
     fun `disableTotp success flow`() = runTest {
-        val userDetails = createSampleUserInternal(userId)
+        val userInternal = createSampleUserInternal(userId)
 
         coEvery { userTotpSettingsRepository.deleteSettings(userId) } returns AppResult.Success(Unit)
         coEvery {
             userRepository.updateUser(userId, isTotpEnabled = UpdateField.Set(false))
-        } returns AppResult.Success(userDetails)
+        } returns AppResult.Success(userInternal)
 
         val result = manager.disableTotp(userId)
 

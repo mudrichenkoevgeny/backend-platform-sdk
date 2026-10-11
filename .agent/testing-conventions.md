@@ -12,6 +12,7 @@ This document defines the testing methodology for the `backend-platform-sdk`. Th
 - **Manual Execution Only:** Test runs must be triggered explicitly by the developer (e.g., via Gradle).
 - **Execution Ban:** AI agents are **strictly prohibited** from initiating test suites or suggesting the user run them.
 - **Runnable Code:** AI must write complete, runnable test code without `TODO` placeholders.
+- **Mandatory Bug Fix Test Coverage:** When fixing a bug, edge-case defect, or regression, AI must write automated test coverage (unit or integration test) verifying the fix and preventing future regressions.
 
 ## 2. Dependency Management (Hard Requirement)
 - **Explicit Declaration:** Every module's `build.gradle.kts` must declare **all** test dependencies explicitly (JUnit Jupiter, MockK, etc.).

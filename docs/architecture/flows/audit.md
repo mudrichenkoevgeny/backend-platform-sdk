@@ -40,7 +40,7 @@ sequenceDiagram
     Masker->>Masker: Redact IPs (e.g., 192.168.*.*)<br/>Redact Emails (e.g., j***@email.com)
     Masker-->>AuditLogger: Masked Metadata
     
-    AuditLogger->>Service: createEvent(AuditEvent)
+    AuditLogger->>Service: createEvent(AuditEventInternal)
     
     %% Asynchronous persistence
     Service->>Scope: launch(Dispatchers.IO)

@@ -69,7 +69,7 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         val targetSessionId = UserSessionId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
 
-        val managerDetails = createTestUserInternal(
+        val managerInternal = createTestUserInternal(
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 100,
@@ -85,7 +85,7 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             every { passwordHash } returns PasswordHash("hashed_password")
         }
 
-        val targetUserDetails = createTestUserInternal(
+        val targetUserInternal = createTestUserInternal(
             id = targetUserId,
             role = UserRole.USER,
             authorityLevel = 50,
@@ -99,9 +99,9 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         val updatedUserIdentifier = createTestUserIdentifierPrivate()
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
-        coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserDetails)
+        coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserInternal)
         coEvery { sessionManager.getUserSessionInternal(context.sessionId) } returns AppResult.Success(managerSession)
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
         coEvery { sessionManager.getUserSessionsInternalListByIdentifierId(targetIdentifierId, targetUserId) } returns AppResult.Success(listOf(targetSession))
@@ -135,7 +135,7 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         val targetIdentifierId = UserIdentifierId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
 
-        val managerDetails = createTestUserInternal(
+        val managerInternal = createTestUserInternal(
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 100,
@@ -151,7 +151,7 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             every { passwordHash } returns null
         }
 
-        val targetUserDetails = createTestUserInternal(
+        val targetUserInternal = createTestUserInternal(
             id = targetUserId,
             role = UserRole.USER,
             authorityLevel = 50,
@@ -159,9 +159,9 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
-        coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserDetails)
+        coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserInternal)
         every { auditErrorConverter.convert(any<UserError.UserIdentifierPasswordNotSupported>()) } returns AuditErrorLogData(
             status = AuditStatus.FAILED,
             metadata = emptySet()
@@ -179,7 +179,7 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         val targetIdentifierId = UserIdentifierId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
 
-        val managerDetails = createTestUserInternal(
+        val managerInternal = createTestUserInternal(
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 100,
@@ -195,7 +195,7 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             every { passwordHash } returns null
         }
 
-        val targetUserDetails = createTestUserInternal(
+        val targetUserInternal = createTestUserInternal(
             id = targetUserId,
             role = UserRole.USER,
             authorityLevel = 50,
@@ -203,9 +203,9 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
-        coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserDetails)
+        coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserInternal)
         every { auditErrorConverter.convert(any<UserError.UserIdentifierPasswordNotSet>()) } returns AuditErrorLogData(
             status = AuditStatus.FAILED,
             metadata = emptySet()
@@ -222,7 +222,7 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         val targetIdentifierId = UserIdentifierId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
 
-        val managerDetails = createTestUserInternal(
+        val managerInternal = createTestUserInternal(
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 100
@@ -233,7 +233,7 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         }
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
@@ -249,7 +249,7 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         val targetIdentifierId = UserIdentifierId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
 
-        val managerDetails = createTestUserInternal(
+        val managerInternal = createTestUserInternal(
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 50
@@ -259,16 +259,16 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             every { userId } returns targetUserId
         }
 
-        val targetUserDetails = createTestUserInternal(
+        val targetUserInternal = createTestUserInternal(
             id = targetUserId,
             authorityLevel = 100,
             accountStatus = UserAccountStatus.ACTIVE
         )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerDetails)
+        coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
-        coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserDetails)
+        coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserInternal)
         every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         val result = useCase(targetIdentifierId, context)

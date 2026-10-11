@@ -62,10 +62,10 @@ class JwtAuthenticationProviderTest {
     @Test
     fun `requireUser should return Success when user has correct role and status`() = runTest {
         val userId = UserId.generate()
-        val userDetails = createFakeUser(userId, UserRole.USER, UserAccountStatus.ACTIVE)
+        val userInternal = createFakeUserInternal(userId, UserRole.USER, UserAccountStatus.ACTIVE)
 
         every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
-        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = provider.requireUser(
             call = call,
@@ -75,16 +75,16 @@ class JwtAuthenticationProviderTest {
         )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(userDetails, (result as AppResult.Success).data)
+        assertEquals(userInternal, (result as AppResult.Success).data)
     }
 
     @Test
     fun `requireUser should return Error when user role is not allowed`() = runTest {
         val userId = UserId.generate()
-        val userDetails = createFakeUser(userId, UserRole.USER, UserAccountStatus.ACTIVE)
+        val userInternal = createFakeUserInternal(userId, UserRole.USER, UserAccountStatus.ACTIVE)
 
         every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
-        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = provider.requireUser(
             call = call,
@@ -101,7 +101,7 @@ class JwtAuthenticationProviderTest {
     fun `requireUser should return Error when permissions are missing`() = runTest {
         val userId = UserId.generate()
         val permission = PermissionCode("test.permission")
-        val userDetails = createFakeUser(
+        val userInternal = createFakeUserInternal(
             userId = userId,
             role = UserRole.USER,
             status = UserAccountStatus.ACTIVE,
@@ -109,7 +109,7 @@ class JwtAuthenticationProviderTest {
         )
 
         every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
-        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = provider.requireUser(
             call = call,
@@ -125,10 +125,10 @@ class JwtAuthenticationProviderTest {
     @Test
     fun `requireUser should return Error when account status is BANNED`() = runTest {
         val userId = UserId.generate()
-        val userDetails = createFakeUser(userId, UserRole.USER, UserAccountStatus.BANNED)
+        val userInternal = createFakeUserInternal(userId, UserRole.USER, UserAccountStatus.BANNED)
 
         every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
-        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = provider.requireUser(
             call = call,
@@ -162,7 +162,7 @@ class JwtAuthenticationProviderTest {
     @Test
     fun `requireUser should return Error when lockoutType is INDEFINITE`() = runTest {
         val userId = UserId.generate()
-        val userDetails = createFakeUser(
+        val userInternal = createFakeUserInternal(
             userId = userId,
             role = UserRole.USER,
             status = UserAccountStatus.ACTIVE,
@@ -170,7 +170,7 @@ class JwtAuthenticationProviderTest {
         )
 
         every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
-        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = provider.requireUser(
             call = call,
@@ -186,7 +186,7 @@ class JwtAuthenticationProviderTest {
     @Test
     fun `requireUser should return Error when lockoutType is TEMPORARY and time is in future`() = runTest {
         val userId = UserId.generate()
-        val userDetails = createFakeUser(
+        val userInternal = createFakeUserInternal(
             userId = userId,
             role = UserRole.USER,
             status = UserAccountStatus.ACTIVE,
@@ -195,7 +195,7 @@ class JwtAuthenticationProviderTest {
         )
 
         every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
-        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userDetails)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = provider.requireUser(
             call = call,
@@ -208,7 +208,7 @@ class JwtAuthenticationProviderTest {
         assertTrue((result as AppResult.Error).error is UserError.UserLocked)
     }
 
-    private fun createFakeUser(
+    private fun createFakeUserInternal(
         userId: UserId,
         role: UserRole,
         status: UserAccountStatus,

@@ -43,10 +43,10 @@ sequenceDiagram
         OtpService-->>Register: true
         Register->>AuthManager: authenticateOrCreateUser(email, password)
         AuthManager->>AuthManager: Hash password (Argon2)
-        AuthManager->>Postgres: dbQuery { insert User, insert UserIdentifier }
+        AuthManager->>Postgres: dbQuery { insert UserInternal, insert UserIdentifierInternal }
         
         AuthManager->>Session: createSession()
-        Session->>Postgres: dbQuery { insert UserSession }
+        Session->>Postgres: dbQuery { insert UserSessionInternal }
         Session-->>AuthManager: AuthData (SessionToken, RefreshToken)
         
         AuthManager-->>Register: AuthData
@@ -78,7 +78,7 @@ sequenceDiagram
     Redis-->>Lockout: false
 
     AuthManager->>Postgres: dbQuery { get identifier & user }
-    Postgres-->>AuthManager: UserDetails + Identifier
+    Postgres-->>AuthManager: UserInternal + Identifier
     
     AuthManager->>AuthManager: Verify password (Argon2 via PasswordHasher)
 
@@ -105,7 +105,7 @@ sequenceDiagram
     end
 
     AuthManager->>Session: createSession(userId, clientInfo)
-    Session->>Postgres: dbQuery { insert UserSession }
+    Session->>Postgres: dbQuery { insert UserSessionInternal }
     Session-->>AuthManager: SessionToken + RefreshToken
     AuthManager-->>Ktor: AuthData
     Ktor-->>Client: 200 OK (AuthData)
