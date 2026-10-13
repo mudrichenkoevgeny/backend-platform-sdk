@@ -59,7 +59,7 @@ class LogoutUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.LOGOUT,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),
@@ -90,7 +90,7 @@ class LogoutUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.LOGOUT,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),

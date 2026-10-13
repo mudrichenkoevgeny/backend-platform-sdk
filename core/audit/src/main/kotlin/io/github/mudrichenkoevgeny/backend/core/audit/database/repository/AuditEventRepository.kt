@@ -54,8 +54,8 @@ interface AuditEventRepository {
      * - [actorIds] — actor ids ([AuditEventInternal.actorId]).
      * - [actorTypes] — [AuditEventInternal.actorType] values.
      * - [actorUserRoles] — [AuditEventInternal.actorUserRole] values.
-     * - [actions] — [AuditEventInternal.action] values (matches persisted [AuditActionType.serialName]).
-     * - [resources] — [AuditEventInternal.resource] values (matches persisted [AuditResourceType.serialName]).
+     * - [actions] — [AuditEventInternal.action] values (matches persisted [AuditActionType.value]).
+     * - [resources] — [AuditEventInternal.resource] values (matches persisted [AuditResourceType.value]).
      * - [resourceIds] — [AuditEventInternal.resourceId] values.
      * - [statuses] — [AuditEventInternal.status] values.
      * - [messages] — case-insensitive substrings on [AuditEventInternal.message].
@@ -78,8 +78,8 @@ interface AuditEventRepository {
     suspend fun getEventsPageWithAccessFilter(
         accessFilter: AuditAccessFilter,
         pageParams: PageParams,
-        sortBy: AuditSortValues.AuditEventSortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
-        sortOrder: SortOrder = SortOrder.DESC,
+        sortBy: AuditSortValues.AuditEventSortBy = AuditSortValues.AuditEventSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
         actorIds: List<String> = emptyList(),
         actorTypes: List<AuditActorType> = emptyList(),
         actorUserRoles: List<String> = emptyList(),

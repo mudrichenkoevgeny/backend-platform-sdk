@@ -46,7 +46,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.m
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.toUserIdentifierIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierPrivatePayload
@@ -61,7 +60,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.reques
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.useridentifiers.AddUserIdentifierEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.useridentifiers.AddUserIdentifierExternalAuthProviderRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.useridentifiers.AddUserIdentifierPhoneRequest
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.open.identifier.OpenIdentifierRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.open.user.identifier.OpenIdentifierRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get
@@ -231,8 +230,8 @@ class OpenIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = GET_USER_IDENTIFIER_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
         )
         request {
             pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
@@ -286,8 +285,8 @@ class OpenIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = GET_USER_IDENTIFIERS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
         )
         response {
             code(HttpStatusCode.OK) {
@@ -338,8 +337,8 @@ class OpenIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = DELETE_USER_IDENTIFIER_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
         request {
@@ -397,8 +396,8 @@ class OpenIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = ADD_EMAIL_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
         request { body<AddUserIdentifierEmailRequest>() }
@@ -461,8 +460,8 @@ class OpenIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = ADD_PHONE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
         request { body<AddUserIdentifierPhoneRequest>() }
@@ -524,8 +523,8 @@ class OpenIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = ADD_EXTERNAL_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
         request { body<AddUserIdentifierExternalAuthProviderRequest>() }
@@ -594,8 +593,8 @@ class OpenIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = SEND_ADD_EMAIL_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
         )
         request { body<SendConfirmationToEmailRequest>() }
         response {
@@ -642,8 +641,8 @@ class OpenIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = SEND_ADD_PHONE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
         )
         request { body<SendConfirmationToPhoneRequest>() }
         response {
@@ -690,8 +689,8 @@ class OpenIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = CHANGE_PASSWORD_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
         request { body<EmailPasswordChangeRequest>() }
@@ -758,7 +757,7 @@ class OpenIdentifierRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.serialName,
+            actorUserRole = authenticatedRequestContext.userRole.value,
             action = actionType,
             resource = UserAuditResourceType.IDENTIFIER,
             resourceId = resourceId,

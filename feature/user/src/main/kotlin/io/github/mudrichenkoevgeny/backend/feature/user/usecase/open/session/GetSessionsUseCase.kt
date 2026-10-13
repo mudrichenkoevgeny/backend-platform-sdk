@@ -50,20 +50,20 @@ class GetSessionsUseCase @Inject constructor(
      * @return [AppResult] with [PagedResult] of [UserSessionSummary].
      */
     suspend operator fun invoke(
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserSessionSortBy,
-        sortOrder: SortOrder,
-        identifiers: List<String>,
-        identifierIds: List<UserIdentifierId>,
-        identifierAuthProviders: List<UserAuthProvider>,
-        clientTypes: List<ClientType>,
-        userAgents: List<String>,
-        ipAddresses: List<String>,
-        languages: List<String>,
-        deviceIds: List<String>,
-        deviceNames: List<String>,
-        appVersions: List<String>,
-        operationSystemVersions: List<String>,
+        pageParams: PageParams = PageParams(),
+        sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
+        identifiers: List<String> = emptyList(),
+        identifierIds: List<UserIdentifierId> = emptyList(),
+        identifierAuthProviders: List<UserAuthProvider> = emptyList(),
+        clientTypes: List<ClientType> = emptyList(),
+        userAgents: List<String> = emptyList(),
+        ipAddresses: List<String> = emptyList(),
+        languages: List<String> = emptyList(),
+        deviceIds: List<String> = emptyList(),
+        deviceNames: List<String> = emptyList(),
+        appVersions: List<String> = emptyList(),
+        operationSystemVersions: List<String> = emptyList(),
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<UserSessionSummary>> {
         val currentUserId = authenticatedRequestContext.userId

@@ -40,7 +40,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contra
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.identifier.UserIdentifierPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.identifier.UserIdentifierSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.security.password.EmailPasswordChangeRequest
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.identifier.SelfManagementIdentifierRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.self.user.identifier.SelfManagementIdentifierRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
 import io.github.smiley4.ktoropenapi.post
@@ -121,8 +121,8 @@ class SelfManagementIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = GET_IDENTIFIER_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
         )
         request {
             pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
@@ -176,8 +176,8 @@ class SelfManagementIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = GET_IDENTIFIERS_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
         )
         response {
             code(HttpStatusCode.OK) {
@@ -228,8 +228,8 @@ class SelfManagementIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = CHANGE_PASSWORD_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
         request { body<EmailPasswordChangeRequest>() }
@@ -287,7 +287,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.serialName,
+            actorUserRole = authenticatedRequestContext.userRole.value,
             action = actionType,
             resource = UserAuditResourceType.IDENTIFIER,
             status = AuditStatus.DENIED,

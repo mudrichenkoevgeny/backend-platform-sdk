@@ -75,7 +75,7 @@ class ReauthenticateSessionUseCaseTest {
         val mfaChallengeData = MfaChallengeData(
             token = mfaToken,
             userId = userId.asHexDashString(),
-            userRole = context.userRole.serialName,
+            userRole = context.userRole.value,
             sessionId = sessionId.asHexDashString(),
             type = MfaChallengeType.STEP_UP
         )
@@ -95,7 +95,7 @@ class ReauthenticateSessionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.REAUTHENTICATE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),
@@ -122,7 +122,7 @@ class ReauthenticateSessionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.REAUTHENTICATE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),
@@ -141,7 +141,7 @@ class ReauthenticateSessionUseCaseTest {
         val wrongMfaChallengeData = MfaChallengeData(
             token = mfaToken,
             userId = UserId.generate().asHexDashString(),
-            userRole = context.userRole.serialName,
+            userRole = context.userRole.value,
             sessionId = sessionId.asHexDashString(),
             type = MfaChallengeType.STEP_UP
         )
@@ -159,7 +159,7 @@ class ReauthenticateSessionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.REAUTHENTICATE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),
@@ -178,7 +178,7 @@ class ReauthenticateSessionUseCaseTest {
         val mfaChallengeData = MfaChallengeData(
             token = mfaToken,
             userId = userId.asHexDashString(),
-            userRole = context.userRole.serialName,
+            userRole = context.userRole.value,
             sessionId = sessionId.asHexDashString(),
             type = MfaChallengeType.STEP_UP
         )
@@ -198,7 +198,7 @@ class ReauthenticateSessionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.REAUTHENTICATE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),
@@ -217,7 +217,7 @@ class ReauthenticateSessionUseCaseTest {
         val mfaChallengeData = MfaChallengeData(
             token = mfaToken,
             userId = userId.asHexDashString(),
-            userRole = context.userRole.serialName,
+            userRole = context.userRole.value,
             sessionId = sessionId.asHexDashString(),
             type = MfaChallengeType.STEP_UP
         )
@@ -238,7 +238,7 @@ class ReauthenticateSessionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.REAUTHENTICATE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),

@@ -134,7 +134,7 @@ class LoginByEmailUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = UserAuditActionType.LOGIN_BY_EMAIL,
             resource = UserAuditResourceType.USER,
             resourceId = resourceId,

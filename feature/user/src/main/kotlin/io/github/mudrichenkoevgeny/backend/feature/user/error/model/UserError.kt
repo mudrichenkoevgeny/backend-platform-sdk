@@ -102,7 +102,7 @@ sealed class UserError(
             mapOf(UserErrorArgs.USER_ID to userId.asHexDashString())
         },
         publicArgs = buildMap {
-            put(UserErrorArgs.ACCOUNT_LOCKOUT_TYPE, lockoutType.serialName)
+            put(UserErrorArgs.ACCOUNT_LOCKOUT_TYPE, lockoutType.value)
             temporaryLockoutUntil?.let {
                 put(UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL, it.toEpochMilliseconds().toString())
             }
@@ -290,7 +290,7 @@ sealed class UserError(
         code = UserErrorCodes.USER_IDENTIFIER_LIMIT_REACHED,
         publicArgs = mapOf(
             UserErrorArgs.MAX_NUMBER_OF_IDENTIFIERS to maxNumberOfIdentifiers,
-            UserErrorArgs.USER_AUTH_PROVIDER to userAuthProvider.serialName
+            UserErrorArgs.USER_AUTH_PROVIDER to userAuthProvider.value
         ),
         httpStatusCode = HttpStatusCode.Conflict,
         appErrorSeverity = AppErrorSeverity.LOW

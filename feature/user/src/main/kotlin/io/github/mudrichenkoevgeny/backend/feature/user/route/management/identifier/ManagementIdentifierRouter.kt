@@ -39,7 +39,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identif
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.identifier.UserIdentifierPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.identifier.UserIdentifierSummaryPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.identifier.ManagementIdentifierRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.users.identifiers.ManagementIdentifiersRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get
@@ -54,10 +54,10 @@ import javax.inject.Singleton
  * Management HTTP routes for managing user identifiers (e.g., email, phone).
  *
  * Registered routes:
- * 1. [ManagementIdentifierRoutes.GET_IDENTIFIERS] — retrieves a filtered, paginated list of identifiers via [ManagementGetIdentifiersUseCase].
- * 2. [ManagementIdentifierRoutes.GET_IDENTIFIER] — retrieves a specific identifier's details via [ManagementGetIdentifierUseCase].
- * 3. [ManagementIdentifierRoutes.DELETE_IDENTIFIER] — removes a user identifier via [ManagementDeleteIdentifierUseCase].
- * 4. [ManagementIdentifierRoutes.DELETE_IDENTIFIER_PASSWORD] — revokes an identifier's password via [ManagementDeleteIdentifierPasswordUseCase].
+ * 1. [ManagementIdentifiersRoutes.GET_IDENTIFIERS] — retrieves a filtered, paginated list of identifiers via [ManagementGetIdentifiersUseCase].
+ * 2. [ManagementIdentifiersRoutes.GET_IDENTIFIER] — retrieves a specific identifier's details via [ManagementGetIdentifierUseCase].
+ * 3. [ManagementIdentifiersRoutes.DELETE_IDENTIFIER] — removes a user identifier via [ManagementDeleteIdentifierUseCase].
+ * 4. [ManagementIdentifiersRoutes.DELETE_IDENTIFIER_PASSWORD] — revokes an identifier's password via [ManagementDeleteIdentifierPasswordUseCase].
  */
 @Singleton
 class ManagementIdentifierRouter @Inject constructor(
@@ -86,7 +86,7 @@ class ManagementIdentifierRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.get(
-            path = ManagementIdentifierRoutes.GET_IDENTIFIERS,
+            path = ManagementIdentifiersRoutes.GET_IDENTIFIERS,
             builder = { getIdentifiersDocs(allowedRoles, allowedAccountStatuses) },
             body = { getIdentifiers(allowedRoles, allowedAccountStatuses) }
         )
@@ -97,7 +97,7 @@ class ManagementIdentifierRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.get(
-            path = ManagementIdentifierRoutes.GET_IDENTIFIER,
+            path = ManagementIdentifiersRoutes.GET_IDENTIFIER,
             builder = { getIdentifierDocs(allowedRoles, allowedAccountStatuses) },
             body = { getIdentifier(allowedRoles, allowedAccountStatuses) }
         )
@@ -108,7 +108,7 @@ class ManagementIdentifierRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
-            path = ManagementIdentifierRoutes.DELETE_IDENTIFIER,
+            path = ManagementIdentifiersRoutes.DELETE_IDENTIFIER,
             builder = { deleteIdentifierDocs(allowedRoles, allowedAccountStatuses) },
             body = { deleteIdentifier(allowedRoles, allowedAccountStatuses) }
         )
@@ -119,7 +119,7 @@ class ManagementIdentifierRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
-            path = ManagementIdentifierRoutes.DELETE_IDENTIFIER_PASSWORD,
+            path = ManagementIdentifiersRoutes.DELETE_IDENTIFIER_PASSWORD,
             builder = { deleteIdentifierPasswordDocs(allowedRoles, allowedAccountStatuses) },
             body = { deleteIdentifierPassword(allowedRoles, allowedAccountStatuses) }
         )
@@ -134,8 +134,8 @@ class ManagementIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = GET_IDENTIFIERS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
         )
         response {
             code(HttpStatusCode.OK) {
@@ -187,8 +187,8 @@ class ManagementIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = GET_IDENTIFIER_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
         )
         request {
             pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
@@ -242,8 +242,8 @@ class ManagementIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = DELETE_IDENTIFIER_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
@@ -301,8 +301,8 @@ class ManagementIdentifierRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
         description = getFormattedDescription(
             description = DELETE_IDENTIFIER_PASSWORD_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
@@ -362,7 +362,7 @@ class ManagementIdentifierRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.serialName,
+            actorUserRole = authenticatedRequestContext.userRole.value,
             action = actionType,
             resource = UserAuditResourceType.IDENTIFIER,
             status = AuditStatus.DENIED,

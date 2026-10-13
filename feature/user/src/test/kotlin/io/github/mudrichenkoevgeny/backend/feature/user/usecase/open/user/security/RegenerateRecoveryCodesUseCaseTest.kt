@@ -96,7 +96,7 @@ class RegenerateRecoveryCodesUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_REGENERATE_RECOVERY_CODES,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -126,7 +126,7 @@ class RegenerateRecoveryCodesUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_REGENERATE_RECOVERY_CODES,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),

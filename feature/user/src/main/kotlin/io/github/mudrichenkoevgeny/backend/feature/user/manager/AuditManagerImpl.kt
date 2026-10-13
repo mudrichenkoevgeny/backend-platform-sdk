@@ -145,13 +145,13 @@ class AuditManagerImpl @Inject constructor(
         if (hasUserAccess || hasStaffAccess || hasAdminAccess) {
             allowedActorTypes.add(AuditActorType.USER)
             if (hasUserAccess) {
-                allowedUserRoles.add(UserRole.USER.serialName)
+                allowedUserRoles.add(UserRole.USER.value)
             }
             if (hasStaffAccess) {
-                allowedUserRoles.add(UserRole.STAFF.serialName)
+                allowedUserRoles.add(UserRole.STAFF.value)
             }
             if (hasAdminAccess) {
-                allowedUserRoles.add(UserRole.ADMIN.serialName)
+                allowedUserRoles.add(UserRole.ADMIN.value)
             }
         }
 

@@ -48,12 +48,12 @@ class ManagementGetIdentifiersUseCase @Inject constructor(
      * @return [AppResult] containing [PagedResult] of [UserIdentifierSummary] within the caller's authorized scope.
      */
     suspend operator fun invoke(
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy,
-        sortOrder: SortOrder,
-        userIds: List<UserId>,
-        userAuthProviders: List<UserAuthProvider>,
-        identifiers: List<String>,
+        pageParams: PageParams = PageParams(),
+        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
+        userIds: List<UserId> = emptyList(),
+        userAuthProviders: List<UserAuthProvider> = emptyList(),
+        identifiers: List<String> = emptyList(),
         authenticatedRequestContext: AuthenticatedRequestContext,
     ): AppResult<PagedResult<UserIdentifierSummary>> {
         val managementUserId = authenticatedRequestContext.userId

@@ -197,7 +197,7 @@ class UpdateSecuritySettingsUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = SecurityAuditActionType.MANAGEMENT_UPDATE_SECURITY_SETTINGS,
             resource = SecurityAuditResourceType.SECURITY_SETTINGS,
             status = status,

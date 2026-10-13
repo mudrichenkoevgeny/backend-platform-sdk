@@ -114,7 +114,7 @@ class LogoutUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = UserAuditActionType.LOGOUT,
             resource = UserAuditResourceType.SESSION,
             resourceId = resourceId,

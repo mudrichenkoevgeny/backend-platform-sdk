@@ -329,7 +329,7 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole.serialName,
+            actorUserRole = actorUserRole.value,
             action = UserAuditActionType.MANAGEMENT_DELETE_IDENTIFIER,
             resource = UserAuditResourceType.IDENTIFIER,
             resourceId = resourceId,

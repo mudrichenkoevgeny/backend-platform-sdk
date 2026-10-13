@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test
 
 class GetAuditEventsUseCaseTest {
 
-    private val pageParams = PageParams(page = 1, size = 10)
+    private val pageParams = PageParams()
 
     @Test
     fun `returns UserForbidden when current user is not found`() = runTest {
@@ -86,8 +86,8 @@ class GetAuditEventsUseCaseTest {
             auditManager.getAuditEventsSummaryPage(
                 managementUserPermissionCodes = userInternal.permissionCodes,
                 pageParams = pageParams,
-                sortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
-                sortOrder = SortOrder.DESC,
+                sortBy = AuditSortValues.AuditEventSortBy.DEFAULT,
+                sortOrder = SortOrder.DEFAULT,
                 actorIds = emptyList(),
                 actorTypes = emptyList(),
                 actorUserRoles = emptyList(),

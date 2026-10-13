@@ -147,7 +147,7 @@ class DeleteAllOtherSessionsUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = UserAuditActionType.SELF_DELETE_OTHER_SESSIONS,
             resource = UserAuditResourceType.SESSION,
             resourceId = resourceId,

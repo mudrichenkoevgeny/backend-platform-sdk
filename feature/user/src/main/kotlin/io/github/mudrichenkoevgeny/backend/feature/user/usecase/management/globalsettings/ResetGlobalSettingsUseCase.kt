@@ -190,7 +190,7 @@ class ResetGlobalSettingsUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = SettingsAuditActionType.MANAGEMENT_RESET_GLOBAL_SETTINGS,
             resource = SettingsAuditResourceType.GLOBAL_SETTINGS,
             status = status,

@@ -52,9 +52,9 @@ class GetIdentifiersUseCaseTest {
 
         val result = useCase(
             authenticatedRequestContext = context,
-            pageParams = PageParams(page = 1, size = 10),
-            sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            pageParams = PageParams(),
+            sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             userAuthProviders = emptyList(),
             identifiers = emptyList()
         )
@@ -72,8 +72,8 @@ class GetIdentifiersUseCaseTest {
         val result = useCase(
             authenticatedRequestContext = context,
             pageParams = PageParams(0, 10),
-            sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             userAuthProviders = emptyList(),
             identifiers = emptyList()
         )
@@ -105,8 +105,8 @@ class GetIdentifiersUseCaseTest {
         val result = useCase(
             authenticatedRequestContext = context,
             pageParams = PageParams(0, 10),
-            sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             userAuthProviders = emptyList(),
             identifiers = emptyList()
         )

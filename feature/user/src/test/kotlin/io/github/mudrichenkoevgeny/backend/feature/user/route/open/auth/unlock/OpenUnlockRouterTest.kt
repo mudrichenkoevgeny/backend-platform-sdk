@@ -163,7 +163,7 @@ class OpenUnlockRouterTest : BaseRouterTest() {
 
         val response = jsonClient.post(OpenUnlockRoutes.UNLOCK_BY_EXTERNAL_PROVIDER) {
             contentType(ContentType.Application.Json)
-            setBody(UnlockByExternalAuthProviderRequest(authProvider = UserAuthProvider.GOOGLE.serialName, externalProviderToken = "ext_token"))
+            setBody(UnlockByExternalAuthProviderRequest(authProvider = UserAuthProvider.GOOGLE.value, externalProviderToken = "ext_token"))
         }
 
         assertEquals(HttpStatusCode.OK, response.status)

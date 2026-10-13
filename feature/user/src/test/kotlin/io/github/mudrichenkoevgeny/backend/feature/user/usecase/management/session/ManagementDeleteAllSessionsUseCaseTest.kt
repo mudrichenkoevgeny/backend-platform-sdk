@@ -96,7 +96,7 @@ class ManagementDeleteAllSessionsUseCaseTest {
             auditLogger.log(
                 actorId = managerId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.MANAGEMENT_DELETE_ALL_USER_SESSIONS,
                 resource = UserAuditResourceType.SESSION,
                 status = AuditStatus.SUCCESS,

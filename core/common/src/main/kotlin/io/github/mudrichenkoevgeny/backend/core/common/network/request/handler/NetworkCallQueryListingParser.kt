@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.network.request.handler
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingParamNames
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.ktor.server.application.ApplicationCall
@@ -20,11 +21,11 @@ fun <SortBy> ApplicationCall.parseListingQueryParams(
 ): ListingQueryParams<SortBy> {
     val pageNumber = parsePositiveIntQuery(
         paramName = ListingParamNames.Pagination.PAGE_NUMBER,
-        default = 1
+        default = ListingDefaultValues.Pagination.PAGE_NUMBER
     )
     val pageSize = parsePositiveIntQuery(
         paramName = ListingParamNames.Pagination.PAGE_SIZE,
-        default = PageParams.DEFAULT_PAGE_SIZE
+        default = ListingDefaultValues.Pagination.PAGE_SIZE
     )
 
     val sortByRaw = firstNonBlankQueryValue(ListingParamNames.Sort.SORT_BY)
@@ -37,7 +38,7 @@ fun <SortBy> ApplicationCall.parseListingQueryParams(
 
     val sortOrderRaw = firstNonBlankQueryValue(ListingParamNames.Sort.SORT_ORDER)
     val sortOrder = if (sortOrderRaw == null) {
-        SortOrder.DESC
+        SortOrder.DEFAULT
     } else {
         SortOrder.fromValueOrNull(sortOrderRaw)
             ?: throw RequestHandlingException(CommonError.InvalidParameterValue(ListingParamNames.Sort.SORT_ORDER))

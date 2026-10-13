@@ -34,8 +34,8 @@ A documentation task for a module or feature is considered complete ONLY if:
 4. **Side Effects:** For `Unit` functions (especially in Managers/Repositories), the summary must clearly state the outcome (e.g., "Persists the audit event and triggers a Redis broadcast").
 
 ## 5. Inline Comments vs. KDoc
-- **No Narrative Comments:** Strictly forbidden to write comments that narrate the obvious flow of code.
-- **Logic Clarity:** Prefer self-documenting code (naming and structure).
+- **No Inline Implementation Comments:** Strictly forbidden to write narrative inline comments (`//` or `/* ... */`) inside code bodies. Logic must be self-documenting.
+- **MANDATORY KDoc Preservation:** KDoc blocks (`/** ... */`) are structured API documentation, NOT code comments. AI agents must NEVER delete or strip KDoc documentation during refactorings, updates, or code edits. All KDoc must be kept and updated.
 - **Constraints Only:** Use inline comments sparingly and only for non-obvious technical constraints, thread-safety notes, or complex external API quirks.
 
 ---

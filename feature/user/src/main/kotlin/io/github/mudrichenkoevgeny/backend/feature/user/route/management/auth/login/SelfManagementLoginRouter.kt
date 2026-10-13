@@ -94,8 +94,8 @@ class SelfManagementLoginRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_EMAIL_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true,
             securityType = SecurityRequirementType.SENSITIVE_LOGIN_CHALLENGE
         )
@@ -136,8 +136,8 @@ class SelfManagementLoginRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_TOTP_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
         request { body<VerifyTotpPayload>() }
@@ -177,8 +177,8 @@ class SelfManagementLoginRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
         request { body<VerifyTotpPayload>() }

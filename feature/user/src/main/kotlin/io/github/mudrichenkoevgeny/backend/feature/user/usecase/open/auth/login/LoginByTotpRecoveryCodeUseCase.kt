@@ -199,7 +199,7 @@ class LoginByTotpRecoveryCodeUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = UserAuditActionType.LOGIN_BY_TOTP_RECOVERY_CODE,
             resource = UserAuditResourceType.USER,
             resourceId = actorId,

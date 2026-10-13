@@ -114,7 +114,7 @@ class AddUserIdentifierEmailUseCaseTest {
             auditLogger.log(
                 actorId = context.userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.ADD_IDENTIFIER_EMAIL,
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = identifierId.asHexDashString(),
@@ -149,7 +149,7 @@ class AddUserIdentifierEmailUseCaseTest {
             auditLogger.log(
                 actorId = context.userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.ADD_IDENTIFIER_EMAIL,
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = null,

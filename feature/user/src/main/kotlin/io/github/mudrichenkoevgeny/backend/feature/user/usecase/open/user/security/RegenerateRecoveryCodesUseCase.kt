@@ -215,7 +215,7 @@ class RegenerateRecoveryCodesUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = UserAuditActionType.SELF_REGENERATE_RECOVERY_CODES,
             resource = UserAuditResourceType.USER,
             resourceId = actorId,

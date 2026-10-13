@@ -54,17 +54,17 @@ class ManagementGetUsersUseCase @Inject constructor(
      * @return [AppResult] containing [PagedResult] of [UserSummary].
      */
     suspend operator fun invoke(
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserSortBy,
-        sortOrder: SortOrder,
-        roles: List<UserRole>,
-        accountStatuses: List<UserAccountStatus>,
-        accountStatusesOnRestore: List<UserAccountStatus>,
-        authorityLevelFrom: Int?,
-        authorityLevelTo: Int?,
-        requiredPermissionCodes: Set<PermissionCode>,
-        isTotpEnabled: Boolean?,
-        accountLockoutTypes: List<AccountLockoutType>,
+        pageParams: PageParams = PageParams(),
+        sortBy: UserSortValues.UserSortBy = UserSortValues.UserSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
+        roles: List<UserRole> = emptyList(),
+        accountStatuses: List<UserAccountStatus> = emptyList(),
+        accountStatusesOnRestore: List<UserAccountStatus> = emptyList(),
+        authorityLevelFrom: Int? = null,
+        authorityLevelTo: Int? = null,
+        requiredPermissionCodes: Set<PermissionCode> = emptySet(),
+        isTotpEnabled: Boolean? = null,
+        accountLockoutTypes: List<AccountLockoutType> = emptyList(),
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<UserSummary>> {
         val managementUserId = authenticatedRequestContext.userId

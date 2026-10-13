@@ -120,7 +120,7 @@ class SecurityAuditErrorParserTest {
         value: String
     ) {
         val entry = metadata?.find { it.key == key }
-        assertNotNull(entry, "Metadata key ${key.serialName} not found")
+        assertNotNull(entry, "Metadata key ${key.value} not found")
         assertEquals(value, entry?.value)
     }
 }

@@ -79,8 +79,8 @@ class OpenRegisterRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = REGISTER_BY_EMAIL_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
         request { body<RegisterByEmailRequest>() }
@@ -116,8 +116,8 @@ class OpenRegisterRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = SEND_REGISTER_CONFIRMATION_TO_EMAIL_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
         request { body<SendConfirmationToEmailRequest>() }

@@ -72,7 +72,7 @@ class ScheduleUserDeletionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_SCHEDULE_USER_DELETION,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -95,7 +95,7 @@ class ScheduleUserDeletionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_SCHEDULE_USER_DELETION,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -171,7 +171,7 @@ class ScheduleUserDeletionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_SCHEDULE_USER_DELETION,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),

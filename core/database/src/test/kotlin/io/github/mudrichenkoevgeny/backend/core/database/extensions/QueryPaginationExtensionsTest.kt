@@ -31,7 +31,7 @@ class QueryPaginationExtensionsTest {
     @Test
     fun `applyPagination applies limit and offset to Query without throwing`() = runBlocking {
         suspendTransaction {
-            val query = TestTable.selectAll().applyPagination(PageParams(page = 1, size = 10))
+            val query = TestTable.selectAll().applyPagination(PageParams())
 
             assertNotNull(query)
         }

@@ -19,7 +19,7 @@ class GlobalSettingsConfigFactoryImplTest {
         every { envReader.getByKeyOrNull(SettingsEnvKeys.PRIVACY_POLICY_URL) } returns "https://example.com/privacy"
         every { envReader.getByKeyOrNull(SettingsEnvKeys.TERMS_OF_SERVICE_URL) } returns "https://example.com/terms"
         every { envReader.getByKeyOrNull(SettingsEnvKeys.CONTACT_SUPPORT_EMAIL) } returns "support@example.com"
-        every { envReader.getByKeyOrNull(SettingsEnvKeys.MIN_SUPPORTED_APP_VERSIONS) } returns """{"WEB":"1.0.0"}"""
+        every { envReader.getByKeyOrNull(SettingsEnvKeys.MIN_SUPPORTED_APP_VERSIONS) } returns """{"web":"1.0.0"}"""
         every { envReader.getByKeyOrNull(SettingsEnvKeys.IS_TRACING_ENABLED) } returns "true"
         every { envReader.getByKeyOrNull(SettingsEnvKeys.IS_METRICS_ENABLED) } returns "true"
         every { envReader.getByKeyOrNull(SettingsEnvKeys.IS_VERBOSE_LOGGING_ENABLED) } returns "false"

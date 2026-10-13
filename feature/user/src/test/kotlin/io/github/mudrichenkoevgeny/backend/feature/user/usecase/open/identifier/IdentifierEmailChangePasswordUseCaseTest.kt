@@ -110,7 +110,7 @@ class IdentifierEmailChangePasswordUseCaseTest {
                 resourceId = identifierId.asHexDashString(),
                 resource = UserAuditResourceType.IDENTIFIER,
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 metadata = any()
             )
         }
@@ -157,7 +157,7 @@ class IdentifierEmailChangePasswordUseCaseTest {
                 actorType = AuditActorType.USER,
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = identifierId.asHexDashString(),
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 metadata = any()
             )
         }

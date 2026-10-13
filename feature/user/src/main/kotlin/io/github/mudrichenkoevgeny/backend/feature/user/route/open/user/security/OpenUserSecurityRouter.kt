@@ -151,8 +151,8 @@ class OpenUserSecurityRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER_SECURITY)
         description = getFormattedDescription(
             description = SETUP_TOTP_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = false
         )
         response {
@@ -198,8 +198,8 @@ class OpenUserSecurityRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER_SECURITY)
         description = getFormattedDescription(
             description = ENABLE_TOTP_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = false
         )
         request { body<VerifyTotpPayload>() }
@@ -258,8 +258,8 @@ class OpenUserSecurityRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER_SECURITY)
         description = getFormattedDescription(
             description = DISABLE_TOTP_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = false,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
@@ -311,8 +311,8 @@ class OpenUserSecurityRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER_SECURITY)
         description = getFormattedDescription(
             description = GET_RECOVERY_CODES_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = false,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
@@ -367,8 +367,8 @@ class OpenUserSecurityRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER_SECURITY)
         description = getFormattedDescription(
             description = REGENERATE_RECOVERY_CODES_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = false,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
@@ -426,7 +426,7 @@ class OpenUserSecurityRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.serialName,
+            actorUserRole = authenticatedRequestContext.userRole.value,
             action = actionType,
             resource = UserAuditResourceType.USER,
             resourceId = authenticatedRequestContext.userId.asHexDashString(),

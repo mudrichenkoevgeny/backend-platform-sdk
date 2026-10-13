@@ -90,7 +90,7 @@ class AddUserIdentifierPhoneUseCaseTest {
             auditLogger.log(
                 actorId = context.userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.ADD_IDENTIFIER_PHONE,
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = identifierId.asHexDashString(),
@@ -128,7 +128,7 @@ class AddUserIdentifierPhoneUseCaseTest {
                 action = UserAuditActionType.ADD_IDENTIFIER_PHONE,
                 actorId = context.userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = null,
                 metadata = any(),

@@ -42,7 +42,7 @@ fun JwtBuilder.withIdentifierIdClaim(identifierId: UserIdentifierId): JwtBuilder
 }
 
 fun JwtBuilder.withUserRoleSubject(userRole: UserRole): JwtBuilder {
-    return this.claim(UserTokenClaims.USER_ROLE, userRole.serialName)
+    return this.claim(UserTokenClaims.USER_ROLE, userRole.value)
 }
 
 /** JWTCredential **/

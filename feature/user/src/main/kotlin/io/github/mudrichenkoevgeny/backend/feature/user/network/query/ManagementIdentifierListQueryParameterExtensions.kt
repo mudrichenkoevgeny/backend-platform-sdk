@@ -16,7 +16,7 @@ import io.ktor.server.application.ApplicationCall
  */
 fun ApplicationCall.parseManagementIdentifiersListQueryParams(): ManagementIdentifierListQueryParams {
     val listing = parseListingQueryParams(
-        defaultSortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
+        defaultSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
         parseSortByOrNull = UserSortValues.UserIdentifierSortBy::fromValueOrNull
     )
 

@@ -29,7 +29,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.toUserIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.user.security.ManagementUserSecurityRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.users.security.ManagementUsersSecurityRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.ktor.http.HttpStatusCode
@@ -43,7 +43,7 @@ import javax.inject.Singleton
  * Management HTTP routes for administrative user security control.
  *
  * Registered routes:
- * 1. [ManagementUserSecurityRoutes.DISABLE_TOTP] — administratively disables Two-Factor Authentication (TOTP) for a specified user via [ManagementDisableTotpUseCase].
+ * 1. [ManagementUsersSecurityRoutes.DISABLE_TOTP] — administratively disables Two-Factor Authentication (TOTP) for a specified user via [ManagementDisableTotpUseCase].
  */
 @Singleton
 class ManagementUserSecurityRouter @Inject constructor(
@@ -66,7 +66,7 @@ class ManagementUserSecurityRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
-            path = ManagementUserSecurityRoutes.DISABLE_TOTP,
+            path = ManagementUsersSecurityRoutes.DISABLE_TOTP,
             builder = { disableTotpDocs(allowedRoles, allowedAccountStatuses) },
             body = { disableTotp(allowedRoles, allowedAccountStatuses) }
         )
@@ -81,8 +81,8 @@ class ManagementUserSecurityRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER_SECURITY)
         description = getFormattedDescription(
             description = DISABLE_TOTP_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
@@ -142,7 +142,7 @@ class ManagementUserSecurityRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.serialName,
+            actorUserRole = authenticatedRequestContext.userRole.value,
             action = actionType,
             resource = UserAuditResourceType.USER,
             status = AuditStatus.DENIED,

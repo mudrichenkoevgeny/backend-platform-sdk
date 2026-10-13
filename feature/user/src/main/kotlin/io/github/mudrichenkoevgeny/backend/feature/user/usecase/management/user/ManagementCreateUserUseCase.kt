@@ -273,7 +273,7 @@ class ManagementCreateUserUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole.serialName,
+            actorUserRole = actorUserRole.value,
             action = UserAuditActionType.MANAGEMENT_CREATE_USER,
             resource = UserAuditResourceType.USER,
             resourceId = resourceId,

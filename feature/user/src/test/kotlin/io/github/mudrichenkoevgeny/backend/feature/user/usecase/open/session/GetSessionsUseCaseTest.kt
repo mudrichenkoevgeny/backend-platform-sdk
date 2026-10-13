@@ -33,7 +33,7 @@ class GetSessionsUseCaseTest {
     private val context = createTestAuthenticatedRequestContext(userRole = UserRole.USER)
     private val userId = context.userId
 
-    private val defaultPageParams = PageParams(page = 1, size = 10)
+    private val defaultPageParams = PageParams()
 
     @Test
     fun `successfully returns paged sessions when user is active`() = runTest {
@@ -45,8 +45,8 @@ class GetSessionsUseCaseTest {
             sessionManager.getUserSessionsSummaryPage(
                 userId = userId,
                 pageParams = defaultPageParams,
-                sortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
-                sortOrder = SortOrder.DESC,
+                sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+                sortOrder = SortOrder.DEFAULT,
                 identifiers = emptyList(),
                 identifierIds = emptyList(),
                 identifierAuthProviders = emptyList(),
@@ -63,8 +63,8 @@ class GetSessionsUseCaseTest {
 
         val result = useCase(
             pageParams = defaultPageParams,
-            sortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             identifiers = emptyList(),
             identifierIds = emptyList(),
             identifierAuthProviders = emptyList(),
@@ -90,8 +90,8 @@ class GetSessionsUseCaseTest {
 
         val result = useCase(
             pageParams = defaultPageParams,
-            sortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             identifiers = emptyList(),
             identifierIds = emptyList(),
             identifierAuthProviders = emptyList(),
@@ -117,8 +117,8 @@ class GetSessionsUseCaseTest {
 
         val result = useCase(
             pageParams = defaultPageParams,
-            sortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             identifiers = emptyList(),
             identifierIds = emptyList(),
             identifierAuthProviders = emptyList(),

@@ -74,7 +74,7 @@ class AuditServiceImplTest {
         val success = stored as AppResult.Success
         assertNotNull(success.data)
         assertEquals(event.id, success.data!!.id)
-        assertEquals("login", success.data!!.action.serialName)
+        assertEquals("login", success.data!!.action.value)
     }
 
     @Test

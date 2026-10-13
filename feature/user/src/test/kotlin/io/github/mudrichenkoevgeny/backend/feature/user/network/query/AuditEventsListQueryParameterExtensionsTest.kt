@@ -54,10 +54,10 @@ class AuditEventsListQueryParamsParserTest {
     fun `parseAuditEventsListQueryParams correctly parses all simple filter fields`() {
         val queryParameters = Parameters.build {
             append(params.ACTOR_ID, "user-123")
-            append(params.ACTOR_TYPE, AuditActorType.USER.serialName)
+            append(params.ACTOR_TYPE, AuditActorType.USER.value)
             append(params.ACTOR_USER_ROLE, "admin")
             append(params.RESOURCE_ID, "res-456")
-            append(params.STATUS, AuditStatus.SUCCESS.serialName)
+            append(params.STATUS, AuditStatus.SUCCESS.value)
             append(params.MESSAGE, "test-message")
         }
         setupParameters(queryParameters)

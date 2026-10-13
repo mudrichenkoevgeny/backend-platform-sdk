@@ -517,7 +517,7 @@ class AuthManagerImpl @Inject constructor(
         if (!bypassTotp && user.isTotpEnabled) {
             val mfaResult = mfaService.createChallenge(
                 userId = user.id.asHexDashString(),
-                userRole = user.role.serialName,
+                userRole = user.role.value,
                 type = MfaChallengeType.LOGIN_TOTP,
                 identifierId = userIdentifier.id.asHexDashString()
             )

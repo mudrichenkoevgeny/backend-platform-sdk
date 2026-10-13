@@ -69,8 +69,8 @@ interface AuditManager {
     suspend fun getAuditEventsSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
         pageParams: PageParams,
-        sortBy: AuditSortValues.AuditEventSortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
-        sortOrder: SortOrder = SortOrder.DESC,
+        sortBy: AuditSortValues.AuditEventSortBy = AuditSortValues.AuditEventSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
         actorIds: List<String> = emptyList(),
         actorTypes: List<AuditActorType> = emptyList(),
         actorUserRoles: List<String> = emptyList(),

@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.create
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -32,9 +33,9 @@ class ManagementGetUsersUseCaseTest {
     private val context = createTestAuthenticatedRequestContext()
     private val managerId = context.userId
 
-    private val defaultPageParams = PageParams(page = 1, size = 20)
-    private val defaultSortBy = UserSortValues.UserSortBy.CREATED_AT
-    private val defaultSortOrder = SortOrder.DESC
+    private val defaultPageParams = PageParams()
+    private val defaultSortBy = UserSortValues.UserSortBy.DEFAULT
+    private val defaultSortOrder = SortOrder.DEFAULT
 
     @BeforeEach
     fun setUp() {
@@ -55,15 +56,15 @@ class ManagementGetUsersUseCaseTest {
         val pagedInternalResult = PagedResult(
             items = listOf(userInternal),
             totalCount = 1,
-            pageNumber = 1,
-            pageSize = 20,
+            pageNumber = ListingDefaultValues.Pagination.PAGE_NUMBER,
+            pageSize = ListingDefaultValues.Pagination.PAGE_SIZE,
             totalPages = 1
         )
         val expectedPagedResult = PagedResult(
             items = listOf(userInternal.toUserSummary()),
             totalCount = 1,
-            pageNumber = 1,
-            pageSize = 20,
+            pageNumber = ListingDefaultValues.Pagination.PAGE_NUMBER,
+            pageSize = ListingDefaultValues.Pagination.PAGE_SIZE,
             totalPages = 1
         )
 

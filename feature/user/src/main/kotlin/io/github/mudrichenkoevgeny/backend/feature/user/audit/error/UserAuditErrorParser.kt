@@ -53,7 +53,7 @@ class UserAuditErrorParser @Inject constructor() : AuditErrorParser {
             metadata.add(
                 AuditEventMetadata(
                     key = UserAuditMetadataKey.ACCOUNT_LOCKOUT_TYPE,
-                    value = error.lockoutType.serialName
+                    value = error.lockoutType.value
                 )
             )
             if (error.temporaryLockoutUntil != null) {

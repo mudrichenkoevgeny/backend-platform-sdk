@@ -130,8 +130,8 @@ class OpenUnlockRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = SEND_UNLOCK_EMAIL_CONFIRMATION_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
         request { body<SendConfirmationToEmailRequest>() }
@@ -170,8 +170,8 @@ class OpenUnlockRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = UNLOCK_BY_EMAIL_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
         request { body<UnlockByEmailConfirmationRequest>() }
@@ -208,8 +208,8 @@ class OpenUnlockRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = SEND_UNLOCK_PHONE_CONFIRMATION_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
         request { body<SendConfirmationToPhoneRequest>() }
@@ -248,8 +248,8 @@ class OpenUnlockRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = UNLOCK_BY_PHONE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
         request { body<UnlockByPhoneConfirmationRequest>() }
@@ -286,8 +286,8 @@ class OpenUnlockRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = UNLOCK_BY_EXTERNAL_PROVIDER_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
         request { body<UnlockByExternalAuthProviderRequest>() }

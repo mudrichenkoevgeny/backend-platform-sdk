@@ -14,7 +14,7 @@ import io.ktor.server.application.ApplicationCall
 
 fun ApplicationCall.parseSelfSessionsListQueryParams(): SelfSessionListQueryParams {
     val listing = parseListingQueryParams(
-        defaultSortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
+        defaultSortBy = UserSortValues.UserSessionSortBy.DEFAULT,
         parseSortByOrNull = UserSortValues.UserSessionSortBy::fromValueOrNull
     )
     val filterNames = UserFilterValues.UserSessionFilterValues

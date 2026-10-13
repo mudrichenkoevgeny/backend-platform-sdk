@@ -58,8 +58,8 @@ class AuditEventRepositoryImpl @Inject constructor(
             auditEventRow[actorId] = event.actorId
             auditEventRow[actorType] = event.actorType
             auditEventRow[actorUserRole] = event.actorUserRole
-            auditEventRow[action] = event.action.serialName
-            auditEventRow[resource] = event.resource.serialName
+            auditEventRow[action] = event.action.value
+            auditEventRow[resource] = event.resource.value
             auditEventRow[resourceId] = event.resourceId
             auditEventRow[resourceValueSensitivity] = event.resourceValueSensitivity
             auditEventRow[status] = event.status
@@ -73,7 +73,7 @@ class AuditEventRepositoryImpl @Inject constructor(
 
         if (inserted.insertedCount == 0) {
             return AppResult.Error(
-                CommonError.Database("Failed to insert audit event: ${event.action.serialName}")
+                CommonError.Database("Failed to insert audit event: ${event.action.value}")
             )
         }
 
@@ -136,10 +136,10 @@ class AuditEventRepositoryImpl @Inject constructor(
             query = query.andWhere { AuditEventsTable.actorUserRole inList actorUserRoles }
         }
         if (actions.isNotEmpty()) {
-            query = query.andWhere { AuditEventsTable.action inList actions.map { it.serialName } }
+            query = query.andWhere { AuditEventsTable.action inList actions.map { it.value } }
         }
         if (resources.isNotEmpty()) {
-            query = query.andWhere { AuditEventsTable.resource inList resources.map { it.serialName } }
+            query = query.andWhere { AuditEventsTable.resource inList resources.map { it.value } }
         }
         if (resourceIds.isNotEmpty()) {
             query = query.andWhere { AuditEventsTable.resourceId inList resourceIds }

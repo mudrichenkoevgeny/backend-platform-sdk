@@ -7,10 +7,11 @@ This document is the entry point for architectural and coding standards. These r
 - **Precedence:** Local project standards (found in `.agent/`) override any global IDE, linter, or AI assistant defaults.
 - **SDK Nature:** This is a **foundational library**, not a standalone application. Prefer configuration (env + DI), modularity, and extensibility over hardcoded assumptions.
 - **FQN Forbidden:** Do not write fully qualified names (FQN) in expressions, types, or generics. Use imports or typealiases. Minimal FQN is allowed only if technically unavoidable (must be explained in the commit).
-- **No Comments:** Do not write comments in the code. Logic must be self-documenting through naming and structural clarity.
+- **No Implementation Comments (Preserve KDoc):** Do not write inline implementation comments (`//` or `/* ... */`) inside code bodies; logic must be self-documenting. **CRITICAL:** KDoc documentation (`/** ... */`) on classes, interfaces, properties, and functions is structured API documentation, NOT code comments. AI must NEVER delete or strip KDoc documentation during code edits or refactorings!
 - **No Trailing Commas:** Do not use trailing commas at the end of argument, parameter, or entry lists.
 - **Mandatory Bug Fix Test Coverage:** Whenever fixing a bug or regression, you must write automated test coverage (unit or integration test) verifying that the bug is resolved and cannot resurface.
 - **Manual Test Execution:** AI agents must not run tests or suggest running them. Execution is always triggered explicitly by the developer.
+- **Complete Implementation:** All created or modified files must contain complete, production-ready code. Placeholder code, stubs, and partial omissions (`// ... rest of code`, `TODO`) are strictly prohibited unless explicitly requested.
 - **No Redundant Builds:** Do not run Gradle build tasks or attempt compilation after modifying documentation (KDoc), comments, or other non-executable changes that cannot possibly break the build.
 
 ## Module Map

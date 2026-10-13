@@ -9,6 +9,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -64,8 +65,8 @@ class AuditManagerImplTest {
         val pagedResult = PagedResult(
             items = listOf(eventSystem, eventService),
             totalCount = 2,
-            pageNumber = 1,
-            pageSize = 10,
+            pageNumber = ListingDefaultValues.Pagination.PAGE_NUMBER,
+            pageSize = ListingDefaultValues.Pagination.PAGE_SIZE,
             totalPages = 1
         )
 
@@ -90,9 +91,9 @@ class AuditManagerImplTest {
 
         val result = auditManager.getAuditEventsSummaryPage(
             managementUserPermissionCodes = permissions,
-            pageParams = PageParams(1, 10),
-            sortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC
+            pageParams = PageParams(),
+            sortBy = AuditSortValues.AuditEventSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT
         )
 
         assertTrue(result is AppResult.Success)

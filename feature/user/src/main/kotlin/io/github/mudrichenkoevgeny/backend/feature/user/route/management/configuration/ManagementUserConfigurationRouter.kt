@@ -67,8 +67,8 @@ class ManagementUserConfigurationRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_USER_CONFIGURATION_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = false
         )
 

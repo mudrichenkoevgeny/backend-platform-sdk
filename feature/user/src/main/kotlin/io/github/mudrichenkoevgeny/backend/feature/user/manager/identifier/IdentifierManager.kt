@@ -148,8 +148,8 @@ interface IdentifierManager {
     suspend fun getUserIdentifiersSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
         pageParams: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-        sortOrder: SortOrder = SortOrder.DESC,
+        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
         userIds: List<UserId> = emptyList(),
         userAuthProviders: List<UserAuthProvider> = emptyList(),
         identifiers: List<String> = emptyList()
@@ -169,8 +169,8 @@ interface IdentifierManager {
     suspend fun getUserIdentifiersSummaryPage(
         userId: UserId,
         pageParams: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-        sortOrder: SortOrder = SortOrder.DESC,
+        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
         userAuthProviders: List<UserAuthProvider> = emptyList(),
         identifiers: List<String> = emptyList()
     ): AppResult<PagedResult<UserIdentifierSummary>>

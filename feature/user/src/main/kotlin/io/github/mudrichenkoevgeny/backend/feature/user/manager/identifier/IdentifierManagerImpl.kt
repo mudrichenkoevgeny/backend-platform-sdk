@@ -365,7 +365,7 @@ class IdentifierManagerImpl @Inject constructor(
         userId: UserId,
         userAuthProvider: UserAuthProvider
     ): AppResult<String> {
-        val baseName = userAuthProvider.serialName.replaceFirstChar { it.uppercaseChar() }
+        val baseName = userAuthProvider.value.replaceFirstChar { it.uppercaseChar() }
 
         val existingIdentifiersResult = userIdentifierRepository.getUserIdentifiersListByUserId(userId)
         val existingIdentifiers = when (existingIdentifiersResult) {

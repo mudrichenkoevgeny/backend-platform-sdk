@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
  * resource-specific filters in their own data classes.
  */
 data class ListingQueryParams<SortBy>(
-    val pageParams: PageParams,
+    val pageParams: PageParams = PageParams(),
     val sortBy: SortBy,
-    val sortOrder: SortOrder
+    val sortOrder: SortOrder = SortOrder.DEFAULT
 )

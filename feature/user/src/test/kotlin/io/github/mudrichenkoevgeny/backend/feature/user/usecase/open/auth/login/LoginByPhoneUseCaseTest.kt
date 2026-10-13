@@ -96,7 +96,7 @@ class LoginByPhoneUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.USER.serialName,
+                actorUserRole = UserRole.USER.value,
                 action = UserAuditActionType.LOGIN_BY_PHONE,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),

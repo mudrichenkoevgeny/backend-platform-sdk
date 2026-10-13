@@ -110,7 +110,7 @@ class ManagementDeleteIdentifierUseCaseTest {
             auditLogger.log(
                 actorId = managerId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.MANAGEMENT_DELETE_IDENTIFIER,
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = targetIdentifierId.asHexDashString(),

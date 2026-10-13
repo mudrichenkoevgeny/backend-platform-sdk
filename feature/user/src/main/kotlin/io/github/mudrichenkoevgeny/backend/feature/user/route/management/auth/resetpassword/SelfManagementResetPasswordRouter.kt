@@ -79,8 +79,8 @@ class SelfManagementResetPasswordRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = SEND_RESET_PASSWORD_CONFIRMATION_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
 
@@ -123,8 +123,8 @@ class SelfManagementResetPasswordRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = RESET_PASSWORD_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
 

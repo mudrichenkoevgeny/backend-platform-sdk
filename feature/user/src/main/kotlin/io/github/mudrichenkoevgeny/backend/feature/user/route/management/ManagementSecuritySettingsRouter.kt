@@ -108,8 +108,8 @@ class ManagementSecuritySettingsRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = UPDATE_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             requiredPermissions = requiredPermissions.mapToSet { it.value },
             isPublic = false,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
@@ -168,8 +168,8 @@ class ManagementSecuritySettingsRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = false
         )
 
@@ -226,8 +226,8 @@ class ManagementSecuritySettingsRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = RESET_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             requiredPermissions = requiredPermissions.mapToSet { it.value },
             isPublic = false,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
@@ -282,7 +282,7 @@ class ManagementSecuritySettingsRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.serialName,
+            actorUserRole = authenticatedRequestContext.userRole.value,
             action = actionType,
             resource = SecurityAuditResourceType.SECURITY_SETTINGS,
             status = AuditStatus.DENIED,

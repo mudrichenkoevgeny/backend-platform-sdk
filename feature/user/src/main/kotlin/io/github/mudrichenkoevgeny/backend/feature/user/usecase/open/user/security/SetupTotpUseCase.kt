@@ -163,7 +163,7 @@ class SetupTotpUseCase @Inject constructor(
 
         val mfaChallengeResult = mfaService.createChallenge(
             userId = auditActorId,
-            userRole = user.role.serialName,
+            userRole = user.role.value,
             type = MfaChallengeType.SETUP_TOTP,
             identifierId = userSession.identifierId.asHexDashString(),
             sessionId = authenticatedRequestContext.sessionId.asHexDashString()
@@ -211,7 +211,7 @@ class SetupTotpUseCase @Inject constructor(
             is AppResult.Success -> userIdentifierResult.data?.externalProviderEmail
         }
 
-        val providerName = userSession.identifierAuthProvider.serialName
+        val providerName = userSession.identifierAuthProvider.value
             .lowercase()
             .replaceFirstChar { it.uppercase() }
 
@@ -249,7 +249,7 @@ class SetupTotpUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = UserAuditActionType.SELF_SETUP_TOTP_INITIATED,
             resource = UserAuditResourceType.USER,
             resourceId = actorId,

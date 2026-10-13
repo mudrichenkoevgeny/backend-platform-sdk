@@ -163,7 +163,7 @@ class ScheduleUserDeletionUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = UserAuditActionType.SELF_SCHEDULE_USER_DELETION,
             resource = UserAuditResourceType.USER,
             resourceId = actorId,

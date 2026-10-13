@@ -13,6 +13,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventSummary
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CompositeAuditResourceTypeParser
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.ktor.client.request.bearerAuth
@@ -103,8 +104,8 @@ class ManagementAuditRouterTest : BaseRouterTest() {
         val pagedResult = PagedResult(
             items = listOf(createTestAuditEventSummary(), createTestAuditEventSummary()),
             totalCount = 2,
-            pageNumber = 1,
-            pageSize = 20,
+            pageNumber = ListingDefaultValues.Pagination.PAGE_NUMBER,
+            pageSize = ListingDefaultValues.Pagination.PAGE_SIZE,
             totalPages = 1
         )
 
@@ -140,8 +141,8 @@ class ManagementAuditRouterTest : BaseRouterTest() {
         val emptyPagedResult = PagedResult(
             items = emptyList<AuditEventSummary>(),
             totalCount = 0,
-            pageNumber = 1,
-            pageSize = 10,
+            pageNumber = ListingDefaultValues.Pagination.PAGE_NUMBER,
+            pageSize = ListingDefaultValues.Pagination.PAGE_SIZE,
             totalPages = 0
         )
 

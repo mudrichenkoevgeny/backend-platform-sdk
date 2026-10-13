@@ -251,7 +251,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole.serialName,
+            actorUserRole = actorUserRole.value,
             action = UserAuditActionType.CHANGE_PASSWORD,
             resource = UserAuditResourceType.IDENTIFIER,
             resourceId = resourceId,

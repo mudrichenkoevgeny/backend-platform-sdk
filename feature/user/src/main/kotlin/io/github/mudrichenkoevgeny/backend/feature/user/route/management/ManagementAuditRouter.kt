@@ -95,8 +95,8 @@ class ManagementAuditRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_AUDIT_EVENTS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = false
         )
 
@@ -162,8 +162,8 @@ class ManagementAuditRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_AUDIT_EVENT_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = false
         )
 

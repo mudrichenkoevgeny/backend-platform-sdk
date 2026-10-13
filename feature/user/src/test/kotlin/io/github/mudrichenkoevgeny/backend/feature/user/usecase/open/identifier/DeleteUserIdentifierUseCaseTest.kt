@@ -102,7 +102,7 @@ class DeleteUserIdentifierUseCaseTest {
             auditLogger.log(
                 actorId = context.userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_DELETE_IDENTIFIER,
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = idToDelete.asHexDashString(),

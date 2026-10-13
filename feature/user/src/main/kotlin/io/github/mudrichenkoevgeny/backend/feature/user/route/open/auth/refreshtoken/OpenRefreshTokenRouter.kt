@@ -62,8 +62,8 @@ class OpenRefreshTokenRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = REFRESH_TOKEN_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
         request { body<RefreshTokenPayload>() }

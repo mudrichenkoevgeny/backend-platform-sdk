@@ -60,8 +60,8 @@ class OpenSecuritySettingsRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             isPublic = true
         )
 

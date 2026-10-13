@@ -47,7 +47,7 @@ class ManagementIdentifierListQueryParameterExtensionsTest {
         assertEquals(TEST_USER_ID, result.userIds.first().value.toString())
         assertEquals(UserAuthProvider.GOOGLE, result.userAuthProviders.first())
         assertEquals(TEST_IDENTIFIER, result.identifiers.first())
-        assertEquals(UserSortValues.UserIdentifierSortBy.CREATED_AT, result.listing.sortBy)
+        assertEquals(UserSortValues.UserIdentifierSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test

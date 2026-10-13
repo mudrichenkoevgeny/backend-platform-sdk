@@ -110,9 +110,9 @@ class UserRepositoryImplTest {
         val result = suspendTransaction {
             repository.getUsersPageWithAccessFilter(
                 accessFilter = UserRoleAccessFilter(allowedUserRoles = setOf(UserRole.ADMIN)),
-                pageParams = PageParams(page = 1, size = 10),
-                sortBy = UserSortValues.UserSortBy.CREATED_AT,
-                sortOrder = SortOrder.DESC,
+                pageParams = PageParams(),
+                sortBy = UserSortValues.UserSortBy.DEFAULT,
+                sortOrder = SortOrder.DEFAULT,
                 roles = listOf(UserRole.ADMIN),
                 accountStatuses = listOf(UserAccountStatus.ACTIVE),
                 accountStatusesOnRestore = emptyList(),
@@ -143,7 +143,7 @@ class UserRepositoryImplTest {
         val result = suspendTransaction {
             repository.getUsersPageWithAccessFilter(
                 accessFilter = UserRoleAccessFilter(allowedUserRoles = setOf(UserRole.USER)),
-                pageParams = PageParams(page = 1, size = 10),
+                pageParams = PageParams(),
                 sortBy = UserSortValues.UserSortBy.ACCOUNT_LOCKOUT_TYPE,
                 sortOrder = SortOrder.ASC,
                 accountLockoutTypes = listOf(AccountLockoutType.TEMPORARY)

@@ -22,9 +22,9 @@ class NetworkCallQueryListingParserTest {
             parseSortByOrNull = TestSort::fromWireOrNull
         )
 
-        assertEquals(PageParams(page = 1, size = PageParams.DEFAULT_PAGE_SIZE), listing.pageParams)
+        assertEquals(PageParams(), listing.pageParams)
         assertEquals(defaultSort, listing.sortBy)
-        assertEquals(SortOrder.DESC, listing.sortOrder)
+        assertEquals(SortOrder.DEFAULT, listing.sortOrder)
     }
 
     @Test

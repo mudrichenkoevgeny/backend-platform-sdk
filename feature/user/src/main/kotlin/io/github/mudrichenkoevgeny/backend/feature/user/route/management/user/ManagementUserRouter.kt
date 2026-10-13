@@ -28,7 +28,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.user.
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.user.ManagementUpdateUserUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
@@ -51,7 +50,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.create.CreateByEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.UpdateUserRequest
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.user.ManagementUserRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.users.ManagementUsersRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get
@@ -68,11 +67,11 @@ import javax.inject.Singleton
  * Management HTTP routes for administrative user account operations.
  *
  * Registered routes:
- * 1. [ManagementUserRoutes.GET_USER] — retrieves detailed information for a specific user via [ManagementGetUserUseCase].
- * 2. [ManagementUserRoutes.GET_USERS] — retrieves a paginated and filtered list of users via [ManagementGetUsersUseCase].
- * 3. [ManagementUserRoutes.CREATE_USER] — creates a new user account with administrative overrides via [ManagementCreateUserUseCase].
- * 4. [ManagementUserRoutes.UPDATE_USER] — performs partial updates on user status, authority, or permissions via [ManagementUpdateUserUseCase].
- * 5. [ManagementUserRoutes.DELETE_USER] — administratively removes a user account via [ManagementDeleteUserUseCase].
+ * 1. [ManagementUsersRoutes.GET_USER] — retrieves detailed information for a specific user via [ManagementGetUserUseCase].
+ * 2. [ManagementUsersRoutes.GET_USERS] — retrieves a paginated and filtered list of users via [ManagementGetUsersUseCase].
+ * 3. [ManagementUsersRoutes.CREATE_USER] — creates a new user account with administrative overrides via [ManagementCreateUserUseCase].
+ * 4. [ManagementUsersRoutes.UPDATE_USER] — performs partial updates on user status, authority, or permissions via [ManagementUpdateUserUseCase].
+ * 5. [ManagementUsersRoutes.DELETE_USER] — administratively removes a user account via [ManagementDeleteUserUseCase].
  */
 @Singleton
 class ManagementUserRouter @Inject constructor(
@@ -103,7 +102,7 @@ class ManagementUserRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.get(
-            path = ManagementUserRoutes.GET_USER,
+            path = ManagementUsersRoutes.GET_USER,
             builder = { getUserDocs(allowedRoles, allowedAccountStatuses) },
             body = { getUser(allowedRoles, allowedAccountStatuses) }
         )
@@ -114,7 +113,7 @@ class ManagementUserRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.get(
-            path = ManagementUserRoutes.GET_USERS,
+            path = ManagementUsersRoutes.GET_USERS,
             builder = { getUsersDocs(allowedRoles, allowedAccountStatuses) },
             body = { getUsers(allowedRoles, allowedAccountStatuses) }
         )
@@ -125,7 +124,7 @@ class ManagementUserRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.post(
-            path = ManagementUserRoutes.CREATE_USER,
+            path = ManagementUsersRoutes.CREATE_USER,
             builder = { createUserDocs(allowedRoles, allowedAccountStatuses) },
             body = { createUser(allowedRoles, allowedAccountStatuses) }
         )
@@ -136,7 +135,7 @@ class ManagementUserRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.patch(
-            path = ManagementUserRoutes.UPDATE_USER,
+            path = ManagementUsersRoutes.UPDATE_USER,
             builder = { updateUserDocs(allowedRoles, allowedAccountStatuses) },
             body = { updateUser(allowedRoles, allowedAccountStatuses) }
         )
@@ -147,7 +146,7 @@ class ManagementUserRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
-            path = ManagementUserRoutes.DELETE_USER,
+            path = ManagementUsersRoutes.DELETE_USER,
             builder = { deleteUserDocs(allowedRoles, allowedAccountStatuses) },
             body = { deleteUser(allowedRoles, allowedAccountStatuses) }
         )
@@ -162,8 +161,8 @@ class ManagementUserRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER)
         description = getFormattedDescription(
             description = GET_USER_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
         )
         request {
             pathParameter<String>(UserApiPaths.USER_ID) {
@@ -216,8 +215,8 @@ class ManagementUserRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER)
         description = getFormattedDescription(
             description = GET_USERS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
         )
         response {
             code(HttpStatusCode.OK) {
@@ -274,8 +273,8 @@ class ManagementUserRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER)
         description = getFormattedDescription(
             description = CREATE_USER_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
@@ -349,8 +348,8 @@ class ManagementUserRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER)
         description = getFormattedDescription(
             description = UPDATE_USER_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
@@ -430,8 +429,8 @@ class ManagementUserRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER)
         description = getFormattedDescription(
             description = DELETE_USER_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
@@ -491,7 +490,7 @@ class ManagementUserRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.serialName,
+            actorUserRole = authenticatedRequestContext.userRole.value,
             action = actionType,
             resource = UserAuditResourceType.USER,
             resourceId = authenticatedRequestContext.userId.asHexDashString(),

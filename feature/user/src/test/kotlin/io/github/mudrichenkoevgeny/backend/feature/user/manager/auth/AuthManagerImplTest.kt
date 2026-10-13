@@ -298,7 +298,7 @@ class AuthManagerImplTest {
         val mfaChallengeData = MfaChallengeData(
             token = "test-mfa-token",
             userId = userId.asHexDashString(),
-            userRole = UserRole.USER.serialName,
+            userRole = UserRole.USER.value,
             identifierId = userIdentifier.id.asHexDashString(),
             type = MfaChallengeType.LOGIN_TOTP
         )
@@ -311,7 +311,7 @@ class AuthManagerImplTest {
         coEvery {
             mfaService.createChallenge(
                 userId = userId.asHexDashString(),
-                userRole = UserRole.USER.serialName,
+                userRole = UserRole.USER.value,
                 type = MfaChallengeType.LOGIN_TOTP,
                 identifierId = userIdentifier.id.asHexDashString()
             )

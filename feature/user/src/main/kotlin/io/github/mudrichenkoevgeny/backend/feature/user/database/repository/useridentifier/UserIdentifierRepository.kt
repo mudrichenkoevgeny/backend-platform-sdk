@@ -99,8 +99,8 @@ interface UserIdentifierRepository {
     suspend fun getUserIdentifiersPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter = UserRoleAccessFilter(emptySet()),
         params: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-        sortOrder: SortOrder = SortOrder.DESC,
+        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
         userIds: List<UserId> = emptyList(),
         userAuthProviders: List<UserAuthProvider> = emptyList(),
         identifiers: List<String> = emptyList()
@@ -121,8 +121,8 @@ interface UserIdentifierRepository {
     suspend fun getUserIdentifiersPageByUserId(
         userId: UserId,
         params: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-        sortOrder: SortOrder = SortOrder.DESC,
+        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
         userAuthProviders: List<UserAuthProvider> = emptyList(),
         identifiers: List<String> = emptyList()
     ): AppResult<PagedResult<UserIdentifierInternal>>

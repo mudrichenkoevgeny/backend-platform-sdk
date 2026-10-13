@@ -289,7 +289,7 @@ class ManagementDeleteSessionUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole.serialName,
+            actorUserRole = actorUserRole.value,
             action = UserAuditActionType.MANAGEMENT_DELETE_SESSION,
             resource = UserAuditResourceType.SESSION,
             resourceId = resourceId,

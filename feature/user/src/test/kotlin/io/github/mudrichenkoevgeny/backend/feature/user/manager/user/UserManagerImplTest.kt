@@ -200,9 +200,9 @@ class UserManagerImplTest {
 
         val result = userManager.getUsersInternalPage(
             managementUserPermissionCodes = setOf(UserPermissionCode.USER_GET_OF_USER),
-            pageParams = PageParams(1, 10),
-            sortBy = UserSortValues.UserSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            pageParams = PageParams(),
+            sortBy = UserSortValues.UserSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             roles = emptyList(),
             accountStatuses = emptyList(),
             accountStatusesOnRestore = emptyList(),

@@ -9,6 +9,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
@@ -148,8 +149,8 @@ class IdentifierManagerImplTest {
         val pagedResult = PagedResult(
             items = listOf(iden1, iden2),
             totalCount = 2,
-            pageNumber = 1,
-            pageSize = 10,
+            pageNumber = ListingDefaultValues.Pagination.PAGE_NUMBER,
+            pageSize = ListingDefaultValues.Pagination.PAGE_SIZE,
             totalPages = 1
         )
 
@@ -167,9 +168,9 @@ class IdentifierManagerImplTest {
 
         val result = manager.getUserIdentifiersSummaryPage(
             managementUserPermissionCodes = permissions,
-            pageParams = PageParams(1, 10),
-            sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            pageParams = PageParams(),
+            sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             userIds = emptyList(),
             userAuthProviders = emptyList(),
             identifiers = emptyList()

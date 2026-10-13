@@ -84,7 +84,7 @@ class ResetAuthSettingsUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.ADMIN.serialName,
+                actorUserRole = UserRole.ADMIN.value,
                 action = UserAuditActionType.MANAGEMENT_RESET_AUTH_SETTINGS,
                 resource = UserAuditResourceType.AUTH_SETTINGS,
                 status = AuditStatus.SUCCESS,
@@ -132,7 +132,7 @@ class ResetAuthSettingsUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.ADMIN.serialName,
+                actorUserRole = UserRole.ADMIN.value,
                 action = UserAuditActionType.MANAGEMENT_RESET_AUTH_SETTINGS,
                 resource = UserAuditResourceType.AUTH_SETTINGS,
                 status = AuditStatus.FAILED,

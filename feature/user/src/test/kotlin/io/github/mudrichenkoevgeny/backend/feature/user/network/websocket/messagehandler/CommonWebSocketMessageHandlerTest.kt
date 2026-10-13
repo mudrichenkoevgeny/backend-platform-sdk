@@ -86,7 +86,7 @@ class CommonWebSocketMessageHandlerTest {
     @Test
     fun `INITIALIZE with valid payload returns InitializeClient with success frame`() = runSuspend {
         val payload = WebSocketInitializePayload(
-            clientType = ClientType.WEB.serialName,
+            clientType = ClientType.WEB.value,
             language = "en",
             deviceId = "device-1",
             deviceName = "Pixel",

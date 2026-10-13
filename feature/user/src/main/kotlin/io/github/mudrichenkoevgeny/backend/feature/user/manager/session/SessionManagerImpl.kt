@@ -274,7 +274,7 @@ class SessionManagerImpl @Inject constructor(
         auditLogger.log(
             actorId = userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = userRole.serialName,
+            actorUserRole = userRole.value,
             action = UserAuditActionType.NEW_DEVICE_DETECTED,
             resource = UserAuditResourceType.USER,
             resourceId = userId.asHexDashString(),

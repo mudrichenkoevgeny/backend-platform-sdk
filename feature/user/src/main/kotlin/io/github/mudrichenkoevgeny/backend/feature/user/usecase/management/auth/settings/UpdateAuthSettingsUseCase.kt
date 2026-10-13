@@ -197,7 +197,7 @@ class UpdateAuthSettingsUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = UserAuditActionType.MANAGEMENT_UPDATE_AUTH_SETTINGS,
             resource = UserAuditResourceType.AUTH_SETTINGS,
             status = status,

@@ -20,7 +20,7 @@ fun ApplicationCall.parseAuditEventsListQueryParams(
     compositeAuditResourceTypeParser: CompositeAuditResourceTypeParser
 ): AuditEventsListQueryParams {
     val listing = parseListingQueryParams(
-        defaultSortBy = AuditSortValues.AuditEventSortBy.CREATED_AT,
+        defaultSortBy = AuditSortValues.AuditEventSortBy.DEFAULT,
         parseSortByOrNull = AuditSortValues.AuditEventSortBy::fromValueOrNull
     )
 

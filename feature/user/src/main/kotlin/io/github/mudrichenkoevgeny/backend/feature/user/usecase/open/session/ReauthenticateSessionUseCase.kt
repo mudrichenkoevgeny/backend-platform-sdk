@@ -181,7 +181,7 @@ class ReauthenticateSessionUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = UserAuditActionType.REAUTHENTICATE_SESSION,
             resource = UserAuditResourceType.SESSION,
             resourceId = sessionId,

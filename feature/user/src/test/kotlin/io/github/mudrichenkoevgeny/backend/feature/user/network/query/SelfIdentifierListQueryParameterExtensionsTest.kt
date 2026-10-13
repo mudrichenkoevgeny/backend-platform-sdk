@@ -43,7 +43,7 @@ class SelfIdentifierListQueryParameterExtensionsTest {
 
         assertEquals(UserAuthProvider.GOOGLE, result.userAuthProviders.first())
         assertEquals(TEST_IDENTIFIER, result.identifiers.first())
-        assertEquals(UserSortValues.UserIdentifierSortBy.CREATED_AT, result.listing.sortBy)
+        assertEquals(UserSortValues.UserIdentifierSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test
@@ -54,7 +54,7 @@ class SelfIdentifierListQueryParameterExtensionsTest {
 
         assertTrue(result.userAuthProviders.isEmpty())
         assertTrue(result.identifiers.isEmpty())
-        assertEquals(UserSortValues.UserIdentifierSortBy.CREATED_AT, result.listing.sortBy)
+        assertEquals(UserSortValues.UserIdentifierSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test

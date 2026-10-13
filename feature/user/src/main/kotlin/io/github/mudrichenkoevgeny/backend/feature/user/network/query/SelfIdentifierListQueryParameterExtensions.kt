@@ -12,7 +12,7 @@ import io.ktor.server.application.ApplicationCall
 
 fun ApplicationCall.parseSelfIdentifiersListQueryParams(): SelfIdentifierListQueryParams {
     val listing = parseListingQueryParams(
-        defaultSortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
+        defaultSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
         parseSortByOrNull = UserSortValues.UserIdentifierSortBy::fromValueOrNull
     )
 

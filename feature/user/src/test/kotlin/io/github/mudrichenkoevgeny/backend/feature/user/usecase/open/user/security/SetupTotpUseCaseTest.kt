@@ -91,7 +91,7 @@ class SetupTotpUseCaseTest {
         val mfaChallengeData = MfaChallengeData(
             token = "mfa-token",
             userId = userId.asHexDashString(),
-            userRole = UserRole.USER.serialName,
+            userRole = UserRole.USER.value,
             identifierId = identifierId.asHexDashString(),
             sessionId = sessionId.asHexDashString(),
             type = MfaChallengeType.SETUP_TOTP
@@ -109,7 +109,7 @@ class SetupTotpUseCaseTest {
         coEvery {
             mfaService.createChallenge(
                 userId = userId.asHexDashString(),
-                userRole = UserRole.USER.serialName,
+                userRole = UserRole.USER.value,
                 type = MfaChallengeType.SETUP_TOTP,
                 identifierId = identifierId.asHexDashString(),
                 sessionId = sessionId.asHexDashString()
@@ -129,7 +129,7 @@ class SetupTotpUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_SETUP_TOTP_INITIATED,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -154,7 +154,7 @@ class SetupTotpUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_SETUP_TOTP_INITIATED,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),

@@ -125,8 +125,8 @@ class UserIdentifierRepositoryImplTest {
         val result = suspendTransaction {
             repository.getUserIdentifiersPageByUserId(
                 userId = userId,
-                params = PageParams(1, 10),
-                sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
+                params = PageParams(),
+                sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
                 sortOrder = SortOrder.ASC,
                 userAuthProviders = emptyList(),
                 identifiers = listOf("PLE")
@@ -151,8 +151,8 @@ class UserIdentifierRepositoryImplTest {
         val result = suspendTransaction {
             repository.getUserIdentifiersPageWithAccessFilter(
                 accessFilter = UserRoleAccessFilter(setOf(UserRole.ADMIN)),
-                params = PageParams(1, 10),
-                sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
+                params = PageParams(),
+                sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
                 sortOrder = SortOrder.ASC,
                 userIds = emptyList(),
                 userAuthProviders = emptyList(),

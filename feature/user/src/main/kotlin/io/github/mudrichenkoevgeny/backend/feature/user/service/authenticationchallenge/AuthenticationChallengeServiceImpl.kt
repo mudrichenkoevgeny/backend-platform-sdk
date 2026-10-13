@@ -49,7 +49,7 @@ class AuthenticationChallengeServiceImpl @Inject constructor(
 
         return createChallenge(
             userId = userInternal.id.asHexDashString(),
-            userRole = userInternal.role.serialName,
+            userRole = userInternal.role.value,
             identifierId = userSession.identifierId.asHexDashString(),
             sessionId = userSession.id.asHexDashString()
         )

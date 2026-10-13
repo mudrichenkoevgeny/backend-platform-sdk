@@ -50,7 +50,7 @@ class JwtExtensionsTest {
         assertEquals(userId.asHexDashString(), payload.subject)
         assertEquals(sessionId.asHexDashString(), payload.getClaim(UserTokenClaims.SESSION_ID).asString())
         assertEquals(identifierId.asHexDashString(), payload.getClaim(UserTokenClaims.IDENTIFIER_ID).asString())
-        assertEquals(userRole.serialName, payload.getClaim(UserTokenClaims.USER_ROLE).asString())
+        assertEquals(userRole.value, payload.getClaim(UserTokenClaims.USER_ROLE).asString())
     }
 
     @Test
@@ -100,7 +100,7 @@ class JwtExtensionsTest {
             claims = mapOf(
                 UserTokenClaims.SESSION_ID to sessionId.asHexDashString(),
                 UserTokenClaims.IDENTIFIER_ID to identifierId.asHexDashString(),
-                UserTokenClaims.USER_ROLE to userRole.serialName
+                UserTokenClaims.USER_ROLE to userRole.value
             )
         )
 

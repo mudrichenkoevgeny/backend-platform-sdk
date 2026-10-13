@@ -162,9 +162,9 @@ class UserSessionRepositoryImplTest {
         val result = suspendTransaction {
             repository.getUserSessionsPageByUserId(
                 userId = userId,
-                pageParams = PageParams(1, 10),
-                sortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
-                sortOrder = SortOrder.DESC,
+                pageParams = PageParams(),
+                sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+                sortOrder = SortOrder.DEFAULT,
                 deviceNames = listOf("iphone")
             )
         }
@@ -190,8 +190,8 @@ class UserSessionRepositoryImplTest {
         val result = suspendTransaction {
             repository.getUserSessionsPageWithAccessFilter(
                 accessFilter = UserRoleAccessFilter(setOf(UserRole.ADMIN)),
-                pageParams = PageParams(1, 10),
-                sortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
+                pageParams = PageParams(),
+                sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
                 sortOrder = SortOrder.ASC,
                 userRoles = listOf(UserRole.ADMIN)
             )

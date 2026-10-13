@@ -69,7 +69,7 @@ class SelfSessionListQueryParameterExtensionsTest {
         assertEquals(TEST_DEVICE_NAME, result.deviceNames.first())
         assertEquals(TEST_APP_VERSION, result.appVersions.first())
         assertEquals(TEST_OS_VERSION, result.operationSystemVersions.first())
-        assertEquals(UserSortValues.UserSessionSortBy.CREATED_AT, result.listing.sortBy)
+        assertEquals(UserSortValues.UserSessionSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test
@@ -89,7 +89,7 @@ class SelfSessionListQueryParameterExtensionsTest {
         assertTrue(result.deviceNames.isEmpty())
         assertTrue(result.appVersions.isEmpty())
         assertTrue(result.operationSystemVersions.isEmpty())
-        assertEquals(UserSortValues.UserSessionSortBy.CREATED_AT, result.listing.sortBy)
+        assertEquals(UserSortValues.UserSessionSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test

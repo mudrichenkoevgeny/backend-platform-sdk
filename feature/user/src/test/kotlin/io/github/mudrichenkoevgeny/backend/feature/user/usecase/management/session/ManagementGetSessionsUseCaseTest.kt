@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -34,12 +35,12 @@ class ManagementGetSessionsUseCaseTest {
     @Test
     fun `successfully retrieves paginated sessions`() = runTest {
         val managementUserId = defaultContext.userId
-        val pageParams = PageParams(page = 1, size = 20)
+        val pageParams = PageParams()
         val pagedResult = PagedResult<UserSessionSummary>(
             items = emptyList(),
             totalCount = 0,
-            pageNumber = 1,
-            pageSize = 10,
+            pageNumber = ListingDefaultValues.Pagination.PAGE_NUMBER,
+            pageSize = ListingDefaultValues.Pagination.PAGE_SIZE,
             totalPages = 1
         )
 
@@ -74,8 +75,8 @@ class ManagementGetSessionsUseCaseTest {
 
         val result = useCase(
             pageParams = pageParams,
-            sortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             userIds = emptyList(),
             userRoles = emptyList(),
             identifiers = emptyList(),
@@ -107,8 +108,8 @@ class ManagementGetSessionsUseCaseTest {
 
         val result = useCase(
             pageParams = PageParams(0, 20),
-            sortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             userIds = emptyList(),
             userRoles = emptyList(),
             identifiers = emptyList(),
@@ -134,8 +135,8 @@ class ManagementGetSessionsUseCaseTest {
 
         val result = useCase(
             pageParams = PageParams(0, 20),
-            sortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             userIds = emptyList(),
             userRoles = emptyList(),
             identifiers = emptyList(),

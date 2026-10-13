@@ -184,7 +184,7 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = UserAuditActionType.LOGIN_BY_EXTERNAL_AUTH_PROVIDER,
             resource = UserAuditResourceType.USER,
             resourceId = resourceId,

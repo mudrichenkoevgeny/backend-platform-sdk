@@ -93,7 +93,7 @@ class EnableTotpUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_ENABLE_TOTP,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -116,7 +116,7 @@ class EnableTotpUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_ENABLE_TOTP,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -195,7 +195,7 @@ class EnableTotpUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_ENABLE_TOTP,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),

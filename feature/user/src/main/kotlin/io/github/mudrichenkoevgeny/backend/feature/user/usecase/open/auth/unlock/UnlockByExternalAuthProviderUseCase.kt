@@ -73,7 +73,7 @@ class UnlockByExternalAuthProviderUseCase @Inject constructor(
         auditMetadata.add(
             AuditEventMetadata(
                 key = UserAuditMetadataKey.USER_AUTH_PROVIDER,
-                value = authProvider.serialName
+                value = authProvider.value
             )
         )
 

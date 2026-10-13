@@ -58,7 +58,7 @@ class ManagementSessionListQueryParameterExtensionsTest {
         assertEquals(ClientType.ANDROID, result.clientTypes.first())
         assertEquals(TEST_IDENTIFIER, result.identifiers.first())
         assertEquals(TEST_IP, result.ipAddresses.first())
-        assertEquals(UserSortValues.UserSessionSortBy.CREATED_AT, result.listing.sortBy)
+        assertEquals(UserSortValues.UserSessionSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test

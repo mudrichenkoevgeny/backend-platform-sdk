@@ -146,7 +146,7 @@ class ResetSecuritySettingsUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = SecurityAuditActionType.MANAGEMENT_RESET_SECURITY_SETTINGS,
             resource = SecurityAuditResourceType.SECURITY_SETTINGS,
             status = status,

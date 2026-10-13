@@ -69,7 +69,7 @@ class DeleteSessionUseCaseTest {
             auditLogger.log(
                 actorId = context.userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_DELETE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = targetSessionId.asHexDashString(),
@@ -98,7 +98,7 @@ class DeleteSessionUseCaseTest {
             auditLogger.log(
                 actorId = context.userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_DELETE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = targetSessionId.asHexDashString(),
@@ -134,7 +134,7 @@ class DeleteSessionUseCaseTest {
             auditLogger.log(
                 actorId = context.userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_DELETE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = targetSessionId.asHexDashString(),

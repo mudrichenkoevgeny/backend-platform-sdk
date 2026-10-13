@@ -75,7 +75,7 @@ class RestoreUserUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_RESTORE_USER,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -98,7 +98,7 @@ class RestoreUserUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_RESTORE_USER,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -161,7 +161,7 @@ class RestoreUserUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.SELF_RESTORE_USER,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),

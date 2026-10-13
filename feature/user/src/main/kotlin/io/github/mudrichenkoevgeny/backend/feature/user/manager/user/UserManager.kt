@@ -125,8 +125,8 @@ interface UserManager {
     suspend fun getUsersInternalPage(
         managementUserPermissionCodes: Set<PermissionCode>,
         pageParams: PageParams,
-        sortBy: UserSortValues.UserSortBy = UserSortValues.UserSortBy.CREATED_AT,
-        sortOrder: SortOrder = SortOrder.DESC,
+        sortBy: UserSortValues.UserSortBy = UserSortValues.UserSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
         roles: List<UserRole> = emptyList(),
         accountStatuses: List<UserAccountStatus> = emptyList(),
         accountStatusesOnRestore: List<UserAccountStatus> = emptyList(),

@@ -98,7 +98,7 @@ class ManagementDeleteSessionUseCaseTest {
             auditLogger.log(
                 actorId = managerId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.serialName,
+                actorUserRole = context.userRole.value,
                 action = UserAuditActionType.MANAGEMENT_DELETE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = targetSessionId.asHexDashString(),

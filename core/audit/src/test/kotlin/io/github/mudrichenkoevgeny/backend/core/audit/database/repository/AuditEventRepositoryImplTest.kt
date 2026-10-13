@@ -64,8 +64,8 @@ class AuditEventRepositoryImplTest {
         val success = result as AppResult.Success
         assertNotNull(success.data)
         assertEquals(event.id, success.data!!.id)
-        assertEquals("login", success.data!!.action.serialName)
-        assertEquals("session", success.data!!.resource.serialName)
+        assertEquals("login", success.data!!.action.value)
+        assertEquals("session", success.data!!.resource.value)
         assertEquals(AuditStatus.SUCCESS, success.data!!.status)
     }
 
@@ -92,7 +92,7 @@ class AuditEventRepositoryImplTest {
         val result = suspendTransaction {
             repository.getEventsPageWithAccessFilter(
                 accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
-                pageParams = PageParams(page = 1, size = 20)
+                pageParams = PageParams()
             )
         }
 
@@ -117,7 +117,7 @@ class AuditEventRepositoryImplTest {
         val result = suspendTransaction {
             repository.getEventsPageWithAccessFilter(
                 accessFilter = AuditAccessFilter(emptySet(), emptySet()),
-                pageParams = PageParams(page = 1, size = 50)
+                pageParams = PageParams()
             )
         }
 
@@ -141,7 +141,7 @@ class AuditEventRepositoryImplTest {
         val result = suspendTransaction {
             repository.getEventsPageWithAccessFilter(
                 accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
-                pageParams = PageParams(page = 1, size = 50),
+                pageParams = PageParams(),
                 actorIds = listOf(actorId)
             )
         }
@@ -168,7 +168,7 @@ class AuditEventRepositoryImplTest {
         val result = suspendTransaction {
             repository.getEventsPageWithAccessFilter(
                 accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
-                pageParams = PageParams(page = 1, size = 10),
+                pageParams = PageParams(),
                 messages = listOf("DATA")
             )
         }

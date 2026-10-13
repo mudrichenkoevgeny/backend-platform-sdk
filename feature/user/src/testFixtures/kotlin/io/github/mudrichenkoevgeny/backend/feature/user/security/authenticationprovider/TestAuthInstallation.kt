@@ -22,7 +22,7 @@ fun Application.installTestAuth() {
             validate { credential ->
                 val testToken = JWT.create()
                     .withSubject(credential.payload.subject)
-                    .withClaim(UserTokenClaims.USER_ROLE, UserRole.ADMIN.serialName)
+                    .withClaim(UserTokenClaims.USER_ROLE, UserRole.ADMIN.value)
                     .withClaim(UserTokenClaims.SESSION_ID, "00000000-0000-0000-0000-000000000001")
                     .sign(Algorithm.HMAC256("test-secret"))
 

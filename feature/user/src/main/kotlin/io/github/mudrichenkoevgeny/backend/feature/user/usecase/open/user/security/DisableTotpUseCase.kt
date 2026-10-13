@@ -170,7 +170,7 @@ class DisableTotpUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.serialName,
+            actorUserRole = actorUserRole?.value,
             action = UserAuditActionType.SELF_DISABLE_TOTP,
             resource = UserAuditResourceType.USER,
             resourceId = actorId,

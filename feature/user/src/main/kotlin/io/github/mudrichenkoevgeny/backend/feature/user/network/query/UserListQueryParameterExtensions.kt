@@ -19,7 +19,7 @@ import io.ktor.server.application.ApplicationCall
  */
 fun ApplicationCall.parseUsersListQueryParams(): UserListQueryParams {
     val listing = parseListingQueryParams(
-        defaultSortBy = UserSortValues.UserSortBy.CREATED_AT,
+        defaultSortBy = UserSortValues.UserSortBy.DEFAULT,
         parseSortByOrNull = UserSortValues.UserSortBy::fromValueOrNull
     )
 

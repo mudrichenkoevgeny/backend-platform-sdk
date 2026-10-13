@@ -40,7 +40,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.UserSessionPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.session.UserSessionSummaryPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.session.ManagementSessionRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.users.sessions.ManagementSessionsRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get
@@ -55,10 +55,10 @@ import javax.inject.Singleton
  * Management HTTP routes for overseeing and terminating user sessions.
  *
  * Registered routes:
- * 1. [ManagementSessionRoutes.GET_SESSIONS] — retrieves a filtered list of user sessions via [ManagementGetSessionsUseCase].
- * 2. [ManagementSessionRoutes.GET_SESSION] — retrieves specific session details via [ManagementGetSessionUseCase].
- * 3. [ManagementSessionRoutes.DELETE_SESSION] — terminates a specific user session via [ManagementDeleteSessionUseCase].
- * 4. [ManagementSessionRoutes.DELETE_ALL_USER_SESSIONS] — terminates all active sessions for a user via [ManagementDeleteAllSessionsUseCase].
+ * 1. [ManagementSessionsRoutes.GET_SESSIONS] — retrieves a filtered list of user sessions via [ManagementGetSessionsUseCase].
+ * 2. [ManagementSessionsRoutes.GET_SESSION] — retrieves specific session details via [ManagementGetSessionUseCase].
+ * 3. [ManagementSessionsRoutes.DELETE_SESSION] — terminates a specific user session via [ManagementDeleteSessionUseCase].
+ * 4. [ManagementSessionsRoutes.DELETE_ALL_USER_SESSIONS] — terminates all active sessions for a user via [ManagementDeleteAllSessionsUseCase].
  */
 @Singleton
 class ManagementSessionRouter @Inject constructor(
@@ -87,7 +87,7 @@ class ManagementSessionRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.get(
-            path = ManagementSessionRoutes.GET_SESSIONS,
+            path = ManagementSessionsRoutes.GET_SESSIONS,
             builder = { getSessionsDocs(allowedRoles, allowedAccountStatuses) },
             body = { getSessions(allowedRoles, allowedAccountStatuses) }
         )
@@ -98,7 +98,7 @@ class ManagementSessionRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.get(
-            path = ManagementSessionRoutes.GET_SESSION,
+            path = ManagementSessionsRoutes.GET_SESSION,
             builder = { getSessionDocs(allowedRoles, allowedAccountStatuses) },
             body = { getSession(allowedRoles, allowedAccountStatuses) }
         )
@@ -109,7 +109,7 @@ class ManagementSessionRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
-            path = ManagementSessionRoutes.DELETE_SESSION,
+            path = ManagementSessionsRoutes.DELETE_SESSION,
             builder = { deleteSessionDocs(allowedRoles, allowedAccountStatuses) },
             body = { deleteSession(allowedRoles, allowedAccountStatuses) }
         )
@@ -120,7 +120,7 @@ class ManagementSessionRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
-            path = ManagementSessionRoutes.DELETE_ALL_USER_SESSIONS,
+            path = ManagementSessionsRoutes.DELETE_ALL_USER_SESSIONS,
             builder = { deleteAllUserSessionsDocs(allowedRoles, allowedAccountStatuses) },
             body = { deleteAllUserSessions(allowedRoles, allowedAccountStatuses) }
         )
@@ -135,8 +135,8 @@ class ManagementSessionRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = GET_SESSIONS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
         )
         response {
             code(HttpStatusCode.OK) {
@@ -198,8 +198,8 @@ class ManagementSessionRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = GET_SESSION_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName }
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
         )
         request {
             pathParameter<String>(UserApiPaths.SESSION_ID) {
@@ -253,8 +253,8 @@ class ManagementSessionRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = DELETE_SESSION_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
@@ -312,8 +312,8 @@ class ManagementSessionRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = DELETE_ALL_USER_SESSIONS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.serialName },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.serialName },
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
@@ -373,7 +373,7 @@ class ManagementSessionRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.serialName,
+            actorUserRole = authenticatedRequestContext.userRole.value,
             action = actionType,
             resource = UserAuditResourceType.SESSION,
             status = AuditStatus.DENIED,

@@ -61,7 +61,7 @@ class UserListQueryParameterExtensionsTest {
         assertTrue(result.requiredPermissionCodes.contains(PermissionCode(TEST_PERMISSION)))
         assertEquals(true, result.isTotpEnabled)
         assertEquals(AccountLockoutType.TEMPORARY, result.accountLockoutTypes.first())
-        assertEquals(UserSortValues.UserSortBy.CREATED_AT, result.listing.sortBy)
+        assertEquals(UserSortValues.UserSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test

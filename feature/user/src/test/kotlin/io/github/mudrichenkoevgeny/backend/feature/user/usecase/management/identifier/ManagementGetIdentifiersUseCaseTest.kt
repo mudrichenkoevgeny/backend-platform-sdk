@@ -60,9 +60,9 @@ class ManagementGetIdentifiersUseCaseTest {
         } returns AppResult.Success(pagedResult)
 
         val result = useCase(
-            pageParams = PageParams(1, 10),
-            sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            pageParams = PageParams(),
+            sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             userIds = emptyList(),
             userAuthProviders = emptyList(),
             identifiers = emptyList(),
@@ -84,9 +84,9 @@ class ManagementGetIdentifiersUseCaseTest {
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 
         val result = useCase(
-            pageParams = PageParams(1, 10),
-            sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            pageParams = PageParams(),
+            sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             userIds = emptyList(),
             userAuthProviders = emptyList(),
             identifiers = emptyList(),
@@ -104,9 +104,9 @@ class ManagementGetIdentifiersUseCaseTest {
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(null)
 
         val result = useCase(
-            pageParams = PageParams(1, 10),
-            sortBy = UserSortValues.UserIdentifierSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            pageParams = PageParams(),
+            sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             userIds = emptyList(),
             userAuthProviders = emptyList(),
             identifiers = emptyList(),
@@ -145,8 +145,8 @@ class ManagementGetIdentifiersUseCaseTest {
         } returns AppResult.Success(mockk())
 
         useCase(
-            pageParams = PageParams(1, 10),
-            sortBy = UserSortValues.UserIdentifierSortBy.UPDATED_AT,
+            pageParams = PageParams(),
+            sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
             sortOrder = SortOrder.ASC,
             userIds = filterUserIds,
             userAuthProviders = filterProviders,
@@ -158,7 +158,7 @@ class ManagementGetIdentifiersUseCaseTest {
             identifierManager.getUserIdentifiersSummaryPage(
                 managementUserPermissionCodes = permissions,
                 pageParams = any(),
-                sortBy = UserSortValues.UserIdentifierSortBy.UPDATED_AT,
+                sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
                 sortOrder = SortOrder.ASC,
                 userIds = filterUserIds,
                 userAuthProviders = filterProviders,

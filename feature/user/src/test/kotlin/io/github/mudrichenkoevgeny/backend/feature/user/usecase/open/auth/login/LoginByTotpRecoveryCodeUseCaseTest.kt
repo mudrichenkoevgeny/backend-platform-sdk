@@ -67,7 +67,7 @@ class LoginByTotpRecoveryCodeUseCaseTest {
         val mfaChallenge = MfaChallengeData(
             token = TEST_MFA_TOKEN,
             userId = userId.asHexDashString(),
-            userRole = UserRole.USER.serialName,
+            userRole = UserRole.USER.value,
             identifierId = identifierId.asHexDashString(),
             type = MfaChallengeType.LOGIN_RECOVERY_CODE
         )
@@ -88,7 +88,7 @@ class LoginByTotpRecoveryCodeUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.USER.serialName,
+                actorUserRole = UserRole.USER.value,
                 action = UserAuditActionType.LOGIN_BY_TOTP_RECOVERY_CODE,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -108,7 +108,7 @@ class LoginByTotpRecoveryCodeUseCaseTest {
         val mfaChallenge = MfaChallengeData(
             token = TEST_MFA_TOKEN,
             userId = userId.asHexDashString(),
-            userRole = UserRole.USER.serialName,
+            userRole = UserRole.USER.value,
             identifierId = UserIdentifierId.generate().asHexDashString(),
             type = MfaChallengeType.LOGIN_RECOVERY_CODE
         )
@@ -127,7 +127,7 @@ class LoginByTotpRecoveryCodeUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.USER.serialName,
+                actorUserRole = UserRole.USER.value,
                 action = UserAuditActionType.LOGIN_BY_TOTP_RECOVERY_CODE,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),

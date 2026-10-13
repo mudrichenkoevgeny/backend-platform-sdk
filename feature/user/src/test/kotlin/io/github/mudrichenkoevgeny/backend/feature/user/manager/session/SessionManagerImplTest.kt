@@ -321,9 +321,9 @@ class SessionManagerImplTest {
 
         val result = manager.getUserSessionsSummaryPage(
             userId = userId,
-            pageParams = PageParams(1, 10),
-            sortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
-            sortOrder = SortOrder.DESC,
+            pageParams = PageParams(),
+            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT,
             identifiers = emptyList(),
             identifierIds = emptyList(),
             identifierAuthProviders = emptyList(),
@@ -416,7 +416,7 @@ class SessionManagerImplTest {
                 actorId = userId.asHexDashString(),
                 actorType = any(),
                 actorUserRole = any(),
-                action = match { it.serialName == "new_device_detected" },
+                action = match { it.value == "new_device_detected" },
                 resource = any(),
                 resourceId = userId.asHexDashString(),
                 status = any(),

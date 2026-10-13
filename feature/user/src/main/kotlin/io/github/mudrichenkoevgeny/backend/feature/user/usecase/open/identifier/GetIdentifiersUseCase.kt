@@ -41,11 +41,11 @@ class GetIdentifiersUseCase @Inject constructor(
      */
     suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy,
-        sortOrder: SortOrder,
-        userAuthProviders: List<UserAuthProvider>,
-        identifiers: List<String>
+        pageParams: PageParams = PageParams(),
+        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
+        userAuthProviders: List<UserAuthProvider> = emptyList(),
+        identifiers: List<String> = emptyList()
     ): AppResult<PagedResult<UserIdentifierSummary>> {
         val currentUserId = authenticatedRequestContext.userId
 

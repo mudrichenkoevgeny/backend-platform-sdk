@@ -87,7 +87,7 @@ class ResetGlobalSettingsUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.ADMIN.serialName,
+                actorUserRole = UserRole.ADMIN.value,
                 action = SettingsAuditActionType.MANAGEMENT_RESET_GLOBAL_SETTINGS,
                 resource = SettingsAuditResourceType.GLOBAL_SETTINGS,
                 status = AuditStatus.SUCCESS,
@@ -129,7 +129,7 @@ class ResetGlobalSettingsUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.ADMIN.serialName,
+                actorUserRole = UserRole.ADMIN.value,
                 action = SettingsAuditActionType.MANAGEMENT_RESET_GLOBAL_SETTINGS,
                 resource = SettingsAuditResourceType.GLOBAL_SETTINGS,
                 status = AuditStatus.FAILED,

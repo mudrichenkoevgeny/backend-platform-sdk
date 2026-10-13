@@ -70,7 +70,7 @@ class AuthenticationChallengeServiceImplTest {
         val expectedChallengeData = MfaChallengeData(
             token = testMfaToken,
             userId = userId.asHexDashString(),
-            userRole = UserRole.USER.serialName,
+            userRole = UserRole.USER.value,
             identifierId = identifierId.asHexDashString(),
             sessionId = sessionId.asHexDashString(),
             type = MfaChallengeType.STEP_UP

@@ -251,7 +251,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole.serialName,
+            actorUserRole = actorUserRole.value,
             action = UserAuditActionType.ADD_IDENTIFIER_EMAIL,
             resource = UserAuditResourceType.IDENTIFIER,
             resourceId = resourceId,

@@ -145,8 +145,8 @@ interface UserSessionRepository {
     suspend fun getUserSessionsPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter = UserRoleAccessFilter(emptySet()),
         pageParams: PageParams,
-        sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
-        sortOrder: SortOrder = SortOrder.DESC,
+        sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
         userIds: List<UserId> = emptyList(),
         userRoles: List<UserRole> = emptyList(),
         identifiers: List<String> = emptyList(),
@@ -186,8 +186,8 @@ interface UserSessionRepository {
     suspend fun getUserSessionsPageByUserId(
         userId: UserId,
         pageParams: PageParams,
-        sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.CREATED_AT,
-        sortOrder: SortOrder = SortOrder.DESC,
+        sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
         identifiers: List<String> = emptyList(),
         identifierIds: List<UserIdentifierId> = emptyList(),
         identifierAuthProviders: List<UserAuthProvider> = emptyList(),
