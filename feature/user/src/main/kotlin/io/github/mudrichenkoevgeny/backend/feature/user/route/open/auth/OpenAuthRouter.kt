@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.login.OpenLoginRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.refreshtoken.OpenRefreshTokenRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.register.OpenRegisterRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.registration.OpenRegistrationRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.resetpassword.OpenResetPasswordRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.settings.OpenAuthSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.unlock.OpenUnlockRouter
@@ -17,7 +17,7 @@ import javax.inject.Singleton
  * This router orchestrates the registration of:
  * 1. Session token renewal ([OpenRefreshTokenRouter]).
  * 2. Multichannel login and MFA verification ([OpenLoginRouter]).
- * 3. User registration and confirmation flows ([OpenRegisterRouter]).
+ * 3. User registration and confirmation flows ([OpenRegistrationRouter]).
  * 4. Password recovery and reset mechanisms ([OpenResetPasswordRouter]).
  * 5. Publicly accessible authentication settings and metadata ([OpenAuthSettingsRouter]).
  * 6. Self-service account unlock flows ([OpenUnlockRouter]).
@@ -26,7 +26,7 @@ import javax.inject.Singleton
 class OpenAuthRouter @Inject constructor(
     private val openRefreshTokenRouter: OpenRefreshTokenRouter,
     private val openLoginRouter: OpenLoginRouter,
-    private val openRegisterRouter: OpenRegisterRouter,
+    private val openRegistrationRouter: OpenRegistrationRouter,
     private val openResetPasswordRouter: OpenResetPasswordRouter,
     private val openAuthSettingsRouter: OpenAuthSettingsRouter,
     private val openUnlockRouter: OpenUnlockRouter
@@ -34,7 +34,7 @@ class OpenAuthRouter @Inject constructor(
     override fun register(route: Route) {
         openRefreshTokenRouter.register(route)
         openLoginRouter.register(route)
-        openRegisterRouter.register(route)
+        openRegistrationRouter.register(route)
         openResetPasswordRouter.register(route)
         openAuthSettingsRouter.register(route)
         openUnlockRouter.register(route)

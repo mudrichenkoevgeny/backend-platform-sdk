@@ -56,9 +56,10 @@ import javax.inject.Singleton
  *
  * Registered routes:
  * 1. [ManagementSessionsRoutes.GET_SESSIONS] — retrieves a filtered list of user sessions via [ManagementGetSessionsUseCase].
- * 2. [ManagementSessionsRoutes.GET_SESSION] — retrieves specific session details via [ManagementGetSessionUseCase].
- * 3. [ManagementSessionsRoutes.DELETE_SESSION] — terminates a specific user session via [ManagementDeleteSessionUseCase].
- * 4. [ManagementSessionsRoutes.DELETE_ALL_USER_SESSIONS] — terminates all active sessions for a user via [ManagementDeleteAllSessionsUseCase].
+ * 2. [ManagementSessionsRoutes.GET_USER_SESSIONS] — retrieves a filtered list of user sessions for a target user via [ManagementGetSessionsUseCase].
+ * 3. [ManagementSessionsRoutes.GET_SESSION] — retrieves specific session details via [ManagementGetSessionUseCase].
+ * 4. [ManagementSessionsRoutes.DELETE_SESSION] — terminates a specific user session via [ManagementDeleteSessionUseCase].
+ * 5. [ManagementSessionsRoutes.DELETE_ALL_USER_SESSIONS] — terminates all active sessions for a user via [ManagementDeleteAllSessionsUseCase].
  */
 @Singleton
 class ManagementSessionRouter @Inject constructor(
@@ -76,6 +77,7 @@ class ManagementSessionRouter @Inject constructor(
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetSessionsRoute(this)
+            registerGetUserSessionsRoute(this)
             registerGetSessionRoute(this)
             registerDeleteSessionRoute(this)
             registerDeleteAllUserSessionsRoute(this)
@@ -90,6 +92,17 @@ class ManagementSessionRouter @Inject constructor(
             path = ManagementSessionsRoutes.GET_SESSIONS,
             builder = { getSessionsDocs(allowedRoles, allowedAccountStatuses) },
             body = { getSessions(allowedRoles, allowedAccountStatuses) }
+        )
+    }
+
+    private fun registerGetUserSessionsRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+
+        route.get(
+            path = ManagementSessionsRoutes.GET_USER_SESSIONS,
+            builder = { getUserSessionsDocs(allowedRoles, allowedAccountStatuses) },
+            body = { getUserSessions(allowedRoles, allowedAccountStatuses) }
         )
     }
 
@@ -169,6 +182,78 @@ class ManagementSessionRouter @Inject constructor(
             sortBy = queryParams.listing.sortBy,
             sortOrder = queryParams.listing.sortOrder,
             userIds = queryParams.userIds,
+            userRoles = queryParams.userRoles,
+            identifiers = queryParams.identifiers,
+            identifierIds = queryParams.identifierIds,
+            identifierAuthProviders = queryParams.identifierAuthProviders,
+            clientTypes = queryParams.clientTypes,
+            userAgents = queryParams.userAgents,
+            ipAddresses = queryParams.ipAddresses,
+            languages = queryParams.languages,
+            deviceIds = queryParams.deviceIds,
+            deviceNames = queryParams.deviceNames,
+            appVersions = queryParams.appVersions,
+            operationSystemVersions = queryParams.operationSystemVersions,
+            authenticatedRequestContext = authenticatedRequestContext
+        )
+
+        call.respondResult(result, appLogger, appErrorParser) { pagedSessions ->
+            pagedSessions.mapItems { userSessionSummary -> userSessionSummary.toUserSessionSummaryPayload() }
+        }
+    }
+
+    private fun RouteConfig.getUserSessionsDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        summary = GET_USER_SESSIONS_ROUTE_SUMMARY
+        operationId = GET_USER_SESSIONS_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
+        description = getFormattedDescription(
+            description = GET_USER_SESSIONS_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
+        )
+        request {
+            pathParameter<String>(UserApiPaths.USER_ID) {
+                description = GET_USER_SESSIONS_ROUTE_PATH_USER_ID_DESCRIPTION
+            }
+        }
+        response {
+            code(HttpStatusCode.OK) {
+                body<PagedResult<UserSessionSummaryPayload>>()
+                description = GET_USER_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.getUserSessions(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        val userId = call.validatePathParameter(UserApiPaths.USER_ID) { id ->
+            id.toUserIdOrThrow()
+        }
+
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
+        )
+
+        if (authorizeResult is AppResult.Error) {
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
+        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+        val queryParams = call.parseManagementSessionsListQueryParams()
+
+        val result = managementGetSessionsUseCase(
+            pageParams = queryParams.listing.pageParams,
+            sortBy = queryParams.listing.sortBy,
+            sortOrder = queryParams.listing.sortOrder,
+            userIds = listOf(userId),
             userRoles = queryParams.userRoles,
             identifiers = queryParams.identifiers,
             identifierIds = queryParams.identifierIds,
@@ -387,6 +472,13 @@ class ManagementSessionRouter @Inject constructor(
             "Returns a paginated list of user sessions. Row visibility and masking follow session permissions."
         const val GET_SESSIONS_ROUTE_OPERATION_ID = "getManagementSessions"
         const val GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user sessions"
+
+        const val GET_USER_SESSIONS_ROUTE_SUMMARY = "List target user's sessions (management)"
+        const val GET_USER_SESSIONS_ROUTE_DESCRIPTION =
+            "Returns a paginated list of sessions for a specific target user."
+        const val GET_USER_SESSIONS_ROUTE_OPERATION_ID = "getManagementUserTargetSessions"
+        const val GET_USER_SESSIONS_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
+        const val GET_USER_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user sessions"
 
         const val GET_SESSION_ROUTE_SUMMARY = "Get user session (management)"
         const val GET_SESSION_ROUTE_DESCRIPTION = "Returns a single user session by session id."

@@ -232,7 +232,12 @@ class SelfManagementIdentifierRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
-        request { body<EmailPasswordChangeRequest>() }
+        request {
+            pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
+                description = CHANGE_PASSWORD_PATH_PARAMETER_DESCRIPTION
+            }
+            body<EmailPasswordChangeRequest>()
+        }
         response {
             code(HttpStatusCode.OK) {
                 body<UserIdentifierPrivatePayload>()
@@ -245,6 +250,9 @@ class SelfManagementIdentifierRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
+        val identifierId = call.validatePathParameter(UserApiPaths.USER_IDENTIFIER_ID) { id ->
+            id.toUserIdentifierIdOrThrow()
+        }
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
         val request = call.validateRequest<EmailPasswordChangeRequest>()
 
@@ -265,7 +273,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
         }
 
         val result = identifierEmailChangePasswordUseCase(
-            email = request.email,
+            userIdentifierId = identifierId,
             oldPassword = request.oldPassword,
             newPassword = request.newPassword,
             authenticatedRequestContext = authenticatedRequestContext
@@ -310,6 +318,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
         const val CHANGE_PASSWORD_SUMMARY = "Change management password"
         const val CHANGE_PASSWORD_OPERATION_ID = "selfManagementChangePassword"
         const val CHANGE_PASSWORD_DESCRIPTION = "Updates the management account password using current credentials."
+        const val CHANGE_PASSWORD_PATH_PARAMETER_DESCRIPTION = "The unique identifier ID"
         const val CHANGE_PASSWORD_RESPONSE_DESCRIPTION = "Identifier updated"
     }
 }

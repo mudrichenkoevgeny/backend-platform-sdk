@@ -1,4 +1,4 @@
-package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.register
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.registration
 
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class RegisterByEmailUseCaseTest {
+class RegistrationByEmailUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
@@ -45,7 +45,7 @@ class RegisterByEmailUseCaseTest {
     private val authManager = mockk<AuthManager>()
     private val validatePasswordUseCase = mockk<ValidatePasswordUseCase>()
 
-    private val useCase = RegisterByEmailUseCase(
+    private val useCase = RegistrationByEmailUseCase(
         rateLimiter = rateLimiter,
         authSettingsProvider = authSettingsProvider,
         emailRestrictionPolicyValidator = emailRestrictionPolicyValidator,
@@ -85,7 +85,7 @@ class RegisterByEmailUseCaseTest {
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
                 actorUserRole = UserRole.USER.value,
-                action = UserAuditActionType.REGISTER_BY_EMAIL,
+                action = UserAuditActionType.REGISTRATION_BY_EMAIL,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
                 status = AuditStatus.SUCCESS,
@@ -146,7 +146,7 @@ class RegisterByEmailUseCaseTest {
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorType = AuditActorType.USER,
-                action = UserAuditActionType.REGISTER_BY_EMAIL,
+                action = UserAuditActionType.REGISTRATION_BY_EMAIL,
                 resource = UserAuditResourceType.USER,
                 status = AuditStatus.FAILED,
                 metadata = any(),
@@ -172,7 +172,7 @@ class RegisterByEmailUseCaseTest {
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorType = AuditActorType.USER,
-                action = UserAuditActionType.REGISTER_BY_EMAIL,
+                action = UserAuditActionType.REGISTRATION_BY_EMAIL,
                 resource = UserAuditResourceType.USER,
                 status = AuditStatus.FAILED,
                 metadata = any(),

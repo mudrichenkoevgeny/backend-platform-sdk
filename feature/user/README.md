@@ -41,14 +41,14 @@ Built on top of Exposed, defining the schema and constraints.
 *   **User Admin**: `ManagementCreateUser`, `ManagementUpdateUser`, `ManagementDeleteUser`, `ManagementGetUsers`, `ManagementGetUser`.
 *   **Access Control**: Management of IP whitelists/blacklists and Email/Domain whitelists/blacklists (enforced during registration and admin user creation).
 *   **Security Admin**: `ManagementDisableTotp` (Force reset).
-*   **Session Control**: `ManagementGetSessions`, `ManagementGetSession`, `ManagementDeleteSession`, `ManagementDeleteAllSessions`.
-*   **Identifier Control**: `ManagementGetIdentifiers`, `ManagementGetIdentifier`, `ManagementDeleteIdentifier`.
+*   **Session Control**: `ManagementGetSessions`, `ManagementGetSession`, `ManagementGetUserSessions`, `ManagementDeleteSession`, `ManagementDeleteAllSessions`.
+*   **Identifier Control**: `ManagementGetIdentifiers`, `ManagementGetIdentifier`, `ManagementGetUserIdentifiers`, `ManagementDeleteIdentifier`.
 *   **System Settings**: `GetManagementAuthSettings`, `UpdateAuthSettings` (e.g., toggling "is registration allowed", configuring lockouts).
 
 ### 2. Open (Client & Self-Service)
 *   **Auth & Lifecycle**:
     *   **Login**: `LoginByEmail`, `LoginByPhone`, `LoginByExternalAuthProvider`, `LoginByTotp`, `LoginByTotpRecoveryCode`.
-    *   **Registration**: `RegisterByEmail`, `SendRegistrationConfirmationToEmail`.
+    *   **Registration**: `RegistrationByEmail`, `SendRegistrationConfirmationToEmail`.
     *   **Recovery**: `ResetPassword`, `SendResetPasswordConfirmation`, Self-service account unlock.
     *   **Session**: `RefreshToken` (with reuse detection), `Logout`, `GetSessions`, `DeleteSession`, `DeleteAllOtherSessions`, `ReauthenticateSession` (Step-up).
     *   **Security Alerts**: Login from new device detection and user notification.

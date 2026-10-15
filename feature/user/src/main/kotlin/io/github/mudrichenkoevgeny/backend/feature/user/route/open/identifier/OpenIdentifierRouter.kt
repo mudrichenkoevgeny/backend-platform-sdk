@@ -693,7 +693,12 @@ class OpenIdentifierRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
-        request { body<EmailPasswordChangeRequest>() }
+        request {
+            pathParameter<String>(UserApiPaths.USER_IDENTIFIER_ID) {
+                description = CHANGE_PASSWORD_PATH_PARAMETER_ID_DESCRIPTION
+            }
+            body<EmailPasswordChangeRequest>()
+        }
         response {
             code(HttpStatusCode.OK) {
                 body<UserIdentifierPrivatePayload>()
@@ -706,6 +711,9 @@ class OpenIdentifierRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
+        val identifierId = call.validatePathParameter(UserApiPaths.USER_IDENTIFIER_ID) { id ->
+            id.toUserIdentifierIdOrThrow()
+        }
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
         val request = call.validateRequest<EmailPasswordChangeRequest>()
 
@@ -719,7 +727,7 @@ class OpenIdentifierRouter @Inject constructor(
             logErrorToAudit(
                 authenticatedRequestContext = authenticatedRequestContext,
                 actionType = UserAuditActionType.CHANGE_PASSWORD,
-                resourceId = null,
+                resourceId = identifierId.asHexDashString(),
                 error = authorizeResult.error
             )
             call.respondResult(authorizeResult, appLogger, appErrorParser)
@@ -727,7 +735,7 @@ class OpenIdentifierRouter @Inject constructor(
         }
 
         val result = identifierEmailChangePasswordUseCase(
-            email = request.email,
+            userIdentifierId = identifierId,
             oldPassword = request.oldPassword,
             newPassword = request.newPassword,
             authenticatedRequestContext = authenticatedRequestContext
@@ -811,6 +819,7 @@ class OpenIdentifierRouter @Inject constructor(
         const val CHANGE_PASSWORD_SUMMARY = "Change email identifier password"
         const val CHANGE_PASSWORD_DESCRIPTION = "Updates the password associated with an email identifier."
         const val CHANGE_PASSWORD_OPERATION_ID = "openIdentifierEmailChangePassword"
+        const val CHANGE_PASSWORD_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the identifier for which to change password."
         const val CHANGE_PASSWORD_RESPONSE_OK_DESCRIPTION = "Password updated successfully"
     }
 }

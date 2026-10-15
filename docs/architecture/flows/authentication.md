@@ -10,7 +10,7 @@ Demonstrates the two-step process for registering a new user via email. It valid
 sequenceDiagram
     participant Client
     participant SendOTP as SendRegistrationConfirmationToEmailUseCase
-    participant Register as RegisterByEmailUseCase
+    participant Register as RegistrationByEmailUseCase
     participant OtpService
     participant EmailPolicy as EmailRestrictionPolicyValidator
     participant AuthManager as AuthManagerImpl

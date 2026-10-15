@@ -1,4 +1,4 @@
-package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.register
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.registration
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult

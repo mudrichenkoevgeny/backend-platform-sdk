@@ -1,4 +1,4 @@
-package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.register
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.registration
 
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
@@ -28,7 +28,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class RegisterByEmailUseCase @Inject constructor(
+class RegistrationByEmailUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val authSettingsProvider: AuthSettingsProvider,
     private val emailRestrictionPolicyValidator: EmailRestrictionPolicyValidator,
@@ -54,7 +54,7 @@ class RegisterByEmailUseCase @Inject constructor(
      * 3. Validates the [password] against the system's security policy.
      * 4. Verifies the [confirmationCode] for the [UserOtpVerificationType.EMAIL_VERIFICATION] type.
      * 5. Delegates user creation and initial authentication to [AuthManager].
-     * 6. Logs the security event via [AuditLogger] with [UserAuditActionType.REGISTER_BY_EMAIL].
+     * 6. Logs the security event via [AuditLogger] with [UserAuditActionType.REGISTRATION_BY_EMAIL].
      *
      * @param email The email address being registered.
      * @param password The password for the new account.
@@ -188,7 +188,7 @@ class RegisterByEmailUseCase @Inject constructor(
             actorId = actorId,
             actorType = AuditActorType.USER,
             actorUserRole = actorUserRole?.value,
-            action = UserAuditActionType.REGISTER_BY_EMAIL,
+            action = UserAuditActionType.REGISTRATION_BY_EMAIL,
             resource = UserAuditResourceType.USER,
             resourceId = resourceId,
             status = status,

@@ -34,6 +34,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.toUserIdentifierIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.toUserIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
@@ -55,9 +56,10 @@ import javax.inject.Singleton
  *
  * Registered routes:
  * 1. [ManagementIdentifiersRoutes.GET_IDENTIFIERS] — retrieves a filtered, paginated list of identifiers via [ManagementGetIdentifiersUseCase].
- * 2. [ManagementIdentifiersRoutes.GET_IDENTIFIER] — retrieves a specific identifier's details via [ManagementGetIdentifierUseCase].
- * 3. [ManagementIdentifiersRoutes.DELETE_IDENTIFIER] — removes a user identifier via [ManagementDeleteIdentifierUseCase].
- * 4. [ManagementIdentifiersRoutes.DELETE_IDENTIFIER_PASSWORD] — revokes an identifier's password via [ManagementDeleteIdentifierPasswordUseCase].
+ * 2. [ManagementIdentifiersRoutes.GET_USER_IDENTIFIERS] — retrieves a filtered, paginated list of identifiers for a target user via [ManagementGetIdentifiersUseCase].
+ * 3. [ManagementIdentifiersRoutes.GET_IDENTIFIER] — retrieves a specific identifier's details via [ManagementGetIdentifierUseCase].
+ * 4. [ManagementIdentifiersRoutes.DELETE_IDENTIFIER] — removes a user identifier via [ManagementDeleteIdentifierUseCase].
+ * 5. [ManagementIdentifiersRoutes.DELETE_IDENTIFIER_PASSWORD] — revokes an identifier's password via [ManagementDeleteIdentifierPasswordUseCase].
  */
 @Singleton
 class ManagementIdentifierRouter @Inject constructor(
@@ -75,6 +77,7 @@ class ManagementIdentifierRouter @Inject constructor(
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetIdentifiersRoute(this)
+            registerGetUserIdentifiersRoute(this)
             registerGetIdentifierRoute(this)
             registerDeleteIdentifierRoute(this)
             registerDeleteIdentifierPasswordRoute(this)
@@ -89,6 +92,17 @@ class ManagementIdentifierRouter @Inject constructor(
             path = ManagementIdentifiersRoutes.GET_IDENTIFIERS,
             builder = { getIdentifiersDocs(allowedRoles, allowedAccountStatuses) },
             body = { getIdentifiers(allowedRoles, allowedAccountStatuses) }
+        )
+    }
+
+    private fun registerGetUserIdentifiersRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
+
+        route.get(
+            path = ManagementIdentifiersRoutes.GET_USER_IDENTIFIERS,
+            builder = { getUserIdentifiersDocs(allowedRoles, allowedAccountStatuses) },
+            body = { getUserIdentifiers(allowedRoles, allowedAccountStatuses) }
         )
     }
 
@@ -168,6 +182,68 @@ class ManagementIdentifierRouter @Inject constructor(
             sortBy = queryParams.listing.sortBy,
             sortOrder = queryParams.listing.sortOrder,
             userIds = queryParams.userIds,
+            userAuthProviders = queryParams.userAuthProviders,
+            identifiers = queryParams.identifiers,
+            authenticatedRequestContext = authenticatedRequestContext
+        )
+
+        call.respondResult(result, appLogger, appErrorParser) { pagedIdentifiers ->
+            pagedIdentifiers.mapItems { userIdentifierSummary -> userIdentifierSummary.toUserIdentifierSummaryPayload() }
+        }
+    }
+
+    private fun RouteConfig.getUserIdentifiersDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        summary = GET_USER_IDENTIFIERS_ROUTE_SUMMARY
+        operationId = GET_USER_IDENTIFIERS_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.IDENTIFIER)
+        description = getFormattedDescription(
+            description = GET_USER_IDENTIFIERS_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
+        )
+        request {
+            pathParameter<String>(UserApiPaths.USER_ID) {
+                description = GET_USER_IDENTIFIERS_ROUTE_PATH_USER_ID_DESCRIPTION
+            }
+        }
+        response {
+            code(HttpStatusCode.OK) {
+                body<PagedResult<UserIdentifierSummaryPayload>>()
+                description = GET_USER_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.getUserIdentifiers(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        val userId = call.validatePathParameter(UserApiPaths.USER_ID) { id ->
+            id.toUserIdOrThrow()
+        }
+
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
+        )
+
+        if (authorizeResult is AppResult.Error) {
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
+        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+        val queryParams = call.parseManagementIdentifiersListQueryParams()
+
+        val result = managementGetIdentifiersUseCase(
+            pageParams = queryParams.listing.pageParams,
+            sortBy = queryParams.listing.sortBy,
+            sortOrder = queryParams.listing.sortOrder,
+            userIds = listOf(userId),
             userAuthProviders = queryParams.userAuthProviders,
             identifiers = queryParams.identifiers,
             authenticatedRequestContext = authenticatedRequestContext
@@ -376,6 +452,13 @@ class ManagementIdentifierRouter @Inject constructor(
             "Returns a paginated list of identifiers. Filters and row-level access follow the management identifier API contract."
         const val GET_IDENTIFIERS_ROUTE_OPERATION_ID = "getManagementUserIdentifiers"
         const val GET_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user identifiers"
+
+        const val GET_USER_IDENTIFIERS_ROUTE_SUMMARY = "List target user's identifiers (management)"
+        const val GET_USER_IDENTIFIERS_ROUTE_DESCRIPTION =
+            "Returns a paginated list of identifiers for a specific user."
+        const val GET_USER_IDENTIFIERS_ROUTE_OPERATION_ID = "getManagementUserTargetIdentifiers"
+        const val GET_USER_IDENTIFIERS_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
+        const val GET_USER_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user identifiers"
 
         const val GET_IDENTIFIER_ROUTE_SUMMARY = "Get user identifier (management)"
         const val GET_IDENTIFIER_ROUTE_DESCRIPTION = "Returns a single identifier."

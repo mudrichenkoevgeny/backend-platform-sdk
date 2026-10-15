@@ -24,6 +24,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.m
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
@@ -58,14 +59,14 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
      * 5. Updates the identifier record with the newly hashed password.
      * 6. Logs the security event via [AuditLogger] with [UserAuditActionType.CHANGE_PASSWORD].
      *
-     * @param email The email identifier for which the password is being changed.
+     * @param userIdentifierId The identifier ID for which the password is being changed.
      * @param newPassword The new password string.
      * @param oldPassword The current password for verification.
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] containing the updated [UserIdentifierPrivate].
      */
     suspend operator fun invoke(
-        email: String,
+        userIdentifierId: UserIdentifierId,
         newPassword: String,
         oldPassword: String,
         authenticatedRequestContext: AuthenticatedRequestContext
@@ -75,6 +76,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
 
         val auditActorId = currentUserId.asHexDashString()
         val auditActorUserRole = authenticatedRequestContext.userRole
+        val auditResourceId = userIdentifierId.asHexDashString()
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata().toMutableSet()
 
         auditMetadata.add(
@@ -86,13 +88,14 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
 
         val rateLimitCheck = rateLimiter.checkRateLimit(
             action = UserRateLimitAction.PASSWORD_CHANGE,
-            identifier = email
+            identifier = userIdentifierId.asHexDashString()
         )
         if (rateLimitCheck is AppResult.Error) {
             return handleError(
                 error = rateLimitCheck.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
         }
@@ -105,6 +108,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 error = userResult.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
             is AppResult.Success -> userResult.data
@@ -120,6 +124,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 error = userSessionResult.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
         }
@@ -133,6 +138,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 error = ensureSessionConfirmedResult.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
         }
@@ -143,13 +149,13 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 error = passwordPolicyCheckResult.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
         }
 
-        val identifierResult = identifierManager.getUserIdentifierInternalByProvider(
-            userAuthProvider = UserAuthProvider.EMAIL,
-            identifier = email
+        val identifierResult = identifierManager.getUserIdentifierInternalById(
+            userIdentifierId = userIdentifierId
         ).mapNotNullOrError(UserError.UserNotFound())
 
         val userIdentifier = when (identifierResult) {
@@ -157,12 +163,31 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 error = identifierResult.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
             is AppResult.Success -> identifierResult.data
         }
 
-        val auditResourceId = userIdentifier.id.asHexDashString()
+        if (userIdentifier.userId != currentUserId) {
+            return handleError(
+                error = UserError.UserNotFound(),
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
+                baseMetadata = auditMetadata
+            )
+        }
+
+        if (userIdentifier.userAuthProvider != UserAuthProvider.EMAIL) {
+            return handleError(
+                error = UserError.UserIdentifierPasswordNotSupported(),
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
+                baseMetadata = auditMetadata
+            )
+        }
 
         if (userIdentifier.passwordHash == null) {
             return handleError(
