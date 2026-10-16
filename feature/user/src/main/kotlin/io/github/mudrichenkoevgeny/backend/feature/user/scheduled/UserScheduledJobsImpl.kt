@@ -62,7 +62,11 @@ class UserScheduledJobsImpl @Inject constructor(
                 }
 
                 val intervalSeconds = authSettingsProvider.getAccountDeletionCheckIntervalSeconds()
-                val delaySeconds = if (intervalSeconds > 0) intervalSeconds else DEFAULT_CHECK_INTERVAL_SECONDS
+                val delaySeconds = if (intervalSeconds > 0) {
+                    intervalSeconds
+                } else {
+                    DEFAULT_CHECK_INTERVAL_SECONDS
+                }
                 delay(delaySeconds.seconds)
             }
         }
@@ -85,7 +89,11 @@ class UserScheduledJobsImpl @Inject constructor(
                 }
 
                 val intervalSeconds = securitySettingsProvider.getAccountLockoutCheckIntervalSeconds()
-                val delaySeconds = if (intervalSeconds > 0) intervalSeconds else DEFAULT_CHECK_INTERVAL_SECONDS
+                val delaySeconds = if (intervalSeconds > 0) {
+                    intervalSeconds
+                } else {
+                    DEFAULT_CHECK_INTERVAL_SECONDS
+                }
                 delay(delaySeconds.seconds)
             }
         }

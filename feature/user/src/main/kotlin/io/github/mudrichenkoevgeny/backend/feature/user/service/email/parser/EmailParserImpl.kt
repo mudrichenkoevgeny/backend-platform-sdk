@@ -39,7 +39,9 @@ class EmailParserImpl @Inject constructor(
 
                 resourceStream.use { stream ->
                     val text = stream.bufferedReader().readText().trim()
-                    if (text.isEmpty() || text == "{}" || text == "null") return@use
+                    if (text.isEmpty() || text == "{}" || text == "null") {
+                        return@use
+                    }
 
                     val parsed: Map<String, EmailTemplate> = json.decodeFromString(text)
                     localeTemplates.putAll(parsed)

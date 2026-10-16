@@ -32,7 +32,9 @@ inline fun <T, R> AppResult<T>.mapSuccess(transform: (T) -> R): AppResult<R> =
  * Useful for side‑effects such as logging without breaking fluent chains.
  */
 inline fun <T> AppResult<T>.onSuccess(block: (T) -> Unit): AppResult<T> {
-    if (this is AppResult.Success) block(data)
+    if (this is AppResult.Success) {
+        block(data)
+    }
     return this
 }
 
@@ -42,7 +44,9 @@ inline fun <T> AppResult<T>.onSuccess(block: (T) -> Unit): AppResult<T> {
  * Useful for centralized error logging or metrics collection.
  */
 inline fun <T> AppResult<T>.onError(block: (AppError) -> Unit): AppResult<T> {
-    if (this is AppResult.Error) block(error)
+    if (this is AppResult.Error) {
+        block(error)
+    }
     return this
 }
 

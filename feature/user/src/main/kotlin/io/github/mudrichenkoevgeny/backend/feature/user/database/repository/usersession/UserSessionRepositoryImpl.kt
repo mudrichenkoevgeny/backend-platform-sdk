@@ -408,7 +408,9 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         rawValues: List<String>
     ) {
         val nonBlank = rawValues.filter { it.isNotBlank() }
-        if (nonBlank.isEmpty()) return
+        if (nonBlank.isEmpty()) {
+            return
+        }
 
         val predicate = nonBlank
             .map { value ->

@@ -37,7 +37,11 @@ class LocalStorageService @Inject constructor(
         bucket: String?
     ): AppResult<String> {
         return try {
-            val targetDir = if (bucket != null) rootPath.resolve(bucket) else rootPath
+            val targetDir = if (bucket != null) {
+                rootPath.resolve(bucket)
+            } else {
+                rootPath
+            }
 
             if (!Files.exists(targetDir)) {
                 Files.createDirectories(targetDir)

@@ -5,8 +5,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 data class TestAuditAction(
     override val value: String = "test_action"
 ) : AuditActionType {
-    override fun parseOrNull(value: String): AuditActionType? =
-        if (value == this.value) this else null
+    override fun parseOrNull(value: String): AuditActionType? {
+        return if (value == this.value) {
+            this
+        } else {
+            null
+        }
+    }
 
     override fun parseOrThrow(value: String): AuditActionType =
         parseOrNull(value) ?: throw IllegalArgumentException("Invalid audit action: '$value'")

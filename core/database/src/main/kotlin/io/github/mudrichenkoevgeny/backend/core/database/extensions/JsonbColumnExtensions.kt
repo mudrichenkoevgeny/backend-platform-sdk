@@ -46,7 +46,9 @@ infix fun Column<Set<String>>.jsonbContainsAllStrings(values: Set<String>): Op<B
                         queryBuilder.append(" LIKE '%")
                         queryBuilder.append(value)
                         queryBuilder.append("%'")
-                        if (index < values.size - 1) queryBuilder.append(" AND ")
+                        if (index < values.size - 1) {
+                            queryBuilder.append(" AND ")
+                        }
                     }
                 }
                 queryBuilder.append(")")

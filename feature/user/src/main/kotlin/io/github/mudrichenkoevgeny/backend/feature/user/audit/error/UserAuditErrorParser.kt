@@ -22,7 +22,9 @@ import javax.inject.Singleton
 class UserAuditErrorParser @Inject constructor() : AuditErrorParser {
 
     override fun parse(error: AppError): AuditErrorLogData? {
-        if (error !is UserError) return null
+        if (error !is UserError) {
+            return null
+        }
 
         val deniedReasonValue = when (error) {
             is UserError.UserForbidden -> UserAuditMetadataDeniedReasonValues.USER_FORBIDDEN

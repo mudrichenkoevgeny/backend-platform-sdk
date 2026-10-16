@@ -6,5 +6,7 @@ sealed class UpdateField<out T> {
 }
 
 fun <T> UpdateField<T>.onSet(block: (T?) -> Unit) {
-    if (this is UpdateField.Set) block(value)
+    if (this is UpdateField.Set) {
+        block(value)
+    }
 }

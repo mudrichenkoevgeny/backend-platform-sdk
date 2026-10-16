@@ -99,7 +99,9 @@ class SendAddEmailIdentifierConfirmationUseCase @Inject constructor(
             deviceName = context.clientInfo.clientDeviceInfo.deviceName,
             language = context.clientInfo.clientDeviceInfo.language
         )
-        if (sendEmailResult is AppResult.Error) return AppResult.Error(sendEmailResult.error)
+        if (sendEmailResult is AppResult.Error) {
+            return AppResult.Error(sendEmailResult.error)
+        }
 
         return AppResult.Success(otpConfirmationData.otpConfirmation)
     }
@@ -114,7 +116,9 @@ class SendAddEmailIdentifierConfirmationUseCase @Inject constructor(
             code = otpConfirmationData.code,
             language = context.clientInfo.clientDeviceInfo.language
         )
-        if (sendEmailResult is AppResult.Error) return AppResult.Error(sendEmailResult.error)
+        if (sendEmailResult is AppResult.Error) {
+            return AppResult.Error(sendEmailResult.error)
+        }
 
         return AppResult.Success(otpConfirmationData.otpConfirmation)
     }

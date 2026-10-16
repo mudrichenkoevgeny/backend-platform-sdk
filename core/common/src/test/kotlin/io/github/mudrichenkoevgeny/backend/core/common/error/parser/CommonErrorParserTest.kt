@@ -201,8 +201,11 @@ class CommonErrorParserTest {
                 ?: return emptyMap()
             return stream.use {
                 val text = it.bufferedReader().readText().trim()
-                if (text.isEmpty() || text == "{}" || text == "null") emptyMap()
-                else FoundationJson.decodeFromString(text)
+                if (text.isEmpty() || text == "{}" || text == "null") {
+                    emptyMap()
+                } else {
+                    FoundationJson.decodeFromString(text)
+                }
             }
         }
     }

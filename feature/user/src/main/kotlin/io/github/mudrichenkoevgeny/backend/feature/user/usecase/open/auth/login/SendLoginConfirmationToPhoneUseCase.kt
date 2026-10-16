@@ -61,7 +61,9 @@ class SendLoginConfirmationToPhoneUseCase @Inject constructor(
             code = otpConfirmationData.code,
             language = requestContext.clientInfo.clientDeviceInfo.language
         )
-        if (sendCodeResult is AppResult.Error) return AppResult.Error(sendCodeResult.error)
+        if (sendCodeResult is AppResult.Error) {
+            return AppResult.Error(sendCodeResult.error)
+        }
 
         return AppResult.Success(otpConfirmationData.otpConfirmation)
     }

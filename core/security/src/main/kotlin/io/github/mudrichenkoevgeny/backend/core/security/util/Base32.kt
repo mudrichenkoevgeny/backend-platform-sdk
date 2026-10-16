@@ -24,7 +24,11 @@ object Base32 {
         while (i < data.size) {
             currByte = data[i].toInt() and 0xFF
             if (index > 3) {
-                nextByte = if (i + 1 < data.size) data[i + 1].toInt() and 0xFF else 0
+                nextByte = if (i + 1 < data.size) {
+                    data[i + 1].toInt() and 0xFF
+                } else {
+                    0
+                }
                 digit = currByte and (0xFF shr index)
                 index = (index + 5) % 8
                 digit = (digit shl index) or (nextByte shr (8 - index))
@@ -32,7 +36,9 @@ object Base32 {
             } else {
                 digit = (currByte shr (8 - (index + 5))) and 0x1F
                 index = (index + 5) % 8
-                if (index == 0) i++
+                if (index == 0) {
+                    i++
+                }
             }
             base32.append(ALPHABET[digit])
         }
@@ -46,8 +52,14 @@ object Base32 {
         var bitsLeft = 0
         var count = 0
         for (c in cleaned) {
-            val valIdx = if (c.code < 128) DIGITS[c.code] else -1
-            if (valIdx == -1) continue
+            val valIdx = if (c.code < 128) {
+                DIGITS[c.code]
+            } else {
+                -1
+            }
+            if (valIdx == -1) {
+                continue
+            }
             buffer = (buffer shl 5) or valIdx
             bitsLeft += 5
             if (bitsLeft >= 8) {

@@ -132,7 +132,9 @@ class RedisManagerImpl @Inject constructor(
 
     private fun getPubSubConnection(): StatefulRedisPubSubConnection<String, String> {
         val current = pubSubConnection
-        if (current != null && current.isOpen) return current
+        if (current != null && current.isOpen) {
+            return current
+        }
 
         return synchronized(pubSubLock) {
             val doubleCheck = pubSubConnection

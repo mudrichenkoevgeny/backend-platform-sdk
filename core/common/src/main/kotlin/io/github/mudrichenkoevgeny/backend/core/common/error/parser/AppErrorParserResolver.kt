@@ -25,8 +25,10 @@ class AppErrorParserResolver @Inject constructor(
         locale: String
     ): ApiErrorResponse {
         for (parser in specificParsers) {
-            val result = parser.getApiErrorResponse(errorId, code, args, locale)
-            if (result != null) return result
+            val apiErrorResponse = parser.getApiErrorResponse(errorId, code, args, locale)
+            if (apiErrorResponse != null) {
+                return apiErrorResponse
+            }
         }
         return commonParser.getApiErrorResponse(errorId, code, args, locale)
     }
@@ -36,8 +38,10 @@ class AppErrorParserResolver @Inject constructor(
         locale: String
     ): ApiErrorResponse {
         for (parser in specificParsers) {
-            val result = parser.getApiErrorResponse(appError, locale)
-            if (result != null) return result
+            val apiErrorResponse = parser.getApiErrorResponse(appError, locale)
+            if (apiErrorResponse != null) {
+                return apiErrorResponse
+            }
         }
         return commonParser.getApiErrorResponse(appError, locale)
     }

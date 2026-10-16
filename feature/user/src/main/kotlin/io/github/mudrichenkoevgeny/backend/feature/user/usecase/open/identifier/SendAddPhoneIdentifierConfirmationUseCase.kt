@@ -87,7 +87,9 @@ class SendAddPhoneIdentifierConfirmationUseCase @Inject constructor(
             deviceName = context.clientInfo.clientDeviceInfo.deviceName,
             language = context.clientInfo.clientDeviceInfo.language
         )
-        if (sendAlreadyRegisteredResult is AppResult.Error) return AppResult.Error(sendAlreadyRegisteredResult.error)
+        if (sendAlreadyRegisteredResult is AppResult.Error) {
+            return AppResult.Error(sendAlreadyRegisteredResult.error)
+        }
 
         return AppResult.Success(otpConfirmationData.otpConfirmation)
     }
@@ -102,7 +104,9 @@ class SendAddPhoneIdentifierConfirmationUseCase @Inject constructor(
             code = otpConfirmationData.code,
             language = context.clientInfo.clientDeviceInfo.language
         )
-        if (sendCodeResult is AppResult.Error) return AppResult.Error(sendCodeResult.error)
+        if (sendCodeResult is AppResult.Error) {
+            return AppResult.Error(sendCodeResult.error)
+        }
 
         return AppResult.Success(otpConfirmationData.otpConfirmation)
     }

@@ -11,6 +11,8 @@ class TestAuditErrorParser(
     override fun parse(error: AppError): AuditErrorLogData? {
         return if (error.code == targetErrorCode) {
             AuditErrorLogData(resultStatus, emptySet())
-        } else null
+        } else {
+            null
+        }
     }
 }

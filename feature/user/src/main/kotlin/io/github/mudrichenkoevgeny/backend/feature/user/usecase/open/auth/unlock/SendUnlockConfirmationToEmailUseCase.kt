@@ -106,7 +106,9 @@ class SendUnlockConfirmationToEmailUseCase @Inject constructor(
         otpConfirmationData: OtpConfirmationData
     ): AppResult<OtpConfirmation> {
         val sendEmailResult = emailService.fakeSendEmail()
-        if (sendEmailResult is AppResult.Error) return AppResult.Error(sendEmailResult.error)
+        if (sendEmailResult is AppResult.Error) {
+            return AppResult.Error(sendEmailResult.error)
+        }
 
         return AppResult.Success(otpConfirmationData.otpConfirmation)
     }
@@ -121,7 +123,9 @@ class SendUnlockConfirmationToEmailUseCase @Inject constructor(
             code = otpConfirmationData.code,
             language = context.clientInfo.clientDeviceInfo.language
         )
-        if (sendEmailResult is AppResult.Error) return AppResult.Error(sendEmailResult.error)
+        if (sendEmailResult is AppResult.Error) {
+            return AppResult.Error(sendEmailResult.error)
+        }
 
         return AppResult.Success(otpConfirmationData.otpConfirmation)
     }
