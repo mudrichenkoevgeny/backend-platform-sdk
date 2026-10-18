@@ -2,8 +2,6 @@ package io.github.mudrichenkoevgeny.backend.sample
 
 import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathResolverConfig
 import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathResolverConfigHolder
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorParserConfig
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorParserConfigHolder
 import io.github.mudrichenkoevgeny.backend.core.common.server.KtorServer
 import io.github.mudrichenkoevgeny.backend.core.database.cli.DatabaseCliArgs
 import io.github.mudrichenkoevgeny.backend.sample.appbootstrap.AppBootstrap
@@ -24,7 +22,7 @@ import kotlin.system.exitProcess
  *
  * Startup flow:
  * - set UTC as a default timezone
- * - configure global holders ([PathResolverConfigHolder], [AppErrorParserConfigHolder])
+ * - configure global holders ([PathResolverConfigHolder])
  * - build the Dagger [AppComponent]
  * - if [DatabaseCliArgs.MIGRATE_ONLY] is passed in args, run Flyway migrations and exit
  * - run [AppBootstrap]
@@ -35,7 +33,6 @@ fun main(args: Array<String>) {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
 
     PathResolverConfigHolder.set(PathResolverConfig())
-    AppErrorParserConfigHolder.set(AppErrorParserConfig())
 
     val backgroundScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 

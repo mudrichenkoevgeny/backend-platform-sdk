@@ -5,7 +5,7 @@ with Dagger and run a Ktor server.
 
 ## What it provides
 
-- **Entrypoint**: [MainKt] sets UTC timezone, configures global holders ([PathResolverConfigHolder], [AppErrorParserConfigHolder]), builds Dagger component, and starts the server with shutdown handling.
+- **Entrypoint**: [MainKt] sets UTC timezone, configures global holders ([PathResolverConfigHolder]), builds Dagger component, and starts the server with shutdown handling.
 - **Dagger wiring**:
     - [AppComponent] aggregates all SDK modules, including core infrastructure and **feature API modules**.
     - [AppModule] binds app metadata ([SampleAppInfo]) and shutdown logic ([AppShutdownHook]).

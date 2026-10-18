@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.service.email.parser
 
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.parser.model.EmailTemplate
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.localization.CommonLocales
 
 /**
  * Resolves localized email templates and performs argument substitution.
@@ -16,7 +17,11 @@ interface EmailParser {
      *
      * @param key template identifier
      * @param args optional placeholder values
-     * @param locale requested locale string (e.g. `en`, `en-US`, `ru_RU`)
+     * @param locale requested locale string (e.g. [CommonLocales.ENGLISH], [CommonLocales.RUSSIAN], `en-US`)
      */
     fun getTemplate(key: String, args: Map<String, Any>?, locale: String): EmailTemplate?
+
+    companion object {
+        const val UNKNOWN_VALUE_FALLBACK = "—"
+    }
 }

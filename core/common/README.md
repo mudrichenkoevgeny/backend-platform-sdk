@@ -22,7 +22,7 @@ Base for all SDK modules: Ktor application wiring, config, errors, routing helpe
     - **Request Parsing:** [validateRequest] for type-safe, validated JSON reception.
     - **Parameters:** [validatePathParameter] and [parseListingQueryParams] for robust path and query extraction.
     - **Exceptions:** [RequestHandlingException] for bridging validation logic with [AppError].
-- **Errors & Localization:** [AppErrorParser] for resolving [AppError] into localized `ApiErrorResponse`. Supports multiple languages via JSON resource files.
+- **Errors & Localization:** [AppErrorParser] for resolving [AppError] into localized `ApiErrorResponse` using embedded `shared-foundation` string bundles and modular error parsers.
 - **Logging:** [AppLogger] with distinct qualifiers for **System** and **Business** logging.
 - **Health:** [HealthCheckerManager] and [HealthCheck] contract for service readiness and liveness probes.
 - **Masking:** [DataMasker] for redacting sensitive information (IP, Email, Phone) in logs and responses.
@@ -37,7 +37,7 @@ The application must provide the following dependencies to the DI graph:
 - `BackgroundScope` (Coroutine scope for background tasks).
 
 ### 2. Localization
-Place message files under `src/main/resources/localization/{lang}/error_messages.json`. The `AppErrorParser` will automatically resolve keys matching your `AppError.code`.
+Localization is fully integrated with `shared-foundation`. Error messages and templates are resolved using embedded library bundles and type-safe module strings (`CommonModuleStrings`, `SecurityModuleStrings`, `UserModuleStrings`). User preferred language is extracted via `ApplicationCall.requestLocale()` considering HTTP `Accept-Language` quality factors.
 
 ---
 

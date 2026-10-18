@@ -1,40 +1,39 @@
 ---
-description: Localization resource layout, naming conventions, and message types
-globs: "**/src/main/resources/**/*"
+description: Centralized localization architecture using shared-foundation, modular error parsers, and HTTP locale extraction
+globs: "**/*.kt"
 alwaysApply: true
 ---
 
-# Localization
+# Localization Architecture
 
-This document defines the structure and naming standards for all localized resources within the SDK modules.
+This document defines the localization standards and architecture for the backend SDK modules.
 
-## 1. Directory Structure
-- Localization resources must reside strictly under: `src/main/resources/localization/{language-code}/`.
-- **Language Codes:** Use standard ISO codes as folder names (e.g., `en`, `ru`, `de`).
-- **Hierarchy Example:**
-    - `localization/en/error_messages.json`
-    - `localization/ru/error_messages.json`
-    - `localization/en/email_messages.json`
+## 1. Embedded Multiplatform Strings (`shared-foundation`)
+- **No Local JSON Dictionaries:** The backend repository MUST NOT store local JSON translation files (`error_messages.json`, etc.) or hardcoded string dictionaries.
+- **Embedded Bundles:** All localized string templates and error descriptions (`en`, `ru`) across all modules (`core/common`, `core/security`, `feature/user`) are embedded directly into `shared-foundation` library binaries (`0.0.70+`).
+- **Type-Safe Module Strings:** Use the generated module string facades:
+  - `CommonModuleStrings(locale = locale).errors` for `CommonErrorCodes`
+  - `SecurityModuleStrings(locale = locale).errors` for `SecurityErrorCodes`
+  - `UserModuleStrings(locale = locale).errors` for `UserErrorCodes`
+  - `UserModuleStrings(locale = locale).emailTemplates` for type-safe email templates
 
-## 2. File Naming & Scope
-- **Consistency:** Use the exact same filename for different locales within their respective folders.
-- **No Suffixes:** Do not use locale suffixes in filenames (e.g., use `error_messages.json`, NOT `error_messages_en.json`).
-- **No Generic Prefixes:** Avoid redundant prefixes like `app_errors_`.
+## 2. Modular Error Parser Architecture (Chain of Responsibility)
+- **Modular Parsers:** Each module provides its own `AppErrorSpecificParser` implementation:
+  - `CommonAppErrorSpecificParser` handles `CommonErrorCodes`.
+  - `SecurityErrorParser` handles `SecurityErrorCodes`.
+  - `UserErrorParser` handles `UserErrorCodes`.
+- **Strict Module Isolation:** Each specific parser ONLY handles error codes belonging to its module using its type-safe `*ModuleStrings` facade.
+- **Root Resolver:** `AppErrorParserResolver` delegates sequentially to registered `AppErrorSpecificParser` implementations in the DI graph. If unhandled, it falls back to `CommonErrorParser` (`UNKNOWN` error).
+- **Automatic Bundle Registration:** Instantiating `*ModuleStrings` in each parser's `getApiErrorResponse` method automatically registers the module's embedded resources in `LocalizationRegistry`.
 
-## 3. Message Types
+## 3. HTTP Request Locale Resolution (`requestLocale`)
+- **Extraction Helper:** Use `ApplicationCall.requestLocale()` to extract the user's preferred locale from the `Accept-Language` HTTP header.
+- **Quality Factor Parsing:** Uses Ktor `request.acceptLanguageItems()` to respect HTTP quality factors (`q=`).
+- **Fallback:** Defaults to `CommonLocales.DEFAULT` (`"en"`) if `Accept-Language` is omitted or invalid.
 
-### Error Messages (`error_messages.json`)
-- Contains localized strings for `ApiErrorResponse` codes.
-- Use placeholders that match `publicArgs` defined in the error models.
-
-### Email Messages (`email_messages.json`)
-- Contains localized subjects and body templates for system-generated emails (e.g., MFA codes, welcome emails).
-- Follow the same directory structure as error messages.
-- Templates should be kept concise and compatible with the SDK's internal mailer logic.
-
-## 4. Resource Integrity
-- **Parity:** Every key present in the `en` locale must have a corresponding entry in all other supported locales.
-- **JSON Format:** Ensure strict JSON syntax for all localization files to prevent runtime parsing errors.
+## 4. Email Templates (`UserEmailTemplates`)
+- **Shared Templates:** Email subjects and HTML body templates are resolved type-safely via `UserModuleStrings(locale = locale).emailTemplates`.
+- **Formatting:** Placeholder substitution in templates is performed via `LocalizationFormatter.format(template, args)`.
 
 ---
 *Refer to `AGENTS.md` for the full list of project standards.*

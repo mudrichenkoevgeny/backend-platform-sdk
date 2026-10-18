@@ -3,7 +3,6 @@ package io.github.mudrichenkoevgeny.backend.core.security.application.iprestrict
 import io.github.mudrichenkoevgeny.backend.core.common.application.statuspages.configureStatusPages
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.createTestCommonConfig
 import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppInstanceMode
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorParserConfig
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.CommonErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.TestSecuritySettingsProvider
@@ -35,7 +34,7 @@ class ApplicationIpRestrictionTest {
     private val securitySettingsProvider = TestSecuritySettingsProvider()
     private val validator = IpRestrictionPolicyValidator()
     private val mockLogger = mockk<AppLogger>(relaxed = true)
-    private val errorParser = CommonErrorParser(AppErrorParserConfig())
+    private val errorParser = CommonErrorParser()
 
     @Test
     fun `allows request when ip restriction is disabled`() = testApplication {

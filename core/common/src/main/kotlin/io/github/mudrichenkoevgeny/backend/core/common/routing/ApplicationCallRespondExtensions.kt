@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.routing
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.requestLocale
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
@@ -41,7 +42,7 @@ suspend inline fun <reified T : Any> ApplicationCall.respondResult(
             appLogger.logError(result.error)
             respond(
                 result.error.httpStatusCode,
-                appErrorParser.getApiErrorResponse(result.error)
+                appErrorParser.getApiErrorResponse(result.error, requestLocale())
             )
         }
     }
@@ -87,7 +88,7 @@ suspend inline fun <reified T : Any, reified R : Any> ApplicationCall.respondRes
             appLogger.logError(result.error)
             respond(
                 result.error.httpStatusCode,
-                appErrorParser.getApiErrorResponse(result.error)
+                appErrorParser.getApiErrorResponse(result.error, requestLocale())
             )
         }
     }

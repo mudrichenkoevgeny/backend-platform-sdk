@@ -39,7 +39,7 @@ This document is the entry point for architectural and coding standards. These r
 - **`architecture-patterns.md`** — Ktor bootstrap, Dual-connector setup, Redis Pub/Sub sync, and Repository patterns.
 - **`docs-kdoc-basics.md`** — Language standards (English), link resolution, and KDoc Definition of Done.
 - **`docs-kdoc-type-requirements.md`** — Specific KDoc patterns for DTOs, Error Codes, Sealed classes, and Database entities.
-- **`localization.md`** — Resource directory layout (ISO codes) and naming for error/email JSON templates.
+- **`localization.md`** — Embedded strings in `shared-foundation`, modular error parsers, and `requestLocale()` resolution.
 - **`kotlin-coding-style.md`** — Naming conventions, `when` subject rules, brace requirements, FQN/Comments ban, and Trailing Commas ban.
 - **`testing-conventions.md`** — JUnit 5/MockK standards, explicit Gradle dependencies, mandatory bug fix test coverage, and manual execution policy.
 - **`ai-collaboration-workflow.md`** — AI constraints, Version Catalog management, and SDK vs Sample application boundaries.

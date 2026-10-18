@@ -13,6 +13,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.mod
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.model.UniOneErrorResponse
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.model.UniOneMessage
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.model.UniOneRecipient
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.localization.CommonLocales
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -41,7 +42,7 @@ class UniOneEmailService @Inject constructor(
 ) : EmailService {
 
     private val lastExecutionTime = AtomicLong(500L)
-    private val defaultLanguage = "en"
+    private val defaultLanguage = CommonLocales.DEFAULT
 
     override suspend fun sendVerificationCode(email: String, code: String, language: String?): AppResult<Unit> {
         return executeTemplatedSend(
@@ -84,8 +85,8 @@ class UniOneEmailService @Inject constructor(
             email = email,
             templateKey = EmailTemplateKeys.ALREADY_REGISTERED,
             args = mapOf(
-                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: "unknown"),
-                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: "unknown")
+                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
+                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: EmailParser.UNKNOWN_VALUE_FALLBACK)
             ),
             language = language
         )
@@ -105,8 +106,8 @@ class UniOneEmailService @Inject constructor(
             email = email,
             templateKey = EmailTemplateKeys.SUCCESSFUL_LOGIN,
             args = mapOf(
-                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: "unknown"),
-                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: "unknown")
+                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
+                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: EmailParser.UNKNOWN_VALUE_FALLBACK)
             ),
             language = defaultLanguage
         )
@@ -122,9 +123,9 @@ class UniOneEmailService @Inject constructor(
             email = email,
             templateKey = EmailTemplateKeys.NEW_DEVICE_LOGIN,
             args = mapOf(
-                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: "unknown"),
-                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: "unknown"),
-                EmailTemplateArgs.USER_AGENT to (userAgent ?: "unknown")
+                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
+                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
+                EmailTemplateArgs.USER_AGENT to (userAgent ?: EmailParser.UNKNOWN_VALUE_FALLBACK)
             ),
             language = defaultLanguage
         )
@@ -139,8 +140,8 @@ class UniOneEmailService @Inject constructor(
             email = email,
             templateKey = EmailTemplateKeys.PASSWORD_CHANGED,
             args = mapOf(
-                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: "unknown"),
-                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: "unknown")
+                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
+                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: EmailParser.UNKNOWN_VALUE_FALLBACK)
             ),
             language = defaultLanguage
         )

@@ -94,7 +94,7 @@ routing {
 ### 3. Configuration & Localization
 *   **Environment**: Uses `UserEnvKeys` for JWT secrets, token validity, and 3rd-party provider keys.
 *   **Config Factory**: `UserConfigFactoryImpl` builds the configuration object from environment and system properties.
-*   **Localization**: Supports localized error messages and email templates via `UserAuditErrorParser` and `EmailParser`.
+*   **Localization**: Supports localized error messages and email templates via `UserModuleStrings` and `UserEmailTemplates` from `shared-foundation`.
 
 ---
 
