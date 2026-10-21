@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
@@ -39,7 +39,8 @@ class LoginByTotpRecoveryCodeUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val mfaService = mockk<MfaService>()
     private val totpManager = mockk<TotpManager>()
     private val authManager = mockk<AuthManager>()
@@ -105,7 +106,6 @@ class LoginByTotpRecoveryCodeUseCaseTest {
         val context = createTestRequestContext()
         val userId = UserId.generate()
         val error = UserError.WrongConfirmationCode()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
         val mfaChallenge = createTestMfaChallengeData(
             token = TEST_MFA_TOKEN,
             userId = userId.asHexDashString(),
@@ -119,7 +119,6 @@ class LoginByTotpRecoveryCodeUseCaseTest {
         coEvery { userLockoutService.checkLockout(any<String>(), any()) } returns AppResult.Success(Unit)
         coEvery { totpManager.verifyTotpRecoveryCode(any(), any()) } returns AppResult.Error(error)
         coEvery { userLockoutService.recordFailedAttempt(any<String>(), any(), any()) } returns AppResult.Success(Unit)
-        every { auditErrorConverter.convert(error) } returns errorLogData
 
         val result = useCase(context, TEST_MFA_TOKEN, TEST_RECOVERY_CODE)
 
@@ -144,11 +143,9 @@ class LoginByTotpRecoveryCodeUseCaseTest {
     fun `returns error when mfa token is invalid`() = runTest {
         val context = createTestRequestContext()
         val error = SecurityError.InvalidMfaToken()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { mfaService.getChallenge(any(), any()) } returns AppResult.Error(error)
-        every { auditErrorConverter.convert(error) } returns errorLogData
 
         val result = useCase(context, TEST_MFA_TOKEN, TEST_RECOVERY_CODE)
 

@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
@@ -21,7 +21,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -32,7 +31,8 @@ class ResetSecuritySettingsUseCaseTest {
 
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
     private val authenticationChallengeService = mockk<AuthenticationChallengeService>()
@@ -87,12 +87,10 @@ class ResetSecuritySettingsUseCaseTest {
         val userId = UserId.generate()
         val context = createTestAuthenticatedRequestContext(userId = userId)
         val error = CommonError.Internal(RuntimeException("Database error"))
-        val errorLogData = AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         mockMfaCheckSuccess(userId)
 
         coEvery { securitySettingsProvider.resetManagementSecuritySettings() } returns AppResult.Error(error)
-        every { auditErrorConverter.convert(error) } returns errorLogData
 
         val result = useCase(context)
 

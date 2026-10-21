@@ -33,6 +33,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.i
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import kotlin.time.Duration.Companion.days
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
@@ -500,7 +501,10 @@ class SessionManagerImplTest {
         val newAccessToken = AccessToken("new-access-token")
         val newRefreshToken = RefreshToken("new-refresh-token")
         val newHash = RefreshTokenHash("new-hash")
-        val currentSession = createSampleInternalSession(userId, oldHash).copy(clientDeviceInfo = clientInfo.clientDeviceInfo)
+        val currentSession = createSampleInternalSession(userId, oldHash).copy(
+            clientDeviceInfo = clientInfo.clientDeviceInfo,
+            expiresAt = Clock.System.now() + 1.days
+        )
         val newInternalSession = createSampleInternalSession(userId, newHash)
         val userInternal = createTestUserInternal(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
 

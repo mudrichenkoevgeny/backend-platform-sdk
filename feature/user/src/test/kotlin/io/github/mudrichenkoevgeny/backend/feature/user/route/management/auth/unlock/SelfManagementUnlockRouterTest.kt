@@ -10,7 +10,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByExternalAuthProviderUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByPhoneUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.unlock.UnlockByEmailConfirmationRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.unlock.UnlockByExternalAuthProviderRequest
@@ -71,7 +71,7 @@ class SelfManagementUnlockRouterTest : BaseRouterTest() {
             }
         }
 
-        val otpConfirmation = mockk<OtpConfirmation>(relaxed = true)
+        val otpConfirmation = createTestOtpConfirmation()
         coEvery {
             sendUnlockConfirmationToEmailUseCase(any(), any<RequestContext>(), any(), any())
         } returns AppResult.Success(otpConfirmation)
@@ -114,7 +114,7 @@ class SelfManagementUnlockRouterTest : BaseRouterTest() {
             }
         }
 
-        val otpConfirmation = mockk<OtpConfirmation>(relaxed = true)
+        val otpConfirmation = createTestOtpConfirmation()
         coEvery {
             sendUnlockConfirmationToPhoneUseCase(any(), any<RequestContext>(), any(), any())
         } returns AppResult.Success(otpConfirmation)

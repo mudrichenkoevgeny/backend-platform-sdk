@@ -43,6 +43,15 @@ Example for core:common:
 ./gradlew :core:common:dependencies --configuration compileClasspath > build\reports\core-common-dependencies-report.txt
 ```
 
+### 3. Checking for Dependency Updates
+To audit up-to-date and outdated dependencies across the project using the `com.github.ben-manes.versions` plugin, run:
+
+```bash
+./gradlew dependencyUpdates
+```
+
+The report will display outdated milestone and release versions in the console and write a plain text report to `build/dependencyUpdates/report.txt`.
+
 ## Artifact Deployment
 
 The project utilizes the `com.vanniktech.maven.publish` plugin for artifact management.

@@ -4,9 +4,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.OpenSecuritySettings
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.OpenGlobalSettings
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestOpenSecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.settings.domain.model.globalsettings.createTestOpenGlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestOpenAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.configuration.OpenUserConfiguration
 import io.mockk.every
 import io.mockk.mockk
@@ -27,9 +27,9 @@ class GetOpenUserConfigurationUseCaseTest {
 
     @Test
     fun `successfully aggregates all settings into user configuration`() {
-        val globalSettings = mockk<OpenGlobalSettings>()
-        val securitySettings = mockk<OpenSecuritySettings>()
-        val authSettings = mockk<OpenAuthSettings>()
+        val globalSettings = createTestOpenGlobalSettings()
+        val securitySettings = createTestOpenSecuritySettings()
+        val authSettings = createTestOpenAuthSettings()
 
         every { globalSettingsProvider.getOpenGlobalSettings() } returns globalSettings
         every { securitySettingsProvider.getOpenSecuritySettings() } returns securitySettings

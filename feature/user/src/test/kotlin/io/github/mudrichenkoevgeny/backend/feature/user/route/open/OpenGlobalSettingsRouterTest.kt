@@ -5,7 +5,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.testing.core.settings.domai
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.globalsettings.GetOpenGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.OpenGlobalSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.route.open.globalsettings.OpenGlobalSettingsRoutes
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode

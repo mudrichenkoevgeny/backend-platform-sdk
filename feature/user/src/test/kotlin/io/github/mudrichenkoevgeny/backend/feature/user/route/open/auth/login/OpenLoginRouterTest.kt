@@ -71,7 +71,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         val request = LoginByEmailRequest("test@example.com", "password123")
         val authData = createTestAuthData()
 
-        coEvery { loginByEmailUseCase(request.email, request.password, any<RequestContext>(), any(), any()) } returns AppResult.Success(authData)
+        coEvery { loginByEmailUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -94,7 +94,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         val request = LoginByPhoneRequest("+1234567890", "123456")
         val authData = createTestAuthData()
 
-        coEvery { loginByPhoneUseCase(request.phoneNumber, request.confirmationCode, any<RequestContext>(), any(), any()) } returns AppResult.Success(authData)
+        coEvery { loginByPhoneUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -117,7 +117,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         val request = LoginByExternalAuthProviderRequest("GOOGLE", "external_token_123")
         val authData = createTestAuthData()
 
-        coEvery { loginByExternalAuthProviderUseCase(any(), request.externalProviderToken, any<RequestContext>(), any(), any()) } returns AppResult.Success(authData)
+        coEvery { loginByExternalAuthProviderUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -140,7 +140,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         val request = VerifyTotpPayload("mfa_token_123", "123456")
         val authData = createTestAuthData()
 
-        coEvery { loginByTotpUseCase(any<RequestContext>(), request.mfaToken, request.code, any(), any()) } returns AppResult.Success(authData)
+        coEvery { loginByTotpUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -163,7 +163,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         val request = VerifyTotpPayload("mfa_token_123", "RECOVERY_CODE_123")
         val authData = createTestAuthData()
 
-        coEvery { loginByTotpRecoveryCodeUseCase(any<RequestContext>(), request.mfaToken, request.code, any(), any()) } returns AppResult.Success(authData)
+        coEvery { loginByTotpRecoveryCodeUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 

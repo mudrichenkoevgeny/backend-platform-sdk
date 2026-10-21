@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.maven.publish) apply false
     alias(libs.plugins.dependency.analysis)
+    alias(libs.plugins.gradle.versions.plugin)
 }
 
 allprojects {
@@ -38,13 +39,13 @@ subprojects {
         return@subprojects
     }
 
-    apply(plugin = "com.vanniktech.maven.publish")
-    apply(plugin = "com.autonomousapps.dependency-analysis")
+    pluginManager.apply("com.vanniktech.maven.publish")
+    pluginManager.apply("com.autonomousapps.dependency-analysis")
 
     if (isBom) {
-        apply(plugin = "java-platform")
+        pluginManager.apply("java-platform")
     } else {
-        apply(plugin = "org.jetbrains.kotlin.jvm")
+        pluginManager.apply("org.jetbrains.kotlin.jvm")
 
         tasks.withType<KotlinCompile>().configureEach {
             compilerOptions {
@@ -54,6 +55,10 @@ subprojects {
                 freeCompilerArgs.add("-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi")
                 freeCompilerArgs.add("-opt-in=kotlin.concurrent.atomics.ExperimentalAtomicApi")
             }
+        }
+
+        tasks.withType<Test>().configureEach {
+            jvmArgs("-XX:+EnableDynamicAgentLoading")
         }
     }
 

@@ -1,4 +1,4 @@
-package io.github.mudrichenkoevgeny.backend.core.common.network.request.model
+package io.github.mudrichenkoevgeny.backend.core.common.network.utils
 
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo

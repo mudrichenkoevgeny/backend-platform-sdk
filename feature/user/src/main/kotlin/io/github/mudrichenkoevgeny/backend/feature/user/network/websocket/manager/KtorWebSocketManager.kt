@@ -4,7 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateDto
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.extractClientInfo
+import io.github.mudrichenkoevgeny.backend.core.common.network.utils.extractClientInfo
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandler

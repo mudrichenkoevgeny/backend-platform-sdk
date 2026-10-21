@@ -2,13 +2,13 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.query
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditFilterValues
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CompositeAuditResourceTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.ktor.http.Parameters
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.ApplicationRequest
@@ -74,8 +74,8 @@ class AuditEventsListQueryParamsParserTest {
 
     @Test
     fun `parseAuditEventsListQueryParams parses composite actions and resources`() {
-        val mockAction = mockk<AuditActionType>()
-        val mockResource = mockk<AuditResourceType>()
+        val mockAction = UserAuditActionType.LOGIN_BY_EMAIL
+        val mockResource = UserAuditResourceType.USER
 
         val actionParser = CompositeAuditActionTypeParser(setOf(
             mockk { every { parseOrNull("create_user") } returns mockAction }

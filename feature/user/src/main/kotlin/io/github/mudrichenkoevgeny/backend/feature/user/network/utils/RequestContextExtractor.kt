@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.utils
 
 import io.github.mudrichenkoevgeny.backend.core.common.logs.naming.TracingKeys
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.extractClientInfo
+import io.github.mudrichenkoevgeny.backend.core.common.network.utils.extractClientInfo
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext

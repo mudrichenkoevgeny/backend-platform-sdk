@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.resetpassword
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
@@ -37,7 +37,8 @@ class ResetPasswordUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val otpService = mockk<OtpService>()
     private val identifierManager = mockk<IdentifierManager>()
     private val validatePasswordUseCase = mockk<ValidatePasswordUseCase>()
@@ -69,7 +70,7 @@ class ResetPasswordUseCaseTest {
         coEvery {
             rateLimiter.checkRateLimit(UserRateLimitAction.PASSWORD_CHANGE, TEST_EMAIL)
         } returns AppResult.Success(Unit)
-        coEvery { validatePasswordUseCase(TEST_PASSWORD) } returns AppResult.Success(Unit)
+        every { validatePasswordUseCase(TEST_PASSWORD) } returns AppResult.Success(Unit)
         coEvery {
             otpService.verifyOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_PASSWORD_RESET, TEST_CODE)
         } returns AppResult.Success(true)
@@ -80,7 +81,7 @@ class ResetPasswordUseCaseTest {
         coEvery {
             identifierManager.updateUserIdentifierPassword(identifierInternal, TEST_PASSWORD)
         } returns AppResult.Success(userIdentifierPrivate)
-        coEvery { userManager.unlockUserAccount(userId, listOf(TEST_EMAIL)) } returns AppResult.Success(mockk())
+        coEvery { userManager.unlockUserAccount(userId, listOf(TEST_EMAIL)) } returns AppResult.Success(createTestUserInternal(id = userId))
 
         val result = useCase(TEST_EMAIL, TEST_PASSWORD, TEST_CODE, context)
 
@@ -103,14 +104,10 @@ class ResetPasswordUseCaseTest {
     @Test
     fun `returns error when otp code is incorrect`() = runTest {
         val context = createTestRequestContext()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
+        every { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         coEvery { otpService.verifyOtp(any(), any(), any()) } returns AppResult.Success(false)
-        every {
-            auditErrorConverter.convert(any<UserError.WrongConfirmationCode>())
-        } returns errorLogData
 
         val result = useCase(TEST_EMAIL, TEST_PASSWORD, "wrong", context)
 
@@ -134,15 +131,13 @@ class ResetPasswordUseCaseTest {
     @Test
     fun `returns error when user not found`() = runTest {
         val context = createTestRequestContext()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
+        every { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         coEvery { otpService.verifyOtp(any(), any(), any()) } returns AppResult.Success(true)
         coEvery {
             identifierManager.getUserIdentifierInternalByProvider(any(), any())
         } returns AppResult.Success(null)
-        every { auditErrorConverter.convert(any<UserError.UserNotFound>()) } returns errorLogData
 
         val result = useCase(TEST_EMAIL, TEST_PASSWORD, TEST_CODE, context)
 

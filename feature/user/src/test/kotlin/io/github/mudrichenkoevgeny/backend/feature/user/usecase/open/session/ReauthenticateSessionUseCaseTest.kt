@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.session
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
@@ -24,7 +24,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.s
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -36,7 +35,8 @@ class ReauthenticateSessionUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val mfaService = mockk<MfaService>(relaxed = true)
     private val sessionManager = mockk<SessionManager>()
     private val totpManager = mockk<TotpManager>()
@@ -110,7 +110,6 @@ class ReauthenticateSessionUseCaseTest {
         val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
         val error = CommonError.Unknown()
 
-        every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(error)
 
         val result = useCase(context, mfaToken, totpCode)
@@ -144,7 +143,6 @@ class ReauthenticateSessionUseCaseTest {
             type = MfaChallengeType.STEP_UP
         )
 
-        every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { mfaService.getChallenge(any(), any()) } returns AppResult.Success(wrongMfaChallengeData)
 
@@ -182,7 +180,6 @@ class ReauthenticateSessionUseCaseTest {
         )
         val error = CommonError.Unknown()
 
-        every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { mfaService.getChallenge(any(), any()) } returns AppResult.Success(mfaChallengeData)
         coEvery { totpManager.verifyTotp(any(), any()) } returns AppResult.Error(error)
@@ -221,7 +218,6 @@ class ReauthenticateSessionUseCaseTest {
         )
         val error = CommonError.Unknown()
 
-        every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { mfaService.getChallenge(any(), any()) } returns AppResult.Success(mfaChallengeData)
         coEvery { totpManager.verifyTotp(any(), any()) } returns AppResult.Success(Unit)

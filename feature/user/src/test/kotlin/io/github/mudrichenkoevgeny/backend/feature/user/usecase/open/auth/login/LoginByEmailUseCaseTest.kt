@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
@@ -20,7 +20,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,7 +33,8 @@ class LoginByEmailUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val authManager = mockk<AuthManager>()
 
     private val useCase = LoginByEmailUseCase(
@@ -89,13 +89,10 @@ class LoginByEmailUseCaseTest {
     fun `returns error when rate limit exceeded`() = runTest {
         val context = createTestRequestContext()
         val error = UserError.InvalidCredentials()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery {
             rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_EMAIL)
         } returns AppResult.Error(error)
-
-        every { auditErrorConverter.convert(error) } returns errorLogData
 
         val result = useCase(TEST_EMAIL, TEST_PASSWORD, context)
 
@@ -119,7 +116,6 @@ class LoginByEmailUseCaseTest {
     fun `returns error when authentication fails`() = runTest {
         val context = createTestRequestContext()
         val authError = UserError.InvalidCredentials()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery {
@@ -133,8 +129,6 @@ class LoginByEmailUseCaseTest {
                 allowedAccountStatuses = any()
             )
         } returns AppResult.Error(authError)
-
-        every { auditErrorConverter.convert(authError) } returns errorLogData
 
         val result = useCase(TEST_EMAIL, TEST_PASSWORD, context)
 

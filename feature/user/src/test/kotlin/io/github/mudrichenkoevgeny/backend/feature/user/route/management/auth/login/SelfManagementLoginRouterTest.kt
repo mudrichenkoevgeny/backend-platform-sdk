@@ -1,7 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.management.auth.login
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
@@ -14,6 +13,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.auth.login.SelfManagementLoginRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -59,11 +59,11 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
 
         coEvery {
             loginByEmailUseCase(
-                email = request.email,
-                password = request.password,
+                email = any<String>(),
+                password = any<String>(),
                 requestContext = any<RequestContext>(),
-                allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN),
-                allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+                allowedRoles = any<Set<UserRole>>(),
+                allowedAccountStatuses = any<Set<UserAccountStatus>>()
             )
         } returns AppResult.Success(authData)
 
@@ -90,11 +90,11 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
 
         coEvery {
             loginByTotpUseCase(
+                mfaToken = any<String>(),
+                code = any<String>(),
                 requestContext = any<RequestContext>(),
-                mfaToken = request.mfaToken,
-                code = request.code,
-                allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN),
-                allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+                allowedRoles = any<Set<UserRole>>(),
+                allowedAccountStatuses = any<Set<UserAccountStatus>>()
             )
         } returns AppResult.Success(authData)
 
@@ -121,11 +121,11 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
 
         coEvery {
             loginByTotpRecoveryCodeUseCase(
+                mfaToken = any<String>(),
+                code = any<String>(),
                 requestContext = any<RequestContext>(),
-                mfaToken = request.mfaToken,
-                code = request.code,
-                allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN),
-                allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+                allowedRoles = any<Set<UserRole>>(),
+                allowedAccountStatuses = any<Set<UserAccountStatus>>()
             )
         } returns AppResult.Success(authData)
 

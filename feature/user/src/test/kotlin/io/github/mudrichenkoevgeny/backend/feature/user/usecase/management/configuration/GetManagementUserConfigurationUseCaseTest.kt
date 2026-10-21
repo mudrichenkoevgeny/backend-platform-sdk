@@ -4,9 +4,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.ManagementSecuritySettings
-import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.globalsettings.ManagementGlobalSettings
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.settings.domain.model.globalsettings.createTestManagementGlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.configuration.ManagementUserConfiguration
 import io.mockk.every
 import io.mockk.mockk
@@ -27,9 +27,9 @@ class GetManagementUserConfigurationUseCaseTest {
 
     @Test
     fun `successfully aggregates all management settings into management user configuration`() {
-        val globalSettings = mockk<ManagementGlobalSettings>()
-        val securitySettings = mockk<ManagementSecuritySettings>()
-        val authSettings = mockk<ManagementAuthSettings>()
+        val globalSettings = createTestManagementGlobalSettings()
+        val securitySettings = createTestManagementSecuritySettings()
+        val authSettings = createTestManagementAuthSettings()
 
         every { globalSettingsProvider.getManagementGlobalSettings() } returns globalSettings
         every { securitySettingsProvider.getManagementSecuritySettings() } returns securitySettings

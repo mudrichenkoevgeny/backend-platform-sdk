@@ -1,12 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestOpenSecuritySettings
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
@@ -17,7 +18,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manage
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.OpenSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.contract.SecurityWebSocketEventTypes
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.action.SecurityAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.resource.SecurityAuditResourceType
@@ -36,7 +36,8 @@ class UpdateSecuritySettingsUseCaseTest {
 
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val webSocketManager = mockk<WebSocketManager>(relaxed = true)
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
@@ -65,7 +66,7 @@ class UpdateSecuritySettingsUseCaseTest {
         val settings = createTestManagementSecuritySettings()
         val userId = UserId.generate()
         val context = createTestAuthenticatedRequestContext(userId = userId)
-        val openSecuritySettings = mockk<OpenSecuritySettings>(relaxed = true)
+        val openSecuritySettings = createTestOpenSecuritySettings()
 
         mockMfaCheckSuccess(userId)
 
@@ -109,12 +110,10 @@ class UpdateSecuritySettingsUseCaseTest {
         val userId = UserId.generate()
         val context = createTestAuthenticatedRequestContext(userId = userId)
         val error = CommonError.Internal(RuntimeException("Database error"))
-        val errorLogData = AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         mockMfaCheckSuccess(userId)
 
         coEvery { securitySettingsProvider.updateManagementSecuritySettings(settings) } returns AppResult.Error(error)
-        every { auditErrorConverter.convert(error) } returns errorLogData
 
         val result = useCase(settings, context)
 

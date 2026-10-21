@@ -5,6 +5,9 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirmationData
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.accountlockout.createTestAccountLockoutPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
@@ -13,11 +16,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTe
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneService
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
@@ -50,15 +50,11 @@ class SendUnlockConfirmationToPhoneUseCaseTest {
     @Test
     fun `successfully triggers unlock phone flow when user exists`() = runTest {
         val context = createTestRequestContext()
-        val otpConfirmation = mockk<OtpConfirmation>()
+        val otpConfirmation = createTestOtpConfirmation()
         val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = otpConfirmation)
-        val lockoutPolicy = mockk<AccountLockoutPolicy> {
-            every { isSelfServiceUnlockEnabled } returns true
-        }
+        val lockoutPolicy = createTestAccountLockoutPolicy(isSelfServiceUnlockEnabled = true)
         val userId = UserId.generate()
-        val identifier = mockk<UserIdentifierInternal> {
-            every { this@mockk.userId } returns userId
-        }
+        val identifier = createTestUserIdentifierInternal(userId = userId)
         val userInternal = createTestUserInternal(
             id = userId,
             role = UserRole.USER,
@@ -82,11 +78,9 @@ class SendUnlockConfirmationToPhoneUseCaseTest {
     @Test
     fun `sends fake SMS when user is not found`() = runTest {
         val context = createTestRequestContext()
-        val otpConfirmation = mockk<OtpConfirmation>()
+        val otpConfirmation = createTestOtpConfirmation()
         val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = otpConfirmation)
-        val lockoutPolicy = mockk<AccountLockoutPolicy> {
-            every { isSelfServiceUnlockEnabled } returns true
-        }
+        val lockoutPolicy = createTestAccountLockoutPolicy(isSelfServiceUnlockEnabled = true)
 
         every { securitySettingsProvider.getAccountLockoutPolicy() } returns lockoutPolicy
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
@@ -104,9 +98,7 @@ class SendUnlockConfirmationToPhoneUseCaseTest {
     @Test
     fun `returns error when self service unlock is disabled`() = runTest {
         val context = createTestRequestContext()
-        val lockoutPolicy = mockk<AccountLockoutPolicy> {
-            every { isSelfServiceUnlockEnabled } returns false
-        }
+        val lockoutPolicy = createTestAccountLockoutPolicy(isSelfServiceUnlockEnabled = false)
 
         every { securitySettingsProvider.getAccountLockoutPolicy() } returns lockoutPolicy
 

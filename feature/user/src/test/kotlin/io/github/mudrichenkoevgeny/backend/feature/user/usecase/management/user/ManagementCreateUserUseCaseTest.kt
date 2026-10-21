@@ -1,12 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.user
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
@@ -16,12 +17,10 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTe
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import io.mockk.coEvery
@@ -40,7 +39,8 @@ class ManagementCreateUserUseCaseTest {
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val emailRestrictionPolicyValidator = EmailRestrictionPolicyValidator()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val userManager = mockk<UserManager>()
     private val authManager = mockk<AuthManager>()
     private val sessionManager = mockk<SessionManager>()
@@ -80,11 +80,11 @@ class ManagementCreateUserUseCaseTest {
             permissionCodes = setOf(permission)
         )
         val createdUser = createTestUserInternal(id = UserId.generate())
-        val managerSession = mockk<UserSessionInternal>()
+        val managerSession = createTestUserSessionInternal(id = sessionId, userId = managerId)
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
-        coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
+        every { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(managerSession)
         coEvery {
             authenticationChallengeService.ensureSessionConfirmed(any(), any(), any())
@@ -136,7 +136,7 @@ class ManagementCreateUserUseCaseTest {
             permissionCodes = setOf(permission)
         )
         val createdUser = createTestUserInternal(id = UserId.generate())
-        val managerSession = mockk<UserSessionInternal>()
+        val managerSession = createTestUserSessionInternal(id = sessionId, userId = managerId)
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
@@ -192,10 +192,6 @@ class ManagementCreateUserUseCaseTest {
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
-        every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(
-            status = AuditStatus.FAILED,
-            metadata = emptySet()
-        )
 
         val result = useCase(
             email = "test@example.com",
@@ -221,10 +217,6 @@ class ManagementCreateUserUseCaseTest {
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
-        every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(
-            status = AuditStatus.FAILED,
-            metadata = emptySet()
-        )
 
         val result = useCase(
             email = "test@example.com",
@@ -251,9 +243,9 @@ class ManagementCreateUserUseCaseTest {
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
-        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(mockk())
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(createTestUserSessionInternal(id = sessionId, userId = managerId))
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
-        coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
+        every { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy(
             isBlacklistEnabled = true,
             blacklist = listOf("tempmail.com")
@@ -261,10 +253,6 @@ class ManagementCreateUserUseCaseTest {
         every { authSettingsProvider.getManagementEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy(
             isBlacklistEnabled = true,
             blacklist = listOf("@tempmail.com")
-        )
-        every { auditErrorConverter.convert(any<UserError.EmailNotAllowed>()) } returns AuditErrorLogData(
-            status = AuditStatus.FAILED,
-            metadata = emptySet()
         )
 
         val result = useCase(
@@ -294,10 +282,6 @@ class ManagementCreateUserUseCaseTest {
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
-        every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(
-            status = AuditStatus.FAILED,
-            metadata = emptySet()
-        )
 
         val result = useCase(
             email = "test@example.com",
@@ -322,10 +306,6 @@ class ManagementCreateUserUseCaseTest {
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
-        every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(
-            status = AuditStatus.FAILED,
-            metadata = emptySet()
-        )
 
         val result = useCase(
             email = "test@example.com",

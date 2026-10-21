@@ -5,8 +5,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSoc
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandlerResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.contract.SecurityWebSocketEventTypes
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -26,8 +24,7 @@ class SecurityWebSocketMessageHandlerTest {
         )
 
         eventTypes.forEach { type ->
-            val frame = mockk<SocketFrame>()
-            every { frame.type } returns type
+            val frame = SocketFrame(type = type, payload = null, metadata = emptyMap(), timestamp = 0L)
 
             val result = runBlocking {
                 handler.handle(
@@ -50,8 +47,7 @@ class SecurityWebSocketMessageHandlerTest {
     @Test
     fun `handle returns NotHandled for unknown type`() {
         val handler = SecurityWebSocketMessageHandler()
-        val frame = mockk<SocketFrame>()
-        every { frame.type } returns "unknown"
+        val frame = SocketFrame(type = "unknown", payload = null, metadata = emptyMap(), timestamp = 0L)
 
         val result = runBlocking {
             handler.handle(

@@ -2,12 +2,12 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.iden
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.listing.createTestPagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -38,7 +38,7 @@ class ManagementGetIdentifiersUseCaseTest {
         val managerId = UserId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
         val permissions = setOf(PermissionCode("admin.access"))
-        val pagedResult = mockk<PagedResult<UserIdentifierSummary>>()
+        val pagedResult = createTestPagedResult<UserIdentifierSummary>()
 
         val managerInternal = createTestUserInternal(
             id = managerId,
@@ -142,7 +142,7 @@ class ManagementGetIdentifiersUseCaseTest {
                 userAuthProviders = any(),
                 identifiers = any()
             )
-        } returns AppResult.Success(mockk())
+        } returns AppResult.Success(createTestPagedResult())
 
         useCase(
             pageParams = PageParams(),

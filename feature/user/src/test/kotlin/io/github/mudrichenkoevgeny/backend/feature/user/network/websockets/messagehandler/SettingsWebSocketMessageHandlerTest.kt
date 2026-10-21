@@ -5,8 +5,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSoc
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandlerResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.contract.SettingsWebSocketEventTypes
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -22,8 +20,7 @@ class SettingsWebSocketMessageHandlerTest {
         )
 
         eventTypes.forEach { type ->
-            val frame = mockk<SocketFrame>()
-            every { frame.type } returns type
+            val frame = SocketFrame(type = type, payload = null, metadata = emptyMap(), timestamp = 0L)
 
             val result = runBlocking {
                 handler.handle(
@@ -44,24 +41,21 @@ class SettingsWebSocketMessageHandlerTest {
     }
 
     @Test
-    fun `handle returns NotHandled for unknown type`() {
+    fun `handle returns NotHandled for unknown type`() = runBlocking {
         val handler = SettingsWebSocketMessageHandler()
-        val frame = mockk<SocketFrame>()
-        every { frame.type } returns "unknown"
+        val frame = SocketFrame(type = "unknown", payload = null, metadata = emptyMap(), timestamp = 0L)
 
-        val result = runBlocking {
-            handler.handle(
-                frame = frame,
-                webSocketSessionContext = WebSocketSessionContext(
-                    socketSessionId = "s",
-                    apiScope = ApiScope.OPEN,
-                    clientInfo = null,
-                    userId = null,
-                    userRole = null,
-                    userSessionId = null
-                )
+        val result = handler.handle(
+            frame = frame,
+            webSocketSessionContext = WebSocketSessionContext(
+                socketSessionId = "s",
+                apiScope = ApiScope.OPEN,
+                clientInfo = null,
+                userId = null,
+                userRole = null,
+                userSessionId = null
             )
-        }
+        )
 
         assertTrue(result is WebSocketMessageHandlerResult.NotHandled)
     }

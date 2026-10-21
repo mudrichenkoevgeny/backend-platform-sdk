@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
@@ -37,7 +37,8 @@ class LoginByPhoneUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val otpService = mockk<OtpService>()
     private val authManager = mockk<AuthManager>()
     private val userLockoutService = mockk<UserLockoutService>(relaxed = true)
@@ -111,13 +112,10 @@ class LoginByPhoneUseCaseTest {
     fun `returns error when rate limit exceeded`() = runTest {
         val context = createTestRequestContext()
         val error = UserError.InvalidCredentials()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery {
             rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_PHONE)
         } returns AppResult.Error(error)
-
-        every { auditErrorConverter.convert(error) } returns errorLogData
 
         val result = useCase(TEST_PHONE, TEST_CODE, context)
 
@@ -140,11 +138,9 @@ class LoginByPhoneUseCaseTest {
     @Test
     fun `returns error when OTP code is incorrect`() = runTest {
         val context = createTestRequestContext()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { otpService.verifyOtp(any(), any(), any()) } returns AppResult.Success(false)
-        every { auditErrorConverter.convert(any<UserError.WrongConfirmationCode>()) } returns errorLogData
 
         val result = useCase(TEST_PHONE, TEST_CODE, context)
 
@@ -166,7 +162,6 @@ class LoginByPhoneUseCaseTest {
     fun `returns error when auth manager fails`() = runTest {
         val context = createTestRequestContext()
         val authError = UserError.UserBanned()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.DENIED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { otpService.verifyOtp(any(), any(), any()) } returns AppResult.Success(true)
@@ -176,17 +171,10 @@ class LoginByPhoneUseCaseTest {
                 userAuthProvider = any(),
                 identifier = any(),
                 password = any(),
-                externalProviderEmail = any(),
-                roleForUserCreation = any(),
-                accountStatusForUserCreation = any(),
-                authorityLevelForUserCreation = any(),
-                permissionCodesForUserCreation = any(),
                 allowedRoles = any(),
                 allowedAccountStatuses = any()
             )
         } returns AppResult.Error(authError)
-
-        every { auditErrorConverter.convert(authError) } returns errorLogData
 
         val result = useCase(TEST_PHONE, TEST_CODE, context)
 
@@ -196,7 +184,7 @@ class LoginByPhoneUseCaseTest {
                 actorType = AuditActorType.USER,
                 action = UserAuditActionType.LOGIN_BY_PHONE,
                 resource = UserAuditResourceType.USER,
-                status = AuditStatus.DENIED,
+                status = AuditStatus.FAILED,
                 metadata = any(),
                 message = null
             )

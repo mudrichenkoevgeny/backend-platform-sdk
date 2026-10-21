@@ -1,5 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
@@ -8,7 +10,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserIdFromPayload
+import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getJWTPrincipal
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -16,6 +18,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.ktor.server.application.ApplicationCall
+import io.ktor.server.auth.jwt.JWTPrincipal
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -33,6 +36,11 @@ import kotlin.time.Instant
 
 class JwtAuthenticationProviderTest {
 
+    private companion object {
+        private const val SECRET = "01234567890123456789012345678901"
+        private val ALGORITHM: Algorithm = Algorithm.HMAC256(SECRET)
+    }
+
     private val securityConfig = mockk<SecurityConfig>()
     private val userConfig = mockk<UserConfig>()
     private val userManager = mockk<UserManager>()
@@ -41,6 +49,13 @@ class JwtAuthenticationProviderTest {
     private val call = mockk<ApplicationCall>()
 
     private lateinit var provider: JwtAuthenticationProvider
+
+    private fun createPrincipal(userId: UserId): JWTPrincipal {
+        val token = JWT.create()
+            .withSubject(userId.asHexDashString())
+            .sign(ALGORITHM)
+        return JWTPrincipal(JWT.decode(token))
+    }
 
     @BeforeEach
     fun setUp() {
@@ -64,7 +79,7 @@ class JwtAuthenticationProviderTest {
         val userId = UserId.generate()
         val userInternal = createFakeUserInternal(userId, UserRole.USER, UserAccountStatus.ACTIVE)
 
-        every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
+        every { call.getJWTPrincipal() } returns createPrincipal(userId)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = provider.requireUser(
@@ -83,7 +98,7 @@ class JwtAuthenticationProviderTest {
         val userId = UserId.generate()
         val userInternal = createFakeUserInternal(userId, UserRole.USER, UserAccountStatus.ACTIVE)
 
-        every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
+        every { call.getJWTPrincipal() } returns createPrincipal(userId)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = provider.requireUser(
@@ -108,7 +123,7 @@ class JwtAuthenticationProviderTest {
             permissions = setOf()
         )
 
-        every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
+        every { call.getJWTPrincipal() } returns createPrincipal(userId)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = provider.requireUser(
@@ -127,7 +142,7 @@ class JwtAuthenticationProviderTest {
         val userId = UserId.generate()
         val userInternal = createFakeUserInternal(userId, UserRole.USER, UserAccountStatus.BANNED)
 
-        every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
+        every { call.getJWTPrincipal() } returns createPrincipal(userId)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = provider.requireUser(
@@ -145,7 +160,7 @@ class JwtAuthenticationProviderTest {
     fun `requireUser should return Error when user is not found`() = runTest {
         val userId = UserId.generate()
 
-        every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
+        every { call.getJWTPrincipal() } returns createPrincipal(userId)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(null)
 
         val result = provider.requireUser(
@@ -169,7 +184,7 @@ class JwtAuthenticationProviderTest {
             lockoutType = AccountLockoutType.INDEFINITE
         )
 
-        every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
+        every { call.getJWTPrincipal() } returns createPrincipal(userId)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = provider.requireUser(
@@ -194,7 +209,7 @@ class JwtAuthenticationProviderTest {
             temporaryLockoutUntil = Clock.System.now() + 1.hours
         )
 
-        every { call.getUserIdFromPayload() } returns AppResult.Success(userId)
+        every { call.getJWTPrincipal() } returns createPrincipal(userId)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = provider.requireUser(

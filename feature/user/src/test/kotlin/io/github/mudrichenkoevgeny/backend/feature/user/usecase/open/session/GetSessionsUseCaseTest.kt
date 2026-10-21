@@ -2,12 +2,12 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.session
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.listing.createTestPagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
@@ -38,7 +38,7 @@ class GetSessionsUseCaseTest {
     @Test
     fun `successfully returns paged sessions when user is active`() = runTest {
         val userInternal = createTestUserInternal(id = userId, accountStatus = UserAccountStatus.ACTIVE)
-        val pagedResult = mockk<PagedResult<UserSessionSummary>>()
+        val pagedResult = createTestPagedResult<UserSessionSummary>()
 
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery {

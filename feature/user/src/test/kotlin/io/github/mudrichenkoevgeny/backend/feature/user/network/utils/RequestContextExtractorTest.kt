@@ -1,24 +1,24 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.utils
 
+import com.auth0.jwt.interfaces.Payload
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.model.extractClientInfo
+import io.github.mudrichenkoevgeny.backend.core.common.network.utils.extractClientInfo
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.network.contract.UserTokenClaims
 import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getJWTPrincipal
-import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getSessionId
-import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserId
-import io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.getUserRole
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.client.createTestClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonHttpHeaders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.toUserSessionIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.toUserIdOrThrow
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.client.createTestClientInfo
+import io.ktor.server.application.ApplicationCall
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.routing.RoutingCall
 import io.ktor.server.routing.RoutingRequest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import io.mockk.unmockkAll
+import io.mockk.unmockkStatic
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -27,29 +27,32 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class RequestContextUtilsTest {
+class RequestContextExtractorTest {
 
     private val call = mockk<RoutingCall>()
     private val request = mockk<RoutingRequest>()
-    private val principal = mockk<JWTPrincipal>()
+    private val payload = mockk<Payload>()
+    private val principal = JWTPrincipal(payload)
     private val clientInfo = createTestClientInfo()
 
     @BeforeEach
     fun setUp() {
         every { call.request } returns request
-        mockkStatic(JWT_EXTENSIONS_KT, CLIENT_INFO_KT)
+        every { call.attributes } returns mockk(relaxed = true)
+
+        mockkStatic(JWT_EXTENSIONS_KT, CLIENT_INFO_EXTRACTOR_KT)
     }
 
     @AfterEach
     fun tearDown() {
-        unmockkAll()
+        unmockkStatic(JWT_EXTENSIONS_KT, CLIENT_INFO_EXTRACTOR_KT)
     }
 
     @Test
     fun `getRequestContext should return context with nulls when no principal exists`() {
         every { request.headers[CommonHttpHeaders.TRACE_HEADER_NAME] } returns TEST_TRACE_ID
-        every { call.getJWTPrincipal() } returns null
-        every { call.extractClientInfo() } returns clientInfo
+        every { any<ApplicationCall>().getJWTPrincipal() } returns null
+        every { any<ApplicationCall>().extractClientInfo() } returns clientInfo
 
         val result = call.getRequestContext()
 
@@ -64,11 +67,11 @@ class RequestContextUtilsTest {
         val expectedSessionId = TEST_SESSION_ID.toUserSessionIdOrThrow()
 
         every { request.headers[CommonHttpHeaders.TRACE_HEADER_NAME] } returns TEST_TRACE_ID
-        every { call.getJWTPrincipal() } returns principal
-        every { principal.getUserId() } returns expectedUserId
-        every { principal.getUserRole() } returns UserRole.USER
-        every { principal.getSessionId() } returns expectedSessionId
-        every { call.extractClientInfo() } returns clientInfo
+        every { any<ApplicationCall>().getJWTPrincipal() } returns principal
+        every { payload.subject } returns TEST_USER_ID
+        every { payload.getClaim(UserTokenClaims.USER_ROLE).`as`(String::class.java) } returns UserRole.USER.value
+        every { payload.getClaim(UserTokenClaims.SESSION_ID).`as`(String::class.java) } returns TEST_SESSION_ID
+        every { any<ApplicationCall>().extractClientInfo() } returns clientInfo
 
         val result = call.getAuthenticatedRequestContext()
 
@@ -81,7 +84,7 @@ class RequestContextUtilsTest {
     @Test
     fun `getAuthenticatedRequestContext should throw exception when principal is missing`() {
         every { request.headers[CommonHttpHeaders.TRACE_HEADER_NAME] } returns TEST_TRACE_ID
-        every { call.getJWTPrincipal() } returns null
+        every { any<ApplicationCall>().getJWTPrincipal() } returns null
 
         val exception = assertThrows<RequestHandlingException> {
             call.getAuthenticatedRequestContext()
@@ -93,8 +96,8 @@ class RequestContextUtilsTest {
     @Test
     fun `getAuthenticatedRequestContext should throw exception when userId is missing in principal`() {
         every { request.headers[CommonHttpHeaders.TRACE_HEADER_NAME] } returns TEST_TRACE_ID
-        every { call.getJWTPrincipal() } returns principal
-        every { principal.getUserId() } returns null
+        every { any<ApplicationCall>().getJWTPrincipal() } returns principal
+        every { payload.subject } returns null
 
         assertThrows<RequestHandlingException> {
             call.getAuthenticatedRequestContext()
@@ -106,6 +109,6 @@ class RequestContextUtilsTest {
         private const val TEST_USER_ID = "550e8400-e29b-41d4-a716-446655440000"
         private const val TEST_SESSION_ID = "123e4567-e89b-12d3-a456-426614174000"
         private const val JWT_EXTENSIONS_KT = "io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.JwtExtensionsKt"
-        private const val CLIENT_INFO_KT = "io.github.mudrichenkoevgeny.backend.core.common.network.request.model.ClientInfoKt"
+        private const val CLIENT_INFO_EXTRACTOR_KT = "io.github.mudrichenkoevgeny.backend.core.common.network.utils.ClientInfoExtractorKt"
     }
 }

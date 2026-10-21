@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
@@ -26,7 +27,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -40,7 +40,8 @@ class IdentifierEmailChangePasswordUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
     private val identifierManager = mockk<IdentifierManager>()
@@ -64,7 +65,7 @@ class IdentifierEmailChangePasswordUseCaseTest {
     fun `successfully changes password`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val sessionInternal = mockk<UserSessionInternal>()
+        val sessionInternal = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
         val identifierId = UserIdentifierId.generate()
         val identifierInternal = createTestUserIdentifierInternal(
             id = identifierId,
@@ -85,7 +86,7 @@ class IdentifierEmailChangePasswordUseCaseTest {
             authenticationChallengeService.ensureSessionConfirmed(userInternal, sessionInternal)
         } returns AppResult.Success(Unit)
 
-        coEvery { validatePasswordUseCase(TEST_NEW_PASS) } returns AppResult.Success(Unit)
+        every { validatePasswordUseCase(TEST_NEW_PASS) } returns AppResult.Success(Unit)
 
         coEvery {
             identifierManager.getUserIdentifierInternalById(identifierId)
@@ -121,14 +122,13 @@ class IdentifierEmailChangePasswordUseCaseTest {
     fun `returns error when old password is wrong`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val sessionInternal = mockk<UserSessionInternal>()
+        val sessionInternal = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
         val identifierId = UserIdentifierId.generate()
         val identifierInternal = createTestUserIdentifierInternal(
             id = identifierId,
             userId = context.userId,
             passwordHash = PasswordHash("old_hash")
         )
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
 
@@ -138,13 +138,11 @@ class IdentifierEmailChangePasswordUseCaseTest {
 
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
 
-        coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
+        every { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
 
         coEvery { identifierManager.getUserIdentifierInternalById(any()) } returns AppResult.Success(identifierInternal)
 
         coEvery { passwordHasher.isPasswordValid(any(), any()) } returns AppResult.Success(false)
-
-        every { auditErrorConverter.convert(any<UserError.WrongPassword>()) } returns errorLogData
 
         val result = useCase(identifierId, TEST_NEW_PASS, "wrong_pass", context)
 
@@ -168,9 +166,8 @@ class IdentifierEmailChangePasswordUseCaseTest {
     fun `returns error when password policy validation fails`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val sessionInternal = mockk<UserSessionInternal>()
-        val policyError = mockk<SecurityError.PasswordTooWeak>()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
+        val sessionInternal = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
+        val policyError = SecurityError.PasswordTooWeak(emptyMap())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
 
@@ -180,9 +177,7 @@ class IdentifierEmailChangePasswordUseCaseTest {
 
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
 
-        coEvery { validatePasswordUseCase("123") } returns AppResult.Error(policyError)
-
-        every { auditErrorConverter.convert(policyError) } returns errorLogData
+        every { validatePasswordUseCase("123") } returns AppResult.Error(policyError)
 
         val result = useCase(UserIdentifierId.generate(), "123", TEST_OLD_PASS, context)
 
@@ -193,22 +188,20 @@ class IdentifierEmailChangePasswordUseCaseTest {
     fun `returns error PasswordSetupRequired when user identifier has no password set`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val sessionInternal = mockk<UserSessionInternal>()
+        val sessionInternal = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
         val identifierId = UserIdentifierId.generate()
         val identifierInternal = createTestUserIdentifierInternal(
             id = identifierId,
             userId = context.userId,
             passwordHash = null
         )
-        val errorLogData = AuditErrorLogData(status = AuditStatus.DENIED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(sessionInternal)
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
+        every { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         coEvery { identifierManager.getUserIdentifierInternalById(any()) } returns AppResult.Success(identifierInternal)
-        every { auditErrorConverter.convert(any<UserError.PasswordSetupRequired>()) } returns errorLogData
 
         val result = useCase(identifierId, TEST_NEW_PASS, TEST_OLD_PASS, context)
 
@@ -219,7 +212,7 @@ class IdentifierEmailChangePasswordUseCaseTest {
     fun `returns error UserNotFound when identifier belongs to another user`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val sessionInternal = mockk<UserSessionInternal>()
+        val sessionInternal = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
         val identifierId = UserIdentifierId.generate()
         val otherUserId = UserId.generate()
         val identifierInternal = createTestUserIdentifierInternal(
@@ -228,15 +221,13 @@ class IdentifierEmailChangePasswordUseCaseTest {
             userAuthProvider = UserAuthProvider.EMAIL,
             passwordHash = PasswordHash("old_hash")
         )
-        val errorLogData = AuditErrorLogData(status = AuditStatus.DENIED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(sessionInternal)
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
+        every { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         coEvery { identifierManager.getUserIdentifierInternalById(any()) } returns AppResult.Success(identifierInternal)
-        every { auditErrorConverter.convert(any<UserError.UserNotFound>()) } returns errorLogData
 
         val result = useCase(identifierId, TEST_NEW_PASS, TEST_OLD_PASS, context)
 
@@ -247,7 +238,7 @@ class IdentifierEmailChangePasswordUseCaseTest {
     fun `returns error UserIdentifierPasswordNotSupported when provider is not EMAIL`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val sessionInternal = mockk<UserSessionInternal>()
+        val sessionInternal = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
         val identifierId = UserIdentifierId.generate()
         val identifierInternal = createTestUserIdentifierInternal(
             id = identifierId,
@@ -255,15 +246,13 @@ class IdentifierEmailChangePasswordUseCaseTest {
             userAuthProvider = UserAuthProvider.PHONE,
             passwordHash = PasswordHash("old_hash")
         )
-        val errorLogData = AuditErrorLogData(status = AuditStatus.DENIED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(sessionInternal)
         coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
+        every { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         coEvery { identifierManager.getUserIdentifierInternalById(any()) } returns AppResult.Success(identifierInternal)
-        every { auditErrorConverter.convert(any<UserError.UserIdentifierPasswordNotSupported>()) } returns errorLogData
 
         val result = useCase(identifierId, TEST_NEW_PASS, TEST_OLD_PASS, context)
 

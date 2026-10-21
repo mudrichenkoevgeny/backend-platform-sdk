@@ -1,13 +1,14 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.model.ExternalAuthProviderData
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestOpenAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserPrivate
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
@@ -20,8 +21,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.ExternalAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -38,7 +38,8 @@ class LoginByExternalAuthProviderUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val emailRestrictionPolicyValidator = EmailRestrictionPolicyValidator()
     private val authManager = mockk<AuthManager>()
@@ -55,16 +56,12 @@ class LoginByExternalAuthProviderUseCaseTest {
     )
 
     private fun mockProviderSupport(provider: UserAuthProvider, supported: Boolean) {
-        val externalProvider = mockk<ExternalAuthProvider> {
-            every { userAuthProvider } returns provider
-        }
-        val openSettings = mockk<OpenAuthSettings> {
-            every { availableAuthProviders.supportedExternalProviders } returns if (supported) {
-                setOf(externalProvider)
-            } else {
-                emptySet()
-            }
-        }
+        val openSettings = createTestOpenAuthSettings(
+            availableAuthProviders = AvailableAuthProviders(
+                primary = if (supported) listOf(provider) else emptyList(),
+                secondary = emptyList()
+            )
+        )
         every { authSettingsProvider.getOpenAuthSettings() } returns openSettings
     }
 
@@ -124,10 +121,8 @@ class LoginByExternalAuthProviderUseCaseTest {
     fun `returns error when rate limit is exceeded`() = runTest {
         val context = createTestRequestContext()
         val error = UserError.InvalidCredentials()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), TEST_TOKEN) } returns AppResult.Error(error)
-        every { auditErrorConverter.convert(error) } returns errorLogData
 
         val result = useCase(UserAuthProvider.GOOGLE, TEST_TOKEN, context)
 
@@ -147,7 +142,6 @@ class LoginByExternalAuthProviderUseCaseTest {
     fun `returns error when external provider email is blocked by policy`() = runTest {
         val context = createTestRequestContext()
         val provider = UserAuthProvider.GOOGLE
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
         val verificationData = ExternalAuthProviderData(
             authProvider = provider,
             externalId = EXTERNAL_ID,
@@ -162,7 +156,6 @@ class LoginByExternalAuthProviderUseCaseTest {
             isBlacklistEnabled = true,
             blacklist = listOf("@tempmail.com")
         )
-        every { auditErrorConverter.convert(any<UserError.EmailNotAllowed>()) } returns errorLogData
 
         val result = useCase(provider, TEST_TOKEN, context)
 
@@ -174,12 +167,10 @@ class LoginByExternalAuthProviderUseCaseTest {
     fun `returns error when provider is not supported in settings`() = runTest {
         val context = createTestRequestContext()
         val provider = UserAuthProvider.APPLE
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         every { externalAuthVerifier.provider } returns UserAuthProvider.GOOGLE
         mockProviderSupport(provider, supported = false)
-        every { auditErrorConverter.convert(any<UserError.CannotCreateUserIdentifier>()) } returns errorLogData
 
         val result = useCase(provider, TEST_TOKEN, context)
 
@@ -200,13 +191,11 @@ class LoginByExternalAuthProviderUseCaseTest {
         val context = createTestRequestContext()
         val provider = UserAuthProvider.GOOGLE
         val authError = UserError.InvalidCredentials()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         every { externalAuthVerifier.provider } returns provider
         mockProviderSupport(provider, supported = true)
         coEvery { externalAuthVerifier.verify(TEST_TOKEN) } returns AppResult.Error(authError)
-        every { auditErrorConverter.convert(authError) } returns errorLogData
 
         val result = useCase(provider, TEST_TOKEN, context)
 

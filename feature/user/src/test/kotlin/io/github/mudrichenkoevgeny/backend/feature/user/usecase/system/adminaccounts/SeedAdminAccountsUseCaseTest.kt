@@ -10,8 +10,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -42,7 +42,7 @@ class SeedAdminAccountsUseCaseTest {
                 authorityLevelForUserCreation = 100,
                 permissionCodesForUserCreation = permissions
             )
-        } returns AppResult.Success(mockk<UserInternal>())
+        } returns AppResult.Success(createTestUserInternal())
 
         val result = useCase(accounts, permissions)
 
@@ -85,7 +85,7 @@ class SeedAdminAccountsUseCaseTest {
     @Test
     fun `invoke - uses accounts from config when none provided`() = runBlocking {
         val configAccount = AdminAccount("config@admin.com", "secret")
-        coEvery { userConfig.adminAccountsList } returns listOf(configAccount)
+        every { userConfig.adminAccountsList } returns listOf(configAccount)
 
         coEvery {
             authManager.createUserAndIdentifier(
@@ -134,7 +134,7 @@ class SeedAdminAccountsUseCaseTest {
                 authorityLevelForUserCreation = any(),
                 permissionCodesForUserCreation = any()
             )
-        } returns AppResult.Success(mockk())
+        } returns AppResult.Success(createTestUserInternal())
 
         val result = useCase(accounts, permissions)
 

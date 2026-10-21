@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
@@ -27,7 +28,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -44,7 +44,8 @@ class AddUserIdentifierEmailUseCaseTest {
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val emailRestrictionPolicyValidator = EmailRestrictionPolicyValidator()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
     private val authManager = mockk<AuthManager>()
@@ -75,7 +76,7 @@ class AddUserIdentifierEmailUseCaseTest {
     fun `successfully adds email identifier`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val sessionInternal = mockk<UserSessionInternal>()
+        val sessionInternal = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
         val identifierId = UserIdentifierId.generate()
         val identifier = createTestUserIdentifierPrivate(id = identifierId)
 
@@ -95,7 +96,7 @@ class AddUserIdentifierEmailUseCaseTest {
             authenticationChallengeService.ensureSessionConfirmed(userInternal, sessionInternal)
         } returns AppResult.Success(Unit)
 
-        coEvery { validatePasswordUseCase(TEST_PASSWORD) } returns AppResult.Success(Unit)
+        every { validatePasswordUseCase(TEST_PASSWORD) } returns AppResult.Success(Unit)
 
         coEvery {
             otpService.verifyOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_VERIFICATION, TEST_CODE)
@@ -128,9 +129,8 @@ class AddUserIdentifierEmailUseCaseTest {
     fun `returns error when session confirmation fails`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val sessionInternal = mockk<UserSessionInternal>()
+        val sessionInternal = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
         val error = CommonError.Internal(Throwable())
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(userInternal)
@@ -139,8 +139,6 @@ class AddUserIdentifierEmailUseCaseTest {
         coEvery {
             authenticationChallengeService.ensureSessionConfirmed(any(), any())
         } returns AppResult.Error(error)
-
-        every { auditErrorConverter.convert(error) } returns errorLogData
 
         val result = useCase(TEST_EMAIL, TEST_PASSWORD, TEST_CODE, context)
 
@@ -164,13 +162,10 @@ class AddUserIdentifierEmailUseCaseTest {
     fun `returns error when rate limit exceeded`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val error = UserError.InvalidCredentials()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery {
             rateLimiter.checkRateLimit(any(), any())
         } returns AppResult.Error(error)
-
-        every { auditErrorConverter.convert(error) } returns errorLogData
 
         val result = useCase(TEST_EMAIL, TEST_PASSWORD, TEST_CODE, context)
 
@@ -181,7 +176,6 @@ class AddUserIdentifierEmailUseCaseTest {
     @Test
     fun `returns error when email is not allowed by restriction policy`() = runTest {
         val context = createTestAuthenticatedRequestContext()
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery {
             rateLimiter.checkRateLimit(any(), any())
@@ -191,8 +185,6 @@ class AddUserIdentifierEmailUseCaseTest {
             isBlacklistEnabled = true,
             blacklist = listOf("@tempmail.com")
         )
-
-        every { auditErrorConverter.convert(any<UserError.EmailNotAllowed>()) } returns errorLogData
 
         val result = useCase("user@tempmail.com", TEST_PASSWORD, TEST_CODE, context)
 
