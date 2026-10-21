@@ -7,7 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus

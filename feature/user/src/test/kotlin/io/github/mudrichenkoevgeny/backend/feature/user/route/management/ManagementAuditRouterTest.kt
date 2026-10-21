@@ -1,9 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.management
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEventPrivate
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEventSummary
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventSummaryList
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.listing.createTestPagedResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupManagementTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
@@ -101,12 +102,8 @@ class ManagementAuditRouterTest : BaseRouterTest() {
         val token = setupManagementTestEnvironment(router)
         authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.STAFF))
 
-        val pagedResult = PagedResult(
-            items = listOf(createTestAuditEventSummary(), createTestAuditEventSummary()),
-            totalCount = 2,
-            pageNumber = ListingDefaultValues.Pagination.PAGE_NUMBER,
-            pageSize = ListingDefaultValues.Pagination.PAGE_SIZE,
-            totalPages = 1
+        val pagedResult = createTestPagedResult(
+            items = createTestAuditEventSummaryList(2)
         )
 
         coEvery {

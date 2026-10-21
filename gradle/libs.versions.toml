@@ -1,6 +1,6 @@
 [versions]
 # @keep
-jvmToolchain = "21"
+jvmToolchain = "25"
 
 # Plugins & Core
 kotlin = "2.3.20-Beta2"
@@ -10,7 +10,7 @@ maven-publish-plugin = "0.36.0"
 dependency-analysis = "3.3.0"
 
 # Shared Foundation
-shared-foundation = "0.0.71"
+shared-foundation = "0.0.75"
 
 # Kotlin
 kotlinx-serialization = "1.9.0"
@@ -69,6 +69,7 @@ shared-foundation-core-settings = { group = "io.github.mudrichenkoevgeny", name 
 shared-foundation-core-security = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-security", version.ref = "shared-foundation" }
 shared-foundation-core-audit = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-audit", version.ref = "shared-foundation" }
 shared-foundation-feature-user = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-feature-user", version.ref = "shared-foundation" }
+shared-foundation-fixtures = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-testing", version.ref = "shared-foundation" }
 
 # Kotlin
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }

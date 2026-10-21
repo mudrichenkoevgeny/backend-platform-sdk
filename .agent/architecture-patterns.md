@@ -28,7 +28,7 @@ The SDK follows a strict layering to prevent circular dependencies and ensure hi
 
 ## 3. Configuration & Dependency Injection
 
-- **Dagger 2:** Mandatory for all modules. Use `javax.inject` annotations.
+- **Dagger:** Mandatory for all modules. Use `javax.inject` annotations.
 - **Config Factories:** External configuration (Environment/Property) must be resolved via `*ConfigFactory` classes and bound as `@Singleton` in Dagger modules.
 - **Naming Keys:** Env-based keys must be centralized in `*EnvKeys` objects for discoverability.
 - **Background Scopes:** Long-running tasks (like Redis Pub/Sub listeners) must use the host-provided `BackgroundScope` to ensure graceful shutdown.

@@ -306,7 +306,7 @@ class SecuritySettingsProviderImpl @Inject constructor(
         return updateManagementSecuritySettings(defaultSettings).mapSuccess { defaultSettings }
     }
 
-    private companion object {
+    companion object {
         const val KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS = "security.recent_authentication_validity_in_seconds"
         const val KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT = "security.recent_authentication_validity_in_seconds_for_management"
         const val KEY_PASSWORD_POLICY = "security.password_policy"

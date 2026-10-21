@@ -1,14 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicyValidatorResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorArgs
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicyFailReason
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicy.validator.PasswordPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicy.validator.PasswordPolicyValidatorImpl
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorArgs
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.passwordpolicy.validator.FakePasswordPolicyValidator
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -82,15 +83,10 @@ class ValidatePasswordUseCaseTest {
 
     @Test
     fun `invoke handles validator failures correctly`() {
-        val mockedValidator = mockk<PasswordPolicyValidator>()
-        val customUseCase = ValidatePasswordUseCase(securitySettingsProvider, mockedValidator)
+        val fakeValidator = FakePasswordPolicyValidator(failReasons = listOf(PasswordPolicyFailReason.TOO_SHORT))
+        val customUseCase = ValidatePasswordUseCase(securitySettingsProvider, fakeValidator)
 
         every { securitySettingsProvider.getManagementPasswordPolicy() } returns defaultPolicy
-        every { mockedValidator.validate(any<ManagementPasswordPolicy>(), any<String>()) } returns
-                PasswordPolicyValidatorResult.Fail(
-                    reasons = emptyList(),
-                    passwordPolicy = defaultPolicy
-                )
 
         val result = customUseCase("any")
 

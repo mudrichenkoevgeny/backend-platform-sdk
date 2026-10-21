@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext

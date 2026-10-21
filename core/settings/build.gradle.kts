@@ -37,6 +37,8 @@ dependencies {
     runtimeOnly(libs.logback)
 
     // Testing
+    testImplementation(libs.shared.foundation.fixtures)
+    testFixturesImplementation(libs.shared.foundation.fixtures)
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)

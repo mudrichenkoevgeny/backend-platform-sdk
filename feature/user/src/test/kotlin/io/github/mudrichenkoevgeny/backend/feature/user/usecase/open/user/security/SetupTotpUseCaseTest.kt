@@ -3,17 +3,15 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.secur
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.createTestMfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.TotpCryptoProcessor
 import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.model.GeneratedTotpSecret
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
@@ -30,6 +28,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -88,7 +88,7 @@ class SetupTotpUseCaseTest {
             otpAuthUrl = "otpauth://test"
         )
 
-        val mfaChallengeData = MfaChallengeData(
+        val mfaChallengeData = createTestMfaChallengeData(
             token = "mfa-token",
             userId = userId.asHexDashString(),
             userRole = UserRole.USER.value,
@@ -141,7 +141,7 @@ class SetupTotpUseCaseTest {
 
     @Test
     fun `returns error when rate limit exceeded`() = runTest {
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(error)
 
@@ -213,7 +213,7 @@ class SetupTotpUseCaseTest {
         coEvery {
             mfaService.createChallenge(any(), any(), any(), any(), any())
         } returns AppResult.Success(
-            MfaChallengeData(
+            createTestMfaChallengeData(
                 token = "t",
                 userId = "id",
                 userRole = "r",

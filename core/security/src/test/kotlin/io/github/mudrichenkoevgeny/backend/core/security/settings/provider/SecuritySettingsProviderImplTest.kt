@@ -2,9 +2,9 @@ package io.github.mudrichenkoevgeny.backend.core.security.settings.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestSecurityConfig
-import io.github.mudrichenkoevgeny.backend.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
-import io.github.mudrichenkoevgeny.backend.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
-import io.github.mudrichenkoevgeny.backend.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
@@ -32,6 +32,8 @@ class SecuritySettingsProviderImplTest {
 
     private val config = createTestSecurityConfig(
         managementSecuritySettings = createTestManagementSecuritySettings(
+            recentAuthenticationValiditySecondsForOpenUser = 30,
+            recentAuthenticationValiditySecondsForManagementUser = 60,
             passwordPolicy = defaultPolicy,
             otpConfirmation = defaultOtpConfirmation,
             accountLockoutCheckIntervalSeconds = 60,
@@ -62,13 +64,13 @@ class SecuritySettingsProviderImplTest {
         val storedPolicy = createTestManagementPasswordPolicy(minLength = 20, requireSpecialChar = true)
         val storedOtp = createTestOtpConfirmation(retryAfterSeconds = 10, numberOfSymbols = 4, expirationSeconds = 60)
 
-        every { settingsService.getInt("security.recent_authentication_validity_in_seconds") } returns 99
-        every { settingsService.getInt("security.recent_authentication_validity_in_seconds_for_management") } returns 120
-        every { settingsService.getInt("security.account_lockout_check_interval_seconds") } returns 45
-        every { settingsService.getInt("security.mfa_token_expiration_seconds") } returns 300
-        every { settingsService.getInt("security.max_requests_per_period") } returns 200
-        every { settingsService.getInt("security.rate_limit_period_seconds") } returns 120
-        every { settingsService.getInt("security.refresh_token_rotation_grace_period_seconds") } returns 15
+        every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS) } returns 99
+        every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT) } returns 120
+        every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS) } returns 45
+        every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_MFA_TOKEN_EXPIRATION_SECONDS) } returns 300
+        every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_MAX_REQUESTS_PER_PERIOD) } returns 200
+        every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_RATE_LIMIT_PERIOD_SECONDS) } returns 120
+        every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS) } returns 15
         every { settingsService.getString(any()) } returns null
         every { settingsService.getJson<Any>(any(), any()) } returns null
         stubGetJsonPasswordPolicyDeserializesTo(storedPolicy)
@@ -146,7 +148,7 @@ class SecuritySettingsProviderImplTest {
     private fun stubGetJsonPasswordPolicyDeserializesTo(storedPolicy: ManagementPasswordPolicy) {
         every {
             settingsService.getJson(
-                "security.password_policy",
+                SecuritySettingsProviderImpl.KEY_PASSWORD_POLICY,
                 any<(String) -> ManagementPasswordPolicy>()
             )
         } answers {
@@ -159,7 +161,7 @@ class SecuritySettingsProviderImplTest {
     private fun stubGetJsonOtpConfirmationDeserializesTo(storedOtp: OtpConfirmation) {
         every {
             settingsService.getJson(
-                "security.otp_confirmation",
+                SecuritySettingsProviderImpl.KEY_OTP_CONFIRMATION,
                 any<(String) -> OtpConfirmation>()
             )
         } answers {
@@ -171,7 +173,7 @@ class SecuritySettingsProviderImplTest {
 
     private fun stubGetJsonPasswordPolicyReturnsNull() {
         every {
-            settingsService.getJson("security.password_policy", any<(String) -> ManagementPasswordPolicy>())
+            settingsService.getJson(SecuritySettingsProviderImpl.KEY_PASSWORD_POLICY, any<(String) -> ManagementPasswordPolicy>())
         } returns null
     }
 }

@@ -7,8 +7,8 @@ import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.Password
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder

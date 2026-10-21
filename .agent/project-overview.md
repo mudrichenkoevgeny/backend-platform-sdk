@@ -12,10 +12,10 @@ alwaysApply: true
 - **BOM:** Located at `:bom` for consistent version alignment across all modules.
 
 ## Tech stack
-- **Runtime:** JVM 21 (managed via `jvmToolchain`).
-- **Kotlin:** 2.x, Coroutines, Kotlinx Serialization.
-- **Server:** Ktor 3.x (Netty) with Dual-connector setup (API + Management).
-- **DI:** Dagger 2 + KSP (`javax.inject`). Prefer `@Singleton` for app-scoped logic.
+- **Runtime:** JVM (managed via `jvmToolchain` / `gradle-daemon-jvm.properties`).
+- **Kotlin:** Coroutines, Kotlinx Serialization.
+- **Server:** Ktor (Netty) with Dual-connector setup (API + Management).
+- **DI:** Dagger + KSP (`javax.inject`). Prefer `@Singleton` for app-scoped logic.
 - **Database:** PostgreSQL (Exposed) + Redis (Lettuce) + Flyway migrations.
 - **Observability:** OpenTelemetry (tracing) and Micrometer/Prometheus (metrics).
 - **Storage & Events:** AWS S3 (or Local FS) and Kafka (or In-Memory bus).

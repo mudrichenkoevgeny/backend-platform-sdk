@@ -7,9 +7,10 @@ import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.Password
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.createTestSessionToken
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.createTestMfaChallengeData
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.token.createTestSessionToken
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
@@ -17,7 +18,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
@@ -156,7 +157,7 @@ class AuthManagerImplTest {
         coEvery { userLockoutService.clearLockout(any()) } returns AppResult.Success(Unit)
 
         val result = authManager.authenticateExistingUser(
-            mockk(relaxed = true), UserAuthProvider.GOOGLE, "ext-id", null
+            mockk<ClientInfo>(relaxed = true), UserAuthProvider.GOOGLE, "ext-id", null
         )
 
         assertTrue(result is AppResult.Error)
@@ -295,7 +296,7 @@ class AuthManagerImplTest {
         val clientInfo = mockk<ClientInfo>(relaxed = true)
         val userInternal = createTestUserInternal(id = userId, role = UserRole.USER, isTotpEnabled = true)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
-        val mfaChallengeData = MfaChallengeData(
+        val mfaChallengeData = createTestMfaChallengeData(
             token = "test-mfa-token",
             userId = userId.asHexDashString(),
             userRole = UserRole.USER.value,

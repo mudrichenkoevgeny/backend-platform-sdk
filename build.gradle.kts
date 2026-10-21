@@ -3,6 +3,8 @@ import com.vanniktech.maven.publish.KotlinJvm
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+import kotlin.apply
 
 plugins {
     alias(libs.plugins.kotlin.jvm) apply false
@@ -15,6 +17,18 @@ allprojects {
     group = "io.github.mudrichenkoevgeny"
     version = "0.0.20"
 }
+
+val daemonJvmVersion: String = run {
+    val daemonFile = rootProject.file("gradle/gradle-daemon-jvm.properties")
+    if (daemonFile.exists()) {
+        val properties = Properties().apply {
+            daemonFile.inputStream().use { load(it) }
+        }
+        properties.getProperty("toolchainVersion")
+    } else {
+        null
+    }
+} ?: libs.versions.jvmToolchain.get()
 
 subprojects {
     val isBom = project.name == "bom"
@@ -34,7 +48,7 @@ subprojects {
 
         tasks.withType<KotlinCompile>().configureEach {
             compilerOptions {
-                jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmToolchain.get()))
+                jvmTarget.set(JvmTarget.fromTarget(daemonJvmVersion))
 
                 freeCompilerArgs.add("-opt-in=kotlin.uuid.ExperimentalUuidApi")
                 freeCompilerArgs.add("-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi")

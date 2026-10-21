@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.config.model
 
 import io.github.mudrichenkoevgeny.backend.feature.user.config.seed.AdminAccount
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.settings.createTestManagementAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestManagementAuthSettings
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.resend.model.ResendConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.model.UniOneConfig
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings

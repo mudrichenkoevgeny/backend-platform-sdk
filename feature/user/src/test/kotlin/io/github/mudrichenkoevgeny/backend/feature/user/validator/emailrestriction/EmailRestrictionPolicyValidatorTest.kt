@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction
 
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

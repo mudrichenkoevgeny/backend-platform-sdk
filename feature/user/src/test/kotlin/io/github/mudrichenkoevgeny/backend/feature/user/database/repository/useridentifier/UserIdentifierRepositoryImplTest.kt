@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.use
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserIdentifiersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
@@ -93,8 +93,8 @@ class UserIdentifierRepositoryImplTest {
     @Test
     fun `getUserIdentifiersListByUserId filters by userId and optional provider`() = runBlocking {
         val userId = createTestUserInDb()
-        val ident1 = createTestIdentifier(userId, "email1@test.com", UserAuthProvider.EMAIL)
-        val ident2 = createTestIdentifier(userId, "google_id", UserAuthProvider.GOOGLE)
+        val ident1 = createTestIdentifier(userId, "email1@test.com", UserAuthProvider.EMAIL, UserIdentifierId.generate())
+        val ident2 = createTestIdentifier(userId, "google_id", UserAuthProvider.GOOGLE, UserIdentifierId.generate())
 
         suspendTransaction {
             repository.createUserIdentifier(ident1)
@@ -118,8 +118,8 @@ class UserIdentifierRepositoryImplTest {
     fun `getUserIdentifiersPageByUserId filters by identifier substring`() = runBlocking {
         val userId = createTestUserInDb()
         suspendTransaction {
-            repository.createUserIdentifier(createTestIdentifier(userId, "apple_user"))
-            repository.createUserIdentifier(createTestIdentifier(userId, "banana_user"))
+            repository.createUserIdentifier(createTestIdentifier(userId, "apple_user", id = UserIdentifierId.generate()))
+            repository.createUserIdentifier(createTestIdentifier(userId, "banana_user", id = UserIdentifierId.generate()))
         }
 
         val result = suspendTransaction {
@@ -144,8 +144,8 @@ class UserIdentifierRepositoryImplTest {
         val userId = createTestUserInDb(UserRole.USER)
 
         suspendTransaction {
-            repository.createUserIdentifier(createTestIdentifier(adminId, "admin_ident"))
-            repository.createUserIdentifier(createTestIdentifier(userId, "user_ident"))
+            repository.createUserIdentifier(createTestIdentifier(adminId, "admin_ident", id = UserIdentifierId.generate()))
+            repository.createUserIdentifier(createTestIdentifier(userId, "user_ident", id = UserIdentifierId.generate()))
         }
 
         val result = suspendTransaction {
@@ -184,8 +184,10 @@ class UserIdentifierRepositoryImplTest {
     private fun createTestIdentifier(
         userId: UserId,
         value: String = "test@example.com",
-        provider: UserAuthProvider = UserAuthProvider.EMAIL
+        provider: UserAuthProvider = UserAuthProvider.EMAIL,
+        id: UserIdentifierId = UserIdentifierId.generate()
     ) = createTestUserIdentifierInternal(
+        id = id,
         userId = userId,
         userAuthProvider = provider,
         identifier = value,

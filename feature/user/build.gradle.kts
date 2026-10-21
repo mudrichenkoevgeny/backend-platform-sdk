@@ -71,8 +71,10 @@ dependencies {
     testFixturesApi(libs.ktor.server.auth)
     testFixturesApi(libs.ktor.server.auth.jwt)
     testFixturesApi(libs.ktor.client.content.negotiation)
+    testFixturesApi(libs.shared.foundation.fixtures)
 
     testRuntimeOnly(libs.kotlin.test.junit5)
+    testImplementation(libs.shared.foundation.fixtures)
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.mockk)

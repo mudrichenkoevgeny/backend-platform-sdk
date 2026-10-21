@@ -3,11 +3,10 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.sess
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -229,7 +228,7 @@ class ManagementDeleteSessionUseCaseTest {
         val managerId = UserId.generate()
         val targetSessionId = UserSessionId.generate()
         val context = createTestAuthenticatedRequestContext(userId = managerId)
-        val limitError = mockk<AppError>()
+        val limitError = CommonError.Unknown()
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(limitError)
         every { auditErrorConverter.convert(limitError) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())

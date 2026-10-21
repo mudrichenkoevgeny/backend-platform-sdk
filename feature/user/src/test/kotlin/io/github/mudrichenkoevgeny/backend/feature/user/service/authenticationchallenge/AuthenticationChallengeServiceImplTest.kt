@@ -5,9 +5,10 @@ import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityErr
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.createTestMfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.client.createTestClientInfo
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.client.createTestClientInfo
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -67,7 +68,7 @@ class AuthenticationChallengeServiceImplTest {
             identifierId = identifierId
         )
 
-        val expectedChallengeData = MfaChallengeData(
+        val expectedChallengeData = createTestMfaChallengeData(
             token = testMfaToken,
             userId = userId.asHexDashString(),
             userRole = UserRole.USER.value,

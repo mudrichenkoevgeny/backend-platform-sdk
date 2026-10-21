@@ -6,7 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.aescryptor.AesCryptor
 import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.TotpCryptoProcessor
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usertotpsettings.UserTotpSettingsRepository
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.model.totp.createTestUserTotpSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString

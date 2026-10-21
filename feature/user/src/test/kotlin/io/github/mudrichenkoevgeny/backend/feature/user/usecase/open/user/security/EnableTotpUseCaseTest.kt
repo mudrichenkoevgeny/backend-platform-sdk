@@ -1,17 +1,17 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.security
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.createTestMfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.TotpCryptoProcessor
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.totp.UserTotpSettings
@@ -26,7 +26,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -37,7 +36,10 @@ class EnableTotpUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+
     private val userManager = mockk<UserManager>()
     private val totpManager = mockk<TotpManager>()
     private val mfaService = mockk<MfaService>(relaxed = true)
@@ -62,9 +64,7 @@ class EnableTotpUseCaseTest {
     @Test
     fun `successfully enables totp`() = runTest {
         val userInternal = createTestUserInternal(id = userId, isTotpEnabled = false)
-        val mfaChallenge = mockk<MfaChallengeData> {
-            every { sessionId } returns context.sessionId.asHexDashString()
-        }
+        val mfaChallenge = createTestMfaChallengeData(sessionId = context.sessionId.asHexDashString())
         val encryptedSecret = EncryptedString("encrypted-secret")
         val settings = UserTotpSettings(
             userId = userId,
@@ -105,8 +105,7 @@ class EnableTotpUseCaseTest {
 
     @Test
     fun `returns error when rate limit exceeded`() = runTest {
-        val error = mockk<AppError>()
-        every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
+        val error = CommonError.Internal(RuntimeException("Rate limit error"))
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(error)
 
         val result = useCase(context, mfaToken, code)
@@ -129,10 +128,7 @@ class EnableTotpUseCaseTest {
     @Test
     fun `returns error when settings not found`() = runTest {
         val userInternal = createTestUserInternal(id = userId, isTotpEnabled = false)
-        val mfaChallenge = mockk<MfaChallengeData> {
-            every { sessionId } returns context.sessionId.asHexDashString()
-        }
-        every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
+        val mfaChallenge = createTestMfaChallengeData(sessionId = context.sessionId.asHexDashString())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
@@ -148,9 +144,7 @@ class EnableTotpUseCaseTest {
     @Test
     fun `returns error when settings already confirmed`() = runTest {
         val userInternal = createTestUserInternal(id = userId, isTotpEnabled = false)
-        val mfaChallenge = mockk<MfaChallengeData> {
-            every { sessionId } returns context.sessionId.asHexDashString()
-        }
+        val mfaChallenge = createTestMfaChallengeData(sessionId = context.sessionId.asHexDashString())
         val settings = UserTotpSettings(
             userId = userId,
             encryptedSecret = EncryptedString("secret"),
@@ -158,7 +152,6 @@ class EnableTotpUseCaseTest {
             encryptedRecoveryCodes = null,
             lastUsedAt = null
         )
-        every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
@@ -174,14 +167,11 @@ class EnableTotpUseCaseTest {
     @Test
     fun `returns error when totp crypto processor fails during validation`() = runTest {
         val userInternal = createTestUserInternal(id = userId, isTotpEnabled = false)
-        val mfaChallenge = mockk<MfaChallengeData> {
-            every { sessionId } returns context.sessionId.asHexDashString()
-        }
+        val mfaChallenge = createTestMfaChallengeData(sessionId = context.sessionId.asHexDashString())
         val encryptedSecret = EncryptedString("secret")
         val settings = UserTotpSettings(userId, encryptedSecret, false, null, null)
-        val error = mockk<AppError>()
+        val error = CommonError.Internal(RuntimeException("Crypto error"))
 
-        every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(userInternal)
         coEvery { mfaService.getChallenge(any(), any()) } returns AppResult.Success(mfaChallenge)

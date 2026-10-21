@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.settings.global.provider
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.config.model.createTestGlobalSettingsConfig
-import io.github.mudrichenkoevgeny.backend.core.settings.domain.model.globalsettings.createTestManagementGlobalSettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.settings.domain.model.globalsettings.createTestManagementGlobalSettings
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SettingType
 import io.github.mudrichenkoevgeny.backend.core.settings.service.TestSystemSettingsService
 import io.github.mudrichenkoevgeny.backend.core.settings.service.RegisterDefaultCall

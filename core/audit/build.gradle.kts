@@ -33,6 +33,7 @@ dependencies {
     implementation(libs.exposed.json)
 
     // Testing
+    testImplementation(libs.shared.foundation.fixtures)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)

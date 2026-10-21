@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.createTestUserConfig
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.settings.createTestManagementAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.mockk.clearMocks

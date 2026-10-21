@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepositoryImpl
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserKnownDevicesTable
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.model.device.UserKnownDevice
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.CommonErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId

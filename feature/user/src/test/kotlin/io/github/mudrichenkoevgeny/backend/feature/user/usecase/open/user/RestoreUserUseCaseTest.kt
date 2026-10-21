@@ -3,10 +3,10 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -87,7 +87,7 @@ class RestoreUserUseCaseTest {
 
     @Test
     fun `returns error when rate limit exceeded`() = runTest {
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(error)
 
@@ -127,7 +127,7 @@ class RestoreUserUseCaseTest {
     fun `returns error when mfa confirmation fails`() = runTest {
         val userInternal = createTestUserInternal(id = userId)
         val userSessionInternal = mockk<UserSessionInternal>()
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
 
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
@@ -145,7 +145,7 @@ class RestoreUserUseCaseTest {
     fun `returns error when user restoration fails`() = runTest {
         val userInternal = createTestUserInternal(id = userId, accountStatusOnRestore = null)
         val userSessionInternal = mockk<UserSessionInternal>()
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
 
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)

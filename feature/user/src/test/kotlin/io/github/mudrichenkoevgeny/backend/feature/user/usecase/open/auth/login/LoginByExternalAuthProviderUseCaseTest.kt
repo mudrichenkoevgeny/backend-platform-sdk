@@ -7,9 +7,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.model.ExternalAuthProviderData
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.createTestAuthData
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserPrivate
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext

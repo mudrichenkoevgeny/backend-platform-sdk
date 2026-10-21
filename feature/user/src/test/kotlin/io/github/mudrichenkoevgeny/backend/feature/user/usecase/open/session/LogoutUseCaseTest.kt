@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.session
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
@@ -71,7 +71,7 @@ class LogoutUseCaseTest {
 
     @Test
     fun `returns error when session deletion fails`() = runTest {
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
 
         coEvery { sessionManager.deleteSessionById(sessionId) } returns AppResult.Error(error)

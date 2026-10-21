@@ -3,12 +3,12 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.secur
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.TotpCryptoProcessor
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
@@ -108,7 +108,7 @@ class RegenerateRecoveryCodesUseCaseTest {
 
     @Test
     fun `returns error when rate limit is exceeded`() = runTest {
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(
             status = AuditStatus.FAILED,
             metadata = emptySet()
@@ -187,7 +187,7 @@ class RegenerateRecoveryCodesUseCaseTest {
     @Test
     fun `returns error when session confirmation fails`() = runTest {
         val userInternal = createTestUserInternal(id = userId, isTotpEnabled = true)
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
@@ -204,7 +204,7 @@ class RegenerateRecoveryCodesUseCaseTest {
     fun `returns error when recovery codes generation fails`() = runTest {
         val userInternal = createTestUserInternal(id = userId, isTotpEnabled = true)
         val settings = UserTotpSettings(userId, EncryptedString("s"), true, null, null)
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)

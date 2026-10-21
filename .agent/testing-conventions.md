@@ -21,7 +21,7 @@ This document defines the testing methodology for the `backend-platform-sdk`. Th
 - **Verification:** Before adding/editing tests, verify and update `testImplementation` in `build.gradle.kts` if needed in the same PR.
 
 ## 3. Framework & Tooling
-- **JUnit 5 (Jupiter):** Use strictly `org.junit.jupiter.api.Test`.
+- **JUnit Jupiter:** Use strictly `org.junit.jupiter.api.Test`.
 - **Assertions:** Use `org.junit.jupiter.api.Assertions`. Do **not** use `kotlin.test`.
 - **Mocking:** Use **MockK**. Use relaxed mocks for logs/void interactions; use explicit expectations for business logic.
 - **Parameterized Tests:** Prefer `@ParameterizedTest` with `@EnumSource` or `@MethodSource` instead of manual loops.

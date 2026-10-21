@@ -5,7 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirmationData
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager

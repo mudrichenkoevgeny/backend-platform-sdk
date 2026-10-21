@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.aescryptor.AesCryptor
-import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
+import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestSecurityConfig
 import io.github.mudrichenkoevgeny.backend.core.security.util.Base32
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
@@ -16,10 +16,10 @@ import org.junit.jupiter.api.Test
 class TotpCryptoProcessorImplTest {
 
     private val aesCryptor = mockk<AesCryptor>()
-    private val securityConfig = mockk<SecurityConfig>()
+    private val testAuthRealm = "TestRealm"
+    private val securityConfig = createTestSecurityConfig(authRealm = testAuthRealm)
     private lateinit var processor: TotpCryptoProcessorImpl
 
-    private val testAuthRealm = "TestRealm"
     private val testAccount = "test@example.com"
     private val testSecretBase32 = "JBSWY3DPEBLW64TMMQQQ===="
     private val decryptedSecret = DecryptedString(testSecretBase32)
@@ -27,7 +27,6 @@ class TotpCryptoProcessorImplTest {
 
     @BeforeEach
     fun setup() {
-        every { securityConfig.authRealm } returns testAuthRealm
         processor = TotpCryptoProcessorImpl(aesCryptor, securityConfig)
     }
 

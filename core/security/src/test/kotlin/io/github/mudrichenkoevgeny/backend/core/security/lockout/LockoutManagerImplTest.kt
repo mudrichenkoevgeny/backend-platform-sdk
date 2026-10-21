@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.security.lockout
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
-import io.github.mudrichenkoevgeny.backend.core.security.domain.model.accountlockout.createTestAccountLockoutPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.accountlockout.createTestAccountLockoutPolicy
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -23,7 +23,7 @@ class LockoutManagerImplTest {
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val lockoutManager = LockoutManagerImpl(redisManager, securitySettingsProvider)
 
-    private val testPolicy = createTestAccountLockoutPolicy(indefiniteLockoutThreshold = 0)
+    private val testPolicy = createTestAccountLockoutPolicy()
 
     @BeforeEach
     fun setUp() {
@@ -55,7 +55,7 @@ class LockoutManagerImplTest {
 
         coEvery {
             redisManager.incrementWithExpiration(counterKey, testPolicy.failedAttemptsWindowSeconds.toLong())
-        } returns AppResult.Success(3L)
+        } returns AppResult.Success(testPolicy.maxFailedOtpAttempts.toLong())
 
         coEvery {
             redisManager.setWithExpiration(lockoutKey, any(), testPolicy.lockoutDurationSeconds.toLong())

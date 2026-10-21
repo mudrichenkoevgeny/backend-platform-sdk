@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.logger
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.action.TestAuditAction
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.resource.TestAuditResource
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.TestAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.TestAuditResourceType
 import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
@@ -29,8 +29,8 @@ class AuditLoggerImplTest {
             actorId = ACTOR_ID,
             actorType = AuditActorType.USER,
             actorUserRole = ROLE,
-            action = TestAuditAction(ACTION),
-            resource = TestAuditResource(RESOURCE),
+            action = TestAuditActionType(ACTION),
+            resource = TestAuditResourceType(RESOURCE),
             resourceId = RESOURCE_ID,
             status = AuditStatus.FAILED,
             metadata = metadata,

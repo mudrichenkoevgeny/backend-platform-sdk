@@ -1,7 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager
 
 import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepository
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEventInternal
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.listing.createTestPagedResult
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
@@ -10,7 +12,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.lis
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
@@ -59,10 +60,10 @@ class AuditManagerImplTest {
 
     @Test
     fun `getAuditEventsSummaryPage filters out forbidden events from the list`() = runTest {
-        val eventSystem = createTestAuditEventInternal(actorType = AuditActorType.SYSTEM)
-        val eventService = createTestAuditEventInternal(actorType = AuditActorType.SERVICE)
+        val eventSystem = createTestAuditEventInternal(id = AuditEventId.generate(), actorType = AuditActorType.SYSTEM)
+        val eventService = createTestAuditEventInternal(id = AuditEventId.generate(), actorType = AuditActorType.SERVICE)
 
-        val pagedResult = PagedResult(
+        val pagedResult = createTestPagedResult(
             items = listOf(eventSystem, eventService),
             totalCount = 2,
             pageNumber = ListingDefaultValues.Pagination.PAGE_NUMBER,

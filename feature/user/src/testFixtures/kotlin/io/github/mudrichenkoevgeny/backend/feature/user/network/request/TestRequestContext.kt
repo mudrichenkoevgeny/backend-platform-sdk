@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.request
 
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.client.createTestClientInfo
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.client.createTestClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId

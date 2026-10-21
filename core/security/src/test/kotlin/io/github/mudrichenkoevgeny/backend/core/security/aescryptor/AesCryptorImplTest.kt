@@ -1,11 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.core.security.aescryptor
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
+import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestSecurityConfig
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
-import io.mockk.every
-import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -16,18 +14,14 @@ import java.util.Base64
 class AesCryptorImplTest {
 
     private val validSecret = Base64.getEncoder().encodeToString(ByteArray(32) { 1.toByte() })
-    private val securityConfig = mockk<SecurityConfig> {
-        every { totpEncryptionSecret } returns validSecret
-    }
+    private val securityConfig = createTestSecurityConfig(totpEncryptionSecret = validSecret)
 
     private val cryptor = AesCryptorImpl(securityConfig)
 
     @Test
     fun `init throws exception when secret key is too short`() {
         val shortSecret = Base64.getEncoder().encodeToString(ByteArray(16))
-        val config = mockk<SecurityConfig> {
-            every { totpEncryptionSecret } returns shortSecret
-        }
+        val config = createTestSecurityConfig(totpEncryptionSecret = shortSecret)
 
         assertThrows<IllegalArgumentException> {
             AesCryptorImpl(config)
@@ -85,9 +79,7 @@ class AesCryptorImplTest {
         val encrypted = (cryptor.encrypt(input) as AppResult.Success).data
 
         val otherSecret = Base64.getEncoder().encodeToString(ByteArray(32) { 2.toByte() })
-        val otherConfig = mockk<SecurityConfig> {
-            every { totpEncryptionSecret } returns otherSecret
-        }
+        val otherConfig = createTestSecurityConfig(totpEncryptionSecret = otherSecret)
         val otherCryptor = AesCryptorImpl(otherConfig)
 
         val result = otherCryptor.decrypt(encrypted)

@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.login
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.createTestAuthData
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest

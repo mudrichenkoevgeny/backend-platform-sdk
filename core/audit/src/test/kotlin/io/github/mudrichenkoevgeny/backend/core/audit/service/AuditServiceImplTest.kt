@@ -3,12 +3,12 @@ package io.github.mudrichenkoevgeny.backend.core.audit.service
 import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepository
 import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepositoryImpl
 import io.github.mudrichenkoevgeny.backend.core.audit.database.table.AuditEventsTable
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.action.RepositoryTestAuditAction
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEventInternal
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.resource.RepositoryTestAuditResource
-import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditActionTypeParserForRepositoryTests
-import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditMetadataKeyParserForRepositoryTests
-import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditResourceTypeParserForRepositoryTests
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.TestAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.TestAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.createTestCompositeAuditActionTypeParser
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.metadata.createTestCompositeAuditMetadataKeyParser
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.createTestCompositeAuditResourceTypeParser
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
@@ -48,9 +48,9 @@ class AuditServiceImplTest {
             }
         }
         repository = AuditEventRepositoryImpl(
-            compositeAuditActionTypeParser = compositeAuditActionTypeParserForRepositoryTests(),
-            compositeAuditResourceTypeParser = compositeAuditResourceTypeParserForRepositoryTests(),
-            compositeAuditMetadataKeyParser = compositeAuditMetadataKeyParserForRepositoryTests()
+            compositeAuditActionTypeParser = createTestCompositeAuditActionTypeParser(),
+            compositeAuditResourceTypeParser = createTestCompositeAuditResourceTypeParser(),
+            compositeAuditMetadataKeyParser = createTestCompositeAuditMetadataKeyParser()
         )
     }
 
@@ -64,8 +64,8 @@ class AuditServiceImplTest {
 
         val event = createTestAuditEventInternal(
             actorType = AuditActorType.SYSTEM,
-            action = RepositoryTestAuditAction("login"),
-            resource = RepositoryTestAuditResource("session")
+            action = TestAuditActionType("login"),
+            resource = TestAuditResourceType("session")
         )
         service.log(event)
         service.awaitAll()
@@ -86,8 +86,8 @@ class AuditServiceImplTest {
 
         val event = createTestAuditEventInternal(
             actorType = AuditActorType.SYSTEM,
-            action = RepositoryTestAuditAction("action"),
-            resource = RepositoryTestAuditResource("resource"),
+            action = TestAuditActionType("action"),
+            resource = TestAuditResourceType("resource"),
             status = AuditStatus.FAILED
         )
         service.log(event)

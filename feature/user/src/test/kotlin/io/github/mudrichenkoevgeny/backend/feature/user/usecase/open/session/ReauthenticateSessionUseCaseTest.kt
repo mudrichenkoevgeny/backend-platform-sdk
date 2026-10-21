@@ -3,18 +3,16 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.session
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
-import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.createTestMfaChallengeData
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
@@ -72,7 +70,7 @@ class ReauthenticateSessionUseCaseTest {
         val sessionId = UserSessionId.generate()
         val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
 
-        val mfaChallengeData = MfaChallengeData(
+        val mfaChallengeData = createTestMfaChallengeData(
             token = mfaToken,
             userId = userId.asHexDashString(),
             userRole = context.userRole.value,
@@ -110,7 +108,7 @@ class ReauthenticateSessionUseCaseTest {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
         val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
 
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(error)
@@ -138,7 +136,7 @@ class ReauthenticateSessionUseCaseTest {
         val sessionId = UserSessionId.generate()
         val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
 
-        val wrongMfaChallengeData = MfaChallengeData(
+        val wrongMfaChallengeData = createTestMfaChallengeData(
             token = mfaToken,
             userId = UserId.generate().asHexDashString(),
             userRole = context.userRole.value,
@@ -175,14 +173,14 @@ class ReauthenticateSessionUseCaseTest {
         val sessionId = UserSessionId.generate()
         val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
 
-        val mfaChallengeData = MfaChallengeData(
+        val mfaChallengeData = createTestMfaChallengeData(
             token = mfaToken,
             userId = userId.asHexDashString(),
             userRole = context.userRole.value,
             sessionId = sessionId.asHexDashString(),
             type = MfaChallengeType.STEP_UP
         )
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
 
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
@@ -214,14 +212,14 @@ class ReauthenticateSessionUseCaseTest {
         val sessionId = UserSessionId.generate()
         val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
 
-        val mfaChallengeData = MfaChallengeData(
+        val mfaChallengeData = createTestMfaChallengeData(
             token = mfaToken,
             userId = userId.asHexDashString(),
             userRole = context.userRole.value,
             sessionId = sessionId.asHexDashString(),
             type = MfaChallengeType.STEP_UP
         )
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
 
         every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)

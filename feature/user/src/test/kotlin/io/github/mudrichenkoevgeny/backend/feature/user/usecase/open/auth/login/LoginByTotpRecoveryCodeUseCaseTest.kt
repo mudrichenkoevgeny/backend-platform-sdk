@@ -10,8 +10,9 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.createTestAuthData
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.createTestUserPrivate
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.createTestMfaChallengeData
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserPrivate
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
@@ -64,7 +65,7 @@ class LoginByTotpRecoveryCodeUseCaseTest {
         val userPrivate = createTestUserPrivate(id = userId, role = UserRole.USER)
         val authData = createTestAuthData(userPrivate = userPrivate)
 
-        val mfaChallenge = MfaChallengeData(
+        val mfaChallenge = createTestMfaChallengeData(
             token = TEST_MFA_TOKEN,
             userId = userId.asHexDashString(),
             userRole = UserRole.USER.value,
@@ -105,7 +106,7 @@ class LoginByTotpRecoveryCodeUseCaseTest {
         val userId = UserId.generate()
         val error = UserError.WrongConfirmationCode()
         val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
-        val mfaChallenge = MfaChallengeData(
+        val mfaChallenge = createTestMfaChallengeData(
             token = TEST_MFA_TOKEN,
             userId = userId.asHexDashString(),
             userRole = UserRole.USER.value,

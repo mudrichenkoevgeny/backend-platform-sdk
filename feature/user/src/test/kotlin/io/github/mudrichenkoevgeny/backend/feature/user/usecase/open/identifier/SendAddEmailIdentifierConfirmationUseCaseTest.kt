@@ -1,11 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier
 
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirmationData
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
@@ -131,7 +131,7 @@ class SendAddEmailIdentifierConfirmationUseCaseTest {
 
     @Test
     fun `returns error when rate limit exceeded`() = runTest {
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
 
         coEvery {
             rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_EMAIL, TEST_EMAIL)

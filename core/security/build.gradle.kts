@@ -40,6 +40,8 @@ dependencies {
     implementation(libs.password4j)
 
     // Testing
+    testImplementation(libs.shared.foundation.fixtures)
+    testFixturesImplementation(libs.shared.foundation.fixtures)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)

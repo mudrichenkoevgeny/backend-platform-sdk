@@ -22,8 +22,8 @@ import org.junit.jupiter.api.assertThrows
 
 class AuditEventsListQueryParamsParserTest {
 
-    private val actionParser = mockk<CompositeAuditActionTypeParser>()
-    private val resourceParser = mockk<CompositeAuditResourceTypeParser>()
+    private val actionParser = CompositeAuditActionTypeParser(emptySet())
+    private val resourceParser = CompositeAuditResourceTypeParser(emptySet())
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()
     private val params = AuditFilterValues.AuditEventFilterValues
@@ -77,8 +77,12 @@ class AuditEventsListQueryParamsParserTest {
         val mockAction = mockk<AuditActionType>()
         val mockResource = mockk<AuditResourceType>()
 
-        every { actionParser.fromValueOrThrow("create_user") } returns mockAction
-        every { resourceParser.fromValueOrThrow("user_profile") } returns mockResource
+        val actionParser = CompositeAuditActionTypeParser(setOf(
+            mockk { every { parseOrNull("create_user") } returns mockAction }
+        ))
+        val resourceParser = CompositeAuditResourceTypeParser(setOf(
+            mockk { every { parseOrNull("user_profile") } returns mockResource }
+        ))
 
         val queryParameters = Parameters.build {
             append(params.ACTION, "create_user")
@@ -109,7 +113,9 @@ class AuditEventsListQueryParamsParserTest {
 
     @Test
     fun `parseAuditEventsListQueryParams throws RequestHandlingException when action parser fails`() {
-        every { actionParser.fromValueOrThrow("wrong_action") } throws RuntimeException("Parse error")
+        val actionParser = CompositeAuditActionTypeParser(setOf(
+            mockk { every { parseOrNull(any()) } throws RuntimeException("Parse error") }
+        ))
 
         val queryParameters = Parameters.build {
             append(params.ACTION, "wrong_action")

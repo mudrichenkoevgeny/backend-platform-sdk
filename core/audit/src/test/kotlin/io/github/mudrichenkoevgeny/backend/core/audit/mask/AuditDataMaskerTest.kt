@@ -1,8 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.mask
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.action.RepositoryTestAuditAction
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEventInternal
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.resource.RepositoryTestAuditResource
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.TestAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.TestAuditResourceType
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
@@ -113,8 +113,8 @@ class AuditDataMaskerTest {
 
     private fun baseEvent(): AuditEventInternal = createTestAuditEventInternal(
         actorType = AuditActorType.SYSTEM,
-        action = RepositoryTestAuditAction("mask_test_action"),
-        resource = RepositoryTestAuditResource("mask_test_resource"),
+        action = TestAuditActionType("mask_test_action"),
+        resource = TestAuditResourceType("mask_test_resource"),
         status = AuditStatus.SUCCESS
     )
 }

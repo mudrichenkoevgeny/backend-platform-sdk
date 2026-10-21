@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier
 
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirmationData
@@ -115,7 +115,7 @@ class SendAddPhoneIdentifierConfirmationUseCaseTest {
 
     @Test
     fun `returns error when rate limit exceeded`() = runTest {
-        val error = mockk<AppError>()
+        val error = CommonError.Unknown()
 
         coEvery {
             rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_PHONE, TEST_PHONE)

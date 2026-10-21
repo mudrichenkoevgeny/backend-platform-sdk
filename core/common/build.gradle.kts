@@ -55,6 +55,7 @@ dependencies {
     api(libs.slf4j) // Transitive for Ktor, Swagger
 
     // Testing
+    testImplementation(libs.shared.foundation.fixtures)
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.junit.jupiter.api)

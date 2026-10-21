@@ -2,12 +2,12 @@ package io.github.mudrichenkoevgeny.backend.core.audit.database.repository
 
 import io.github.mudrichenkoevgeny.backend.core.audit.database.table.AuditEventsTable
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditAccessFilter
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.action.RepositoryTestAuditAction
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.event.createTestAuditEventInternal
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.resource.RepositoryTestAuditResource
-import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditActionTypeParserForRepositoryTests
-import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditMetadataKeyParserForRepositoryTests
-import io.github.mudrichenkoevgeny.backend.core.audit.parser.compositeAuditResourceTypeParserForRepositoryTests
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.TestAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.TestAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.createTestCompositeAuditActionTypeParser
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.metadata.createTestCompositeAuditMetadataKeyParser
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.createTestCompositeAuditResourceTypeParser
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
@@ -19,11 +19,13 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.util.UUID
@@ -35,26 +37,35 @@ class AuditEventRepositoryImplTest {
     private lateinit var repository: AuditEventRepository
 
     @BeforeAll
-    fun setup() {
+    fun setupRepository() {
         Database.connect(dataSource)
-        runBlocking {
-            suspendTransaction {
-                SchemaUtils.create(AuditEventsTable)
-            }
-        }
         repository = AuditEventRepositoryImpl(
-            compositeAuditActionTypeParser = compositeAuditActionTypeParserForRepositoryTests(),
-            compositeAuditResourceTypeParser = compositeAuditResourceTypeParserForRepositoryTests(),
-            compositeAuditMetadataKeyParser = compositeAuditMetadataKeyParserForRepositoryTests()
+            compositeAuditActionTypeParser = createTestCompositeAuditActionTypeParser(),
+            compositeAuditResourceTypeParser = createTestCompositeAuditResourceTypeParser(),
+            compositeAuditMetadataKeyParser = createTestCompositeAuditMetadataKeyParser()
         )
+    }
+
+    @BeforeEach
+    fun setUpDatabase() = runBlocking {
+        suspendTransaction {
+            SchemaUtils.create(AuditEventsTable)
+        }
+    }
+
+    @AfterEach
+    fun tearDownDatabase() = runBlocking {
+        suspendTransaction {
+            SchemaUtils.drop(AuditEventsTable)
+        }
     }
 
     @Test
     fun `createEvent persists and getEventById returns same event`() = runBlocking {
         val event = createTestAuditEventInternal(
             actorType = AuditActorType.SYSTEM,
-            action = RepositoryTestAuditAction("login"),
-            resource = RepositoryTestAuditResource("session"),
+            action = TestAuditActionType("login"),
+            resource = TestAuditResourceType("session"),
             status = AuditStatus.SUCCESS
         )
 
@@ -83,8 +94,8 @@ class AuditEventRepositoryImplTest {
     fun `getEventsList applies access filter for system actor`() = runBlocking {
         val event = createTestAuditEventInternal(
             actorType = AuditActorType.SYSTEM,
-            action = RepositoryTestAuditAction("list_sys"),
-            resource = RepositoryTestAuditResource("r"),
+            action = TestAuditActionType("list_sys"),
+            resource = TestAuditResourceType("r"),
             status = AuditStatus.SUCCESS
         )
         suspendTransaction { repository.createEvent(event) }
@@ -107,8 +118,8 @@ class AuditEventRepositoryImplTest {
             repository.createEvent(
                 createTestAuditEventInternal(
                     actorType = AuditActorType.SYSTEM,
-                    action = RepositoryTestAuditAction("invisible"),
-                    resource = RepositoryTestAuditResource("x"),
+                    action = TestAuditActionType("invisible"),
+                    resource = TestAuditResourceType("x"),
                     status = AuditStatus.SUCCESS
                 )
             )
@@ -132,8 +143,8 @@ class AuditEventRepositoryImplTest {
         val event = createTestAuditEventInternal(
             actorId = actorId,
             actorType = AuditActorType.SYSTEM,
-            action = RepositoryTestAuditAction("by_actor"),
-            resource = RepositoryTestAuditResource("res"),
+            action = TestAuditActionType("by_actor"),
+            resource = TestAuditResourceType("res"),
             status = AuditStatus.SUCCESS
         )
         suspendTransaction { repository.createEvent(event) }
@@ -157,8 +168,8 @@ class AuditEventRepositoryImplTest {
         val event = createTestAuditEventInternal(
             actorId = null,
             actorType = AuditActorType.SYSTEM,
-            action = RepositoryTestAuditAction("alert"),
-            resource = RepositoryTestAuditResource("security"),
+            action = TestAuditActionType("alert"),
+            resource = TestAuditResourceType("security"),
             resourceValueSensitivity = AuditValueSensitivity.NON_SENSITIVE,
             status = AuditStatus.FAILED,
             message = message
