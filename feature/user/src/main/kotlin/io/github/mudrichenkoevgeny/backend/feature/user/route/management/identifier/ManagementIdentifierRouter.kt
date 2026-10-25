@@ -338,6 +338,10 @@ class ManagementIdentifierRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
+        val userIdentifierId = call.validatePathParameter(UserApiPaths.USER_IDENTIFIER_ID) { userIdentifierId ->
+            userIdentifierId.toUserIdentifierIdOrThrow()
+        }
+
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
 
         val authorizeResult = authenticationProvider.requireUser(
@@ -350,14 +354,11 @@ class ManagementIdentifierRouter @Inject constructor(
             logErrorToAudit(
                 authenticatedRequestContext = authenticatedRequestContext,
                 actionType = UserAuditActionType.MANAGEMENT_DELETE_IDENTIFIER,
+                resourceId = userIdentifierId.asHexDashString(),
                 error = authorizeResult.error
             )
             call.respondResult(authorizeResult, appLogger, appErrorParser)
             return
-        }
-
-        val userIdentifierId = call.validatePathParameter(UserApiPaths.USER_IDENTIFIER_ID) { userIdentifierId ->
-            userIdentifierId.toUserIdentifierIdOrThrow()
         }
 
         val result = managementDeleteIdentifierUseCase(
@@ -397,6 +398,10 @@ class ManagementIdentifierRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
+        val userIdentifierId = call.validatePathParameter(UserApiPaths.USER_IDENTIFIER_ID) { userIdentifierId ->
+            userIdentifierId.toUserIdentifierIdOrThrow()
+        }
+
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
 
         val authorizeResult = authenticationProvider.requireUser(
@@ -409,14 +414,11 @@ class ManagementIdentifierRouter @Inject constructor(
             logErrorToAudit(
                 authenticatedRequestContext = authenticatedRequestContext,
                 actionType = UserAuditActionType.MANAGEMENT_DELETE_IDENTIFIER_PASSWORD,
+                resourceId = userIdentifierId.asHexDashString(),
                 error = authorizeResult.error
             )
             call.respondResult(authorizeResult, appLogger, appErrorParser)
             return
-        }
-
-        val userIdentifierId = call.validatePathParameter(UserApiPaths.USER_IDENTIFIER_ID) { userIdentifierId ->
-            userIdentifierId.toUserIdentifierIdOrThrow()
         }
 
         val result = managementDeleteIdentifierPasswordUseCase(
@@ -430,6 +432,7 @@ class ManagementIdentifierRouter @Inject constructor(
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
+        resourceId: String? = null,
         error: AppError
     ) {
         val errorData = auditErrorConverter.convert(error)
@@ -441,6 +444,7 @@ class ManagementIdentifierRouter @Inject constructor(
             actorUserRole = authenticatedRequestContext.userRole.value,
             action = actionType,
             resource = UserAuditResourceType.IDENTIFIER,
+            resourceId = resourceId,
             status = AuditStatus.DENIED,
             metadata = metadata
         )

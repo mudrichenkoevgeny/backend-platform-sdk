@@ -101,6 +101,10 @@ class ManagementUserSecurityRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
+        val userId = call.validatePathParameter(UserApiPaths.USER_ID) { userId ->
+            userId.toUserIdOrThrow()
+        }
+
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
 
         val authorizeResult = authenticationProvider.requireUser(
@@ -113,14 +117,11 @@ class ManagementUserSecurityRouter @Inject constructor(
             logErrorToAudit(
                 authenticatedRequestContext = authenticatedRequestContext,
                 actionType = UserAuditActionType.MANAGEMENT_DISABLE_USER_TOTP,
+                resourceId = userId.asHexDashString(),
                 error = authorizeResult.error
             )
             call.respondResult(authorizeResult, appLogger, appErrorParser)
             return
-        }
-
-        val userId = call.validatePathParameter(UserApiPaths.USER_ID) { userId ->
-            userId.toUserIdOrThrow()
         }
 
         val result = managementDisableTotpUseCase(
@@ -134,6 +135,7 @@ class ManagementUserSecurityRouter @Inject constructor(
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
+        resourceId: String? = null,
         error: AppError
     ) {
         val errorData = auditErrorConverter.convert(error)
@@ -145,6 +147,7 @@ class ManagementUserSecurityRouter @Inject constructor(
             actorUserRole = authenticatedRequestContext.userRole.value,
             action = actionType,
             resource = UserAuditResourceType.USER,
+            resourceId = resourceId,
             status = AuditStatus.DENIED,
             metadata = metadata
         )

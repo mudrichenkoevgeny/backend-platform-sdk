@@ -266,6 +266,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
             logErrorToAudit(
                 authenticatedRequestContext = authenticatedRequestContext,
                 actionType = UserAuditActionType.CHANGE_PASSWORD,
+                resourceId = identifierId.asHexDashString(),
                 error = authorizeResult.error
             )
             call.respondResult(authorizeResult, appLogger, appErrorParser)
@@ -287,6 +288,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
+        resourceId: String? = null,
         error: AppError
     ) {
         val errorData = auditErrorConverter.convert(error)
@@ -298,6 +300,7 @@ class SelfManagementIdentifierRouter @Inject constructor(
             actorUserRole = authenticatedRequestContext.userRole.value,
             action = actionType,
             resource = UserAuditResourceType.IDENTIFIER,
+            resourceId = resourceId,
             status = AuditStatus.DENIED,
             metadata = metadata
         )
