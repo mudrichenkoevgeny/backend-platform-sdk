@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisMana
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.uuid.Uuid
@@ -76,8 +77,10 @@ class MfaServiceImpl @Inject constructor(
             }
 
             AppResult.Success(data)
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 

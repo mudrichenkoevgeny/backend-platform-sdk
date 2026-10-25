@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -35,8 +36,10 @@ class AuditServiceImpl @Inject constructor(
                 if (createEventResult is AppResult.Error) {
                     appLogger.logError(createEventResult.error)
                 }
-            } catch (t: Throwable) {
-                appLogger.logError(CommonError.Internal(t))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                appLogger.logError(CommonError.Internal(e))
             }
         }
     }

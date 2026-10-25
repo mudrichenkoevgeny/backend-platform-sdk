@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.events.config.model.EventsConfig
 import io.github.mudrichenkoevgeny.backend.core.events.event.AppEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -65,8 +66,10 @@ class EventSubscriberImpl @Inject constructor(
                                 .associate { it.key() to String(it.value()) }
 
                             handler(event, metadata)
-                        } catch (t: Throwable) {
-                            appLogger.logError(CommonError.Internal(t))
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            appLogger.logError(CommonError.Internal(e))
                         }
                     }
                 }

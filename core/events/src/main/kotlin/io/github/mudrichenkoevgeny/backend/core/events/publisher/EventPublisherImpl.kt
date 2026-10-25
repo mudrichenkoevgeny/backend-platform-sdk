@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.events.config.model.EventsConfig
 import io.github.mudrichenkoevgeny.backend.core.events.event.AppEvent
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.KSerializer
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -51,18 +52,22 @@ class EventPublisherImpl @Inject constructor(
     ) {
         val jsonPayload = try {
             json.encodeToString(serializer, event)
-        } catch (t: Throwable) {
-            appLogger.logError(CommonError.Internal(t))
-            throw t
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            appLogger.logError(CommonError.Internal(e))
+            throw e
         }
 
         val record = try {
             ProducerRecord<String, String>(topic, jsonPayload).apply {
                 metadata.forEach { (k, v) -> headers().add(k, v.toByteArray()) }
             }
-        } catch (t: Throwable) {
-            appLogger.logError(CommonError.Internal(t))
-            throw t
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            appLogger.logError(CommonError.Internal(e))
+            throw e
         }
 
         suspendCancellableCoroutine { continuation ->

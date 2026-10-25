@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.auth.model.ExternalAuthP
 import io.github.mudrichenkoevgeny.backend.feature.user.di.qualifiers.GoogleWebClientId
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -61,6 +62,8 @@ class GoogleAuthVerifier @Inject constructor(
                         )
                     )
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 AppResult.Error(UserError.ExternalIdentifierLinkageFailed(e.message))
             }

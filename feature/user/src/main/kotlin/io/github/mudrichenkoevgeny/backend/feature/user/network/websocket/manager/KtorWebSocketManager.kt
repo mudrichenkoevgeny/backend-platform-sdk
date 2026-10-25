@@ -73,6 +73,8 @@ class KtorWebSocketManager @Inject constructor(
             try {
                 val message = FoundationJson.decodeFromString<WebSocketPubSubMessage>(messageStr)
                 handlePubSubMessageLocally(message)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 appLogger.logError(CommonError.Internal(e))
             }
@@ -215,8 +217,10 @@ class KtorWebSocketManager @Inject constructor(
                     processSocketFrame(this, socketFrame, context)
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
-            if (e !is ClosedReceiveChannelException && e !is CancellationException) {
+            if (e !is ClosedReceiveChannelException) {
                 appLogger.logError(CommonError.Internal(e))
             }
         }
@@ -303,6 +307,8 @@ class KtorWebSocketManager @Inject constructor(
                     }
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (_: Exception) {}
     }
 

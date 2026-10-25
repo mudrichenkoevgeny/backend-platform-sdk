@@ -51,8 +51,8 @@ class AesCryptorImpl @Inject constructor(
 
             val combined = iv + encryptedBytes
             AppResult.Success(EncryptedString(Base64.getEncoder().encodeToString(combined)))
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -73,8 +73,8 @@ class AesCryptorImpl @Inject constructor(
 
             val decryptedBytes = cipher.doFinal(encryptedBytes)
             AppResult.Success(DecryptedString(String(decryptedBytes, Charsets.UTF_8)))
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 }

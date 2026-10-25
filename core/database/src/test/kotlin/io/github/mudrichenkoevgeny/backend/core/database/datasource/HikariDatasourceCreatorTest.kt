@@ -65,7 +65,7 @@ class HikariDatasourceCreatorTest {
 
         try {
             creatorWithSpy.create(url = invalidUrl, user = USER, password = PASSWORD)
-        } catch (_: Throwable) {
+        } catch (_: Exception) {
         }
 
         verify(exactly = 1) { appLoggerSpy.logError(any()) }

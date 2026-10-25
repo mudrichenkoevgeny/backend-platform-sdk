@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheck
 import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheckSeverity
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppSystemResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
+import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,8 +36,10 @@ class RedisHealthCheck @Inject constructor(
             } else {
                 throw RuntimeException("Redis not available")
             }
-        } catch (t: Throwable) {
-            AppSystemResult.Error(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppSystemResult.Error(CommonError.Internal(e))
         }
     }
 }

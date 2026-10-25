@@ -25,9 +25,9 @@ class LettuceRedisClientCreator @Inject constructor(
             }
 
             RedisClient.create(uri)
-        } catch (t: Throwable) {
-            appLogger.logError(CommonError.Internal(t))
-            throw t
+        } catch (e: Exception) {
+            appLogger.logError(CommonError.Internal(e))
+            throw e
         }
     }
 }

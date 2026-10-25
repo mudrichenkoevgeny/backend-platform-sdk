@@ -4,10 +4,12 @@ import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
 import io.github.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManager
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.ktor.server.engine.EmbeddedServer
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Default sample implementation of [AppShutdownHook].
@@ -34,12 +36,14 @@ class AppShutdownHookImpl @Inject constructor(
                 try {
                     server.stop(GRACE_PERIOD_MS, TIMEOUT_MS)
 
-                    withTimeoutOrNull(TIMEOUT_MS) {
+                    withTimeoutOrNull(TIMEOUT_MS.milliseconds) {
                         auditService.awaitAll()
                     }
 
                     databaseManager.shutdown()
                     redisManager.shutdown()
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     println("Error during shutdown: ${e.message}")
                     e.printStackTrace()

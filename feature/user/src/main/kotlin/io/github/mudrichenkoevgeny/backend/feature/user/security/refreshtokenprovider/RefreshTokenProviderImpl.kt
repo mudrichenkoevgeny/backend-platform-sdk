@@ -32,8 +32,8 @@ class RefreshTokenProviderImpl @Inject constructor() : RefreshTokenProvider {
             val digest = MessageDigest.getInstance("SHA-256")
             val hash = digest.digest(refreshToken.value.toByteArray())
             AppResult.Success(RefreshTokenHash(Base64.getEncoder().encodeToString(hash)))
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 }

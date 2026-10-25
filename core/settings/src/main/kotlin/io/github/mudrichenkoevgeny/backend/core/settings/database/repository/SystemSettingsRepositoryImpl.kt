@@ -10,6 +10,7 @@ import org.jetbrains.exposed.v1.jdbc.batchUpsert
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.upsert
+import kotlinx.coroutines.CancellationException
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -46,6 +47,8 @@ class SystemSettingRepositoryImpl @Inject constructor() : SystemSettingRepositor
             }
 
             AppResult.Success(settings)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             AppResult.Error(
                 CommonError.Database("Database error while saving settings batch: ${e.message}")
@@ -67,6 +70,8 @@ class SystemSettingRepositoryImpl @Inject constructor() : SystemSettingRepositor
             }
 
             AppResult.Success(setting)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             AppResult.Error(
                 CommonError.Database("Database error while saving setting ${setting.key}: ${e.message}")
@@ -95,6 +100,8 @@ class SystemSettingRepositoryImpl @Inject constructor() : SystemSettingRepositor
         return try {
             SystemSettingsTable.deleteWhere { SystemSettingsTable.key eq key }
             AppResult.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             AppResult.Error(
                 CommonError.Database("Database error while deleting setting $key: ${e.message}")

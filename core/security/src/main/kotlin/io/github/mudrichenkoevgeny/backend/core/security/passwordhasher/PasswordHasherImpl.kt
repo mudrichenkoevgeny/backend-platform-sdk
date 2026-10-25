@@ -26,9 +26,9 @@ class PasswordHasherImpl @Inject constructor(
                 .withArgon2()
                 .result
             AppResult.Success(PasswordHash(passwordHash))
-        } catch (t: Throwable) {
-            appLogger.logError(CommonError.Internal(t))
-            throw t
+        } catch (e: Exception) {
+            appLogger.logError(CommonError.Internal(e))
+            throw e
         }
     }
 
@@ -36,9 +36,9 @@ class PasswordHasherImpl @Inject constructor(
         return try {
             val checkResult = Password.check(password, storedPasswordHash.value).withArgon2()
             AppResult.Success(checkResult)
-        } catch (t: Throwable) {
-            appLogger.logError(CommonError.Internal(t))
-            throw t
+        } catch (e: Exception) {
+            appLogger.logError(CommonError.Internal(e))
+            throw e
         }
     }
 
@@ -54,9 +54,9 @@ class PasswordHasherImpl @Inject constructor(
         return try {
             Password.check(password ?: "", fakeVerificationHash).withArgon2()
             AppResult.Success(Unit)
-        } catch (t: Throwable) {
-            appLogger.logError(CommonError.Internal(t))
-            throw t
+        } catch (e: Exception) {
+            appLogger.logError(CommonError.Internal(e))
+            throw e
         }
     }
 

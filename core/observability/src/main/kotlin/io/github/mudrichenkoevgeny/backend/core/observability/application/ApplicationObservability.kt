@@ -22,6 +22,7 @@ import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.api.trace.StatusCode
 import io.opentelemetry.context.Context
 import io.opentelemetry.extension.kotlin.asContextElement
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import org.slf4j.MDC
 
@@ -109,12 +110,14 @@ private fun Application.setupTracing(
             withContext(contextWithSpan.asContextElement()) {
                 proceed()
             }
-        } catch (t: Throwable) {
-            appLogger.logError(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            appLogger.logError(CommonError.Internal(e))
             isThrowable = true
-            span.recordException(t)
-            span.setStatus(StatusCode.ERROR, t.message ?: UNKNOWN_ERROR_MESSAGE)
-            throw t
+            span.recordException(e)
+            span.setStatus(StatusCode.ERROR, e.message ?: UNKNOWN_ERROR_MESSAGE)
+            throw e
         } finally {
             val durationMs = (System.nanoTime() - startTimeNs) / 1_000_000
 

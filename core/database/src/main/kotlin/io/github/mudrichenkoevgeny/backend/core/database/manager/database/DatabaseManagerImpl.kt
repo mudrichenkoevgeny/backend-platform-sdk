@@ -33,9 +33,9 @@ class DatabaseManagerImpl @Inject constructor(
             }
 
             database
-        } catch (t: Throwable) {
-            appLogger.logError(CommonError.Internal(t))
-            throw t
+        } catch (e: Exception) {
+            appLogger.logError(CommonError.Internal(e))
+            throw e
         }
     }
 

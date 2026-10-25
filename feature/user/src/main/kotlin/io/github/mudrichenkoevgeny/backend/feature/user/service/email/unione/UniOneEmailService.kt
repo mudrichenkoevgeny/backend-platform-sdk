@@ -20,6 +20,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
@@ -202,6 +203,8 @@ class UniOneEmailService @Inject constructor(
                     CommonError.ServiceUnavailable(errorMessage)
                 )
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             AppResult.Error(CommonError.Internal(e))
         }

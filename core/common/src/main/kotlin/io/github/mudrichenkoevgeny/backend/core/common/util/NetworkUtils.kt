@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.util
 
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
+import kotlinx.coroutines.CancellationException
 
 /**
  * Tries to deserialize the HTTP response body as type [T], returning `null` on any failure instead of throwing.
@@ -11,6 +12,8 @@ import io.ktor.client.statement.HttpResponse
  */
 suspend inline fun <reified T> HttpResponse.bodySafe(): T? = try {
     body<T>()
+} catch (e: CancellationException) {
+    throw e
 } catch (_: Exception) {
     null
 }
