@@ -13,6 +13,7 @@ fun createTestStorageConfig(
     s3PublicUrl: String = "https://example.com/files",
     forcePathStyle: Boolean = false,
     localStoragePath: String = "/tmp/storage",
+    deletedFilesCleanupBatchSize: Int = 100,
     managementStorageSettings: ManagementStorageSettings = ManagementStorageSettings(
         minUploadSizeBytes = 1,
         maxUploadSizeBytes = 52428800,
@@ -34,5 +35,6 @@ fun createTestStorageConfig(
     s3PublicUrl = s3PublicUrl,
     forcePathStyle = forcePathStyle,
     localStoragePath = localStoragePath,
+    deletedFilesCleanupBatchSize = deletedFilesCleanupBatchSize,
     managementStorageSettings = managementStorageSettings
 )

@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.storage.manager
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
@@ -180,4 +181,14 @@ interface StorageManager {
         mimeTypes: List<String> = emptyList(),
         fileNames: List<String> = emptyList()
     ): AppResult<PagedResult<StorageFileSummary>>
+
+    /**
+     * Finds files marked as DELETED, removes their physical binaries from storage, and hard deletes their database records.
+     *
+     * @param batchSize Optional custom batch size. If null, the configured [StorageConfig.deletedFilesCleanupBatchSize] is used.
+     * @return [AppResult.Success] containing the number of successfully cleaned up files or an error.
+     */
+    suspend fun cleanupDeletedStorageFiles(
+        batchSize: Int? = null
+    ): AppResult<Int>
 }

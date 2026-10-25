@@ -24,6 +24,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.validator.iprestriction
 import io.github.mudrichenkoevgeny.backend.core.settings.di.SettingsModules
 import io.github.mudrichenkoevgeny.backend.core.settings.usecase.system.globalsettings.SeedGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.core.storage.di.StorageModules
+import io.github.mudrichenkoevgeny.backend.core.storage.scheduled.StorageScheduledJobs
 import io.github.mudrichenkoevgeny.backend.core.storage.usecase.system.storagesettings.SeedStorageSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.di.UserModules
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.ManagementWebSocketRouter
@@ -127,6 +128,7 @@ interface AppComponent {
     fun openStorageRouter(): OpenStorageRouter
     fun selfManagementStorageRouter(): SelfManagementStorageRouter
     fun managementStorageRouter(): ManagementStorageRouter
+    fun storageScheduledJobs(): StorageScheduledJobs
 
     // user
     fun authenticationProvider(): AuthenticationProvider

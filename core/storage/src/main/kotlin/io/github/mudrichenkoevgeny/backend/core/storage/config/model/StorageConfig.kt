@@ -18,6 +18,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.s
  * @param s3PublicUrl base public URL used to build object URLs returned by [StorageService.getUrl].
  * @param forcePathStyle whether to force path-style S3 addressing (useful for some S3-compatible providers).
  * @param localStoragePath filesystem path used as a root directory for local storage.
+ * @param deletedFilesCleanupBatchSize maximum number of deleted files to process in a single cleanup pass.
  * @param managementStorageSettings default platform-wide storage settings parsed from configuration/env.
  */
 data class StorageConfig(
@@ -30,5 +31,6 @@ data class StorageConfig(
     val s3PublicUrl: String,
     val forcePathStyle: Boolean,
     val localStoragePath: String,
+    val deletedFilesCleanupBatchSize: Int,
     val managementStorageSettings: ManagementStorageSettings
 )

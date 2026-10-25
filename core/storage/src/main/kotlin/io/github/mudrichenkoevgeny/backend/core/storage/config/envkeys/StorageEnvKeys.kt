@@ -62,4 +62,7 @@ object StorageEnvKeys {
 
     /** Interval in seconds for physical cleanup of soft-deleted files from S3/storage. */
     const val STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS = "STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS"
+
+    /** Batch size for physical cleanup of soft-deleted files from S3/storage. */
+    const val STORAGE_DELETED_FILES_CLEANUP_BATCH_SIZE = "STORAGE_DELETED_FILES_CLEANUP_BATCH_SIZE"
 }

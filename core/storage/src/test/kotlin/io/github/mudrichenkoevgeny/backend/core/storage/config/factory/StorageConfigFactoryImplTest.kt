@@ -37,6 +37,7 @@ class StorageConfigFactoryImplTest {
         every { envReader.getByKey(StorageEnvKeys.STORAGE_MAX_PENDING_UPLOADS_MANAGEMENT_USER) } returns "100"
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IS_DEDUPLICATION_ENABLED) } returns "true"
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS) } returns "86400"
+        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_DELETED_FILES_CLEANUP_BATCH_SIZE) } returns "100"
     }
 
     @Test
@@ -67,6 +68,7 @@ class StorageConfigFactoryImplTest {
         assertEquals(S3_PUBLIC_URL, config.s3PublicUrl)
         assertTrue(config.forcePathStyle)
         assertEquals(LOCAL_STORAGE_PATH, config.localStoragePath)
+        assertEquals(100, config.deletedFilesCleanupBatchSize)
         assertEquals(86400, config.managementStorageSettings.deletedFilesCleanupIntervalSeconds)
     }
 

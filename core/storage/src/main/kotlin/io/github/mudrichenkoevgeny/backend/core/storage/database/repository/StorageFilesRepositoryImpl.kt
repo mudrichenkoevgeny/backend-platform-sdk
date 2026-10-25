@@ -32,6 +32,7 @@ import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.core.lowerCase
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.jdbc.Query
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 import org.jetbrains.exposed.v1.jdbc.upsert
@@ -379,5 +380,38 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
             createdAt = this[StorageFilesTable.createdAt].toKotlinInstant(),
             updatedAt = this[StorageFilesTable.updatedAt]?.toKotlinInstant()
         )
+    }
+
+    override suspend fun getStorageFilesByStatus(
+        status: StorageFileStatus,
+        limit: Int
+    ): AppResult<List<StorageFileInternal>> {
+        return try {
+            val items = StorageFilesTable.selectAll()
+                .where { StorageFilesTable.status eq status }
+                .limit(limit)
+                .map { it.toStorageFileInternal() }
+            AppResult.Success(items)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Database("Error retrieving files by status: ${e.message}"))
+        }
+    }
+
+    override suspend fun hardDeleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit> {
+        if (fileIds.isEmpty()) {
+            return AppResult.Success(Unit)
+        }
+
+        return try {
+            val rawIds = fileIds.map { it.value }
+            StorageFilesTable.deleteWhere { StorageFilesTable.id inList rawIds }
+            AppResult.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Database("Error hard deleting storage files batch: ${e.message}"))
+        }
     }
 }

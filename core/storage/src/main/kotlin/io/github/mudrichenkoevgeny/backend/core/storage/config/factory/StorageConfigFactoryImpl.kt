@@ -40,6 +40,7 @@ class StorageConfigFactoryImpl @Inject constructor(
         val maxPendingUploadsForManagementUser = envReader.getByKey(StorageEnvKeys.STORAGE_MAX_PENDING_UPLOADS_MANAGEMENT_USER).toInt()
         val isDeduplicationEnabled = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IS_DEDUPLICATION_ENABLED)?.toBooleanStrictOrNull() ?: true
         val deletedFilesCleanupIntervalSeconds = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS)?.toIntOrNull() ?: 86400
+        val deletedFilesCleanupBatchSize = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_DELETED_FILES_CLEANUP_BATCH_SIZE)?.toIntOrNull() ?: 100
 
         val s3AccessKey = envReader.readSecret(s3AccessKeyFile)
         val s3SecretKey = envReader.readSecret(s3SecretKeyFile)
@@ -66,6 +67,7 @@ class StorageConfigFactoryImpl @Inject constructor(
             s3PublicUrl = s3PublicUrl,
             forcePathStyle = forcePathStyle,
             localStoragePath = localStoragePath,
+            deletedFilesCleanupBatchSize = deletedFilesCleanupBatchSize,
             managementStorageSettings = managementStorageSettings
         )
     }

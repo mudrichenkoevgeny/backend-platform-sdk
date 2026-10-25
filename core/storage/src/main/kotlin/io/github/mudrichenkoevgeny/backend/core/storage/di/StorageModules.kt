@@ -3,8 +3,9 @@ package io.github.mudrichenkoevgeny.backend.core.storage.di
 import dagger.Module
 import io.github.mudrichenkoevgeny.backend.core.storage.di.module.StorageAppErrorParserModule
 import io.github.mudrichenkoevgeny.backend.core.storage.di.module.StorageConfigModule
-import io.github.mudrichenkoevgeny.backend.core.storage.di.module.StorageRepositoriesModule
 import io.github.mudrichenkoevgeny.backend.core.storage.di.module.StorageManagersModule
+import io.github.mudrichenkoevgeny.backend.core.storage.di.module.StorageRepositoriesModule
+import io.github.mudrichenkoevgeny.backend.core.storage.di.module.StorageScheduledJobsModule
 import io.github.mudrichenkoevgeny.backend.core.storage.di.module.StorageServicesModule
 import io.github.mudrichenkoevgeny.backend.core.storage.service.StorageService
 
@@ -17,6 +18,7 @@ import io.github.mudrichenkoevgeny.backend.core.storage.service.StorageService
  * - [StorageRepositoriesModule]: Binds data access repositories for storage files and settings.
  * - [StorageManagersModule]: Binds storage management coordinators.
  * - [StorageAppErrorParserModule]: Binds storage error parser into error parser set.
+ * - [StorageScheduledJobsModule]: Binds scheduled jobs for background storage maintenance tasks.
  */
 @Module(
     includes = [
@@ -24,7 +26,8 @@ import io.github.mudrichenkoevgeny.backend.core.storage.service.StorageService
         StorageServicesModule::class,
         StorageRepositoriesModule::class,
         StorageManagersModule::class,
-        StorageAppErrorParserModule::class
+        StorageAppErrorParserModule::class,
+        StorageScheduledJobsModule::class
     ]
 )
 interface StorageModules

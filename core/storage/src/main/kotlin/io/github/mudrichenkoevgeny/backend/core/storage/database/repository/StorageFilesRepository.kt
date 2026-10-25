@@ -154,4 +154,24 @@ interface StorageFilesRepository {
         mimeTypes: List<String>,
         fileNames: List<String>
     ): AppResult<PagedResult<StorageFileInternal>>
+
+    /**
+     * Retrieves a list of storage file records filtered by status.
+     *
+     * @param status File status filter.
+     * @param limit Maximum number of records to return.
+     * @return [AppResult] containing list of [StorageFileInternal] records or an error.
+     */
+    suspend fun getStorageFilesByStatus(
+        status: StorageFileStatus,
+        limit: Int
+    ): AppResult<List<StorageFileInternal>>
+
+    /**
+     * Hard deletes storage file records from the database permanently by their unique file identifiers.
+     *
+     * @param fileIds List of unique file identifiers to delete.
+     * @return [AppResult] containing [Unit] on success or an error.
+     */
+    suspend fun hardDeleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit>
 }

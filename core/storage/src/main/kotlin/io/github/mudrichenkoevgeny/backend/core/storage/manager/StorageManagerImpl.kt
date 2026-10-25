@@ -342,4 +342,35 @@ class StorageManagerImpl @Inject constructor(
             }
         }
     }
+
+    override suspend fun cleanupDeletedStorageFiles(batchSize: Int?): AppResult<Int> = dbQuery {
+        val effectiveBatchSize = batchSize ?: storageConfig.deletedFilesCleanupBatchSize
+        val filesResult = filesRepository.getStorageFilesByStatus(
+            status = StorageFileStatus.DELETED,
+            limit = effectiveBatchSize
+        )
+
+        val deletedFiles = when (filesResult) {
+            is AppResult.Success -> filesResult.data
+            is AppResult.Error -> return@dbQuery filesResult
+        }
+
+        if (deletedFiles.isEmpty()) {
+            return@dbQuery AppResult.Success(0)
+        }
+
+        val s3Keys = deletedFiles.map { it.s3Key }
+        val deleteStorageResult = storageService.deleteBatch(s3Keys)
+        if (deleteStorageResult is AppResult.Error) {
+            return@dbQuery deleteStorageResult
+        }
+
+        val fileIds = deletedFiles.map { it.id }
+        val hardDeleteResult = filesRepository.hardDeleteStorageFilesBatch(fileIds)
+        if (hardDeleteResult is AppResult.Error) {
+            return@dbQuery hardDeleteResult
+        }
+
+        AppResult.Success(deletedFiles.size)
+    }
 }

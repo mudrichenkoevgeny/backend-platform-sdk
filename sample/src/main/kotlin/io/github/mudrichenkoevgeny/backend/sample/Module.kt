@@ -55,6 +55,7 @@ fun Application.module(
 
     this.monitor.subscribe(ApplicationStarted) {
         if (commonConfig.instanceMode != AppInstanceMode.PUBLIC) {
+            appComponent.storageScheduledJobs().start()
             appComponent.userScheduledJobs().start()
 
             launch {
