@@ -24,6 +24,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.l
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserStorageConfiguration
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
@@ -61,6 +62,9 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             row[authorityLevel] = user.authorityLevel
             row[permissionCodes] = user.permissionCodes.map { it.value }.toSet()
             row[isTotpEnabled] = user.isTotpEnabled
+            row[storageQuotaBytes] = user.storageConfiguration?.quotaBytes
+            row[storageMaxUploadSizeBytes] = user.storageConfiguration?.maxUploadSizeBytes
+            row[storageMaxPendingUploads] = user.storageConfiguration?.maxPendingUploads
             row[lastLoginAt] = user.lastLoginAt?.toJavaInstant()
             row[lastActiveAt] = user.lastActiveAt?.toJavaInstant()
             row[createdAt] = user.createdAt.toJavaInstant()
@@ -91,6 +95,9 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         authorityLevel: UpdateField<Int>,
         permissionCodes: UpdateField<Set<PermissionCode>>,
         isTotpEnabled: UpdateField<Boolean>,
+        storageQuotaBytes: UpdateField<Long>,
+        storageMaxUploadSizeBytes: UpdateField<Long>,
+        storageMaxPendingUploads: UpdateField<Int>,
         lastLoginAt: UpdateField<KotlinInstant>,
         lastActiveAt: UpdateField<KotlinInstant>,
         scheduledPermanentDeletionAt: UpdateField<KotlinInstant>,
@@ -135,6 +142,18 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
 
             isTotpEnabledToSet?.let { enabled ->
                 updateStatement[UsersTable.isTotpEnabled] = enabled
+            }
+
+            storageQuotaBytes.onSet { quota ->
+                updateStatement[UsersTable.storageQuotaBytes] = quota
+            }
+
+            storageMaxUploadSizeBytes.onSet { maxUploadSize ->
+                updateStatement[UsersTable.storageMaxUploadSizeBytes] = maxUploadSize
+            }
+
+            storageMaxPendingUploads.onSet { maxPending ->
+                updateStatement[UsersTable.storageMaxPendingUploads] = maxPending
             }
 
             lastLoginAt.onSet { lastLoginAt ->
@@ -288,6 +307,19 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
     }
 
     private fun ResultRow.toUserInternal(): UserInternal {
+        val quotaBytes = this[UsersTable.storageQuotaBytes]
+        val maxUploadSizeBytes = this[UsersTable.storageMaxUploadSizeBytes]
+        val maxPendingUploads = this[UsersTable.storageMaxPendingUploads]
+        val storageConfig = if (quotaBytes != null || maxUploadSizeBytes != null || maxPendingUploads != null) {
+            UserStorageConfiguration(
+                quotaBytes = quotaBytes,
+                maxUploadSizeBytes = maxUploadSizeBytes,
+                maxPendingUploads = maxPendingUploads
+            )
+        } else {
+            null
+        }
+
         return UserInternal(
             id = UserId(this[UsersTable.id].value),
             role = this[UsersTable.role],
@@ -302,7 +334,8 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             updatedAt = this[UsersTable.updatedAt]?.toKotlinInstant(),
             scheduledPermanentDeletionAt = this[UsersTable.scheduledPermanentDeletionAt]?.toKotlinInstant(),
             lockoutType = this[UsersTable.accountLockoutType],
-            temporaryLockoutUntil = this[UsersTable.temporaryLockoutUntil]?.toKotlinInstant()
+            temporaryLockoutUntil = this[UsersTable.temporaryLockoutUntil]?.toKotlinInstant(),
+            storageConfiguration = storageConfig
         )
     }
 }

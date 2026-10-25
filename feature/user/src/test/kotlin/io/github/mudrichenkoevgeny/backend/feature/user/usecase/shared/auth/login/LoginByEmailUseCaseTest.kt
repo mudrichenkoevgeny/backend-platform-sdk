@@ -1,0 +1,150 @@
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login
+
+import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
+import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserPrivate
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+
+private const val TEST_EMAIL = "test@example.com"
+private const val TEST_PASSWORD = "password123"
+
+class LoginByEmailUseCaseTest {
+
+    private val rateLimiter = mockk<RateLimiter>()
+    private val auditLogger = mockk<AuditLogger>(relaxed = true)
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val authManager = mockk<AuthManager>()
+
+    private val useCase = LoginByEmailUseCase(
+        rateLimiter = rateLimiter,
+        auditLogger = auditLogger,
+        auditErrorConverter = auditErrorConverter,
+        authManager = authManager
+    )
+
+    @Test
+    fun `successfully authenticates user and logs audit`() = runTest {
+        val context = createTestRequestContext()
+        val userId = UserId.generate()
+        val userPrivate = createTestUserPrivate(id = userId, role = UserRole.USER)
+        val authData = createTestAuthData(userPrivate = userPrivate)
+
+        coEvery {
+            rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_EMAIL)
+        } returns AppResult.Success(Unit)
+
+        coEvery {
+            authManager.authenticateExistingUser(
+                clientInfo = context.clientInfo,
+                userAuthProvider = UserAuthProvider.EMAIL,
+                identifier = TEST_EMAIL,
+                password = TEST_PASSWORD,
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
+            )
+        } returns AppResult.Success(authData)
+
+        val result = useCase(TEST_EMAIL, TEST_PASSWORD, context)
+
+        assertEquals(AppResult.Success(authData), result)
+
+        coVerify(exactly = 1) {
+            auditLogger.log(
+                actorId = userId.asHexDashString(),
+                actorType = AuditActorType.USER,
+                actorUserRole = UserRole.USER.value,
+                action = UserAuditActionType.LOGIN_BY_EMAIL,
+                resource = UserAuditResourceType.USER,
+                resourceId = userId.asHexDashString(),
+                status = AuditStatus.SUCCESS,
+                metadata = match { meta -> meta.any { it.value == TEST_EMAIL } },
+                message = null
+            )
+        }
+    }
+
+    @Test
+    fun `returns error when rate limit exceeded`() = runTest {
+        val context = createTestRequestContext()
+        val error = UserError.InvalidCredentials()
+
+        coEvery {
+            rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_EMAIL)
+        } returns AppResult.Error(error)
+
+        val result = useCase(TEST_EMAIL, TEST_PASSWORD, context)
+
+        assertTrue(result is AppResult.Error)
+        coVerify(exactly = 1) {
+            auditLogger.log(
+                actorId = null,
+                actorType = AuditActorType.USER,
+                actorUserRole = null,
+                action = UserAuditActionType.LOGIN_BY_EMAIL,
+                resource = UserAuditResourceType.USER,
+                resourceId = null,
+                status = AuditStatus.FAILED,
+                metadata = any(),
+                message = null
+            )
+        }
+    }
+
+    @Test
+    fun `returns error when authentication fails`() = runTest {
+        val context = createTestRequestContext()
+        val authError = UserError.InvalidCredentials()
+
+        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            authManager.authenticateExistingUser(
+                clientInfo = any(),
+                userAuthProvider = any(),
+                identifier = any(),
+                password = any(),
+                externalProviderEmail = any(),
+                allowedRoles = any(),
+                allowedAccountStatuses = any()
+            )
+        } returns AppResult.Error(authError)
+
+        val result = useCase(TEST_EMAIL, TEST_PASSWORD, context)
+
+        assertTrue(result is AppResult.Error)
+        coVerify(exactly = 1) {
+            auditLogger.log(
+                actorId = null,
+                actorType = AuditActorType.USER,
+                actorUserRole = null,
+                action = UserAuditActionType.LOGIN_BY_EMAIL,
+                resource = UserAuditResourceType.USER,
+                resourceId = null,
+                status = AuditStatus.FAILED,
+                metadata = any(),
+                message = null
+            )
+        }
+    }
+}

@@ -27,8 +27,21 @@ class StorageConfigFactoryImplTest {
 
     private val envReader = mockk<EnvReader>()
 
+    private fun setupDefaultStorageEnvMocks() {
+        every { envReader.getByKey(StorageEnvKeys.STORAGE_MIN_UPLOAD_SIZE_BYTES) } returns "1"
+        every { envReader.getByKey(StorageEnvKeys.STORAGE_MAX_UPLOAD_SIZE_BYTES) } returns "52428800"
+        every { envReader.getByKey(StorageEnvKeys.STORAGE_TOTAL_QUOTA_OPEN_USER_BYTES) } returns "1073741824"
+        every { envReader.getByKey(StorageEnvKeys.STORAGE_TOTAL_QUOTA_MANAGEMENT_USER_BYTES) } returns ""
+        every { envReader.getByKey(StorageEnvKeys.STORAGE_PRESIGNED_URL_EXPIRATION_SECONDS) } returns "900"
+        every { envReader.getByKey(StorageEnvKeys.STORAGE_MAX_PENDING_UPLOADS_OPEN_USER) } returns "10"
+        every { envReader.getByKey(StorageEnvKeys.STORAGE_MAX_PENDING_UPLOADS_MANAGEMENT_USER) } returns "100"
+        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IS_DEDUPLICATION_ENABLED) } returns "true"
+        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS) } returns "86400"
+    }
+
     @Test
     fun `create builds StorageConfig from env and secret files`() {
+        setupDefaultStorageEnvMocks()
         every { envReader.getByKey(StorageEnvKeys.S3_ACCESS_KEY_FILE) } returns S3_ACCESS_KEY_FILE
         every { envReader.getByKey(StorageEnvKeys.S3_SECRET_KEY_FILE) } returns S3_SECRET_KEY_FILE
         every { envReader.getByKey(StorageEnvKeys.STORAGE_TYPE) } returns "S3"
@@ -54,10 +67,12 @@ class StorageConfigFactoryImplTest {
         assertEquals(S3_PUBLIC_URL, config.s3PublicUrl)
         assertTrue(config.forcePathStyle)
         assertEquals(LOCAL_STORAGE_PATH, config.localStoragePath)
+        assertEquals(86400, config.managementStorageSettings.deletedFilesCleanupIntervalSeconds)
     }
 
     @Test
     fun `create falls back to LOCAL when STORAGE_TYPE is invalid`() {
+        setupDefaultStorageEnvMocks()
         every { envReader.getByKey(StorageEnvKeys.S3_ACCESS_KEY_FILE) } returns S3_ACCESS_KEY_FILE
         every { envReader.getByKey(StorageEnvKeys.S3_SECRET_KEY_FILE) } returns S3_SECRET_KEY_FILE
         every { envReader.getByKey(StorageEnvKeys.STORAGE_TYPE) } returns "UNKNOWN"

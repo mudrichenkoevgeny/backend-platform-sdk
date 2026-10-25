@@ -19,6 +19,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.client.createTestClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
@@ -83,7 +84,7 @@ class AuthManagerImplTest {
     @Test
     fun `authenticateExistingUser returns valid AuthData with SessionToken`() = runTest {
         val userId = UserId.generate()
-        val clientInfo = mockk<ClientInfo>(relaxed = true)
+        val clientInfo = createTestClientInfo()
         val userInternal = createTestUserInternal(id = userId, role = UserRole.USER)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
         val expectedToken = createTestSessionToken()
@@ -118,7 +119,7 @@ class AuthManagerImplTest {
     @Test
     fun `authenticateExistingUser returns Error PasswordSetupRequired when email identifier has no password set`() = runTest {
         val userId = UserId.generate()
-        val clientInfo = mockk<ClientInfo>(relaxed = true)
+        val clientInfo = createTestClientInfo()
         val userIdentifier = createTestUserIdentifierInternal(userId = userId, passwordHash = null)
 
         coEvery {
@@ -157,7 +158,10 @@ class AuthManagerImplTest {
         coEvery { userLockoutService.clearLockout(any()) } returns AppResult.Success(Unit)
 
         val result = authManager.authenticateExistingUser(
-            mockk<ClientInfo>(relaxed = true), UserAuthProvider.GOOGLE, "ext-id", null
+            clientInfo = createTestClientInfo(),
+            userAuthProvider = UserAuthProvider.GOOGLE,
+            identifier = "ext-id",
+            password = null
         )
 
         assertTrue(result is AppResult.Error)
@@ -167,7 +171,7 @@ class AuthManagerImplTest {
     @Test
     fun `authenticateExistingUser deletes least recently used session when open user reaches maxActiveSessionsForOpenUser`() = runTest {
         val userId = UserId.generate()
-        val clientInfo = mockk<ClientInfo>(relaxed = true)
+        val clientInfo = createTestClientInfo()
         val userInternal = createTestUserInternal(id = userId, role = UserRole.USER)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
         val expectedToken = createTestSessionToken()
@@ -202,7 +206,7 @@ class AuthManagerImplTest {
     @Test
     fun `authenticateExistingUser deletes least recently used session when management user reaches maxActiveSessionsForManagementUser`() = runTest {
         val userId = UserId.generate()
-        val clientInfo = mockk<ClientInfo>(relaxed = true)
+        val clientInfo = createTestClientInfo()
         val userInternal = createTestUserInternal(id = userId, role = UserRole.ADMIN)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
         val expectedToken = createTestSessionToken()
@@ -237,7 +241,7 @@ class AuthManagerImplTest {
     @Test
     fun `authenticateExistingUser does not delete session when active sessions count is below limit`() = runTest {
         val userId = UserId.generate()
-        val clientInfo = mockk<ClientInfo>(relaxed = true)
+        val clientInfo = createTestClientInfo()
         val userInternal = createTestUserInternal(id = userId, role = UserRole.USER)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
         val expectedToken = createTestSessionToken()
@@ -268,7 +272,7 @@ class AuthManagerImplTest {
     @Test
     fun `authenticateExistingUser returns Error UserRoleNotAllowed when role is not in allowedRoles`() = runTest {
         val userId = UserId.generate()
-        val clientInfo = mockk<ClientInfo>(relaxed = true)
+        val clientInfo = createTestClientInfo()
         val userInternal = createTestUserInternal(id = userId, role = UserRole.USER)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
 
@@ -293,7 +297,7 @@ class AuthManagerImplTest {
     @Test
     fun `authenticateExistingUser returns Error MfaConfirmationRequired when user has isTotpEnabled = true`() = runTest {
         val userId = UserId.generate()
-        val clientInfo = mockk<ClientInfo>(relaxed = true)
+        val clientInfo = createTestClientInfo()
         val userInternal = createTestUserInternal(id = userId, role = UserRole.USER, isTotpEnabled = true)
         val userIdentifier = createTestUserIdentifierInternal(userId = userId)
         val mfaChallengeData = createTestMfaChallengeData(

@@ -27,10 +27,13 @@ class SecurityAuditErrorParser @Inject constructor() : AuditErrorParser {
             is SecurityError.OtpRetryTooSoon -> SecurityAuditMetadataDeniedReasonValues.RATE_LIMIT
             is SecurityError.PasswordTooWeak -> SecurityAuditMetadataDeniedReasonValues.PASSWORD_TOO_WEAK
             is SecurityError.MfaTokenExpired -> SecurityAuditMetadataDeniedReasonValues.MFA_TOKEN_EXPIRED
+            is SecurityError.InvalidMfaToken -> SecurityAuditMetadataDeniedReasonValues.INVALID_MFA_TOKEN
+            is SecurityError.InvalidTotpCode -> SecurityAuditMetadataDeniedReasonValues.INVALID_TOTP_CODE
             is SecurityError.TotpAlreadyEnabled -> SecurityAuditMetadataDeniedReasonValues.TOTP_ALREADY_ENABLED
             is SecurityError.TotpNotEnabled -> SecurityAuditMetadataDeniedReasonValues.TOTP_NOT_ENABLED
             is SecurityError.RecoveryCodeAlreadyUsed -> SecurityAuditMetadataDeniedReasonValues.RECOVERY_CODE_ALREADY_USED
             is SecurityError.MfaConfirmationRequired -> SecurityAuditMetadataDeniedReasonValues.MFA_REQUIRED
+            is SecurityError.IpNotAllowed -> SecurityAuditMetadataDeniedReasonValues.IP_NOT_ALLOWED
             else -> return null
         }
 

@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.conf
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
+import io.github.mudrichenkoevgeny.backend.core.storage.settings.provider.StorageSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.configuration.ManagementUserConfiguration
 import javax.inject.Inject
@@ -12,6 +13,7 @@ import javax.inject.Singleton
 class GetManagementUserConfigurationUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider,
     private val securitySettingsProvider: SecuritySettingsProvider,
+    private val storageSettingsProvider: StorageSettingsProvider,
     private val authSettingsProvider: AuthSettingsProvider
 ) {
     /**
@@ -22,7 +24,8 @@ class GetManagementUserConfigurationUseCase @Inject constructor(
      * **Workflow:**
      * 1. Aggregates general platform management settings from [GlobalSettingsProvider].
      * 2. Collects security-related management constraints from [SecuritySettingsProvider].
-     * 3. Retrieves available authentication methods and management settings from [AuthSettingsProvider].
+     * 3. Collects storage configuration limits from [StorageSettingsProvider].
+     * 4. Retrieves available authentication methods and management settings from [AuthSettingsProvider].
      *
      * @return [AppResult.Success] containing the aggregated [ManagementUserConfiguration].
      */
@@ -31,6 +34,7 @@ class GetManagementUserConfigurationUseCase @Inject constructor(
             ManagementUserConfiguration(
                 managementGlobalSettings = globalSettingsProvider.getManagementGlobalSettings(),
                 managementSecuritySettings = securitySettingsProvider.getManagementSecuritySettings(),
+                managementStorageSettings = storageSettingsProvider.getManagementStorageSettings(),
                 managementAuthSettings = authSettingsProvider.getManagementAuthSettings()
             )
         )

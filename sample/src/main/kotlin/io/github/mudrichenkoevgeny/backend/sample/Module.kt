@@ -16,6 +16,7 @@ import io.github.mudrichenkoevgeny.backend.sample.di.AppComponent
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.permission.SecurityPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.permission.SettingsPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.permission.StoragePermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.AuthSettingsPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.SessionPermissionCode
@@ -65,11 +66,13 @@ fun Application.module(
                     permissionCodesForUserCreation = setOf(SettingsPermissionCode.GLOBAL_SETTINGS_UPDATE)
                             + setOf(SecurityPermissionCode.SECURITY_SETTINGS_UPDATE)
                             + setOf(AuthSettingsPermissionCode.AUTH_SETTINGS_UPDATE)
+                            + StoragePermissionCode.ALL
                             + AuditPermissionCode.ALL + UserPermissionCode.ALL + IdentifierPermissionCode.ALL +
                             SessionPermissionCode.ALL
                 )
                 appComponent.seedGlobalSettingsUseCase()()
                 appComponent.seedSecuritySettingsUseCase()()
+                appComponent.seedStorageSettingsUseCase()()
                 appComponent.seedAuthSettingsUseCase()()
             }
         }

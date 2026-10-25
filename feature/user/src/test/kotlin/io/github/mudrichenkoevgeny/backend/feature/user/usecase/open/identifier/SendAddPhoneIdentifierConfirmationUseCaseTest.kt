@@ -10,9 +10,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTe
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneService
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -39,7 +39,7 @@ class SendAddPhoneIdentifierConfirmationUseCaseTest {
 
     @Test
     fun `successfully sends verification code when phone is new`() = runTest {
-        val otpConfirmation = mockk<OtpConfirmation>()
+        val otpConfirmation = createTestOtpConfirmation()
         val otpData = OtpConfirmationData(
             otpConfirmation = otpConfirmation,
             code = TEST_CODE
@@ -76,8 +76,8 @@ class SendAddPhoneIdentifierConfirmationUseCaseTest {
 
     @Test
     fun `successfully sends notification when phone is already registered`() = runTest {
-        val identifier = mockk<UserIdentifierInternal>()
-        val otpConfirmation = mockk<OtpConfirmation>()
+        val identifier = createTestUserIdentifierInternal()
+        val otpConfirmation = createTestOtpConfirmation()
         val otpData = OtpConfirmationData(
             otpConfirmation = otpConfirmation,
             code = TEST_CODE

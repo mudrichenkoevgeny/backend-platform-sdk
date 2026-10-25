@@ -49,6 +49,7 @@ interface UserManagersModule {
     @Binds
     @Singleton
     fun bindTotpManager(totpManagerImpl: TotpManagerImpl): TotpManager
+
     @Binds
     @Singleton
     fun bindUserLockoutService(impl: UserLockoutServiceImpl): UserLockoutService

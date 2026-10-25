@@ -1,12 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.accountlockout.createTestAccountLockoutPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
@@ -17,7 +18,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRa
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -38,7 +38,8 @@ class UnlockByPhoneUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val identifierManager = mockk<IdentifierManager>()
     private val otpService = mockk<OtpService>()
@@ -58,9 +59,7 @@ class UnlockByPhoneUseCaseTest {
     fun `successfully unlocks user account by phone confirmation code`() = runTest {
         val context = createTestRequestContext()
         val userId = UserId.generate()
-        val lockoutPolicy = mockk<AccountLockoutPolicy> {
-            every { isSelfServiceUnlockEnabled } returns true
-        }
+        val lockoutPolicy = createTestAccountLockoutPolicy(isSelfServiceUnlockEnabled = true)
         val identifier = createTestUserIdentifierInternal(userId = userId)
         val userInternal = createTestUserInternal(
             id = userId,
@@ -95,15 +94,11 @@ class UnlockByPhoneUseCaseTest {
     @Test
     fun `returns error when confirmation code is incorrect`() = runTest {
         val context = createTestRequestContext()
-        val lockoutPolicy = mockk<AccountLockoutPolicy> {
-            every { isSelfServiceUnlockEnabled } returns true
-        }
-        val errorLogData = AuditErrorLogData(status = AuditStatus.FAILED, metadata = emptySet())
+        val lockoutPolicy = createTestAccountLockoutPolicy(isSelfServiceUnlockEnabled = true)
 
         every { securitySettingsProvider.getAccountLockoutPolicy() } returns lockoutPolicy
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { otpService.verifyOtp(any(), any(), any()) } returns AppResult.Success(false)
-        every { auditErrorConverter.convert(any<UserError.WrongConfirmationCode>()) } returns errorLogData
 
         val result = useCase(TEST_PHONE, "000000", context)
 

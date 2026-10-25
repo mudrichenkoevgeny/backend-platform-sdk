@@ -1,5 +1,5 @@
-ARG GRADLE_IMAGE=gradle:9.1.0-jdk21-alpine
-ARG JRE_IMAGE=eclipse-temurin:21-jre-jammy
+ARG GRADLE_IMAGE=gradle:9.8-jdk25-alpine
+ARG JRE_IMAGE=eclipse-temurin:25-jre-jammy
 
 FROM ${GRADLE_IMAGE} AS build
 WORKDIR /app

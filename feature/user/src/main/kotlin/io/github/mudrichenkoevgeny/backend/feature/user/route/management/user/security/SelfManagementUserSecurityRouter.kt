@@ -17,11 +17,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthent
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.security.DisableTotpUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.security.EnableTotpUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.security.GetRecoveryCodesUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.security.RegenerateRecoveryCodesUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.security.SetupTotpUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.security.DisableTotpUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.security.EnableTotpUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.security.GetRecoveryCodesUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.security.RegenerateRecoveryCodesUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.security.SetupTotpUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus

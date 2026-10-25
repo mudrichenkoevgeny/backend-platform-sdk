@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.storage.service
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
+import kotlinx.coroutines.CancellationException
 import java.nio.file.Files
 import java.nio.file.Paths
 import javax.inject.Inject
@@ -50,14 +51,16 @@ class LocalStorageService @Inject constructor(
             val targetFile = targetDir.resolve(fileName)
             Files.write(targetFile, content)
 
-            val fileName = if (bucket != null) {
+            val relativeFileName = if (bucket != null) {
                 "$bucket/$fileName"
             } else {
                 fileName
             }
-            AppResult.Success(fileName)
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+            AppResult.Success(relativeFileName)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -70,12 +73,35 @@ class LocalStorageService @Inject constructor(
                 false
             }
             AppResult.Success(isExist)
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
+        }
+    }
+
+    override suspend fun deleteBatch(keys: List<String>, bucket: String?): AppResult<Unit> {
+        if (keys.isEmpty()) {
+            return AppResult.Success(Unit)
+        }
+        return try {
+            keys.forEach { key ->
+                val fileToDelete = rootPath.resolve(key).toFile()
+                if (fileToDelete.exists()) {
+                    fileToDelete.delete()
+                }
+            }
+            AppResult.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
     override fun getUrl(key: String): AppResult<String> {
         return AppResult.Success("${config.s3PublicUrl.removeSuffix("/")}/$key")
     }
+
+    // todo implement methods
 }

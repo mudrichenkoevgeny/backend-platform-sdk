@@ -18,7 +18,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.ScheduleUserDeletionUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.GetUserUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.GetUserUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.RestoreUserUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType

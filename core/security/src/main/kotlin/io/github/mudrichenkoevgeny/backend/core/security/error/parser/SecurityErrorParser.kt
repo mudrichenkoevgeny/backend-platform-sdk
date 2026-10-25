@@ -5,9 +5,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorSpecificParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.model.ApiErrorResponse
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.CommonErrorArgs
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorCodes
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.localization.SecurityModuleStrings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.localization.resolvePasswordTooWeakReasons
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,25 +23,18 @@ class SecurityErrorParser @Inject constructor() : AppErrorSpecificParser {
         args: Map<String, Any>?,
         locale: String
     ): ApiErrorResponse? {
-        val strings = SecurityModuleStrings(locale = locale).errors
+        val moduleStrings = SecurityModuleStrings(locale = locale)
+        val strings = moduleStrings.errors
 
         val message = when (code) {
             SecurityErrorCodes.TOTP_ALREADY_ENABLED -> strings.totpAlreadyEnabled
             SecurityErrorCodes.TOTP_NOT_ENABLED -> strings.totpNotEnabled
             SecurityErrorCodes.MFA_TOKEN_EXPIRED -> strings.mfaTokenExpired
-            SecurityErrorCodes.INVALID_MFA_TOKEN -> strings.invalidMfaToken
+            SecurityErrorCodes.INVALID_MFA_TOKEN -> strings.mfaTokenExpired
             SecurityErrorCodes.INVALID_TOTP_CODE -> strings.invalidTotpCode
             SecurityErrorCodes.RECOVERY_CODE_ALREADY_USED -> strings.recoveryCodeAlreadyUsed
             SecurityErrorCodes.IP_NOT_ALLOWED -> strings.ipNotAllowed
-
-            SecurityErrorCodes.MFA_CONFIRMATION_REQUIRED -> {
-                val mfaToken = args?.get(SecurityErrorArgs.MFA_TOKEN)
-                if (mfaToken != null) {
-                    strings.mfaConfirmationRequired(mfaToken)
-                } else {
-                    strings.mfaConfirmationRequiredWithoutArgs
-                }
-            }
+            SecurityErrorCodes.MFA_CONFIRMATION_REQUIRED -> strings.mfaConfirmationRequired
 
             SecurityErrorCodes.OTP_RETRY_TOO_SOON -> {
                 val retryAfterSeconds = args?.get(CommonErrorArgs.RETRY_AFTER_SECONDS)
@@ -53,12 +46,7 @@ class SecurityErrorParser @Inject constructor() : AppErrorSpecificParser {
             }
 
             SecurityErrorCodes.PASSWORD_TOO_WEAK -> {
-                val minLength = args?.get(SecurityErrorArgs.PASSWORD_MIN_LENGTH)
-                if (minLength != null) {
-                    strings.passwordTooShort(minLength)
-                } else {
-                    strings.passwordTooWeakWithoutArgs
-                }
+                moduleStrings.resolvePasswordTooWeakReasons(args).joinToString("\n")
             }
 
             else -> return null

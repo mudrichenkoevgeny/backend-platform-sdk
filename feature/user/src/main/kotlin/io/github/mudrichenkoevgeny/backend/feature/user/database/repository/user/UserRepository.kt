@@ -52,6 +52,9 @@ interface UserRepository {
      * @param authorityLevel new authority level.
      * @param permissionCodes new set of effective permissions.
      * @param isTotpEnabled TOTP enablement status.
+     * @param storageQuotaBytes custom maximum total storage quota in bytes.
+     * @param storageMaxUploadSizeBytes custom maximum single file upload size in bytes.
+     * @param storageMaxPendingUploads custom maximum concurrent pending uploads count.
      * @param lastLoginAt timestamp of the last successful authentication.
      * @param lastActiveAt timestamp of the last user activity.
      * @param scheduledPermanentDeletionAt timestamp for the final removal of the account.
@@ -66,6 +69,9 @@ interface UserRepository {
         authorityLevel: UpdateField<Int> = UpdateField.Ignore,
         permissionCodes: UpdateField<Set<PermissionCode>> = UpdateField.Ignore,
         isTotpEnabled: UpdateField<Boolean> = UpdateField.Ignore,
+        storageQuotaBytes: UpdateField<Long> = UpdateField.Ignore,
+        storageMaxUploadSizeBytes: UpdateField<Long> = UpdateField.Ignore,
+        storageMaxPendingUploads: UpdateField<Int> = UpdateField.Ignore,
         lastLoginAt: UpdateField<Instant> = UpdateField.Ignore,
         lastActiveAt: UpdateField<Instant> = UpdateField.Ignore,
         scheduledPermanentDeletionAt: UpdateField<Instant> = UpdateField.Ignore,

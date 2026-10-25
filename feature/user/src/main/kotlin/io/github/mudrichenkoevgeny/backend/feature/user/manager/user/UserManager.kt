@@ -11,6 +11,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.l
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserStorageConfigurationPayload
 import kotlin.time.Instant
 
 /**
@@ -69,7 +70,7 @@ interface UserManager {
     /**
      * Updates user details from an administrative context.
      *
-     * Allows modification of sensitive fields like status, authority level, and permissions.
+     * Allows modification of sensitive fields like status, authority level, permissions, and storage configuration.
      *
      * @param user The current internal user instance to update.
      * @param accountStatus New account status if update is requested.
@@ -77,6 +78,7 @@ interface UserManager {
      * @param permissions New set of permission codes if update is requested.
      * @param lockoutType New account lockout type if update is requested.
      * @param temporaryLockoutUntil New temporary lockout expiration timestamp in epoch milliseconds if update is requested.
+     * @param storageConfiguration New storage configuration overrides if update is requested.
      * @return [AppResult.Success] with the updated [UserInternal], null if user not found, or an error.
      */
     suspend fun updateUser(
@@ -86,6 +88,7 @@ interface UserManager {
         permissions: Set<PermissionCode>? = null,
         lockoutType: AccountLockoutType? = null,
         temporaryLockoutUntil: Long? = null,
+        storageConfiguration: UserStorageConfigurationPayload? = null
     ): AppResult<UserInternal?>
 
     /**

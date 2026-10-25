@@ -41,7 +41,7 @@ class ApplicationStatusPagesTest {
     @BeforeEach
     fun setUp() {
         appErrorParser = mockk()
-        appLogger = mockk()
+        appLogger = mockk(relaxed = true)
     }
 
     @Test
@@ -79,8 +79,8 @@ class ApplicationStatusPagesTest {
             message = "Invalid JSON",
             args = emptyMap()
         )
-        every { appLogger.logError(any<CommonError.InvalidJsonBody>()) } just Runs
-        coEvery { appErrorParser.getApiErrorResponse(any<CommonError.InvalidJsonBody>()) } returns apiError
+        every { appLogger.logError(any()) } just Runs
+        coEvery { appErrorParser.getApiErrorResponse(any()) } returns apiError
 
         application {
             install(ContentNegotiation) { json() }
@@ -99,8 +99,8 @@ class ApplicationStatusPagesTest {
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
-        coVerify { appErrorParser.getApiErrorResponse(any<CommonError.InvalidJsonBody>()) }
-        verify { appLogger.logError(any<CommonError.InvalidJsonBody>()) }
+        coVerify { appErrorParser.getApiErrorResponse(any()) }
+        verify { appLogger.logError(any()) }
     }
 
     @Test

@@ -11,6 +11,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.resource.SecurityAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.audit.action.SettingsAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.audit.resource.SettingsAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.audit.action.StorageAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.audit.resource.StorageAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
@@ -30,11 +32,12 @@ class AuditParsersModule {
     @Provides
     @Singleton
     fun provideCompositeAuditResourceTypeParser() = CompositeAuditResourceTypeParser(
-        setOf(
-            CommonAuditResourceType.entries.first(),
-            SettingsAuditResourceType.entries.first(),
-            SecurityAuditResourceType.entries.first(),
-            UserAuditResourceType.entries.first()
+        listOf(
+            CommonAuditResourceType::fromValueOrNull,
+            SettingsAuditResourceType::fromValueOrNull,
+            SecurityAuditResourceType::fromValueOrNull,
+            StorageAuditResourceType::fromValueOrNull,
+            UserAuditResourceType::fromValueOrNull
         )
     )
 
@@ -42,10 +45,11 @@ class AuditParsersModule {
     @Singleton
     fun provideCompositeAuditActionTypeParser(): CompositeAuditActionTypeParser =
         CompositeAuditActionTypeParser(
-            setOf(
-                SettingsAuditActionType.entries.first(),
-                SecurityAuditActionType.entries.first(),
-                UserAuditActionType.entries.first()
+            listOf(
+                SettingsAuditActionType::fromValueOrNull,
+                SecurityAuditActionType::fromValueOrNull,
+                StorageAuditActionType::fromValueOrNull,
+                UserAuditActionType::fromValueOrNull
             )
         )
 
@@ -53,9 +57,9 @@ class AuditParsersModule {
     @Singleton
     fun provideCompositeAuditMetadataKeyParser(): CompositeAuditMetadataKeyParser =
         CompositeAuditMetadataKeyParser(
-            setOf(
-                CommonAuditMetadataKey.entries.first(),
-                UserAuditMetadataKey.entries.first()
+            listOf(
+                CommonAuditMetadataKey::fromValueOrNull,
+                UserAuditMetadataKey::fromValueOrNull
             )
         )
 }

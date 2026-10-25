@@ -97,17 +97,17 @@ class SecurityAuditErrorParserTest {
     }
 
     @Test
-    fun `parse returns null for unhandled CommonError`() {
-        val error = CommonError.NotFound(resource = "User", identifier = "123")
+    fun `parse returns INVALID_TOTP_CODE reason for SecurityError InvalidTotpCode`() {
+        val error = SecurityError.InvalidTotpCode()
 
         val result = parser.parse(error)
 
-        assertNull(result)
+        assertMetadataContains(result?.metadata, CommonAuditMetadataKey.DENIED_REASON, SecurityAuditMetadataDeniedReasonValues.INVALID_TOTP_CODE)
     }
 
     @Test
-    fun `parse returns null for unhandled SecurityError`() {
-        val error = SecurityError.InvalidTotpCode()
+    fun `parse returns null for unhandled CommonError`() {
+        val error = CommonError.NotFound(resource = "User", identifier = "123")
 
         val result = parser.parse(error)
 

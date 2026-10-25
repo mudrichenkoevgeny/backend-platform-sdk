@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupManagementTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.audit.ManagementAuditRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auditevent.GetAuditEventUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auditevent.GetAuditEventsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser

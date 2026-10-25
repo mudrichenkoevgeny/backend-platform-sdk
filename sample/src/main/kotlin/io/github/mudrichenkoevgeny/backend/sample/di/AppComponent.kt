@@ -22,22 +22,28 @@ import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.Secur
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.system.settings.SeedSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.core.security.validator.iprestriction.IpRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.backend.core.settings.di.SettingsModules
-import io.github.mudrichenkoevgeny.backend.core.storage.di.StorageModules
 import io.github.mudrichenkoevgeny.backend.core.settings.usecase.system.globalsettings.SeedGlobalSettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.route.management.ManagementAuditRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.management.ManagementSecuritySettingsRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.open.OpenSecuritySettingsRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.management.ManagementGlobalSettingsRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.open.OpenGlobalSettingsRouter
+import io.github.mudrichenkoevgeny.backend.core.storage.di.StorageModules
+import io.github.mudrichenkoevgeny.backend.core.storage.usecase.system.storagesettings.SeedStorageSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.di.UserModules
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.ManagementWebSocketRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.OpenWebSocketRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.audit.ManagementAuditRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.ManagementCoreUserRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.settings.ManagementGlobalSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.security.ManagementSecuritySettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.storage.ManagementStorageRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.storage.ManagementStorageSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.storage.SelfManagementStorageRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.OpenCoreUserRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.settings.OpenGlobalSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.security.OpenSecuritySettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.storage.OpenStorageRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.storage.OpenStorageSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.scheduled.UserScheduledJobs
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.auth.settings.SeedAuthSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.adminaccounts.SeedAdminAccountsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.auth.settings.SeedAuthSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.sample.appbootstrap.AppBootstrap
 import io.github.mudrichenkoevgeny.backend.sample.lifecycle.AppShutdownHook
 import kotlinx.coroutines.CoroutineScope
@@ -113,6 +119,14 @@ interface AppComponent {
     fun ipRestrictionPolicyValidator(): IpRestrictionPolicyValidator
     fun openSecuritySettingsRouter(): OpenSecuritySettingsRouter
     fun managementSecuritySettingsRouter(): ManagementSecuritySettingsRouter
+
+    // storage
+    fun seedStorageSettingsUseCase(): SeedStorageSettingsUseCase
+    fun openStorageSettingsRouter(): OpenStorageSettingsRouter
+    fun managementStorageSettingsRouter(): ManagementStorageSettingsRouter
+    fun openStorageRouter(): OpenStorageRouter
+    fun selfManagementStorageRouter(): SelfManagementStorageRouter
+    fun managementStorageRouter(): ManagementStorageRouter
 
     // user
     fun authenticationProvider(): AuthenticationProvider

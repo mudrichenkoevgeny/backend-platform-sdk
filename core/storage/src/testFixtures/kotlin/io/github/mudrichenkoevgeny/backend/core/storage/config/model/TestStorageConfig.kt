@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.config.model
 
 import io.github.mudrichenkoevgeny.backend.core.storage.model.StorageType
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.storagesettings.ManagementStorageSettings
 
 fun createTestStorageConfig(
     storageType: StorageType = StorageType.LOCAL,
@@ -11,7 +12,18 @@ fun createTestStorageConfig(
     s3BucketName: String = "",
     s3PublicUrl: String = "https://example.com/files",
     forcePathStyle: Boolean = false,
-    localStoragePath: String = "/tmp/storage"
+    localStoragePath: String = "/tmp/storage",
+    managementStorageSettings: ManagementStorageSettings = ManagementStorageSettings(
+        minUploadSizeBytes = 1,
+        maxUploadSizeBytes = 52428800,
+        totalStorageQuotaForOpenUserBytes = 1073741824,
+        totalStorageQuotaForManagementUserBytes = null,
+        presignedUrlExpirationSeconds = 900,
+        maxPendingUploadsForOpenUser = 10,
+        maxPendingUploadsForManagementUser = 100,
+        isDeduplicationEnabled = true,
+        deletedFilesCleanupIntervalSeconds = 86400
+    )
 ) = StorageConfig(
     storageType = storageType,
     s3Endpoint = s3Endpoint,
@@ -21,5 +33,6 @@ fun createTestStorageConfig(
     s3BucketName = s3BucketName,
     s3PublicUrl = s3PublicUrl,
     forcePathStyle = forcePathStyle,
-    localStoragePath = localStoragePath
+    localStoragePath = localStoragePath,
+    managementStorageSettings = managementStorageSettings
 )

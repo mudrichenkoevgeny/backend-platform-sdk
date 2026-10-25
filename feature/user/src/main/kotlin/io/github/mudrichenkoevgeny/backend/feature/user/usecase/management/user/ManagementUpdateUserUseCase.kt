@@ -30,6 +30,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserStorageConfigurationPayload
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
@@ -71,6 +72,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
      * @param permissionCodes The new set of permission codes, if provided.
      * @param lockoutType The new account lockout type, if provided.
      * @param temporaryLockoutUntil The new temporary lockout expiration timestamp in epoch milliseconds, if provided.
+     * @param storageConfiguration The new storage configuration overrides, if provided.
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] containing the updated [UserPrivate].
      */
@@ -81,6 +83,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
         permissionCodes: Set<PermissionCode>? = null,
         lockoutType: AccountLockoutType? = null,
         temporaryLockoutUntil: Long? = null,
+        storageConfiguration: UserStorageConfigurationPayload? = null,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<UserPrivate> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
@@ -229,7 +232,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
             }
         }
 
-        if (lockoutType != null || temporaryLockoutUntil != null) {
+        if (lockoutType != null || temporaryLockoutUntil != null || storageConfiguration != null) {
             val updateSecurityPermission = when (targetUser.role) {
                 UserRole.USER -> UserPermissionCode.USER_UPDATE_SECURITY_FOR_USER
                 UserRole.STAFF -> UserPermissionCode.USER_UPDATE_SECURITY_FOR_STAFF
@@ -291,7 +294,8 @@ class ManagementUpdateUserUseCase @Inject constructor(
             authorityLevel = authorityLevel,
             permissions = permissionCodes,
             lockoutType = lockoutType,
-            temporaryLockoutUntil = temporaryLockoutUntil
+            temporaryLockoutUntil = temporaryLockoutUntil,
+            storageConfiguration = storageConfiguration
         ).mapNotNullOrError(UserError.UserNotFound(targetUser.id))
 
         return when (updateResult) {

@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -57,8 +58,10 @@ class UserScheduledJobsImpl @Inject constructor(
                     if (deleteUsersResult is AppResult.Error) {
                         appLogger.logError(deleteUsersResult.error)
                     }
-                } catch (t: Throwable) {
-                    appLogger.logError(CommonError.Internal(t))
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    appLogger.logError(CommonError.Internal(e))
                 }
 
                 val intervalSeconds = authSettingsProvider.getAccountDeletionCheckIntervalSeconds()
@@ -84,8 +87,10 @@ class UserScheduledJobsImpl @Inject constructor(
                     if (unlockResult is AppResult.Error) {
                         appLogger.logError(unlockResult.error)
                     }
-                } catch (t: Throwable) {
-                    appLogger.logError(CommonError.Internal(t))
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    appLogger.logError(CommonError.Internal(e))
                 }
 
                 val intervalSeconds = securitySettingsProvider.getAccountLockoutCheckIntervalSeconds()

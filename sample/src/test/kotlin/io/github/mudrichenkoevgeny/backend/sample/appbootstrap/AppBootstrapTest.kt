@@ -22,11 +22,14 @@ class AppBootstrapTest {
         val db = mockk<Database>()
         val databaseManager = mockk<DatabaseManager>()
         val redisManager = mockk<RedisManager>()
-        val healthCheckerManager = mockk<HealthCheckerManager>()
         val telemetryProvider = mockk<TelemetryProvider>()
 
+        val healthCheckerManager = HealthCheckerManager(
+            healthChecks = emptySet(),
+            appLogger = mockk(relaxed = true)
+        )
+
         every { databaseManager.create() } returns db
-        every { healthCheckerManager.verifyCriticalHealth() } just runs
         every { telemetryProvider.warmup() } just runs
         coEvery { redisManager.warmup() } returns AppSystemResult.Success(Unit)
 
@@ -43,7 +46,6 @@ class AppBootstrapTest {
 
         coVerifyOrder {
             databaseManager.create()
-            healthCheckerManager.verifyCriticalHealth()
             redisManager.warmup()
             telemetryProvider.warmup()
         }

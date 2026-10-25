@@ -1,0 +1,101 @@
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.session
+
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionSummary
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class GetSessionsUseCase @Inject constructor(
+    private val userManager: UserManager,
+    private val sessionManager: SessionManager
+) {
+    /**
+     * Retrieves a paginated and filtered list of active sessions for the current authenticated user.
+     *
+     * **Allowed Account Statuses:** Any.
+     *
+     * **Workflow:**
+     * 1. Validates the existence and accessibility of the caller via [UserManager].
+     * 2. Fetches a paged result of [UserSessionSummary] from [SessionManager] using provided filters and pagination params.
+     *
+     * @param pageParams Pagination settings (index and size).
+     * @param sortBy Field to sort the results by.
+     * @param sortOrder Sorting direction ([SortOrder.ASC] or [SortOrder.DESC]).
+     * @param identifiers Optional filter by identifier values.
+     * @param identifierIds Optional filter by unique identifier IDs.
+     * @param identifierAuthProviders Optional filter by [UserAuthProvider] types.
+     * @param clientTypes Optional filter by [ClientType].
+     * @param userAgents Optional filters for user-agent strings.
+     * @param ipAddresses Optional filters for IP addresses.
+     * @param languages Optional filters for client language headers.
+     * @param deviceIds Optional filters for hardware device IDs.
+     * @param deviceNames Optional filters for device names.
+     * @param appVersions Optional filters for application versions.
+     * @param operationSystemVersions Optional filters for OS versions.
+     * @param authenticatedRequestContext The context of the authenticated request.
+     * @return [AppResult] with [PagedResult] of [UserSessionSummary].
+     */
+    suspend operator fun invoke(
+        pageParams: PageParams = PageParams(),
+        sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.DEFAULT,
+        sortOrder: SortOrder = SortOrder.DEFAULT,
+        identifiers: List<String> = emptyList(),
+        identifierIds: List<UserIdentifierId> = emptyList(),
+        identifierAuthProviders: List<UserAuthProvider> = emptyList(),
+        clientTypes: List<ClientType> = emptyList(),
+        userAgents: List<String> = emptyList(),
+        ipAddresses: List<String> = emptyList(),
+        languages: List<String> = emptyList(),
+        deviceIds: List<String> = emptyList(),
+        deviceNames: List<String> = emptyList(),
+        appVersions: List<String> = emptyList(),
+        operationSystemVersions: List<String> = emptyList(),
+        authenticatedRequestContext: AuthenticatedRequestContext
+    ): AppResult<PagedResult<UserSessionSummary>> {
+        val currentUserId = authenticatedRequestContext.userId
+
+        val getCurrentUserResult = userManager.getUserInternalById(currentUserId)
+            .mapNotNullOrError(UserError.UserForbidden())
+
+        val currentUser = when (getCurrentUserResult) {
+            is AppResult.Error -> return getCurrentUserResult
+            is AppResult.Success -> getCurrentUserResult.data
+        }
+
+        if (currentUser.accountStatus !in setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)) {
+            return AppResult.Error(UserError.UserForbidden(currentUserId))
+        }
+
+        return sessionManager.getUserSessionsSummaryPage(
+            userId = currentUserId,
+            pageParams = pageParams,
+            sortBy = sortBy,
+            sortOrder = sortOrder,
+            identifiers = identifiers,
+            identifierIds = identifierIds,
+            identifierAuthProviders = identifierAuthProviders,
+            clientTypes = clientTypes,
+            userAgents = userAgents,
+            ipAddresses = ipAddresses,
+            languages = languages,
+            deviceIds = deviceIds,
+            deviceNames = deviceNames,
+            appVersions = appVersions,
+            operationSystemVersions = operationSystemVersions
+        )
+    }
+}

@@ -27,7 +27,7 @@ class CommonAppErrorSpecificParser @Inject constructor() : AppErrorSpecificParse
             CommonErrorCodes.UNKNOWN -> strings.unknown
             CommonErrorCodes.INTERNAL -> strings.internal
             CommonErrorCodes.BAD_REQUEST -> strings.badRequest
-            CommonErrorCodes.INVALID_JSON_BODY -> strings.invalidJsonBody
+            CommonErrorCodes.INVALID_JSON_BODY -> strings.badRequest
             CommonErrorCodes.SERVICE_UNAVAILABLE -> strings.serviceUnavailable
 
             CommonErrorCodes.NOT_FOUND -> {
@@ -51,18 +51,18 @@ class CommonAppErrorSpecificParser @Inject constructor() : AppErrorSpecificParse
             CommonErrorCodes.MISSING_REQUIRED_PARAMETER -> {
                 val parameterName = args?.get(CommonErrorArgs.PARAMETER_NAME)
                 if (parameterName != null) {
-                    strings.missingParameter(parameterName)
+                    strings.missingField(parameterName)
                 } else {
-                    strings.missingParameterWithoutArgs
+                    strings.missingFieldWithoutArgs
                 }
             }
 
             CommonErrorCodes.INVALID_PARAMETER_VALUE -> {
                 val parameterName = args?.get(CommonErrorArgs.PARAMETER_NAME)
                 if (parameterName != null) {
-                    strings.invalidParameter(parameterName)
+                    strings.invalidField(parameterName)
                 } else {
-                    strings.invalidParameterWithoutArgs
+                    strings.invalidFieldWithoutArgs
                 }
             }
 
@@ -87,9 +87,9 @@ class CommonAppErrorSpecificParser @Inject constructor() : AppErrorSpecificParse
             CommonErrorCodes.EMPTY_COLLECTION_FIELD -> {
                 val fieldName = args?.get(CommonErrorArgs.FIELD_NAME)
                 if (fieldName != null) {
-                    strings.emptyCollectionField(fieldName)
+                    strings.missingField(fieldName)
                 } else {
-                    strings.emptyCollectionFieldWithoutArgs
+                    strings.missingFieldWithoutArgs
                 }
             }
 

@@ -4,14 +4,16 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.SendUnlockConfirmationToEmailUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.SendUnlockConfirmationToPhoneUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByEmailUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.SendUnlockConfirmationToEmailUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.SendUnlockConfirmationToPhoneUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.UnlockByEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByExternalAuthProviderUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByPhoneUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.unlock.UnlockByEmailConfirmationRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.unlock.UnlockByExternalAuthProviderRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.unlock.UnlockByPhoneConfirmationRequest
@@ -71,9 +73,14 @@ class OpenUnlockRouterTest : BaseRouterTest() {
             }
         }
 
-        val otpConfirmation = mockk<OtpConfirmation>(relaxed = true)
+        val otpConfirmation = createTestOtpConfirmation()
         coEvery {
-            sendUnlockConfirmationToEmailUseCase(any(), any<RequestContext>(), any(), any())
+            sendUnlockConfirmationToEmailUseCase.invoke(
+                email = any<String>(),
+                requestContext = any<RequestContext>(),
+                allowedRoles = any<Set<UserRole>>(),
+                allowedAccountStatuses = any<Set<UserAccountStatus>>()
+            )
         } returns AppResult.Success(otpConfirmation)
 
         val response = jsonClient.post(OpenUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION) {
@@ -94,7 +101,13 @@ class OpenUnlockRouterTest : BaseRouterTest() {
         }
 
         coEvery {
-            unlockByEmailUseCase(any(), any(), any<RequestContext>(), any(), any())
+            unlockByEmailUseCase.invoke(
+                email = any<String>(),
+                confirmationCode = any<String>(),
+                requestContext = any<RequestContext>(),
+                allowedRoles = any<Set<UserRole>>(),
+                allowedAccountStatuses = any<Set<UserAccountStatus>>()
+            )
         } returns AppResult.Success(Unit)
 
         val response = jsonClient.post(OpenUnlockRoutes.UNLOCK_BY_EMAIL) {
@@ -114,9 +127,14 @@ class OpenUnlockRouterTest : BaseRouterTest() {
             }
         }
 
-        val otpConfirmation = mockk<OtpConfirmation>(relaxed = true)
+        val otpConfirmation = createTestOtpConfirmation()
         coEvery {
-            sendUnlockConfirmationToPhoneUseCase(any(), any<RequestContext>(), any(), any())
+            sendUnlockConfirmationToPhoneUseCase.invoke(
+                phoneNumber = any<String>(),
+                requestContext = any<RequestContext>(),
+                allowedRoles = any<Set<UserRole>>(),
+                allowedAccountStatuses = any<Set<UserAccountStatus>>()
+            )
         } returns AppResult.Success(otpConfirmation)
 
         val response = jsonClient.post(OpenUnlockRoutes.SEND_UNLOCK_PHONE_CONFIRMATION) {
@@ -137,7 +155,13 @@ class OpenUnlockRouterTest : BaseRouterTest() {
         }
 
         coEvery {
-            unlockByPhoneUseCase(any(), any(), any<RequestContext>(), any(), any())
+            unlockByPhoneUseCase.invoke(
+                phoneNumber = any<String>(),
+                confirmationCode = any<String>(),
+                requestContext = any<RequestContext>(),
+                allowedRoles = any<Set<UserRole>>(),
+                allowedAccountStatuses = any<Set<UserAccountStatus>>()
+            )
         } returns AppResult.Success(Unit)
 
         val response = jsonClient.post(OpenUnlockRoutes.UNLOCK_BY_PHONE) {
@@ -158,7 +182,13 @@ class OpenUnlockRouterTest : BaseRouterTest() {
         }
 
         coEvery {
-            unlockByExternalAuthProviderUseCase(any(), any(), any<RequestContext>(), any(), any())
+            unlockByExternalAuthProviderUseCase.invoke(
+                authProvider = any<UserAuthProvider>(),
+                token = any<String>(),
+                requestContext = any<RequestContext>(),
+                allowedRoles = any<Set<UserRole>>(),
+                allowedAccountStatuses = any<Set<UserAccountStatus>>()
+            )
         } returns AppResult.Success(Unit)
 
         val response = jsonClient.post(OpenUnlockRoutes.UNLOCK_BY_EXTERNAL_PROVIDER) {

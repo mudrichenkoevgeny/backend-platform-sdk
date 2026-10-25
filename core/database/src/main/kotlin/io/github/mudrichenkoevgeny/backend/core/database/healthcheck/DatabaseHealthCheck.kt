@@ -9,6 +9,7 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.sql.DataSource
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * [HealthCheck] implementation that verifies the JDBC [DataSource] connection is valid.
@@ -33,8 +34,10 @@ class DatabaseHealthCheck @Inject constructor(
                         throw RuntimeException("Database connection is invalid")
                     }
                 }
-            } catch (t: Throwable) {
-                AppSystemResult.Error(CommonError.Internal(t))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                AppSystemResult.Error(CommonError.Internal(e))
             }
         }
     }

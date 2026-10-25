@@ -5,7 +5,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirmationData
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
@@ -14,9 +16,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRa
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -53,7 +53,7 @@ class SendRegistrationConfirmationToEmailUseCaseTest {
     @Test
     fun `successfully sends verification code for new email`() = runTest {
         val context = createTestRequestContext()
-        val otpConfirmation = mockk<OtpConfirmation>()
+        val otpConfirmation = createTestOtpConfirmation()
         val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = otpConfirmation)
 
         every { authSettingsProvider.getIsRegistrationEnabled() } returns true
@@ -71,9 +71,9 @@ class SendRegistrationConfirmationToEmailUseCaseTest {
     @Test
     fun `sends security notification when email is already registered`() = runTest {
         val context = createTestRequestContext()
-        val otpConfirmation = mockk<OtpConfirmation>()
+        val otpConfirmation = createTestOtpConfirmation()
         val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = otpConfirmation)
-        val existingIdentifier = mockk<UserIdentifierInternal>()
+        val existingIdentifier = createTestUserIdentifierInternal()
 
         every { authSettingsProvider.getIsRegistrationEnabled() } returns true
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)

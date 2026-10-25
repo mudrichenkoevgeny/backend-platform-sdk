@@ -12,6 +12,7 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -59,7 +60,7 @@ class EventPublisherImplTest {
         val loggedError = slot<AppError>()
         every { appLogger.logError(capture(loggedError)) } returns Unit
 
-        val thrown = assertThrows(IllegalStateException::class.java) {
+        val thrown = assertThrows(SerializationException::class.java) {
             runBlocking {
                 @Suppress("UNCHECKED_CAST")
                 publisher.publish(
@@ -71,9 +72,9 @@ class EventPublisherImplTest {
             }
         }
 
-        assertSame(throwable, thrown)
+        assertSame(throwable, thrown.cause)
         assertTrue(loggedError.captured is CommonError.Internal)
-        assertSame(throwable, (loggedError.captured as CommonError.Internal).throwable)
+        assertSame(thrown, (loggedError.captured as CommonError.Internal).throwable)
         verify(exactly = 1) { appLogger.logError(any()) }
     }
 }

@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Default [RedisManager] implementation backed by a Lettuce [RedisClient].
@@ -55,8 +56,10 @@ class RedisManagerImpl @Inject constructor(
         return try {
             getConnection().async().setex(key, expirationSeconds, value).await()
             AppResult.Success(Unit)
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -69,8 +72,10 @@ class RedisManagerImpl @Inject constructor(
                 expirationSeconds.toString()
             ).await()
             AppResult.Success(incrementResult)
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -78,8 +83,10 @@ class RedisManagerImpl @Inject constructor(
         return try {
             val value = getConnection().async().get(key).await()
             AppResult.Success(value)
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -87,8 +94,10 @@ class RedisManagerImpl @Inject constructor(
         return try {
             val ttl = getConnection().async().ttl(key).await()
             AppResult.Success(ttl)
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -96,8 +105,10 @@ class RedisManagerImpl @Inject constructor(
         return try {
             val exist = getConnection().async().exists(key).await() > 0
             AppResult.Success(exist)
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -105,8 +116,10 @@ class RedisManagerImpl @Inject constructor(
         return try {
             getConnection().async().del(key).await()
             AppResult.Success(Unit)
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -114,8 +127,10 @@ class RedisManagerImpl @Inject constructor(
         return try {
             getConnection().async().publish(channel, message).await()
             AppResult.Success(Unit)
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -163,8 +178,10 @@ class RedisManagerImpl @Inject constructor(
             val response = getConnection().async().ping().await()
             val isAvailable = response == PING_RESPONSE
             AppSystemResult.Success(isAvailable)
-        } catch (t: Throwable) {
-            AppSystemResult.Error(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppSystemResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -173,8 +190,10 @@ class RedisManagerImpl @Inject constructor(
             getConnection()
             getPubSubConnection()
             AppSystemResult.Success(Unit)
-        } catch (t: Throwable) {
-            AppSystemResult.Error(CommonError.Internal(t))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppSystemResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -184,8 +203,8 @@ class RedisManagerImpl @Inject constructor(
             pubSubConnection?.close()
             redisClient.shutdown()
             AppSystemResult.Success(Unit)
-        } catch (t: Throwable) {
-            AppSystemResult.Error(CommonError.Internal(t))
+        } catch (e: Exception) {
+            AppSystemResult.Error(CommonError.Internal(e))
         }
     }
 

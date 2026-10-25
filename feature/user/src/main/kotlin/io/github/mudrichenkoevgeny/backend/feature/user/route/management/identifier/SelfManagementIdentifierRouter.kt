@@ -20,9 +20,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthent
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.GetIdentifierUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.GetIdentifiersUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.IdentifierEmailChangePasswordUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.identifier.GetIdentifierUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.identifier.GetIdentifiersUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.identifier.IdentifierEmailChangePasswordUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus

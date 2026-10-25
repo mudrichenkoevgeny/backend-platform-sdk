@@ -413,6 +413,7 @@ class ManagementUserRouter @Inject constructor(
             }?.toSet(),
             lockoutType = lockoutType,
             temporaryLockoutUntil = request.temporaryLockoutUntil,
+            storageConfiguration = request.storageConfiguration,
             authenticatedRequestContext = authenticatedRequestContext
         )
         call.respondResult(result, appLogger, appErrorParser) { userPrivate: UserPrivate ->

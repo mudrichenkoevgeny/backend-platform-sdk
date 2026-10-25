@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.storage.config.envkeys.StorageEnvKeys
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
 import io.github.mudrichenkoevgeny.backend.core.storage.model.StorageType
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.storagesettings.ManagementStorageSettings
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,14 +17,12 @@ import javax.inject.Singleton
 @Singleton
 class StorageConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader
-): StorageConfigFactory {
+) : StorageConfigFactory {
 
     override fun create(): StorageConfig {
-        // secret files
         val s3AccessKeyFile = envReader.getByKey(StorageEnvKeys.S3_ACCESS_KEY_FILE)
         val s3SecretKeyFile = envReader.getByKey(StorageEnvKeys.S3_SECRET_KEY_FILE)
 
-        // env
         val storageType = StorageType.fromString(envReader.getByKey(StorageEnvKeys.STORAGE_TYPE))
         val s3Endpoint = envReader.getByKey(StorageEnvKeys.S3_ENDPOINT)
         val s3Region = envReader.getByKey(StorageEnvKeys.S3_REGION)
@@ -32,8 +31,30 @@ class StorageConfigFactoryImpl @Inject constructor(
         val forcePathStyle = envReader.getByKey(StorageEnvKeys.S3_FORCE_PATH_STYLE).toBoolean()
         val localStoragePath = envReader.getByKey(StorageEnvKeys.LOCAL_STORAGE_PATH)
 
+        val minUploadSizeBytes = envReader.getByKey(StorageEnvKeys.STORAGE_MIN_UPLOAD_SIZE_BYTES).toLong()
+        val maxUploadSizeBytes = envReader.getByKey(StorageEnvKeys.STORAGE_MAX_UPLOAD_SIZE_BYTES).toLong()
+        val totalStorageQuotaForOpenUserBytes = envReader.getByKey(StorageEnvKeys.STORAGE_TOTAL_QUOTA_OPEN_USER_BYTES).toLongOrNull()
+        val totalStorageQuotaForManagementUserBytes = envReader.getByKey(StorageEnvKeys.STORAGE_TOTAL_QUOTA_MANAGEMENT_USER_BYTES).toLongOrNull()
+        val presignedUrlExpirationSeconds = envReader.getByKey(StorageEnvKeys.STORAGE_PRESIGNED_URL_EXPIRATION_SECONDS).toInt()
+        val maxPendingUploadsForOpenUser = envReader.getByKey(StorageEnvKeys.STORAGE_MAX_PENDING_UPLOADS_OPEN_USER).toInt()
+        val maxPendingUploadsForManagementUser = envReader.getByKey(StorageEnvKeys.STORAGE_MAX_PENDING_UPLOADS_MANAGEMENT_USER).toInt()
+        val isDeduplicationEnabled = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IS_DEDUPLICATION_ENABLED)?.toBooleanStrictOrNull() ?: true
+        val deletedFilesCleanupIntervalSeconds = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS)?.toIntOrNull() ?: 86400
+
         val s3AccessKey = envReader.readSecret(s3AccessKeyFile)
         val s3SecretKey = envReader.readSecret(s3SecretKeyFile)
+
+        val managementStorageSettings = ManagementStorageSettings(
+            minUploadSizeBytes = minUploadSizeBytes,
+            maxUploadSizeBytes = maxUploadSizeBytes,
+            totalStorageQuotaForOpenUserBytes = totalStorageQuotaForOpenUserBytes,
+            totalStorageQuotaForManagementUserBytes = totalStorageQuotaForManagementUserBytes,
+            presignedUrlExpirationSeconds = presignedUrlExpirationSeconds,
+            maxPendingUploadsForOpenUser = maxPendingUploadsForOpenUser,
+            maxPendingUploadsForManagementUser = maxPendingUploadsForManagementUser,
+            isDeduplicationEnabled = isDeduplicationEnabled,
+            deletedFilesCleanupIntervalSeconds = deletedFilesCleanupIntervalSeconds
+        )
 
         return StorageConfig(
             storageType = storageType,
@@ -44,7 +65,8 @@ class StorageConfigFactoryImpl @Inject constructor(
             s3BucketName = s3BucketName,
             s3PublicUrl = s3PublicUrl,
             forcePathStyle = forcePathStyle,
-            localStoragePath = localStoragePath
+            localStoragePath = localStoragePath,
+            managementStorageSettings = managementStorageSettings
         )
     }
 }

@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.setti
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestOpenAuthSettings
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -18,7 +18,7 @@ class GetOpenAuthSettingsUseCaseTest {
 
     @Test
     fun `successfully returns public auth settings`() {
-        val openAuthSettings = mockk<OpenAuthSettings>()
+        val openAuthSettings = createTestOpenAuthSettings()
 
         every {
             authSettingsProvider.getOpenAuthSettings()

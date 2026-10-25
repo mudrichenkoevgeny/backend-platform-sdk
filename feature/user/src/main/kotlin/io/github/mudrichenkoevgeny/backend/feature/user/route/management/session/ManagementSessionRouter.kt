@@ -358,6 +358,10 @@ class ManagementSessionRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
+        val userSessionId = call.validatePathParameter(UserApiPaths.SESSION_ID) { userSessionId ->
+            userSessionId.toUserSessionIdOrThrow()
+        }
+
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
 
         val authorizeResult = authenticationProvider.requireUser(
@@ -370,14 +374,11 @@ class ManagementSessionRouter @Inject constructor(
             logErrorToAudit(
                 authenticatedRequestContext = authenticatedRequestContext,
                 actionType = UserAuditActionType.MANAGEMENT_DELETE_SESSION,
+                resourceId = userSessionId.asHexDashString(),
                 error = authorizeResult.error
             )
             call.respondResult(authorizeResult, appLogger, appErrorParser)
             return
-        }
-
-        val userSessionId = call.validatePathParameter(UserApiPaths.SESSION_ID) { userSessionId ->
-            userSessionId.toUserSessionIdOrThrow()
         }
 
         val result = managementDeleteSessionUseCase(
@@ -417,6 +418,10 @@ class ManagementSessionRouter @Inject constructor(
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
+        val userId = call.validatePathParameter(UserApiPaths.USER_ID) { userId ->
+            userId.toUserIdOrThrow()
+        }
+
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
 
         val authorizeResult = authenticationProvider.requireUser(
@@ -429,14 +434,11 @@ class ManagementSessionRouter @Inject constructor(
             logErrorToAudit(
                 authenticatedRequestContext = authenticatedRequestContext,
                 actionType = UserAuditActionType.MANAGEMENT_DELETE_ALL_USER_SESSIONS,
+                resourceId = userId.asHexDashString(),
                 error = authorizeResult.error
             )
             call.respondResult(authorizeResult, appLogger, appErrorParser)
             return
-        }
-
-        val userId = call.validatePathParameter(UserApiPaths.USER_ID) { userId ->
-            userId.toUserIdOrThrow()
         }
 
         val result = managementDeleteAllSessionsUseCase(
@@ -450,6 +452,7 @@ class ManagementSessionRouter @Inject constructor(
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
+        resourceId: String? = null,
         error: AppError
     ) {
         val errorData = auditErrorConverter.convert(error)
@@ -461,6 +464,7 @@ class ManagementSessionRouter @Inject constructor(
             actorUserRole = authenticatedRequestContext.userRole.value,
             action = actionType,
             resource = UserAuditResourceType.SESSION,
+            resourceId = resourceId,
             status = AuditStatus.DENIED,
             metadata = metadata
         )

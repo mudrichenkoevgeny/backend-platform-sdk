@@ -5,9 +5,14 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorSpecificParser
 import io.github.mudrichenkoevgeny.backend.core.common.util.formatEpochMillisToUtcString
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.model.ApiErrorResponse
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.localization.CommonModuleStrings
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorCodes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.UserModuleStrings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.resolveTotalUserIdentifiersLimitReachedMessage
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.resolveUserIdentifierLimitReachedMessage
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.resolveUserLockedMessage
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,17 +28,18 @@ class UserErrorParser @Inject constructor() : AppErrorSpecificParser {
         args: Map<String, Any>?,
         locale: String
     ): ApiErrorResponse? {
-        val strings = UserModuleStrings(locale = locale).errors
+        val userStrings = UserModuleStrings(locale = locale)
+        val strings = userStrings.errors
 
         val message = when (code) {
-            UserErrorCodes.INVALID_ACCESS_TOKEN -> strings.invalidAccessToken
+            UserErrorCodes.INVALID_ACCESS_TOKEN -> strings.invalidSession
             UserErrorCodes.ACCESS_TOKEN_EXPIRED -> strings.accessTokenExpired
-            UserErrorCodes.INVALID_REFRESH_TOKEN -> strings.invalidRefreshToken
+            UserErrorCodes.INVALID_REFRESH_TOKEN -> strings.invalidSession
             UserErrorCodes.INVALID_SESSION -> strings.invalidSession
-            UserErrorCodes.USER_ROLE_NOT_ALLOWED -> strings.roleNotAllowed
+            UserErrorCodes.USER_ROLE_NOT_ALLOWED -> strings.missingPermissions
             UserErrorCodes.USER_MISSING_PERMISSIONS -> strings.missingPermissions
-            UserErrorCodes.USER_INSUFFICIENT_AUTHORITY_LEVEL -> strings.insufficientAuthority
-            UserErrorCodes.USER_ILLEGAL_ACCOUNT_STATUS -> strings.illegalStatus
+            UserErrorCodes.USER_INSUFFICIENT_AUTHORITY_LEVEL -> strings.missingPermissions
+            UserErrorCodes.USER_ILLEGAL_ACCOUNT_STATUS -> strings.forbidden
             UserErrorCodes.USER_BANNED -> strings.banned
             UserErrorCodes.USER_READ_ONLY -> strings.readOnly
             UserErrorCodes.USER_SECURITY_HOLD -> strings.securityHold
@@ -54,33 +60,24 @@ class UserErrorParser @Inject constructor() : AppErrorSpecificParser {
             UserErrorCodes.USER_IDENTIFIER_PASSWORD_NOT_SET -> strings.identifierPasswordNotSet
 
             UserErrorCodes.USER_LOCKED -> {
+                val lockoutTypeRaw = args?.get(UserErrorArgs.ACCOUNT_LOCKOUT_TYPE)?.toString()
+                val lockoutType = lockoutTypeRaw?.let { AccountLockoutType.fromValueOrNull(it) }
                 val lockoutUntilRaw = args?.get(UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL)
                 val lockoutUntilEpoch = lockoutUntilRaw?.toString()?.toLongOrNull()
                 val formattedUntil = lockoutUntilEpoch?.formatEpochMillisToUtcString() ?: lockoutUntilRaw?.toString()
-                if (formattedUntil != null) {
-                    strings.locked(formattedUntil)
-                } else {
-                    strings.lockedWithoutArgs
-                }
+                userStrings.resolveUserLockedMessage(lockoutType = lockoutType, formattedUntil = formattedUntil)
             }
 
             UserErrorCodes.USER_IDENTIFIER_LIMIT_REACHED -> {
-                val max = args?.get(UserErrorArgs.MAX_NUMBER_OF_IDENTIFIERS)
-                val provider = args?.get(UserErrorArgs.USER_AUTH_PROVIDER)
-                if (max != null && provider != null) {
-                    strings.identifierLimitReached(max, provider)
-                } else {
-                    strings.identifierLimitReachedWithoutArgs
-                }
+                val commonStrings = CommonModuleStrings(locale = locale)
+                val limit = args?.get(UserErrorArgs.MAX_NUMBER_OF_IDENTIFIERS)
+                val providerRaw = args?.get(UserErrorArgs.USER_AUTH_PROVIDER)?.toString()
+                userStrings.resolveUserIdentifierLimitReachedMessage(commonStrings, limit = limit, providerRaw = providerRaw)
             }
 
             UserErrorCodes.TOTAL_USER_IDENTIFIERS_LIMIT_REACHED -> {
-                val max = args?.get(UserErrorArgs.MAX_NUMBER_OF_IDENTIFIERS)
-                if (max != null) {
-                    strings.totalIdentifiersLimitReached(max)
-                } else {
-                    strings.totalIdentifiersLimitReachedWithoutArgs
-                }
+                val limit = args?.get(UserErrorArgs.MAX_NUMBER_OF_IDENTIFIERS)
+                userStrings.resolveTotalUserIdentifiersLimitReachedMessage(limit = limit)
             }
 
             else -> return null
@@ -98,25 +95,10 @@ class UserErrorParser @Inject constructor() : AppErrorSpecificParser {
         appError: AppError,
         locale: String
     ): ApiErrorResponse? {
-        val effectiveArgs = if (appError.code == UserErrorCodes.USER_LOCKED) {
-            val lockoutUntilEpoch = appError.publicArgs?.get(UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL)
-                ?.toString()?.toLongOrNull()
-            if (lockoutUntilEpoch != null) {
-                val formattedDate = lockoutUntilEpoch.formatEpochMillisToUtcString()
-                val newArgs = appError.publicArgs?.toMutableMap() ?: mutableMapOf()
-                newArgs[UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL] = formattedDate
-                newArgs
-            } else {
-                appError.publicArgs
-            }
-        } else {
-            appError.publicArgs
-        }
-
         return getApiErrorResponse(
             errorId = appError.errorId,
             code = appError.code,
-            args = effectiveArgs,
+            args = appError.publicArgs,
             locale = locale
         )
     }

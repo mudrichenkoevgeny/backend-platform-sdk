@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTe
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneService
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -33,7 +33,7 @@ class SendLoginConfirmationToPhoneUseCaseTest {
     @Test
     fun `successfully sends verification code`() = runTest {
         val context = createTestRequestContext()
-        val otpConfirmation = mockk<OtpConfirmation>()
+        val otpConfirmation = createTestOtpConfirmation()
         val otpData = OtpConfirmationData(
             code = TEST_CODE,
             otpConfirmation = otpConfirmation
@@ -95,7 +95,7 @@ class SendLoginConfirmationToPhoneUseCaseTest {
     fun `returns error when phone service fails to send sms`() = runTest {
         val context = createTestRequestContext()
         val error = UserError.CannotCreateUserIdentifier()
-        val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = mockk())
+        val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = createTestOtpConfirmation())
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { otpService.getOtp(any(), any()) } returns AppResult.Success(otpData)

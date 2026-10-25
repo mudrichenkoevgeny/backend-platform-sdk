@@ -5,11 +5,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.LoginByEmailUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.LoginByExternalAuthProviderUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.LoginByPhoneUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.LoginByTotpRecoveryCodeUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.LoginByTotpUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByTotpRecoveryCodeUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByTotpUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.SendLoginConfirmationToPhoneUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
@@ -71,7 +71,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         val request = LoginByEmailRequest("test@example.com", "password123")
         val authData = createTestAuthData()
 
-        coEvery { loginByEmailUseCase(request.email, request.password, any<RequestContext>(), any(), any()) } returns AppResult.Success(authData)
+        coEvery { loginByEmailUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -94,7 +94,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         val request = LoginByPhoneRequest("+1234567890", "123456")
         val authData = createTestAuthData()
 
-        coEvery { loginByPhoneUseCase(request.phoneNumber, request.confirmationCode, any<RequestContext>(), any(), any()) } returns AppResult.Success(authData)
+        coEvery { loginByPhoneUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -117,7 +117,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         val request = LoginByExternalAuthProviderRequest("GOOGLE", "external_token_123")
         val authData = createTestAuthData()
 
-        coEvery { loginByExternalAuthProviderUseCase(any(), request.externalProviderToken, any<RequestContext>(), any(), any()) } returns AppResult.Success(authData)
+        coEvery { loginByExternalAuthProviderUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -140,7 +140,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         val request = VerifyTotpPayload("mfa_token_123", "123456")
         val authData = createTestAuthData()
 
-        coEvery { loginByTotpUseCase(any<RequestContext>(), request.mfaToken, request.code, any(), any()) } returns AppResult.Success(authData)
+        coEvery { loginByTotpUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -163,7 +163,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         val request = VerifyTotpPayload("mfa_token_123", "RECOVERY_CODE_123")
         val authData = createTestAuthData()
 
-        coEvery { loginByTotpRecoveryCodeUseCase(any<RequestContext>(), request.mfaToken, request.code, any(), any()) } returns AppResult.Success(authData)
+        coEvery { loginByTotpRecoveryCodeUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 

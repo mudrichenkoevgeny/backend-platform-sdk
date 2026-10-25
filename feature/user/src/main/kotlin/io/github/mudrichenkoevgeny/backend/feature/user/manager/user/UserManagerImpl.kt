@@ -21,6 +21,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserStorageConfigurationPayload
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
@@ -71,7 +72,8 @@ class UserManagerImpl @Inject constructor(
             lastActiveAt = now,
             createdAt = now,
             updatedAt = null,
-            scheduledPermanentDeletionAt = null
+            scheduledPermanentDeletionAt = null,
+            storageConfiguration = null
         )
 
         userRepository.createUser(user)
@@ -104,7 +106,8 @@ class UserManagerImpl @Inject constructor(
         authorityLevel: Int?,
         permissions: Set<PermissionCode>?,
         lockoutType: AccountLockoutType?,
-        temporaryLockoutUntil: Long?
+        temporaryLockoutUntil: Long?,
+        storageConfiguration: UserStorageConfigurationPayload?
     ): AppResult<UserInternal?> = dbQuery {
         var statusUpdate: UpdateField<UserAccountStatus> = accountStatus
             ?.let { UpdateField.Set(it) } ?: UpdateField.Ignore
@@ -126,12 +129,25 @@ class UserManagerImpl @Inject constructor(
             scheduledDeletionUpdate = UpdateField.Ignore
         }
 
+        var storageQuotaBytesUpdate: UpdateField<Long> = UpdateField.Ignore
+        var storageMaxUploadSizeBytesUpdate: UpdateField<Long> = UpdateField.Ignore
+        var storageMaxPendingUploadsUpdate: UpdateField<Int> = UpdateField.Ignore
+
+        if (storageConfiguration != null) {
+            storageQuotaBytesUpdate = UpdateField.Set(storageConfiguration.quotaBytes)
+            storageMaxUploadSizeBytesUpdate = UpdateField.Set(storageConfiguration.maxUploadSizeBytes)
+            storageMaxPendingUploadsUpdate = UpdateField.Set(storageConfiguration.maxPendingUploads)
+        }
+
         userRepository.updateUser(
             userId = user.id,
             status = statusUpdate,
             statusOnRestore = statusOnRestoreUpdate,
             authorityLevel = authorityLevel?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
             permissionCodes = permissions?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
+            storageQuotaBytes = storageQuotaBytesUpdate,
+            storageMaxUploadSizeBytes = storageMaxUploadSizeBytesUpdate,
+            storageMaxPendingUploads = storageMaxPendingUploadsUpdate,
             scheduledPermanentDeletionAt = scheduledDeletionUpdate,
             accountLockoutType = lockoutType?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
             temporaryLockoutUntil = temporaryLockoutUntil

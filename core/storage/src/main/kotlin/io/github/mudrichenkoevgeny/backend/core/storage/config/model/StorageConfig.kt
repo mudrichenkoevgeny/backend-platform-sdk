@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.storage.config.model
 
 import io.github.mudrichenkoevgeny.backend.core.storage.model.StorageType
 import io.github.mudrichenkoevgeny.backend.core.storage.service.StorageService
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.storagesettings.ManagementStorageSettings
 
 /**
  * Configuration for the storage module.
@@ -17,6 +18,7 @@ import io.github.mudrichenkoevgeny.backend.core.storage.service.StorageService
  * @param s3PublicUrl base public URL used to build object URLs returned by [StorageService.getUrl].
  * @param forcePathStyle whether to force path-style S3 addressing (useful for some S3-compatible providers).
  * @param localStoragePath filesystem path used as a root directory for local storage.
+ * @param managementStorageSettings default platform-wide storage settings parsed from configuration/env.
  */
 data class StorageConfig(
     val storageType: StorageType,
@@ -27,5 +29,6 @@ data class StorageConfig(
     val s3BucketName: String,
     val s3PublicUrl: String,
     val forcePathStyle: Boolean,
-    val localStoragePath: String
+    val localStoragePath: String,
+    val managementStorageSettings: ManagementStorageSettings
 )

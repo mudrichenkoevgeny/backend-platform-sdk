@@ -1,12 +1,14 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.identifier
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
@@ -24,15 +26,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -43,7 +42,8 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
     private val identifierManager = mockk<IdentifierManager>()
@@ -79,11 +79,12 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             )
         )
 
-        val targetIdentifier = mockk<UserIdentifierInternal> {
-            every { userId } returns targetUserId
-            every { userAuthProvider } returns UserAuthProvider.EMAIL
-            every { passwordHash } returns PasswordHash("hashed_password")
-        }
+        val targetIdentifier = createTestUserIdentifierInternal(
+            id = targetIdentifierId,
+            userId = targetUserId,
+            userAuthProvider = UserAuthProvider.EMAIL,
+            passwordHash = PasswordHash("hashed_password")
+        )
 
         val targetUserInternal = createTestUserInternal(
             id = targetUserId,
@@ -92,10 +93,8 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             accountStatus = UserAccountStatus.ACTIVE
         )
 
-        val managerSession = mockk<UserSessionInternal>()
-        val targetSession = mockk<UserSessionInternal> {
-            every { id } returns targetSessionId
-        }
+        val managerSession = createTestUserSessionInternal(id = context.sessionId, userId = managerId)
+        val targetSession = createTestUserSessionInternal(id = targetSessionId, userId = targetUserId)
         val updatedUserIdentifier = createTestUserIdentifierPrivate()
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
@@ -145,11 +144,12 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             )
         )
 
-        val targetIdentifier = mockk<UserIdentifierInternal> {
-            every { userId } returns targetUserId
-            every { userAuthProvider } returns UserAuthProvider.GOOGLE
-            every { passwordHash } returns null
-        }
+        val targetIdentifier = createTestUserIdentifierInternal(
+            id = targetIdentifierId,
+            userId = targetUserId,
+            userAuthProvider = UserAuthProvider.GOOGLE,
+            passwordHash = null
+        )
 
         val targetUserInternal = createTestUserInternal(
             id = targetUserId,
@@ -162,10 +162,6 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
         coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserInternal)
-        every { auditErrorConverter.convert(any<UserError.UserIdentifierPasswordNotSupported>()) } returns AuditErrorLogData(
-            status = AuditStatus.FAILED,
-            metadata = emptySet()
-        )
 
         val result = useCase(targetIdentifierId, context)
 
@@ -189,11 +185,12 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             )
         )
 
-        val targetIdentifier = mockk<UserIdentifierInternal> {
-            every { userId } returns targetUserId
-            every { userAuthProvider } returns UserAuthProvider.EMAIL
-            every { passwordHash } returns null
-        }
+        val targetIdentifier = createTestUserIdentifierInternal(
+            id = targetIdentifierId,
+            userId = targetUserId,
+            userAuthProvider = UserAuthProvider.EMAIL,
+            passwordHash = null
+        )
 
         val targetUserInternal = createTestUserInternal(
             id = targetUserId,
@@ -206,10 +203,6 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
         coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserInternal)
-        every { auditErrorConverter.convert(any<UserError.UserIdentifierPasswordNotSet>()) } returns AuditErrorLogData(
-            status = AuditStatus.FAILED,
-            metadata = emptySet()
-        )
 
         val result = useCase(targetIdentifierId, context)
 
@@ -228,14 +221,14 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             authorityLevel = 100
         )
 
-        val targetIdentifier = mockk<UserIdentifierInternal> {
-            every { userId } returns managerId
-        }
+        val targetIdentifier = createTestUserIdentifierInternal(
+            id = targetIdentifierId,
+            userId = managerId
+        )
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
-        every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         val result = useCase(targetIdentifierId, context)
 
@@ -255,9 +248,10 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             authorityLevel = 50
         )
 
-        val targetIdentifier = mockk<UserIdentifierInternal> {
-            every { userId } returns targetUserId
-        }
+        val targetIdentifier = createTestUserIdentifierInternal(
+            id = targetIdentifierId,
+            userId = targetUserId
+        )
 
         val targetUserInternal = createTestUserInternal(
             id = targetUserId,
@@ -269,7 +263,6 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
         coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserInternal)
-        every { auditErrorConverter.convert(any()) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         val result = useCase(targetIdentifierId, context)
 
@@ -284,7 +277,6 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         val limitError = CommonError.Unknown()
 
         coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(limitError)
-        every { auditErrorConverter.convert(limitError) } returns AuditErrorLogData(AuditStatus.FAILED, emptySet())
 
         val result = useCase(targetIdentifierId, context)
 

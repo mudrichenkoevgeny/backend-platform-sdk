@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.management
 
-import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditErrorLogData
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
@@ -9,10 +9,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupManagementTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.GetManagementSecuritySettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.ResetSecuritySettingsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.UpdateSecuritySettingsUseCase
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.security.ManagementSecuritySettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.security.GetManagementSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.security.ResetSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.security.UpdateSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toManagementSecuritySettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.route.management.security.settings.ManagementSecuritySettingsRoutes
@@ -39,7 +39,8 @@ import org.junit.jupiter.api.Test
 class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
 
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val updateSecuritySettingsUseCase = mockk<UpdateSecuritySettingsUseCase>()
     private val getManagementSecuritySettingsUseCase = mockk<GetManagementSecuritySettingsUseCase>()
     private val resetSecuritySettingsUseCase = mockk<ResetSecuritySettingsUseCase>()
@@ -57,7 +58,7 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
 
     @BeforeEach
     fun setUp() {
-        clearMocks(updateSecuritySettingsUseCase, getManagementSecuritySettingsUseCase, resetSecuritySettingsUseCase, auditErrorConverter)
+        clearMocks(updateSecuritySettingsUseCase, getManagementSecuritySettingsUseCase, resetSecuritySettingsUseCase)
     }
 
     @Test
@@ -111,7 +112,6 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
         val error = UserError.UserForbidden()
 
         authProvider.shouldReturnError(AppResult.Error(error))
-        every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.DENIED, emptySet())
 
         val response = jsonClient.put(ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS) {
             bearerAuth(token)
@@ -133,8 +133,6 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
 
         val error = UserError.InvalidAccessToken()
         authProvider.shouldReturnError(AppResult.Error(error))
-
-        every { auditErrorConverter.convert(error) } returns AuditErrorLogData(AuditStatus.DENIED, emptySet())
 
         val response = jsonClient.put(ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS) {
             bearerAuth(token)

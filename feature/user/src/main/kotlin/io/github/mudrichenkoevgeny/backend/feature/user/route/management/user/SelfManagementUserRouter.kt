@@ -12,7 +12,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthent
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.GetUserUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.GetUserUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivatePayload

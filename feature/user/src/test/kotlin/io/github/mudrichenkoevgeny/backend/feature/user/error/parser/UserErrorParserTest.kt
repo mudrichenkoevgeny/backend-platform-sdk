@@ -70,7 +70,7 @@ class UserErrorParserTest {
         assertEquals(appError.errorId.asHexDashString(), response!!.id)
         assertEquals(UserErrorCodes.USER_LOCKED, response.code)
         assertEquals(stringsEn.errors.locked(formattedDate), response.message)
-        assertEquals(formattedDate, response.args[UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL])
+        assertEquals(lockoutUntilEpoch.toString(), response.args[UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL])
     }
 
     @Test

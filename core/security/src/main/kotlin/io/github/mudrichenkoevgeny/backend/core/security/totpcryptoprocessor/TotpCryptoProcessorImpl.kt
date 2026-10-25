@@ -47,8 +47,8 @@ class TotpCryptoProcessorImpl @Inject constructor(
                     otpAuthUrl = otpAuthUrl
                 )
             }
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -62,8 +62,8 @@ class TotpCryptoProcessorImpl @Inject constructor(
                     generateTotp(secretBytes, counter + window) == code
                 }
             }
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -72,8 +72,8 @@ class TotpCryptoProcessorImpl @Inject constructor(
             aesCryptor.decrypt(encryptedSecret).mapSuccess { decryptedSecret ->
                 buildOtpAuthUrl(accountName, decryptedSecret)
             }
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -89,8 +89,8 @@ class TotpCryptoProcessorImpl @Inject constructor(
                 DecryptedString(rawCode)
             }
             AppResult.Success(codes)
-        } catch (t: Throwable) {
-            AppResult.Error(CommonError.Internal(t))
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
         }
     }
 
@@ -111,7 +111,7 @@ class TotpCryptoProcessorImpl @Inject constructor(
     }
 
     private fun buildOtpAuthUrl(accountName: String, decryptedSecret: DecryptedString): String {
-        return "otpauth://totp/$issuer:$accountName?secret=${decryptedSecret}&issuer=$issuer&algorithm=$URL_ALGORITHM&digits=$OTP_DIGITS&period=$TIME_STEP_SECONDS"
+        return "otpauth://totp/$issuer:$accountName?secret=${decryptedSecret.value}&issuer=$issuer&algorithm=$URL_ALGORITHM&digits=$OTP_DIGITS&period=$TIME_STEP_SECONDS"
     }
 
     companion object {

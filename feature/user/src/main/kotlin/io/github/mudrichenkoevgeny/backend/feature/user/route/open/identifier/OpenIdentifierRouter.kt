@@ -9,7 +9,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateFieldValue
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
@@ -27,9 +26,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.AddUserIdentifierExternalAuthProviderUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.AddUserIdentifierPhoneUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.DeleteUserIdentifierUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.GetIdentifierUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.GetIdentifiersUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.IdentifierEmailChangePasswordUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.identifier.GetIdentifierUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.identifier.GetIdentifiersUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.identifier.IdentifierEmailChangePasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.SendAddEmailIdentifierConfirmationUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.identifier.SendAddPhoneIdentifierConfirmationUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType

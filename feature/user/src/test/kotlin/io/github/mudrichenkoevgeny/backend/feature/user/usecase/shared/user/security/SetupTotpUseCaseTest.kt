@@ -1,0 +1,236 @@
+package io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.security
+
+import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
+import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
+import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
+import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.createTestMfaChallengeData
+import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.TotpCryptoProcessor
+import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.model.GeneratedTotpSecret
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.backend.feature.user.model.totp.createTestUserTotpSettings
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.security.SetupTotpUseCase
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+
+class SetupTotpUseCaseTest {
+
+    private val rateLimiter = mockk<RateLimiter>()
+    private val auditLogger = mockk<AuditLogger>(relaxed = true)
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val userManager = mockk<UserManager>()
+    private val sessionManager = mockk<SessionManager>()
+    private val identifierManager = mockk<IdentifierManager>()
+    private val totpManager = mockk<TotpManager>()
+    private val mfaService = mockk<MfaService>()
+    private val totpCryptoProcessor = mockk<TotpCryptoProcessor>()
+
+    private val useCase = SetupTotpUseCase(
+        rateLimiter = rateLimiter,
+        auditLogger = auditLogger,
+        auditErrorConverter = auditErrorConverter,
+        userManager = userManager,
+        sessionManager = sessionManager,
+        identifierManager = identifierManager,
+        totpManager = totpManager,
+        mfaService = mfaService,
+        totpCryptoProcessor = totpCryptoProcessor
+    )
+
+    private val context = createTestAuthenticatedRequestContext(userRole = UserRole.USER)
+    private val userId = context.userId
+    private val sessionId = context.sessionId
+    private val identifierId = UserIdentifierId.generate()
+
+    @Test
+    fun `successfully initiates totp setup`() = runTest {
+        val userInternal = createTestUserInternal(
+            id = userId,
+            isTotpEnabled = false,
+            role = UserRole.USER
+        )
+
+        val userSession = createTestUserSessionInternal(
+            id = sessionId,
+            userId = userId,
+            identifierId = identifierId,
+            identifier = "test@example.com",
+            identifierAuthProvider = UserAuthProvider.EMAIL
+        )
+
+        val generatedTotp = GeneratedTotpSecret(
+            decryptedSecret = DecryptedString("secret"),
+            encryptedSecret = EncryptedString("enc-secret"),
+            otpAuthUrl = "otpauth://test"
+        )
+
+        val mfaChallengeData = createTestMfaChallengeData(
+            token = "mfa-token",
+            userId = userId.asHexDashString(),
+            userRole = UserRole.USER.value,
+            identifierId = identifierId.asHexDashString(),
+            sessionId = sessionId.asHexDashString(),
+            type = MfaChallengeType.SETUP_TOTP
+        )
+
+        coEvery {
+            rateLimiter.checkRateLimit(UserRateLimitAction.USER_SETUP_TOTP, any())
+        } returns AppResult.Success(Unit)
+
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(userSession)
+        coEvery { totpCryptoProcessor.generateNewSecret("test@example.com") } returns AppResult.Success(generatedTotp)
+        coEvery { totpManager.initiateTotpSetup(userId, generatedTotp.encryptedSecret) } returns AppResult.Success(createTestUserTotpSettings(userId = userId))
+
+        coEvery {
+            mfaService.createChallenge(
+                userId = userId.asHexDashString(),
+                userRole = UserRole.USER.value,
+                type = MfaChallengeType.SETUP_TOTP,
+                identifierId = identifierId.asHexDashString(),
+                sessionId = sessionId.asHexDashString()
+            )
+        } returns AppResult.Success(mfaChallengeData)
+
+        val result = useCase(context)
+
+        assertTrue(result is AppResult.Success)
+        with(result as AppResult.Success) {
+            assertEquals("secret", data.secretKey)
+            assertEquals("otpauth://test", data.otpAuthUrl)
+            assertEquals("mfa-token", data.mfaToken)
+        }
+
+        coVerify {
+            auditLogger.log(
+                actorId = userId.asHexDashString(),
+                actorType = AuditActorType.USER,
+                actorUserRole = context.userRole.value,
+                action = UserAuditActionType.SELF_SETUP_TOTP_INITIATED,
+                resource = UserAuditResourceType.USER,
+                resourceId = userId.asHexDashString(),
+                status = AuditStatus.SUCCESS,
+                metadata = any()
+            )
+        }
+    }
+
+    @Test
+    fun `returns error when rate limit exceeded`() = runTest {
+        val error = CommonError.Unknown()
+        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(error)
+
+        val result = useCase(context)
+
+        assertTrue(result is AppResult.Error)
+        assertEquals(error, (result as AppResult.Error).error)
+
+        coVerify {
+            auditLogger.log(
+                actorId = userId.asHexDashString(),
+                actorType = AuditActorType.USER,
+                actorUserRole = context.userRole.value,
+                action = UserAuditActionType.SELF_SETUP_TOTP_INITIATED,
+                resource = UserAuditResourceType.USER,
+                resourceId = userId.asHexDashString(),
+                status = AuditStatus.FAILED,
+                metadata = any()
+            )
+        }
+    }
+
+    @Test
+    fun `returns error when totp is already enabled`() = runTest {
+        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = true)
+        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+
+        val result = useCase(context)
+
+        assertTrue(result is AppResult.Error)
+        assertTrue((result as AppResult.Error).error is SecurityError.TotpAlreadyEnabled)
+    }
+
+    @Test
+    fun `successfully handles external auth provider with email`() = runTest {
+        val userInternal = createTestUserInternal(
+            id = userId,
+            isTotpEnabled = false,
+            role = UserRole.USER
+        )
+
+        val userSession = createTestUserSessionInternal(
+            id = sessionId,
+            userId = userId,
+            identifierId = identifierId,
+            identifier = "external-id",
+            identifierAuthProvider = UserAuthProvider.GOOGLE
+        )
+
+        val identifierInternal = createTestUserIdentifierInternal(
+            id = identifierId,
+            userId = userId,
+            externalProviderEmail = "google-user@gmail.com"
+        )
+
+        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
+        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(userSession)
+        coEvery { identifierManager.getUserIdentifierInternalById(identifierId) } returns AppResult.Success(identifierInternal)
+
+        coEvery {
+            totpCryptoProcessor.generateNewSecret("Google: google-user@gmail.com")
+        } returns AppResult.Success(
+            GeneratedTotpSecret(DecryptedString("s"), EncryptedString("e"), "url")
+        )
+
+        coEvery { totpManager.initiateTotpSetup(any(), any()) } returns AppResult.Success(createTestUserTotpSettings(userId = userId))
+
+        coEvery {
+            mfaService.createChallenge(any(), any(), any(), any(), any())
+        } returns AppResult.Success(
+            createTestMfaChallengeData(
+                token = "t",
+                userId = "id",
+                userRole = "r",
+                type = MfaChallengeType.SETUP_TOTP
+            )
+        )
+
+        val result = useCase(context)
+
+        assertTrue(result is AppResult.Success)
+
+        coVerify {
+            totpCryptoProcessor.generateNewSecret("Google: google-user@gmail.com")
+        }
+    }
+}

@@ -10,8 +10,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.v
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.resetpassword.ResetPasswordUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.resetpassword.SendResetPasswordConfirmationUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.resetpassword.ResetPasswordUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.resetpassword.SendResetPasswordConfirmationUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.otpconfirmation.toOtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.otpconfirmation.OtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus

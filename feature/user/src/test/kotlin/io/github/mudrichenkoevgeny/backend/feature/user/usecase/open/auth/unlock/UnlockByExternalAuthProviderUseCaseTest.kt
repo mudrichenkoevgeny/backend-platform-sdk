@@ -1,12 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock
 
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
+import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.model.ExternalAuthProviderData
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.accountlockout.createTestAccountLockoutPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestOpenAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
@@ -16,13 +19,10 @@ import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.Au
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.OpenAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.ExternalAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -39,7 +39,8 @@ class UnlockByExternalAuthProviderUseCaseTest {
 
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
-    private val auditErrorConverter = mockk<AuditErrorConverter>()
+    private val commonAuditErrorParser = CommonAuditErrorParser()
+    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
     private val externalAuthVerifier = mockk<ExternalAuthVerifier> {
         every { provider } returns UserAuthProvider.GOOGLE
     }
@@ -63,18 +64,13 @@ class UnlockByExternalAuthProviderUseCaseTest {
     fun `successfully unlocks user account by external auth provider token`() = runTest {
         val context = createTestRequestContext()
         val userId = UserId.generate()
-        val lockoutPolicy = mockk<AccountLockoutPolicy> {
-            every { isSelfServiceUnlockEnabled } returns true
-        }
-        val externalProvider = mockk<ExternalAuthProvider> {
-            every { userAuthProvider } returns UserAuthProvider.GOOGLE
-        }
-        val availableAuthProviders = mockk<AvailableAuthProviders> {
-            every { supportedExternalProviders } returns setOf(externalProvider)
-        }
-        val openAuthSettings = mockk<OpenAuthSettings> {
-            every { this@mockk.availableAuthProviders } returns availableAuthProviders
-        }
+        val lockoutPolicy = createTestAccountLockoutPolicy(isSelfServiceUnlockEnabled = true)
+        val openAuthSettings = createTestOpenAuthSettings(
+            availableAuthProviders = AvailableAuthProviders(
+                primary = listOf(UserAuthProvider.GOOGLE),
+                secondary = emptyList()
+            )
+        )
         val verificationData = ExternalAuthProviderData(
             authProvider = UserAuthProvider.GOOGLE,
             externalId = TEST_EXTERNAL_ID,

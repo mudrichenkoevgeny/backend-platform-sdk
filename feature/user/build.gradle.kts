@@ -13,11 +13,13 @@ dependencies {
     api(project(":core:security"))
     api(project(":core:audit"))
     api(project(":core:settings"))
+    api(project(":core:storage"))
 
     // Shared Foundation
     api(libs.shared.foundation.core.common)
     api(libs.shared.foundation.core.settings)
     api(libs.shared.foundation.core.security)
+    api(libs.shared.foundation.core.storage)
     api(libs.shared.foundation.feature.user)
 
     // Kotlin
@@ -72,10 +74,12 @@ dependencies {
     testFixturesApi(libs.ktor.server.auth.jwt)
     testFixturesApi(libs.ktor.client.content.negotiation)
     testFixturesApi(libs.shared.foundation.fixtures)
+    testFixturesApi(libs.junit.jupiter.api)
 
     testRuntimeOnly(libs.kotlin.test.junit5)
     testImplementation(libs.shared.foundation.fixtures)
     testImplementation(libs.junit.jupiter.api)
+    testImplementation(libs.junit.jupiter.params)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
