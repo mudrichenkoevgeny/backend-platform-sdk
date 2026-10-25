@@ -21,6 +21,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationp
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auth.settings.GetManagementAuthSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auth.settings.ResetAuthSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auth.settings.UpdateAuthSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.settings.GetOpenAuthSettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -33,7 +34,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.AuthSettingsPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.settings.toManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.settings.toManagementAuthSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.settings.toOpenAuthSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.settings.ManagementAuthSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.settings.OpenAuthSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.auth.settings.ManagementAuthSettingsRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
@@ -53,6 +56,7 @@ import javax.inject.Singleton
  * 1. [ManagementAuthSettingsRoutes.GET_MANAGEMENT_AUTH_SETTINGS] — retrieves configuration via [GetManagementAuthSettingsUseCase].
  * 2. [ManagementAuthSettingsRoutes.UPDATE_MANAGEMENT_AUTH_SETTINGS] — updates security policies via [UpdateAuthSettingsUseCase].
  * 3. [ManagementAuthSettingsRoutes.RESET_MANAGEMENT_AUTH_SETTINGS] — resets security policies via [ResetAuthSettingsUseCase].
+ * 4. [ManagementAuthSettingsRoutes.GET_OPEN_AUTH_SETTINGS] — retrieves open configuration via [GetOpenAuthSettingsUseCase].
  */
 @Singleton
 class ManagementAuthSettingsRouter @Inject constructor(
@@ -63,10 +67,12 @@ class ManagementAuthSettingsRouter @Inject constructor(
     private val auditErrorConverter: AuditErrorConverter,
     private val getManagementAuthSettingsUseCase: GetManagementAuthSettingsUseCase,
     private val updateAuthSettingsUseCase: UpdateAuthSettingsUseCase,
-    private val resetAuthSettingsUseCase: ResetAuthSettingsUseCase
+    private val resetAuthSettingsUseCase: ResetAuthSettingsUseCase,
+    private val getOpenAuthSettingsUseCase: GetOpenAuthSettingsUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
+        registerGetOpenAuthSettingsRoute(route)
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetAuthSettingsManagementRoute(this)
             registerUpdateAuthSettingsRoute(this)
@@ -272,6 +278,48 @@ class ManagementAuthSettingsRouter @Inject constructor(
         }
     }
 
+    private fun registerGetOpenAuthSettingsRoute(route: Route) {
+        val allowedRoles = UserRole.entries.toSet()
+        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+
+        route.get(
+            path = ManagementAuthSettingsRoutes.GET_OPEN_AUTH_SETTINGS,
+            builder = { getOpenAuthSettingsDocs(allowedRoles, allowedAccountStatuses) },
+            body = { getOpenAuthSettings() }
+        )
+    }
+
+    private fun RouteConfig.getOpenAuthSettingsDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        summary = GET_OPEN_AUTH_SETTINGS_ROUTE_SUMMARY
+        operationId = GET_OPEN_AUTH_SETTINGS_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH_SETTINGS)
+
+        description = getFormattedDescription(
+            description = GET_OPEN_AUTH_SETTINGS_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            isPublic = true
+        )
+
+        response {
+            code(HttpStatusCode.OK) {
+                body<OpenAuthSettingsPayload>()
+                description = GET_OPEN_AUTH_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.getOpenAuthSettings() {
+        val result = getOpenAuthSettingsUseCase()
+
+        call.respondResult(result, appLogger, appErrorParser) { authSettings ->
+            authSettings.toOpenAuthSettingsPayload()
+        }
+    }
+
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
@@ -292,6 +340,11 @@ class ManagementAuthSettingsRouter @Inject constructor(
     }
 
     companion object {
+        const val GET_OPEN_AUTH_SETTINGS_ROUTE_SUMMARY = "Get open auth settings"
+        const val GET_OPEN_AUTH_SETTINGS_ROUTE_DESCRIPTION = "Returns available authentication settings for unauthenticated management users."
+        const val GET_OPEN_AUTH_SETTINGS_ROUTE_OPERATION_ID = "managementGetOpenAuthSettings"
+        const val GET_OPEN_AUTH_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Open auth settings data"
+
         const val GET_AUTH_SETTINGS_MANAGEMENT_ROUTE_SUMMARY = "Get management auth settings"
         const val GET_AUTH_SETTINGS_MANAGEMENT_ROUTE_DESCRIPTION =
             "Returns management auth settings including token validity values and available providers."

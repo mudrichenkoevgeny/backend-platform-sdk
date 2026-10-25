@@ -16,6 +16,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.storage.settings.GetManagementStorageSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.storage.settings.ResetStorageSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.storage.settings.UpdateStorageSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.storage.settings.GetOpenStorageSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.StorageSwaggerTags
@@ -31,7 +32,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.permission.StoragePermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.mapper.storagesettings.toManagementStorageSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.mapper.storagesettings.toManagementStorageSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.mapper.storagesettings.toOpenStorageSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.model.storagesettings.ManagementStorageSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.model.storagesettings.OpenStorageSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.route.management.ManagementStorageSettingsRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -53,6 +56,7 @@ import javax.inject.Singleton
  * 1. [ManagementStorageSettingsRoutes.UPDATE_MANAGEMENT_STORAGE_SETTINGS] — updates settings via [UpdateStorageSettingsUseCase].
  * 2. [ManagementStorageSettingsRoutes.GET_MANAGEMENT_STORAGE_SETTINGS] — retrieves settings via [GetManagementStorageSettingsUseCase].
  * 3. [ManagementStorageSettingsRoutes.RESET_MANAGEMENT_STORAGE_SETTINGS] — resets settings via [ResetStorageSettingsUseCase].
+ * 4. [ManagementStorageSettingsRoutes.GET_OPEN_STORAGE_SETTINGS] — retrieves open settings via [GetOpenStorageSettingsUseCase].
  */
 @Singleton
 class ManagementStorageSettingsRouter @Inject constructor(
@@ -63,10 +67,12 @@ class ManagementStorageSettingsRouter @Inject constructor(
     private val auditErrorConverter: AuditErrorConverter,
     private val updateStorageSettingsUseCase: UpdateStorageSettingsUseCase,
     private val getManagementStorageSettingsUseCase: GetManagementStorageSettingsUseCase,
-    private val resetStorageSettingsUseCase: ResetStorageSettingsUseCase
+    private val resetStorageSettingsUseCase: ResetStorageSettingsUseCase,
+    private val getOpenStorageSettingsUseCase: GetOpenStorageSettingsUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
+        registerGetOpenStorageSettingsRoute(route)
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerUpdateStorageSettingsRoute(this)
             registerGetStorageSettingsRoute(this)
@@ -278,6 +284,48 @@ class ManagementStorageSettingsRouter @Inject constructor(
         }
     }
 
+    private fun registerGetOpenStorageSettingsRoute(route: Route) {
+        val allowedRoles = UserRole.entries.toSet()
+        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+
+        route.get(
+            path = ManagementStorageSettingsRoutes.GET_OPEN_STORAGE_SETTINGS,
+            builder = { getOpenStorageSettingsDocs(allowedRoles, allowedAccountStatuses) },
+            body = { getOpenStorageSettings() }
+        )
+    }
+
+    private fun RouteConfig.getOpenStorageSettingsDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        summary = GET_OPEN_STORAGE_SETTINGS_ROUTE_SUMMARY
+        operationId = GET_OPEN_STORAGE_SETTINGS_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + StorageSwaggerTags.STORAGE_SETTINGS)
+
+        description = getFormattedDescription(
+            description = GET_OPEN_STORAGE_SETTINGS_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            isPublic = true
+        )
+
+        response {
+            code(HttpStatusCode.OK) {
+                body<OpenStorageSettingsPayload>()
+                description = GET_OPEN_STORAGE_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.getOpenStorageSettings() {
+        val result = getOpenStorageSettingsUseCase()
+
+        call.respondResult(result, appLogger, appErrorParser) { storageSettings ->
+            storageSettings.toOpenStorageSettingsPayload()
+        }
+    }
+
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
@@ -298,6 +346,11 @@ class ManagementStorageSettingsRouter @Inject constructor(
     }
 
     companion object {
+        const val GET_OPEN_STORAGE_SETTINGS_ROUTE_SUMMARY = "Get open storage settings"
+        const val GET_OPEN_STORAGE_SETTINGS_ROUTE_DESCRIPTION = "Returns storage settings for unauthenticated management users."
+        const val GET_OPEN_STORAGE_SETTINGS_ROUTE_OPERATION_ID = "managementGetOpenStorageSettings"
+        const val GET_OPEN_STORAGE_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Open storage settings data"
+
         const val UPDATE_STORAGE_SETTINGS_ROUTE_SUMMARY = "Update storage settings"
         const val UPDATE_STORAGE_SETTINGS_ROUTE_DESCRIPTION = "Replaces effective storage settings with the payload."
         const val UPDATE_STORAGE_SETTINGS_ROUTE_OPERATION_ID = "managementUpdateStorageSettings"

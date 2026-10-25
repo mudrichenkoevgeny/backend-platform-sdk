@@ -18,18 +18,12 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.management.user.Ma
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.user.SelfManagementUserRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.user.security.ManagementUserSecurityRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.user.security.SelfManagementUserSecurityRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.open.settings.OpenGlobalSettingsRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.open.security.OpenSecuritySettingsRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.settings.OpenAuthSettingsRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.open.configuration.OpenUserConfigurationRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.open.storage.OpenStorageSettingsRouter
 import io.ktor.server.routing.Route
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Root management router for the user feature, aggregating all administrative and self-service sub-routers,
- * as well as open configuration routers required by unauthenticated clients on the management connector.
+ * Root management router for the user feature, aggregating all administrative and self-service sub-routers.
  *
  * This router orchestrates the registration of:
  * 1. Authentication management ([ManagementAuthRouter]).
@@ -42,7 +36,6 @@ import javax.inject.Singleton
  * 8. System & policy settings ([ManagementGlobalSettingsRouter], [ManagementSecuritySettingsRouter], [ManagementStorageSettingsRouter]).
  * 9. Audit trail management ([ManagementAuditRouter]).
  * 10. Self-service and administrative storage file management ([SelfManagementStorageRouter], [ManagementStorageRouter]).
- * 11. Unauthenticated open settings ([OpenGlobalSettingsRouter], [OpenSecuritySettingsRouter], [OpenStorageSettingsRouter], [OpenAuthSettingsRouter], [OpenUserConfigurationRouter]).
  */
 @Singleton
 class ManagementCoreUserRouter @Inject constructor(
@@ -61,12 +54,7 @@ class ManagementCoreUserRouter @Inject constructor(
     private val managementStorageSettingsRouter: ManagementStorageSettingsRouter,
     private val managementAuditRouter: ManagementAuditRouter,
     private val selfManagementStorageRouter: SelfManagementStorageRouter,
-    private val managementStorageRouter: ManagementStorageRouter,
-    private val openGlobalSettingsRouter: OpenGlobalSettingsRouter,
-    private val openSecuritySettingsRouter: OpenSecuritySettingsRouter,
-    private val openStorageSettingsRouter: OpenStorageSettingsRouter,
-    private val openAuthSettingsRouter: OpenAuthSettingsRouter,
-    private val openUserConfigurationRouter: OpenUserConfigurationRouter
+    private val managementStorageRouter: ManagementStorageRouter
 ) : BaseRouter {
     override fun register(route: Route) {
         managementAuthRouter.register(route)
@@ -85,10 +73,5 @@ class ManagementCoreUserRouter @Inject constructor(
         managementAuditRouter.register(route)
         selfManagementStorageRouter.register(route)
         managementStorageRouter.register(route)
-        openGlobalSettingsRouter.register(route)
-        openSecuritySettingsRouter.register(route)
-        openStorageSettingsRouter.register(route)
-        openAuthSettingsRouter.register(route)
-        openUserConfigurationRouter.register(route)
     }
 }

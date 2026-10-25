@@ -17,6 +17,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.SecuritySwaggerTag
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.security.GetManagementSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.security.ResetSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.security.UpdateSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.security.GetOpenSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
@@ -28,7 +29,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toA
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toManagementSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toManagementSecuritySettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toOpenSecuritySettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.securitysettings.ManagementSecuritySettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.securitysettings.OpenSecuritySettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.action.SecurityAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.resource.SecurityAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.permission.SecurityPermissionCode
@@ -53,6 +56,7 @@ import javax.inject.Singleton
  * 1. [ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS] — updates settings via [UpdateSecuritySettingsUseCase].
  * 2. [ManagementSecuritySettingsRoutes.GET_MANAGEMENT_SECURITY_SETTINGS] — retrieves settings via [GetManagementSecuritySettingsUseCase].
  * 3. [ManagementSecuritySettingsRoutes.RESET_MANAGEMENT_SECURITY_SETTINGS] — resets settings via [ResetSecuritySettingsUseCase].
+ * 4. [ManagementSecuritySettingsRoutes.GET_OPEN_SECURITY_SETTINGS] — retrieves open settings via [GetOpenSecuritySettingsUseCase].
  */
 @Singleton
 class ManagementSecuritySettingsRouter @Inject constructor(
@@ -63,10 +67,12 @@ class ManagementSecuritySettingsRouter @Inject constructor(
     private val auditErrorConverter: AuditErrorConverter,
     private val updateSecuritySettingsUseCase: UpdateSecuritySettingsUseCase,
     private val getManagementSecuritySettingsUseCase: GetManagementSecuritySettingsUseCase,
-    private val resetSecuritySettingsUseCase: ResetSecuritySettingsUseCase
+    private val resetSecuritySettingsUseCase: ResetSecuritySettingsUseCase,
+    private val getOpenSecuritySettingsUseCase: GetOpenSecuritySettingsUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
+        registerGetOpenSecuritySettingsRoute(route)
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerUpdateSecuritySettingsRoute(this)
             registerGetSecuritySettingsRoute(this)
@@ -274,6 +280,48 @@ class ManagementSecuritySettingsRouter @Inject constructor(
         }
     }
 
+    private fun registerGetOpenSecuritySettingsRoute(route: Route) {
+        val allowedRoles = UserRole.entries.toSet()
+        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+
+        route.get(
+            path = ManagementSecuritySettingsRoutes.GET_OPEN_SECURITY_SETTINGS,
+            builder = { getOpenSecuritySettingsDocs(allowedRoles, allowedAccountStatuses) },
+            body = { getOpenSecuritySettings() }
+        )
+    }
+
+    private fun RouteConfig.getOpenSecuritySettingsDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        summary = GET_OPEN_SECURITY_SETTINGS_ROUTE_SUMMARY
+        operationId = GET_OPEN_SECURITY_SETTINGS_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + SecuritySwaggerTags.SECURITY_SETTINGS)
+
+        description = getFormattedDescription(
+            description = GET_OPEN_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            isPublic = true
+        )
+
+        response {
+            code(HttpStatusCode.OK) {
+                body<OpenSecuritySettingsPayload>()
+                description = GET_OPEN_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.getOpenSecuritySettings() {
+        val result = getOpenSecuritySettingsUseCase()
+
+        call.respondResult(result, appLogger, appErrorParser) { securitySettings ->
+            securitySettings.toOpenSecuritySettingsPayload()
+        }
+    }
+
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
@@ -294,6 +342,11 @@ class ManagementSecuritySettingsRouter @Inject constructor(
     }
 
     companion object {
+        const val GET_OPEN_SECURITY_SETTINGS_ROUTE_SUMMARY = "Get open security settings"
+        const val GET_OPEN_SECURITY_SETTINGS_ROUTE_DESCRIPTION = "Returns security settings for unauthenticated management users."
+        const val GET_OPEN_SECURITY_SETTINGS_ROUTE_OPERATION_ID = "managementGetOpenSecuritySettings"
+        const val GET_OPEN_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Open security settings data"
+
         const val UPDATE_SECURITY_SETTINGS_ROUTE_SUMMARY = "Update security settings"
         const val UPDATE_SECURITY_SETTINGS_ROUTE_DESCRIPTION =
             "Replaces effective global settings with the payload."

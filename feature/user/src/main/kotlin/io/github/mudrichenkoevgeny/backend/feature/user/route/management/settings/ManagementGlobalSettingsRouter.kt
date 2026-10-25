@@ -17,6 +17,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.SettingsSwaggerTag
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.GetManagementGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.ResetGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.UpdateGlobalSettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.settings.GetOpenGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
@@ -28,7 +29,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toA
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toManagementGlobalSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toManagementGlobalSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toOpenGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.model.globalsettings.ManagementGlobalSettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.model.globalsettings.OpenGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.audit.action.SettingsAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.audit.resource.SettingsAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.permission.SettingsPermissionCode
@@ -53,6 +56,7 @@ import javax.inject.Singleton
  * 1. [ManagementGlobalSettingsRoutes.UPDATE_MANAGEMENT_GLOBAL_SETTINGS] — updates settings via [UpdateGlobalSettingsUseCase].
  * 2. [ManagementGlobalSettingsRoutes.GET_MANAGEMENT_GLOBAL_SETTINGS] — retrieves settings via [GetManagementGlobalSettingsUseCase].
  * 3. [ManagementGlobalSettingsRoutes.RESET_MANAGEMENT_GLOBAL_SETTINGS] — resets settings via [ResetGlobalSettingsUseCase].
+ * 4. [ManagementGlobalSettingsRoutes.GET_OPEN_GLOBAL_SETTINGS] — retrieves open settings via [GetOpenGlobalSettingsUseCase].
  */
 @Singleton
 class ManagementGlobalSettingsRouter @Inject constructor(
@@ -63,10 +67,12 @@ class ManagementGlobalSettingsRouter @Inject constructor(
     private val auditErrorConverter: AuditErrorConverter,
     private val updateGlobalSettingsUseCase: UpdateGlobalSettingsUseCase,
     private val getManagementGlobalSettingsUseCase: GetManagementGlobalSettingsUseCase,
-    private val resetGlobalSettingsUseCase: ResetGlobalSettingsUseCase
+    private val resetGlobalSettingsUseCase: ResetGlobalSettingsUseCase,
+    private val getOpenGlobalSettingsUseCase: GetOpenGlobalSettingsUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
+        registerGetOpenGlobalSettingsRoute(route)
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerUpdateGlobalSettingsRoute(this)
             registerGetGlobalSettingsRoute(this)
@@ -276,6 +282,48 @@ class ManagementGlobalSettingsRouter @Inject constructor(
         }
     }
 
+    private fun registerGetOpenGlobalSettingsRoute(route: Route) {
+        val allowedRoles = UserRole.entries.toSet()
+        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+
+        route.get(
+            path = ManagementGlobalSettingsRoutes.GET_OPEN_GLOBAL_SETTINGS,
+            builder = { getOpenGlobalSettingsDocs(allowedRoles, allowedAccountStatuses) },
+            body = { getOpenGlobalSettings() }
+        )
+    }
+
+    private fun RouteConfig.getOpenGlobalSettingsDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        summary = GET_OPEN_GLOBAL_SETTINGS_ROUTE_SUMMARY
+        operationId = GET_OPEN_GLOBAL_SETTINGS_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + SettingsSwaggerTags.GLOBAL_SETTINGS)
+
+        description = getFormattedDescription(
+            description = GET_OPEN_GLOBAL_SETTINGS_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            isPublic = true
+        )
+
+        response {
+            code(HttpStatusCode.OK) {
+                body<OpenGlobalSettingsPayload>()
+                description = GET_OPEN_GLOBAL_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.getOpenGlobalSettings() {
+        val result = getOpenGlobalSettingsUseCase()
+
+        call.respondResult(result, appLogger, appErrorParser) { globalSettings ->
+            globalSettings.toOpenGlobalSettingsPayload()
+        }
+    }
+
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
@@ -296,6 +344,11 @@ class ManagementGlobalSettingsRouter @Inject constructor(
     }
 
     companion object {
+        const val GET_OPEN_GLOBAL_SETTINGS_ROUTE_SUMMARY = "Get open global settings"
+        const val GET_OPEN_GLOBAL_SETTINGS_ROUTE_DESCRIPTION = "Returns global system settings for unauthenticated management users."
+        const val GET_OPEN_GLOBAL_SETTINGS_ROUTE_OPERATION_ID = "managementGetOpenGlobalSettings"
+        const val GET_OPEN_GLOBAL_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Open global settings data"
+
         const val UPDATE_GLOBAL_SETTINGS_ROUTE_SUMMARY = "Update global settings"
         const val UPDATE_GLOBAL_SETTINGS_ROUTE_DESCRIPTION = "Replaces effective global settings with the payload."
         const val UPDATE_GLOBAL_SETTINGS_ROUTE_OPERATION_ID = "managementUpdateGlobalSettings"

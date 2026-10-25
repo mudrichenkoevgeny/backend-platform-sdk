@@ -12,10 +12,13 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.configuration.GetManagementUserConfigurationUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.configuration.GetOpenUserConfigurationUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.configuration.toManagementUserConfigurationPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.configuration.toOpenUserConfigurationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.configuration.ManagementUserConfigurationPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.configuration.OpenUserConfigurationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.configuration.ManagementUserConfigurationRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
@@ -30,19 +33,64 @@ import javax.inject.Singleton
  * Management HTTP routes for retrieving user feature configuration.
  *
  * Registered routes:
- * 1. [ManagementUserConfigurationRoutes.GET_CONFIGURATION] — retrieves management-specific user settings via [GetManagementUserConfigurationUseCase].
+ * 1. [ManagementUserConfigurationRoutes.GET_MANAGEMENT_USER_CONFIGURATION] — retrieves management-specific user settings via [GetManagementUserConfigurationUseCase].
+ * 2. [ManagementUserConfigurationRoutes.GET_OPEN_USER_CONFIGURATION] — retrieves open user configuration via [GetOpenUserConfigurationUseCase].
  */
 @Singleton
 class ManagementUserConfigurationRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
-    private val getManagementUserConfigurationUseCase: GetManagementUserConfigurationUseCase
+    private val getManagementUserConfigurationUseCase: GetManagementUserConfigurationUseCase,
+    private val getOpenUserConfigurationUseCase: GetOpenUserConfigurationUseCase
 ) : BaseRouter {
 
     override fun register(route: Route) {
+        registerGetOpenUserConfigurationRoute(route)
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetUserConfigurationRoute(this)
+        }
+    }
+
+    private fun registerGetOpenUserConfigurationRoute(route: Route) {
+        val allowedRoles = UserRole.entries.toSet()
+        val allowedAccountStatuses = UserAccountStatus.entries.toSet()
+
+        route.get(
+            path = ManagementUserConfigurationRoutes.GET_OPEN_USER_CONFIGURATION,
+            builder = { getOpenUserConfigurationDocs(allowedRoles, allowedAccountStatuses) },
+            body = { getOpenUserConfiguration() }
+        )
+    }
+
+    private fun RouteConfig.getOpenUserConfigurationDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        summary = GET_OPEN_USER_CONFIGURATION_ROUTE_SUMMARY
+        operationId = GET_OPEN_USER_CONFIGURATION_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.USER_CONFIGURATION)
+
+        description = getFormattedDescription(
+            description = GET_OPEN_USER_CONFIGURATION_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            isPublic = true
+        )
+
+        response {
+            code(HttpStatusCode.OK) {
+                body<OpenUserConfigurationPayload>()
+                description = GET_OPEN_USER_CONFIGURATION_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.getOpenUserConfiguration() {
+        val result = getOpenUserConfigurationUseCase()
+
+        call.respondResult(result, appLogger, appErrorParser) { userConfiguration ->
+            userConfiguration.toOpenUserConfigurationPayload()
         }
     }
 
@@ -51,7 +99,7 @@ class ManagementUserConfigurationRouter @Inject constructor(
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
 
         route.get(
-            path = ManagementUserConfigurationRoutes.GET_CONFIGURATION,
+            path = ManagementUserConfigurationRoutes.GET_MANAGEMENT_USER_CONFIGURATION,
             builder = { getUserConfigurationDocs(allowedRoles, allowedAccountStatuses) },
             body = { getUserConfiguration(allowedRoles, allowedAccountStatuses) }
         )
@@ -103,6 +151,11 @@ class ManagementUserConfigurationRouter @Inject constructor(
     }
 
     companion object {
+        const val GET_OPEN_USER_CONFIGURATION_ROUTE_SUMMARY = "Get open user configuration for management"
+        const val GET_OPEN_USER_CONFIGURATION_ROUTE_DESCRIPTION = "Retrieves user configuration settings for unauthenticated management users."
+        const val GET_OPEN_USER_CONFIGURATION_ROUTE_OPERATION_ID = "managementGetOpenUserConfiguration"
+        const val GET_OPEN_USER_CONFIGURATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Open user configuration data"
+
         const val GET_USER_CONFIGURATION_ROUTE_SUMMARY = "Get user feature configuration for management"
         const val GET_USER_CONFIGURATION_ROUTE_DESCRIPTION = "Retrieves configuration settings relevant for management tasks and staff workflows."
         const val GET_USER_CONFIGURATION_ROUTE_OPERATION_ID = "managementGetUserConfiguration"
