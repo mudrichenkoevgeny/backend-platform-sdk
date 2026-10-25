@@ -163,8 +163,9 @@ class ManagementAuthSettingsRouter @Inject constructor(
             body<ManagementAuthSettingsPayload>()
         }
         response {
-            code(HttpStatusCode.NoContent) {
-                description = UPDATE_AUTH_SETTINGS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION
+            code(HttpStatusCode.OK) {
+                body<ManagementAuthSettingsPayload>()
+                description = UPDATE_AUTH_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -198,7 +199,9 @@ class ManagementAuthSettingsRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(result, appLogger, appErrorParser) { authSettings ->
+            authSettings.toManagementAuthSettingsPayload()
+        }
     }
 
     private fun registerResetAuthSettingsRoute(route: Route) {
@@ -299,8 +302,8 @@ class ManagementAuthSettingsRouter @Inject constructor(
         const val UPDATE_AUTH_SETTINGS_ROUTE_DESCRIPTION =
             "Replaces management auth settings with the provided payload."
         const val UPDATE_AUTH_SETTINGS_ROUTE_OPERATION_ID = "updateManagementAuthSettings"
-        const val UPDATE_AUTH_SETTINGS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
-            "Settings were updated successfully; no response body."
+        const val UPDATE_AUTH_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION =
+            "Management auth settings updated successfully."
 
         const val RESET_AUTH_SETTINGS_ROUTE_SUMMARY = "Reset auth settings"
         const val RESET_AUTH_SETTINGS_ROUTE_DESCRIPTION =

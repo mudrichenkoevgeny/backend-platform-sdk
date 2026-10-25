@@ -119,8 +119,9 @@ class ManagementGlobalSettingsRouter @Inject constructor(
             body<ManagementGlobalSettingsPayload>()
         }
         response {
-            code(HttpStatusCode.NoContent) {
-                description = UPDATE_GLOBAL_SETTINGS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION
+            code(HttpStatusCode.OK) {
+                body<ManagementGlobalSettingsPayload>()
+                description = UPDATE_GLOBAL_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -156,7 +157,9 @@ class ManagementGlobalSettingsRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(result, appLogger, appErrorParser) { globalSettings ->
+            globalSettings.toManagementGlobalSettingsPayload()
+        }
     }
 
     private fun RouteConfig.getGlobalSettingsDocs(
@@ -296,8 +299,8 @@ class ManagementGlobalSettingsRouter @Inject constructor(
         const val UPDATE_GLOBAL_SETTINGS_ROUTE_SUMMARY = "Update global settings"
         const val UPDATE_GLOBAL_SETTINGS_ROUTE_DESCRIPTION = "Replaces effective global settings with the payload."
         const val UPDATE_GLOBAL_SETTINGS_ROUTE_OPERATION_ID = "managementUpdateGlobalSettings"
-        const val UPDATE_GLOBAL_SETTINGS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
-            "Settings were updated successfully; no response body."
+        const val UPDATE_GLOBAL_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION =
+            "Global settings updated successfully."
 
         const val GET_GLOBAL_SETTINGS_ROUTE_SUMMARY = "Get global settings"
         const val GET_GLOBAL_SETTINGS_ROUTE_DESCRIPTION = "Returns global system settings."

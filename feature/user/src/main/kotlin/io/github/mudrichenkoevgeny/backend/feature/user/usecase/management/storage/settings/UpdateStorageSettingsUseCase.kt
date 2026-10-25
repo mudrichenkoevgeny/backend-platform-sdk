@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.core.storage.settings.provider.StorageSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
@@ -73,7 +74,7 @@ class UpdateStorageSettingsUseCase @Inject constructor(
     suspend operator fun invoke(
         managementStorageSettings: ManagementStorageSettings,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<Unit> {
+    ): AppResult<ManagementStorageSettings> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
         val auditActorUserRole = authenticatedRequestContext.userRole
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata()
@@ -169,7 +170,9 @@ class UpdateStorageSettingsUseCase @Inject constructor(
             )
         )
 
-        return updateStorageSettingsResult
+        return updateStorageSettingsResult.mapSuccess {
+            storageSettingsProvider.getManagementStorageSettings()
+        }
     }
 
     private fun <T> handleError(

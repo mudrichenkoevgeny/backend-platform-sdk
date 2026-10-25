@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
@@ -73,7 +74,7 @@ class UpdateSecuritySettingsUseCase @Inject constructor(
     suspend operator fun invoke(
         managementSecuritySettings: ManagementSecuritySettings,
         authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<Unit> {
+    ): AppResult<ManagementSecuritySettings> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
         val auditActorUserRole = authenticatedRequestContext.userRole
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata()
@@ -169,7 +170,9 @@ class UpdateSecuritySettingsUseCase @Inject constructor(
             )
         )
 
-        return updateSecuritySettingsResult
+        return updateSecuritySettingsResult.mapSuccess {
+            securitySettingsProvider.getManagementSecuritySettings()
+        }
     }
 
     private fun <T> handleError(

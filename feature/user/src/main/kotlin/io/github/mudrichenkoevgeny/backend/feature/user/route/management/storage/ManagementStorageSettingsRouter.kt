@@ -119,8 +119,9 @@ class ManagementStorageSettingsRouter @Inject constructor(
             body<ManagementStorageSettingsPayload>()
         }
         response {
-            code(HttpStatusCode.NoContent) {
-                description = UPDATE_STORAGE_SETTINGS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION
+            code(HttpStatusCode.OK) {
+                body<ManagementStorageSettingsPayload>()
+                description = UPDATE_STORAGE_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -156,7 +157,9 @@ class ManagementStorageSettingsRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(result, appLogger, appErrorParser) { storageSettings ->
+            storageSettings.toManagementStorageSettingsPayload()
+        }
     }
 
     private fun RouteConfig.getStorageSettingsDocs(
@@ -298,8 +301,8 @@ class ManagementStorageSettingsRouter @Inject constructor(
         const val UPDATE_STORAGE_SETTINGS_ROUTE_SUMMARY = "Update storage settings"
         const val UPDATE_STORAGE_SETTINGS_ROUTE_DESCRIPTION = "Replaces effective storage settings with the payload."
         const val UPDATE_STORAGE_SETTINGS_ROUTE_OPERATION_ID = "managementUpdateStorageSettings"
-        const val UPDATE_STORAGE_SETTINGS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
-            "Settings were updated successfully; no response body."
+        const val UPDATE_STORAGE_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION =
+            "Storage settings updated successfully."
 
         const val GET_STORAGE_SETTINGS_ROUTE_SUMMARY = "Get storage settings"
         const val GET_STORAGE_SETTINGS_ROUTE_DESCRIPTION = "Returns management storage settings."

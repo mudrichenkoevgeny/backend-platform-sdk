@@ -30,7 +30,6 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -82,7 +81,7 @@ class UpdateStorageSettingsUseCaseTest {
 
         val result = useCase(newSettings, context)
 
-        assertTrue(result is AppResult.Success)
+        assertEquals(AppResult.Success(newSettings), result)
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorId = userId.asHexDashString(),

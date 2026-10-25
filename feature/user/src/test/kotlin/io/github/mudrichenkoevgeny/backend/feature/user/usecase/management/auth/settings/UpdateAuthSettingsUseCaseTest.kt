@@ -79,7 +79,7 @@ class UpdateAuthSettingsUseCaseTest {
 
         val result = useCase(settings, context)
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(AppResult.Success(settings), result)
 
         coVerify(exactly = 1) {
             authSettingsProvider.updateManagementAuthSettings(settings)

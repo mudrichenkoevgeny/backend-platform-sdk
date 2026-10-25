@@ -119,8 +119,9 @@ class ManagementSecuritySettingsRouter @Inject constructor(
             body<ManagementSecuritySettingsPayload>()
         }
         response {
-            code(HttpStatusCode.NoContent) {
-                description = UPDATE_SECURITY_SETTINGS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION
+            code(HttpStatusCode.OK) {
+                body<ManagementSecuritySettingsPayload>()
+                description = UPDATE_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION
             }
         }
     }
@@ -155,7 +156,9 @@ class ManagementSecuritySettingsRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(result, appLogger, appErrorParser) { securitySettings ->
+            securitySettings.toManagementSecuritySettingsPayload()
+        }
     }
 
     private fun RouteConfig.getSecuritySettingsDocs(
@@ -295,8 +298,8 @@ class ManagementSecuritySettingsRouter @Inject constructor(
         const val UPDATE_SECURITY_SETTINGS_ROUTE_DESCRIPTION =
             "Replaces effective global settings with the payload."
         const val UPDATE_SECURITY_SETTINGS_ROUTE_OPERATION_ID = "managementUpdateSecuritySettings"
-        const val UPDATE_SECURITY_SETTINGS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
-            "Settings were updated successfully; no response body."
+        const val UPDATE_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION =
+            "Security settings updated successfully."
 
         const val GET_SECURITY_SETTINGS_ROUTE_SUMMARY = "Get security settings"
         const val GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION = "Returns security settings."
