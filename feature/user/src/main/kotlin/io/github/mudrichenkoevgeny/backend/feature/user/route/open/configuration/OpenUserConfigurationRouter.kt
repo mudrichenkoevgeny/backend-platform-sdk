@@ -26,7 +26,7 @@ import javax.inject.Singleton
  * Public configuration routes providing systemic metadata for the user feature.
  *
  * Registered routes:
- * 1. [OpenUserConfigurationRoutes.GET_CONFIGURATION] — retrieves a unified object containing global, security, and authentication configurations via [GetOpenUserConfigurationUseCase].
+ * 1. [OpenUserConfigurationRoutes.GET_OPEN_USER_CONFIGURATION] — retrieves a unified object containing global, security, and authentication configurations via [GetOpenUserConfigurationUseCase].
  */
 @Singleton
 class OpenUserConfigurationRouter @Inject constructor(
@@ -44,7 +44,7 @@ class OpenUserConfigurationRouter @Inject constructor(
         val allowedAccountStatuses = UserAccountStatus.entries.toSet()
 
         route.get(
-            path = OpenUserConfigurationRoutes.GET_CONFIGURATION,
+            path = OpenUserConfigurationRoutes.GET_OPEN_USER_CONFIGURATION,
             builder = { getUserConfigurationDocs(allowedRoles, allowedAccountStatuses) },
             body = { getUserConfiguration() }
         )

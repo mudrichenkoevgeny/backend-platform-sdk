@@ -47,7 +47,7 @@ class StorageErrorParser @Inject constructor() : AppErrorSpecificParser {
             }
 
             StorageErrorCodes.UNSUPPORTED_MIME_TYPE -> strings.unsupportedMimeType
-            StorageErrorCodes.UNSUPPORTED_STORAGE_CATEGORY -> strings.unsupportedMimeType
+            StorageErrorCodes.UNSUPPORTED_STORAGE_CATEGORY -> strings.unsupportedStorageCategory
 
             StorageErrorCodes.STORAGE_QUOTA_EXCEEDED -> {
                 val usedBytes = args?.get(StorageErrorArgs.USED_BYTES)
