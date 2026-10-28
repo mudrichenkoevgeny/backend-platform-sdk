@@ -2,8 +2,10 @@ package io.github.mudrichenkoevgeny.backend.core.storage.service
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
 import io.github.mudrichenkoevgeny.backend.core.storage.domain.model.S3ObjectMetadata
+import io.github.mudrichenkoevgeny.backend.core.storage.error.model.StorageError
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.future.await
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
@@ -11,11 +13,15 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.core.async.AsyncRequestBody
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
+import software.amazon.awssdk.services.s3.S3Configuration
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest
 import software.amazon.awssdk.services.s3.model.Delete
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.DeleteObjectsRequest
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
@@ -33,10 +39,12 @@ import javax.inject.Singleton
  * Upload, delete, and head object operations execute asynchronously via [S3AsyncClient] and [S3Presigner].
  *
  * @param config Configuration parameters holding S3 credentials, endpoint, and bucket options.
+ * @param appLogger Application logger instance used for recording infrastructure errors.
  */
 @Singleton
 class S3StorageService @Inject constructor(
-    private val config: StorageConfig
+    private val config: StorageConfig,
+    private val appLogger: AppLogger
 ) : StorageService {
 
     private val basicCredentials = AwsBasicCredentials.create(config.s3AccessKey, config.s3SecretKey)
@@ -50,11 +58,28 @@ class S3StorageService @Inject constructor(
         .forcePathStyle(config.forcePathStyle)
         .build()
 
+    private val presignerEndpoint: URI = run {
+        val publicUrl = config.s3PublicUrl.removeSuffix("/")
+        val uri = URI.create(publicUrl)
+        val scheme = uri.scheme
+        val authority = uri.authority ?: uri.host
+        if (scheme != null && authority != null) {
+            URI("$scheme://$authority")
+        } else {
+            uri
+        }
+    }
+
     private val presigner = S3Presigner.builder()
-        .endpointOverride(URI.create(config.s3Endpoint))
+        .endpointOverride(presignerEndpoint)
         .region(Region.of(config.s3Region))
         .credentialsProvider(
             StaticCredentialsProvider.create(basicCredentials)
+        )
+        .serviceConfiguration(
+            S3Configuration.builder()
+                .pathStyleAccessEnabled(config.forcePathStyle)
+                .build()
         )
         .build()
 
@@ -77,6 +102,17 @@ class S3StorageService @Inject constructor(
             AppResult.Success(fileName)
         } catch (e: CancellationException) {
             throw e
+        } catch (e: NoSuchBucketException) {
+            try {
+                appLogger.logError(CommonError.Internal(e))
+                s3Client.createBucket(CreateBucketRequest.builder().bucket(targetBucket).build()).await()
+                s3Client.putObject(request, AsyncRequestBody.fromBytes(content)).await()
+                AppResult.Success(fileName)
+            } catch (retryException: CancellationException) {
+                throw retryException
+            } catch (retryException: Exception) {
+                AppResult.Error(CommonError.Internal(retryException))
+            }
         } catch (e: Exception) {
             AppResult.Error(CommonError.Internal(e))
         }
@@ -96,6 +132,10 @@ class S3StorageService @Inject constructor(
             AppResult.Success(isSuccessful)
         } catch (e: CancellationException) {
             throw e
+        } catch (_: NoSuchBucketException) {
+            AppResult.Success(true)
+        } catch (_: NoSuchKeyException) {
+            AppResult.Success(true)
         } catch (e: Exception) {
             AppResult.Error(CommonError.Internal(e))
         }
@@ -119,15 +159,17 @@ class S3StorageService @Inject constructor(
             AppResult.Success(Unit)
         } catch (e: CancellationException) {
             throw e
+        } catch (_: NoSuchBucketException) {
+            AppResult.Success(Unit)
+        } catch (_: NoSuchKeyException) {
+            AppResult.Success(Unit)
         } catch (e: Exception) {
             AppResult.Error(CommonError.Internal(e))
         }
     }
 
-    override fun getUrl(key: String): AppResult<String> {
-        val baseUrl = config.s3PublicUrl.removeSuffix("/")
-        return AppResult.Success("$baseUrl/$key")
-    }
+    override fun getUrl(key: String): AppResult<String> =
+        AppResult.Success("${config.s3PublicUrl.removeSuffix("/")}/$key")
 
     override fun generatePresignedPutUrl(
         key: String,
@@ -196,6 +238,10 @@ class S3StorageService @Inject constructor(
             )
         } catch (e: CancellationException) {
             throw e
+        } catch (e: NoSuchKeyException) {
+            AppResult.Error(StorageError.FileNotFound())
+        } catch (e: NoSuchBucketException) {
+            AppResult.Error(StorageError.FileNotFound())
         } catch (e: Exception) {
             AppResult.Error(CommonError.Internal(e))
         }

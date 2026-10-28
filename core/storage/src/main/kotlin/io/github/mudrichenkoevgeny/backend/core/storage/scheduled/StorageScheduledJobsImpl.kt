@@ -19,6 +19,7 @@ import kotlin.time.Duration.Companion.seconds
 /**
  * Runs background maintenance jobs for the storage module:
  * 1. [StorageManager.cleanupDeletedStorageFiles] on a configurable interval.
+ * 2. [StorageManager.processExpiredPendingUploads] on a configurable interval based on presigned URL expiration.
  */
 @Singleton
 class StorageScheduledJobsImpl @Inject constructor(
@@ -31,11 +32,15 @@ class StorageScheduledJobsImpl @Inject constructor(
     @Volatile
     private var deletedFilesCleanupJob: Job? = null
 
+    @Volatile
+    private var pendingUploadsCleanupJob: Job? = null
+
     private val loopLock = Any()
 
     override fun start() {
         synchronized(loopLock) {
             startDeletedFilesCleanupJob()
+            startPendingUploadsCleanupJob()
         }
     }
 
@@ -68,7 +73,37 @@ class StorageScheduledJobsImpl @Inject constructor(
         }
     }
 
+    private fun startPendingUploadsCleanupJob() {
+        if (pendingUploadsCleanupJob?.isActive == true) {
+            return
+        }
+
+        pendingUploadsCleanupJob = scope.launch {
+            while (isActive) {
+                try {
+                    val processResult = storageManager.processExpiredPendingUploads()
+                    if (processResult is AppResult.Error) {
+                        appLogger.logError(processResult.error)
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    appLogger.logError(CommonError.Internal(e))
+                }
+
+                val intervalSeconds = storageSettingsProvider.getPresignedUrlExpirationSeconds()
+                val delaySeconds = if (intervalSeconds > 0) {
+                    intervalSeconds
+                } else {
+                    DEFAULT_PENDING_INTERVAL_SECONDS
+                }
+                delay(delaySeconds.seconds)
+            }
+        }
+    }
+
     private companion object {
-        const val DEFAULT_CLEANUP_INTERVAL_SECONDS = 300
+        const val DEFAULT_CLEANUP_INTERVAL_SECONDS = 86400
+        const val DEFAULT_PENDING_INTERVAL_SECONDS = 900
     }
 }

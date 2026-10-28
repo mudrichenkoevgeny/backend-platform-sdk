@@ -9,9 +9,6 @@ import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConf
  * Consumed by [StorageConfigFactory] implementations.
  */
 object StorageEnvKeys {
-    /** Storage backend type: "S3" or "LOCAL". */
-    const val STORAGE_TYPE = "STORAGE_TYPE"
-
     /** S3 endpoint URL. */
     const val S3_ENDPOINT = "S3_ENDPOINT"
 
@@ -26,9 +23,6 @@ object StorageEnvKeys {
 
     /** Whether to force path-style S3 addressing ("true"/"false"). */
     const val S3_FORCE_PATH_STYLE = "S3_FORCE_PATH_STYLE"
-
-    /** Root directory for local filesystem storage. */
-    const val LOCAL_STORAGE_PATH = "LOCAL_STORAGE_PATH"
 
     /** Secret file path for the S3 access key. */
     const val S3_ACCESS_KEY_FILE = "S3_ACCESS_KEY_FILE"
@@ -63,6 +57,6 @@ object StorageEnvKeys {
     /** Interval in seconds for physical cleanup of soft-deleted files from S3/storage. */
     const val STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS = "STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS"
 
-    /** Batch size for physical cleanup of soft-deleted files from S3/storage. */
-    const val STORAGE_DELETED_FILES_CLEANUP_BATCH_SIZE = "STORAGE_DELETED_FILES_CLEANUP_BATCH_SIZE"
+    /** Batch size for background maintenance jobs. */
+    const val STORAGE_MAINTENANCE_BATCH_SIZE = "STORAGE_MAINTENANCE_BATCH_SIZE"
 }

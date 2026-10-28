@@ -13,10 +13,13 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.management.securit
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.security.GetManagementSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.security.ResetSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.security.UpdateSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.security.GetOpenSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toManagementSecuritySettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.route.management.security.settings.ManagementSecuritySettingsRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.securitysettings.ManagementSecuritySettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
@@ -44,6 +47,7 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
     private val updateSecuritySettingsUseCase = mockk<UpdateSecuritySettingsUseCase>()
     private val getManagementSecuritySettingsUseCase = mockk<GetManagementSecuritySettingsUseCase>()
     private val resetSecuritySettingsUseCase = mockk<ResetSecuritySettingsUseCase>()
+    private val getOpenSecuritySettingsUseCase = mockk<GetOpenSecuritySettingsUseCase>()
 
     private val router = ManagementSecuritySettingsRouter(
         authenticationProvider = authProvider,
@@ -53,7 +57,8 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
         auditErrorConverter = auditErrorConverter,
         updateSecuritySettingsUseCase = updateSecuritySettingsUseCase,
         getManagementSecuritySettingsUseCase = getManagementSecuritySettingsUseCase,
-        resetSecuritySettingsUseCase = resetSecuritySettingsUseCase
+        resetSecuritySettingsUseCase = resetSecuritySettingsUseCase,
+        getOpenSecuritySettingsUseCase = getOpenSecuritySettingsUseCase
     )
 
     @BeforeEach
@@ -90,7 +95,7 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
         }
 
         authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
-        coEvery { updateSecuritySettingsUseCase(any(), any()) } returns AppResult.Success(Unit)
+        coEvery { updateSecuritySettingsUseCase(any(), any()) } returns AppResult.Success(createTestManagementSecuritySettings())
 
         val response = jsonClient.put(ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS) {
             bearerAuth(token)
@@ -98,7 +103,9 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
             setBody(createTestManagementSecuritySettings().toManagementSecuritySettingsPayload())
         }
 
-        assertEquals(HttpStatusCode.NoContent, response.status)
+        assertEquals(HttpStatusCode.OK, response.status)
+        val responseBody = response.body<ManagementSecuritySettingsPayload>()
+        assertEquals(createTestManagementSecuritySettings().toManagementSecuritySettingsPayload(), responseBody)
     }
 
     @Test

@@ -1,10 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.config.model
 
-import io.github.mudrichenkoevgeny.backend.core.storage.model.StorageType
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.storagesettings.ManagementStorageSettings
 
 fun createTestStorageConfig(
-    storageType: StorageType = StorageType.LOCAL,
     s3Endpoint: String = "",
     s3Region: String = "",
     s3AccessKey: String = "",
@@ -12,8 +10,7 @@ fun createTestStorageConfig(
     s3BucketName: String = "",
     s3PublicUrl: String = "https://example.com/files",
     forcePathStyle: Boolean = false,
-    localStoragePath: String = "/tmp/storage",
-    deletedFilesCleanupBatchSize: Int = 100,
+    maintenanceBatchSize: Int = 100,
     managementStorageSettings: ManagementStorageSettings = ManagementStorageSettings(
         minUploadSizeBytes = 1,
         maxUploadSizeBytes = 52428800,
@@ -26,7 +23,6 @@ fun createTestStorageConfig(
         deletedFilesCleanupIntervalSeconds = 86400
     )
 ) = StorageConfig(
-    storageType = storageType,
     s3Endpoint = s3Endpoint,
     s3Region = s3Region,
     s3AccessKey = s3AccessKey,
@@ -34,7 +30,6 @@ fun createTestStorageConfig(
     s3BucketName = s3BucketName,
     s3PublicUrl = s3PublicUrl,
     forcePathStyle = forcePathStyle,
-    localStoragePath = localStoragePath,
-    deletedFilesCleanupBatchSize = deletedFilesCleanupBatchSize,
+    maintenanceBatchSize = maintenanceBatchSize,
     managementStorageSettings = managementStorageSettings
 )

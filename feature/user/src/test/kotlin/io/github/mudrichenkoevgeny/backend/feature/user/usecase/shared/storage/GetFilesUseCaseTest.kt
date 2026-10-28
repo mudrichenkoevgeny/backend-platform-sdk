@@ -8,8 +8,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
-import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileSummary
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.storage.domain.model.file.createTestStorageFileSummary
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -24,7 +24,7 @@ class GetFilesUseCaseTest {
     private val context = createTestAuthenticatedRequestContext()
     private val currentUserId = context.userId
 
-    private val fileSummary = StorageFileSummary(
+    private val fileSummary = createTestStorageFileSummary(
         id = FileId.generate(),
         fileName = "avatar.png",
         fileSizeBytes = 500L,

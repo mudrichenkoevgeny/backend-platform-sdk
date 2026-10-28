@@ -11,6 +11,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.f
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
+import kotlin.time.Instant
 
 /**
  * Data access for storage files (persistence and querying).
@@ -174,4 +175,24 @@ interface StorageFilesRepository {
      * @return [AppResult] containing [Unit] on success or an error.
      */
     suspend fun hardDeleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit>
+
+    /**
+     * Retrieves a list of storage file records in PENDING_UPLOAD status created before the specified timestamp.
+     *
+     * @param createdBefore Threshold creation timestamp.
+     * @param limit Maximum number of records to return.
+     * @return [AppResult] containing list of [StorageFileInternal] records or an error.
+     */
+    suspend fun getExpiredPendingUploadFiles(
+        createdBefore: Instant,
+        limit: Int
+    ): AppResult<List<StorageFileInternal>>
+
+    /**
+     * Batch updates metadata and status for a list of storage file records.
+     *
+     * @param files List of [StorageFileInternal] records to update.
+     * @return [AppResult] containing [Unit] on success or an error.
+     */
+    suspend fun updateStorageFilesBatch(files: List<StorageFileInternal>): AppResult<Unit>
 }

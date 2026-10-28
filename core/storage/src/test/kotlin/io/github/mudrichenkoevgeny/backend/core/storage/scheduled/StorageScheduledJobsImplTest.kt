@@ -15,16 +15,26 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration.Companion.seconds
 
 private const val TEST_INTERVAL_SECONDS = 300
+private const val TEST_EXPIRATION_SECONDS = 900
 
 class StorageScheduledJobsImplTest {
 
     private val storageManager = mockk<StorageManager>()
     private val storageSettingsProvider = mockk<StorageSettingsProvider>()
     private val appLogger = mockk<AppLogger>(relaxed = true)
+
+    @BeforeEach
+    fun setup() {
+        every { storageSettingsProvider.getDeletedFilesCleanupIntervalSeconds() } returns TEST_INTERVAL_SECONDS
+        every { storageSettingsProvider.getPresignedUrlExpirationSeconds() } returns TEST_EXPIRATION_SECONDS
+        coEvery { storageManager.cleanupDeletedStorageFiles() } returns AppResult.Success(0)
+        coEvery { storageManager.processExpiredPendingUploads() } returns AppResult.Success(0)
+    }
 
     private fun createJobs(scope: CoroutineScope) = StorageScheduledJobsImpl(
         storageManager = storageManager,
@@ -34,15 +44,16 @@ class StorageScheduledJobsImplTest {
     )
 
     @Test
-    fun `should invoke cleanupDeletedStorageFiles immediately on start and then after interval`() = runTest {
-        every { storageSettingsProvider.getDeletedFilesCleanupIntervalSeconds() } returns TEST_INTERVAL_SECONDS
+    fun `should invoke maintenance tasks immediately on start and then after interval`() = runTest {
         coEvery { storageManager.cleanupDeletedStorageFiles() } returns AppResult.Success(2)
+        coEvery { storageManager.processExpiredPendingUploads() } returns AppResult.Success(1)
         val jobs = createJobs(backgroundScope)
 
         jobs.start()
 
         advanceTimeBy(1.seconds)
         coVerify(exactly = 1) { storageManager.cleanupDeletedStorageFiles() }
+        coVerify(exactly = 1) { storageManager.processExpiredPendingUploads() }
 
         advanceTimeBy(TEST_INTERVAL_SECONDS.seconds)
         coVerify(exactly = 2) { storageManager.cleanupDeletedStorageFiles() }
@@ -50,8 +61,6 @@ class StorageScheduledJobsImplTest {
 
     @Test
     fun `should not launch second loops if already active`() = runTest {
-        every { storageSettingsProvider.getDeletedFilesCleanupIntervalSeconds() } returns TEST_INTERVAL_SECONDS
-        coEvery { storageManager.cleanupDeletedStorageFiles() } returns AppResult.Success(0)
         val jobs = createJobs(backgroundScope)
 
         jobs.start()
@@ -59,12 +68,12 @@ class StorageScheduledJobsImplTest {
 
         advanceTimeBy(1.seconds)
         coVerify(exactly = 1) { storageManager.cleanupDeletedStorageFiles() }
+        coVerify(exactly = 1) { storageManager.processExpiredPendingUploads() }
     }
 
     @Test
     fun `should log error when manager returns failure result`() = runTest {
         val error = CommonError.Internal(Exception("Storage error"))
-        every { storageSettingsProvider.getDeletedFilesCleanupIntervalSeconds() } returns TEST_INTERVAL_SECONDS
         coEvery { storageManager.cleanupDeletedStorageFiles() } returns AppResult.Error(error)
         val jobs = createJobs(backgroundScope)
 
@@ -77,7 +86,6 @@ class StorageScheduledJobsImplTest {
     @Test
     fun `should log internal error when exception is thrown during execution`() = runTest {
         val exception = RuntimeException("Unexpected")
-        every { storageSettingsProvider.getDeletedFilesCleanupIntervalSeconds() } returns TEST_INTERVAL_SECONDS
         coEvery { storageManager.cleanupDeletedStorageFiles() } throws exception
         val jobs = createJobs(backgroundScope)
 
@@ -93,19 +101,18 @@ class StorageScheduledJobsImplTest {
 
     @Test
     fun `loops should stop when scope is cancelled`() = runTest {
-        every { storageSettingsProvider.getDeletedFilesCleanupIntervalSeconds() } returns TEST_INTERVAL_SECONDS
-        coEvery { storageManager.cleanupDeletedStorageFiles() } returns AppResult.Success(0)
-
         val testScope = CoroutineScope(coroutineContext + SupervisorJob())
         val jobs = createJobs(testScope)
 
         jobs.start()
         advanceTimeBy(1.seconds)
         coVerify(exactly = 1) { storageManager.cleanupDeletedStorageFiles() }
+        coVerify(exactly = 1) { storageManager.processExpiredPendingUploads() }
 
         testScope.cancel()
-        advanceTimeBy(TEST_INTERVAL_SECONDS.seconds)
+        advanceTimeBy(TEST_EXPIRATION_SECONDS.seconds)
 
         coVerify(exactly = 1) { storageManager.cleanupDeletedStorageFiles() }
+        coVerify(exactly = 1) { storageManager.processExpiredPendingUploads() }
     }
 }

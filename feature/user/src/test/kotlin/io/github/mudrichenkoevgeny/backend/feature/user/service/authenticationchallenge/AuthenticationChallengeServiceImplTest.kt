@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.createTestMfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.client.createTestClientInfo
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
@@ -143,22 +144,11 @@ class AuthenticationChallengeServiceImplTest {
         userId: UserId = UserId.generate(),
         sessionId: UserSessionId = UserSessionId.generate(),
         identifierId: UserIdentifierId = UserIdentifierId.generate()
-    ) = UserSessionInternal(
+    ) = createTestUserSessionInternal(
         id = sessionId,
         userId = userId,
         userRole = UserRole.USER,
-        identifier = "test-identifier",
         identifierId = identifierId,
-        identifierDisplayName = "test-identifier",
-        identifierAuthProvider = UserAuthProvider.EMAIL,
-        refreshTokenHash = RefreshTokenHash("hash"),
-        clientDeviceInfo = createTestClientInfo().clientDeviceInfo,
-        userAgent = null,
-        ipAddress = null,
-        expiresAt = Clock.System.now() + 1.hours,
-        lastAccessedAt = Clock.System.now(),
-        lastReauthenticatedAt = lastReauthenticatedAt ?: (Clock.System.now() - 1000.hours),
-        createdAt = Clock.System.now(),
-        updatedAt = null
+        lastReauthenticatedAt = lastReauthenticatedAt ?: (Clock.System.now() - 1000.hours)
     )
 }

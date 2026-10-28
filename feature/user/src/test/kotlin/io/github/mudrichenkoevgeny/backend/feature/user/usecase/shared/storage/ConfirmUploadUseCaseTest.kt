@@ -6,12 +6,12 @@ import io.github.mudrichenkoevgeny.backend.core.storage.manager.StorageManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
-import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFilePrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.storage.domain.model.file.createTestStorageFilePrivate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -26,7 +26,7 @@ class ConfirmUploadUseCaseTest {
     private val currentUserId = context.userId
     private val fileId = FileId.generate()
 
-    private val filePrivate = StorageFilePrivate(
+    private val filePrivate = createTestStorageFilePrivate(
         id = fileId,
         ownerUserId = currentUserId.asHexDashString(),
         fileName = "avatar.png",

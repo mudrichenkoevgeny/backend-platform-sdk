@@ -28,10 +28,13 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.less
 import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.core.lowerCase
 import org.jetbrains.exposed.v1.core.or
+import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.Query
+import org.jetbrains.exposed.v1.jdbc.batchUpsert
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
@@ -40,6 +43,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
+import kotlin.time.Instant
 
 /**
  * Exposed-backed implementation of [StorageFilesRepository].
@@ -54,20 +58,7 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
         return try {
             val now = Clock.System.now()
             StorageFilesTable.upsert(StorageFilesTable.id) { row ->
-                row[id] = storageFile.id.value
-                row[ownerUserId] = storageFile.ownerUserId
-                row[fileName] = storageFile.fileName
-                row[fileSizeBytes] = storageFile.fileSizeBytes
-                row[mimeType] = storageFile.mimeType
-                row[category] = storageFile.category
-                row[visibility] = storageFile.visibility
-                row[status] = storageFile.status
-                row[targetScope] = storageFile.targetScope
-                row[contentHash] = storageFile.contentHash
-                row[s3Bucket] = storageFile.s3Bucket
-                row[s3Key] = storageFile.s3Key
-                row[createdAt] = storageFile.createdAt.toJavaInstant()
-                row[updatedAt] = now.toJavaInstant()
+                row.toStorageFileRow(storageFile = storageFile, updatedAtInstant = now)
             }
             AppResult.Success(storageFile.copy(updatedAt = now))
         } catch (e: CancellationException) {
@@ -413,5 +404,61 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
         } catch (e: Exception) {
             AppResult.Error(CommonError.Database("Error hard deleting storage files batch: ${e.message}"))
         }
+    }
+
+    override suspend fun getExpiredPendingUploadFiles(
+        createdBefore: Instant,
+        limit: Int
+    ): AppResult<List<StorageFileInternal>> {
+        return try {
+            val items = StorageFilesTable.selectAll()
+                .where { (StorageFilesTable.status eq StorageFileStatus.PENDING_UPLOAD) and
+                        (StorageFilesTable.createdAt less createdBefore.toJavaInstant()) }
+                .limit(limit)
+                .map { it.toStorageFileInternal() }
+            AppResult.Success(items)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Database("Error retrieving expired pending upload files: ${e.message}"))
+        }
+    }
+
+    override suspend fun updateStorageFilesBatch(files: List<StorageFileInternal>): AppResult<Unit> {
+        if (files.isEmpty()) {
+            return AppResult.Success(Unit)
+        }
+
+        return try {
+            val now = Clock.System.now()
+            StorageFilesTable.batchUpsert(files, keys = arrayOf(StorageFilesTable.id)) { file ->
+                toStorageFileRow(storageFile = file, updatedAtInstant = now)
+            }
+            AppResult.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Database("Error batch updating storage files: ${e.message}"))
+        }
+    }
+
+    private fun UpdateBuilder<*>.toStorageFileRow(
+        storageFile: StorageFileInternal,
+        updatedAtInstant: Instant
+    ) {
+        this[StorageFilesTable.id] = storageFile.id.value
+        this[StorageFilesTable.ownerUserId] = storageFile.ownerUserId
+        this[StorageFilesTable.fileName] = storageFile.fileName
+        this[StorageFilesTable.fileSizeBytes] = storageFile.fileSizeBytes
+        this[StorageFilesTable.mimeType] = storageFile.mimeType
+        this[StorageFilesTable.category] = storageFile.category
+        this[StorageFilesTable.visibility] = storageFile.visibility
+        this[StorageFilesTable.status] = storageFile.status
+        this[StorageFilesTable.targetScope] = storageFile.targetScope
+        this[StorageFilesTable.contentHash] = storageFile.contentHash
+        this[StorageFilesTable.s3Bucket] = storageFile.s3Bucket
+        this[StorageFilesTable.s3Key] = storageFile.s3Key
+        this[StorageFilesTable.createdAt] = storageFile.createdAt.toJavaInstant()
+        this[StorageFilesTable.updatedAt] = updatedAtInstant.toJavaInstant()
     }
 }

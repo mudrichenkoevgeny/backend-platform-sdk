@@ -28,6 +28,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.s
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.permission.StoragePermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.mapper.file.toStorageFilePrivate
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.mapper.file.toStorageFileSummary
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -117,7 +120,7 @@ class StorageManagerImpl @Inject constructor(
 
         val now = Clock.System.now()
         val fileId = FileId.generate()
-        val s3Key = "uploads/${now.epochSeconds}/${fileId.value}"
+        val s3Key = "${now.epochSeconds}/${fileId.value}"
 
         val expirationSeconds = settingsProvider.getPresignedUrlExpirationSeconds()
         val presignedUrlResult = storageService.generatePresignedPutUrl(
@@ -238,9 +241,25 @@ class StorageManagerImpl @Inject constructor(
         val fileResult = filesRepository.getStorageFileById(fileId)
         when (fileResult) {
             is AppResult.Success -> {
-                val file = fileResult.data ?: return@dbQuery AppResult.Success(null)
+                var file = fileResult.data ?: return@dbQuery AppResult.Success(null)
                 if (file.ownerUserId != ownerUserId) {
                     return@dbQuery AppResult.Error(StorageError.FileNotFound(fileId))
+                }
+
+                if (file.status == StorageFileStatus.PENDING_UPLOAD) {
+                    val metadataResult = storageService.getObjectMetadata(file.s3Key)
+                    if (metadataResult is AppResult.Success) {
+                        val metadata = metadataResult.data
+                        val updateResult = filesRepository.updateStorageFile(
+                            fileId = file.id,
+                            status = UpdateField.Set(StorageFileStatus.READY),
+                            fileSizeBytes = UpdateField.Set(metadata.sizeBytes),
+                            contentHash = UpdateField.Set(metadata.eTag)
+                        )
+                        if (updateResult is AppResult.Success) {
+                            file = updateResult.data
+                        }
+                    }
                 }
 
                 val fileUrl = storageService.getUrl(file.s3Key).dataOrNull().orEmpty()
@@ -344,7 +363,7 @@ class StorageManagerImpl @Inject constructor(
     }
 
     override suspend fun cleanupDeletedStorageFiles(batchSize: Int?): AppResult<Int> = dbQuery {
-        val effectiveBatchSize = batchSize ?: storageConfig.deletedFilesCleanupBatchSize
+        val effectiveBatchSize = batchSize ?: storageConfig.maintenanceBatchSize
         val filesResult = filesRepository.getStorageFilesByStatus(
             status = StorageFileStatus.DELETED,
             limit = effectiveBatchSize
@@ -372,5 +391,64 @@ class StorageManagerImpl @Inject constructor(
         }
 
         AppResult.Success(deletedFiles.size)
+    }
+
+    override suspend fun processExpiredPendingUploads(batchSize: Int?): AppResult<Int> = dbQuery {
+        val effectiveBatchSize = batchSize ?: storageConfig.maintenanceBatchSize
+        val expirationSeconds = settingsProvider.getPresignedUrlExpirationSeconds()
+        val createdBefore = Clock.System.now() - expirationSeconds.seconds
+
+        val filesResult = filesRepository.getExpiredPendingUploadFiles(
+            createdBefore = createdBefore,
+            limit = effectiveBatchSize
+        )
+
+        val pendingFiles = when (filesResult) {
+            is AppResult.Success -> filesResult.data
+            is AppResult.Error -> return@dbQuery filesResult
+        }
+
+        if (pendingFiles.isEmpty()) {
+            return@dbQuery AppResult.Success(0)
+        }
+
+        val readyFiles = mutableListOf<StorageFileInternal>()
+        val abandonedFileIds = mutableListOf<FileId>()
+
+        coroutineScope {
+            val results = pendingFiles.map { file ->
+                async {
+                    val metadataResult = storageService.getObjectMetadata(file.s3Key)
+                    file to metadataResult
+                }
+            }.awaitAll()
+
+            results.forEach { (file, metadataResult) ->
+                if (metadataResult is AppResult.Success) {
+                    val metadata = metadataResult.data
+                    readyFiles.add(
+                        file.copy(
+                            status = StorageFileStatus.READY,
+                            fileSizeBytes = metadata.sizeBytes,
+                            contentHash = metadata.eTag
+                        )
+                    )
+                } else {
+                    abandonedFileIds.add(file.id)
+                }
+            }
+        }
+
+        if (readyFiles.isNotEmpty()) {
+            val updateResult = filesRepository.updateStorageFilesBatch(readyFiles)
+            if (updateResult is AppResult.Error) return@dbQuery updateResult
+        }
+
+        if (abandonedFileIds.isNotEmpty()) {
+            val deleteResult = filesRepository.hardDeleteStorageFilesBatch(abandonedFileIds)
+            if (deleteResult is AppResult.Error) return@dbQuery deleteResult
+        }
+
+        AppResult.Success(readyFiles.size + abandonedFileIds.size)
     }
 }

@@ -185,10 +185,21 @@ interface StorageManager {
     /**
      * Finds files marked as DELETED, removes their physical binaries from storage, and hard deletes their database records.
      *
-     * @param batchSize Optional custom batch size. If null, the configured [StorageConfig.deletedFilesCleanupBatchSize] is used.
+     * @param batchSize Optional custom batch size. If null, the configured [StorageConfig.maintenanceBatchSize] is used.
      * @return [AppResult.Success] containing the number of successfully cleaned up files or an error.
      */
     suspend fun cleanupDeletedStorageFiles(
+        batchSize: Int? = null
+    ): AppResult<Int>
+
+    /**
+     * Processes expired pending upload sessions. If S3 confirms the file exists, updates its status to READY.
+     * Otherwise, hard-deletes the abandoned upload record from the database to restore pending quota.
+     *
+     * @param batchSize Optional custom batch size. If null, the configured [StorageConfig.maintenanceBatchSize] is used.
+     * @return [AppResult.Success] containing the number of successfully processed files or an error.
+     */
+    suspend fun processExpiredPendingUploads(
         batchSize: Int? = null
     ): AppResult<Int>
 }

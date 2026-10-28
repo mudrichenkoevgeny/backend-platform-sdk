@@ -41,6 +41,7 @@ dependencies {
 
     // Testing
     testImplementation(testFixtures(project(":core:common")))
+    testRuntimeOnly(libs.h2database)
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.junit.jupiter.api)

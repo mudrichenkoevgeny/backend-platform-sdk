@@ -257,7 +257,7 @@ class SessionManagerImpl @Inject constructor(
         userId: UserId,
         userRole: UserRole,
         clientInfo: ClientInfo
-    ) {
+    ) = dbQuery {
         val userIdentifiersResult = userIdentifierRepository.getUserIdentifiersListByUserId(userId)
         if (userIdentifiersResult is AppResult.Success) {
             val emailIdentifier = userIdentifiersResult.data.find { it.userAuthProvider == UserAuthProvider.EMAIL }

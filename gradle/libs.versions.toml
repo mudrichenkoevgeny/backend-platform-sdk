@@ -11,7 +11,7 @@ dependency-analysis = "3.19.2"
 gradle-versions-plugin = "0.66.0"
 
 # Shared Foundation
-shared-foundation = "0.0.91"
+shared-foundation = "0.0.97"
 
 # Kotlin
 kotlinx-serialization = "1.12.0"

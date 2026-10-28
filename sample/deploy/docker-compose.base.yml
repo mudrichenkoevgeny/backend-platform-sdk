@@ -20,6 +20,7 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: ${APP_NAME}-migrator
       KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+      S3_ENDPOINT: ${S3_ENDPOINT}
       SECRETS_DIR: /app/sample/deploy/secrets
       DB_MIGRATE_ON_STARTUP: "true"
     secrets:
@@ -68,6 +69,7 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: ${APP_NAME}-public
       KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+      S3_ENDPOINT: ${S3_ENDPOINT}
       SECRETS_DIR: /app/sample/deploy/secrets
       DB_MIGRATE_ON_STARTUP: "false"
     secrets:
@@ -116,6 +118,7 @@ services:
       OTEL_EXPORTER_OTLP_PROTOCOL: grpc
       OTEL_SERVICE_NAME: ${APP_NAME}-admin
       KAFKA_BOOTSTRAP_SERVERS: kafka:9094
+      S3_ENDPOINT: ${S3_ENDPOINT}
       SECRETS_DIR: /app/sample/deploy/secrets
       DB_MIGRATE_ON_STARTUP: "false"
     secrets:

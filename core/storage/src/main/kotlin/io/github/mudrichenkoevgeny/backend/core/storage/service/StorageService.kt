@@ -2,14 +2,12 @@ package io.github.mudrichenkoevgeny.backend.core.storage.service
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
 import io.github.mudrichenkoevgeny.backend.core.storage.domain.model.S3ObjectMetadata
 
 /**
- * Abstraction over object storage used by the SDK.
+ * Abstraction over S3-compatible object storage used by the SDK.
  *
- * Implementations may store objects on a local filesystem ([LocalStorageService]) or in S3-compatible storage ([S3StorageService]).
- * The default implementation is selected by DI based on [StorageConfig.storageType].
+ * Implemented by [S3StorageService] using AWS SDK.
  *
  * Methods return [AppResult] to provide a consistent error model across SDK modules.
  */
