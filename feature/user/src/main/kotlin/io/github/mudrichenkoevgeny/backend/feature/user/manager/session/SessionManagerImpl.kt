@@ -295,7 +295,7 @@ class SessionManagerImpl @Inject constructor(
 
         val now = Clock.System.now()
 
-        val isSessionValid = currentUserSession?.toUserSessionPrivate()?.isValid(
+        val isSessionValid = currentUserSession?.isValid(
             clientDeviceId = clientInfo.clientDeviceInfo.deviceId,
             now = now
         ) ?: false
