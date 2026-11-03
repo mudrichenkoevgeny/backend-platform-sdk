@@ -1,27 +1,25 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
-import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
+import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserStorageConfigurationPayload
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
@@ -39,7 +37,7 @@ class UserManagerImpl @Inject constructor(
     private val userRepository: UserRepository,
     private val authSettingsProvider: AuthSettingsProvider,
     private val lockoutManager: LockoutManager
-): UserManager {
+) : UserManager {
 
     override suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?> = dbQuery {
         val userResult = userRepository.getUserInternalById(userId)
@@ -54,7 +52,9 @@ class UserManagerImpl @Inject constructor(
         role: UserRole,
         accountStatus: UserAccountStatus,
         authorityLevel: Int,
-        permissions: Set<PermissionCode>
+        permissions: Set<PermissionCode>,
+        displayName: String?,
+        nickname: String?
     ): AppResult<UserInternal> = dbQuery {
         val now = Clock.System.now()
 
@@ -73,7 +73,11 @@ class UserManagerImpl @Inject constructor(
             createdAt = now,
             updatedAt = null,
             scheduledPermanentDeletionAt = null,
-            storageConfiguration = null
+            storageConfiguration = null,
+            nickname = nickname,
+            displayName = displayName,
+            avatarFileId = null,
+            birthdate = null
         )
 
         userRepository.createUser(user)
@@ -84,74 +88,56 @@ class UserManagerImpl @Inject constructor(
         role: UserRole,
         accountStatus: UserAccountStatus,
         authorityLevel: Int,
-        permissions: Set<PermissionCode>
-    ): AppResult<UserInternal> {
-        return if (userId == null) {
-            createUser(
-                role = role,
-                accountStatus = accountStatus,
-                authorityLevel = authorityLevel,
-                permissions = permissions
-            )
-        } else {
-            getUserInternalById(userId).mapNotNullOrError(
-                UserError.UserNotFound()
-            )
-        }
+        permissions: Set<PermissionCode>,
+        displayName: String?,
+        nickname: String?
+    ): AppResult<UserInternal> = if (userId == null) {
+        createUser(
+            role = role,
+            accountStatus = accountStatus,
+            authorityLevel = authorityLevel,
+            permissions = permissions,
+            displayName = displayName,
+            nickname = nickname
+        )
+    } else {
+        getUserInternalById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
     }
 
     override suspend fun updateUser(
         user: UserInternal,
-        accountStatus: UserAccountStatus?,
-        authorityLevel: Int?,
-        permissions: Set<PermissionCode>?,
-        lockoutType: AccountLockoutType?,
-        temporaryLockoutUntil: Long?,
-        storageConfiguration: UserStorageConfigurationPayload?
+        updateUserParams: UpdateUserParams
     ): AppResult<UserInternal?> = dbQuery {
-        var statusUpdate: UpdateField<UserAccountStatus> = accountStatus
-            ?.let { UpdateField.Set(it) } ?: UpdateField.Ignore
+        val targetAccountStatus = (updateUserParams.accountStatus as? UpdateField.Set)?.value
+
+        var statusUpdate: UpdateField<UserAccountStatus> = updateUserParams.accountStatus
         var statusOnRestoreUpdate: UpdateField<UserAccountStatus> = UpdateField.Ignore
         var scheduledDeletionUpdate: UpdateField<Instant> = UpdateField.Ignore
 
-        if (accountStatus == UserAccountStatus.PENDING_DELETION
+        if (targetAccountStatus == UserAccountStatus.PENDING_DELETION
             && user.accountStatus != UserAccountStatus.PENDING_DELETION
         ) {
             statusUpdate = UpdateField.Set(UserAccountStatus.PENDING_DELETION)
             statusOnRestoreUpdate = UpdateField.Set(user.accountStatus)
             scheduledDeletionUpdate = UpdateField.Set(getScheduledPermanentDeletionAt())
         } else if (user.accountStatus == UserAccountStatus.PENDING_DELETION
-            && accountStatus != null
-            && accountStatus != UserAccountStatus.PENDING_DELETION
+            && targetAccountStatus != null
+            && targetAccountStatus != UserAccountStatus.PENDING_DELETION
         ) {
             statusUpdate = UpdateField.Ignore
-            statusOnRestoreUpdate = UpdateField.Set(accountStatus)
+            statusOnRestoreUpdate = UpdateField.Set(targetAccountStatus)
             scheduledDeletionUpdate = UpdateField.Ignore
         }
 
-        var storageQuotaBytesUpdate: UpdateField<Long> = UpdateField.Ignore
-        var storageMaxUploadSizeBytesUpdate: UpdateField<Long> = UpdateField.Ignore
-        var storageMaxPendingUploadsUpdate: UpdateField<Int> = UpdateField.Ignore
-
-        if (storageConfiguration != null) {
-            storageQuotaBytesUpdate = UpdateField.Set(storageConfiguration.quotaBytes)
-            storageMaxUploadSizeBytesUpdate = UpdateField.Set(storageConfiguration.maxUploadSizeBytes)
-            storageMaxPendingUploadsUpdate = UpdateField.Set(storageConfiguration.maxPendingUploads)
-        }
+        val repositoryUpdateParams = updateUserParams.copy(
+            accountStatus = statusUpdate,
+            accountStatusOnRestore = statusOnRestoreUpdate,
+            scheduledPermanentDeletionAt = scheduledDeletionUpdate
+        )
 
         userRepository.updateUser(
             userId = user.id,
-            status = statusUpdate,
-            statusOnRestore = statusOnRestoreUpdate,
-            authorityLevel = authorityLevel?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
-            permissionCodes = permissions?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
-            storageQuotaBytes = storageQuotaBytesUpdate,
-            storageMaxUploadSizeBytes = storageMaxUploadSizeBytesUpdate,
-            storageMaxPendingUploads = storageMaxPendingUploadsUpdate,
-            scheduledPermanentDeletionAt = scheduledDeletionUpdate,
-            accountLockoutType = lockoutType?.let { UpdateField.Set(it) } ?: UpdateField.Ignore,
-            temporaryLockoutUntil = temporaryLockoutUntil
-                ?.let { UpdateField.Set(Instant.fromEpochMilliseconds(it)) } ?: UpdateField.Ignore
+            updateUserParams = repositoryUpdateParams
         ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
     }
 
@@ -178,41 +164,24 @@ class UserManagerImpl @Inject constructor(
         }
     }
 
+    override suspend fun getUserInternalByNickname(nickname: String): AppResult<UserInternal?> = dbQuery {
+        userRepository.getUserInternalByNickname(nickname)
+    }
+
     override suspend fun getUsersInternalPage(
         managementUserPermissionCodes: Set<PermissionCode>,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserSortBy,
-        sortOrder: SortOrder,
-        roles: List<UserRole>,
-        accountStatuses: List<UserAccountStatus>,
-        accountStatusesOnRestore: List<UserAccountStatus>,
-        authorityLevelFrom: Int?,
-        authorityLevelTo: Int?,
-        permissionCodes: Set<PermissionCode>,
-        isTotpEnabled: Boolean?,
-        accountLockoutTypes: List<AccountLockoutType>
+        queryParams: UserListQueryParams
     ): AppResult<PagedResult<UserInternal>> = dbQuery {
         val accessFilter = buildAccessFilter(managementUserPermissionCodes)
         val pagedResult = userRepository.getUsersPageWithAccessFilter(
             accessFilter = accessFilter,
-            pageParams = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            roles = roles,
-            accountStatuses = accountStatuses,
-            accountStatusesOnRestore = accountStatusesOnRestore,
-            authorityLevelFrom = authorityLevelFrom,
-            authorityLevelTo = authorityLevelTo,
-            permissionCodes = permissionCodes,
-            isTotpEnabled = isTotpEnabled,
-            accountLockoutTypes = accountLockoutTypes
+            queryParams = queryParams
         )
 
         val enrichedItems = when (pagedResult) {
             is AppResult.Success -> {
-                val enrichedList = mutableListOf<UserInternal>()
-                for (item in pagedResult.data.items) {
-                    enrichedList.add(enrichUserInternalWithLockout(item))
+                val enrichedList = pagedResult.data.items.map { item ->
+                    enrichUserInternalWithLockout(item)
                 }
                 PagedResult(
                     items = enrichedList,
@@ -234,9 +203,11 @@ class UserManagerImpl @Inject constructor(
     ): AppResult<UserInternal> = dbQuery {
         userRepository.updateUser(
             userId = userId,
-            status = UpdateField.Set(newStatus),
-            statusOnRestore = UpdateField.Set(null),
-            scheduledPermanentDeletionAt = UpdateField.Set(null)
+            updateUserParams = UpdateUserParams(
+                accountStatus = UpdateField.Set(newStatus),
+                accountStatusOnRestore = UpdateField.Set(null),
+                scheduledPermanentDeletionAt = UpdateField.Set(null)
+            )
         ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
     }
 
@@ -246,9 +217,11 @@ class UserManagerImpl @Inject constructor(
     ): AppResult<UserInternal> = dbQuery {
         userRepository.updateUser(
             userId = userId,
-            status = UpdateField.Set(UserAccountStatus.PENDING_DELETION),
-            statusOnRestore = UpdateField.Set(currentStatus),
-            scheduledPermanentDeletionAt = UpdateField.Set(getScheduledPermanentDeletionAt())
+            updateUserParams = UpdateUserParams(
+                accountStatus = UpdateField.Set(UserAccountStatus.PENDING_DELETION),
+                accountStatusOnRestore = UpdateField.Set(currentStatus),
+                scheduledPermanentDeletionAt = UpdateField.Set(getScheduledPermanentDeletionAt())
+            )
         ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
     }
 
@@ -268,24 +241,33 @@ class UserManagerImpl @Inject constructor(
 
         userRepository.updateUser(
             userId = userId,
-            accountLockoutType = UpdateField.Set(AccountLockoutType.NONE),
-            temporaryLockoutUntil = UpdateField.Set(null)
+            updateUserParams = UpdateUserParams(
+                lockoutType = UpdateField.Set(AccountLockoutType.NONE),
+                temporaryLockoutUntil = UpdateField.Set(null)
+            )
         ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
     }
 
-    override suspend fun lockUserAccount(userId: UserId, temporaryLockoutUntil: Instant): AppResult<UserInternal> = dbQuery {
+    override suspend fun lockUserAccount(
+        userId: UserId,
+        temporaryLockoutUntil: Instant
+    ): AppResult<UserInternal> = dbQuery {
         userRepository.updateUser(
             userId = userId,
-            accountLockoutType = UpdateField.Set(AccountLockoutType.TEMPORARY),
-            temporaryLockoutUntil = UpdateField.Set(temporaryLockoutUntil)
+            updateUserParams = UpdateUserParams(
+                lockoutType = UpdateField.Set(AccountLockoutType.TEMPORARY),
+                temporaryLockoutUntil = UpdateField.Set(temporaryLockoutUntil)
+            )
         ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
     }
 
     override suspend fun lockUserAccountIndefinitely(userId: UserId): AppResult<UserInternal> = dbQuery {
         userRepository.updateUser(
             userId = userId,
-            accountLockoutType = UpdateField.Set(AccountLockoutType.INDEFINITE),
-            temporaryLockoutUntil = UpdateField.Set(null)
+            updateUserParams = UpdateUserParams(
+                lockoutType = UpdateField.Set(AccountLockoutType.INDEFINITE),
+                temporaryLockoutUntil = UpdateField.Set(null)
+            )
         ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
     }
 
@@ -300,14 +282,14 @@ class UserManagerImpl @Inject constructor(
             is AppResult.Error -> return@dbQuery expiredUsersResult
         }
 
-        var unlockedCount = 0
-        for (userId in userIds) {
-            val unlockResult = unlockUserAccount(userId)
-            if (unlockResult is AppResult.Success) {
-                unlockedCount++
-            }
+        if (userIds.isEmpty()) {
+            return@dbQuery AppResult.Success(0)
         }
-        AppResult.Success(unlockedCount)
+
+        val identifierStrings = userIds.map { userId -> userId.asHexDashString() }
+        lockoutManager.clearLockoutsBatch(identifierStrings)
+
+        userRepository.unlockUsersBatch(userIds).mapSuccess { userIds.size }
     }
 
     private suspend fun enrichUserInternalWithLockout(user: UserInternal): UserInternal {

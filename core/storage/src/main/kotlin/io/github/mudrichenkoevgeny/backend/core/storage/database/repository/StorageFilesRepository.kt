@@ -1,16 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.database.repository
 
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.storage.network.model.ManagementStorageFileListQueryParams
+import io.github.mudrichenkoevgeny.backend.core.storage.network.model.SelfStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
-import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileInternal
-import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
 import kotlin.time.Instant
 
 /**
@@ -107,53 +104,23 @@ interface StorageFilesRepository {
     /**
      * Retrieves a paginated list of storage files for management purposes.
      *
-     * @param pageParams Pagination settings.
-     * @param sortBy Field to sort the results by.
-     * @param sortOrder Sorting direction.
-     * @param ownerUserIds Optional filter for specific owner user IDs.
-     * @param categories Optional filter by categories.
-     * @param visibilities Optional filter by visibilities.
-     * @param statuses Optional filter by file statuses.
-     * @param mimeTypes Optional filter by MIME type substrings.
-     * @param fileNames Optional filter by file name substrings.
+     * @param queryParams structured filter and pagination parameters ([ManagementStorageFileListQueryParams]).
      * @return [AppResult] containing [PagedResult] of [StorageFileInternal] records or an error.
      */
     suspend fun getStorageFilesPageForManagement(
-        pageParams: PageParams,
-        sortBy: StorageSortValues.StorageFileSortBy,
-        sortOrder: SortOrder,
-        ownerUserIds: List<String>,
-        categories: List<StorageCategory>,
-        visibilities: List<StorageFileVisibility>,
-        statuses: List<StorageFileStatus>,
-        mimeTypes: List<String>,
-        fileNames: List<String>
+        queryParams: ManagementStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileInternal>>
 
     /**
      * Retrieves a paginated list of storage files belonging to a specific user.
      *
      * @param ownerUserId The ID of the owner.
-     * @param pageParams Pagination settings.
-     * @param sortBy Field to sort the results by.
-     * @param sortOrder Sorting direction.
-     * @param categories Optional filter by categories.
-     * @param visibilities Optional filter by visibilities.
-     * @param statuses Optional filter by file statuses.
-     * @param mimeTypes Optional filter by MIME type substrings.
-     * @param fileNames Optional filter by file name substrings.
+     * @param queryParams structured filter and pagination parameters ([SelfStorageFileListQueryParams]).
      * @return [AppResult] containing [PagedResult] of [StorageFileInternal] records or an error.
      */
     suspend fun getStorageFilesPageByOwnerUserId(
         ownerUserId: String,
-        pageParams: PageParams,
-        sortBy: StorageSortValues.StorageFileSortBy,
-        sortOrder: SortOrder,
-        categories: List<StorageCategory>,
-        visibilities: List<StorageFileVisibility>,
-        statuses: List<StorageFileStatus>,
-        mimeTypes: List<String>,
-        fileNames: List<String>
+        queryParams: SelfStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileInternal>>
 
     /**

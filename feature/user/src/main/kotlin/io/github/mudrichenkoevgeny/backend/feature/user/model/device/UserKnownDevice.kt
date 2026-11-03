@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.model.device
 
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import kotlin.time.Instant
 
@@ -18,7 +19,7 @@ import kotlin.time.Instant
  */
 data class UserKnownDevice(
     val userId: UserId,
-    val deviceId: String,
+    val deviceId: ClientDeviceId,
     val firstIpAddress: String?,
     val lastIpAddress: String?,
     val userAgent: String?,

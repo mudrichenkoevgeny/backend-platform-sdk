@@ -44,8 +44,7 @@ class AuditLoggerImpl @Inject constructor(
                 status = status,
                 metadata = metadata,
                 message = message,
-                createdAt = Clock.System.now(),
-                updatedAt = null
+                createdAt = Clock.System.now()
             )
         )
     }

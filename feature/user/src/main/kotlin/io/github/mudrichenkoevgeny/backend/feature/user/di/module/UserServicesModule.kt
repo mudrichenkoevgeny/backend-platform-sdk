@@ -15,6 +15,10 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unconfigur
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.UniOneEmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneServiceImpl
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.validator.displayname.DisplayNameValidator
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.validator.displayname.DisplayNameValidatorImpl
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.validator.nickname.NicknameValidator
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.validator.nickname.NicknameValidatorImpl
 import javax.inject.Singleton
 
 /**
@@ -65,6 +69,18 @@ interface UserServicesModule {
                 )
                 else -> unconfiguredEmailService
             }
+        }
+
+        @Provides
+        @Singleton
+        fun provideNicknameValidator(): NicknameValidator {
+            return NicknameValidatorImpl()
+        }
+
+        @Provides
+        @Singleton
+        fun provideDisplayNameValidator(): DisplayNameValidator {
+            return DisplayNameValidatorImpl()
         }
     }
 }

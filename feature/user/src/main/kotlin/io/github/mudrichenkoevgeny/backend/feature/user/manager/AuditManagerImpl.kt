@@ -3,26 +3,21 @@ package io.github.mudrichenkoevgeny.backend.feature.user.manager
 import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepository
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditAccessFilter
 import io.github.mudrichenkoevgeny.backend.core.audit.mask.AuditDataMasker.maskSensitiveData
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.backend.core.audit.network.model.ManagementAuditEventListQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionRequirement
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventSummary
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventSummary
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -64,33 +59,13 @@ class AuditManagerImpl @Inject constructor(
 
     override suspend fun getAuditEventsSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
-        pageParams: PageParams,
-        sortBy: AuditSortValues.AuditEventSortBy,
-        sortOrder: SortOrder,
-        actorIds: List<String>,
-        actorTypes: List<AuditActorType>,
-        actorUserRoles: List<String>,
-        actions: List<AuditActionType>,
-        resources: List<AuditResourceType>,
-        resourceIds: List<String>,
-        statuses: List<AuditStatus>,
-        messages: List<String>
+        queryParams: ManagementAuditEventListQueryParams
     ): AppResult<PagedResult<AuditEventSummary>> = dbQuery {
         val accessFilter = buildAccessFilter(managementUserPermissionCodes)
 
         val getEventsResult = auditRepository.getEventsPageWithAccessFilter(
             accessFilter = accessFilter,
-            pageParams = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            actorIds = actorIds,
-            actorTypes = actorTypes,
-            actorUserRoles = actorUserRoles,
-            actions = actions,
-            resources = resources,
-            resourceIds = resourceIds,
-            statuses = statuses,
-            messages = messages
+            queryParams = queryParams
         )
 
         when (getEventsResult) {

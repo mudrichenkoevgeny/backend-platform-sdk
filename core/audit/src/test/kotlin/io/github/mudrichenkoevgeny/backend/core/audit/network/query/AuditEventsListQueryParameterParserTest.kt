@@ -1,10 +1,13 @@
-package io.github.mudrichenkoevgeny.backend.feature.user.network.query
+package io.github.mudrichenkoevgeny.backend.core.audit.network.query
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.testing.contract.assertAllSortByEnumEntriesParsed
+import io.github.mudrichenkoevgeny.backend.core.common.testing.contract.assertExhaustiveFilterKeysParsed
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditFilterValues
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditEventFilterValues
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditEventSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CompositeAuditResourceTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
@@ -26,11 +29,41 @@ class AuditEventsListQueryParameterParserTest {
     private val resourceParser = CompositeAuditResourceTypeParser(listOf(UserAuditResourceType::fromValueOrNull))
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()
-    private val params = AuditFilterValues.AuditEventFilterValues
+    private val params = AuditEventFilterValues
 
     @BeforeEach
     fun setup() {
         every { call.request } returns request
+    }
+
+    @Test
+    fun `parseAuditEventsListQueryParams should extract and parse all wire keys defined in AuditEventFilterValues`() {
+        assertExhaustiveFilterKeysParsed(
+            filterKeysClass = AuditEventFilterValues::class,
+            sampleValueProvider = ::getSampleValidValueForAuditFilterKey,
+            parseFunction = { mockCall -> mockCall.parseAuditEventsListQueryParams(actionParser, resourceParser) }
+        )
+    }
+
+    @Test
+    fun `parseAuditEventsListQueryParams should accept and parse all AuditEventSortBy wire values`() {
+        assertAllSortByEnumEntriesParsed(
+            enumEntries = AuditEventSortBy.entries,
+            wireValueExtractor = { sortByEntry -> sortByEntry.value },
+            parseFunction = { mockCall -> mockCall.parseAuditEventsListQueryParams(actionParser, resourceParser) },
+            assertSortByFunction = { parsedQueryParams, expectedSortBy ->
+                assertEquals(expectedSortBy, parsedQueryParams.listing.sortBy)
+            }
+        )
+    }
+
+    private fun getSampleValidValueForAuditFilterKey(key: String): String = when {
+        key == params.ACTOR_TYPE -> AuditActorType.USER.value
+        key == params.STATUS -> AuditStatus.SUCCESS.value
+        key == params.ACTION -> UserAuditActionType.LOGIN_BY_EMAIL.value
+        key == params.RESOURCE -> UserAuditResourceType.USER.value
+        key.endsWith("_from") || key.endsWith("_to") -> "2026-01-01T00:00:00Z"
+        else -> "sample_value"
     }
 
     private fun setupParameters(parameters: Parameters) {
@@ -58,7 +91,7 @@ class AuditEventsListQueryParameterParserTest {
             append(params.ACTOR_USER_ROLE, "admin")
             append(params.RESOURCE_ID, "res-456")
             append(params.STATUS, AuditStatus.SUCCESS.value)
-            append(params.MESSAGE, "test-message")
+            append(params.SEARCH_QUERY, "test-message")
         }
         setupParameters(queryParameters)
 
@@ -69,7 +102,7 @@ class AuditEventsListQueryParameterParserTest {
         assertEquals(listOf("admin"), result.actorUserRoles)
         assertEquals(listOf("res-456"), result.resourceIds)
         assertEquals(listOf(AuditStatus.SUCCESS), result.statuses)
-        assertEquals(listOf("test-message"), result.messages)
+        assertEquals("test-message", result.searchQuery)
     }
 
     @Test
@@ -88,8 +121,8 @@ class AuditEventsListQueryParameterParserTest {
 
         val result = call.parseAuditEventsListQueryParams(actionParser, resourceParser)
 
-        assertEquals(listOf(mockAction), result.actions)
-        assertEquals(listOf(mockResource), result.resources)
+        assertEquals(listOf(mockAction.value), result.actions)
+        assertEquals(listOf(mockResource.value), result.resources)
     }
 
     @Test

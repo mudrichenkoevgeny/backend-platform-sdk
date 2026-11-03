@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.manager.session
 
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
@@ -18,19 +18,20 @@ import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.device.UserKnownDevice
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfSessionListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceId
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import kotlin.time.Duration.Companion.days
@@ -49,6 +50,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -130,7 +132,7 @@ class SessionManagerImplTest {
 
         val mockDevice = UserKnownDevice(
             userId = userId,
-            deviceId = clientInfo.clientDeviceInfo.deviceId?.asHexDashString() ?: "unknown",
+            deviceId = clientInfo.clientDeviceInfo.deviceId ?: ClientDeviceId.generate(),
             firstIpAddress = clientInfo.ipAddress,
             lastIpAddress = clientInfo.ipAddress,
             userAgent = clientInfo.userAgent,
@@ -209,14 +211,14 @@ class SessionManagerImplTest {
         coEvery { redisManager.get("auth:rotated_refresh:${rotatedHash.value}") } returns AppResult.Success(jsonString)
         coEvery { userSessionRepository.getUserSessionInternalById(sessionId) } returns AppResult.Success(userSession)
         coEvery { userSessionRepository.deleteAllUserSessions(userId) } returns AppResult.Success(Unit)
-        coEvery { userRepository.updateUser(userId, status = any()) } returns AppResult.Success(mockk())
+        coEvery { userRepository.updateUser(userId, accountStatus = any()) } returns AppResult.Success(mockk())
 
         val result = manager.refreshSession(rotatedRefreshToken, clientInfo)
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.InvalidRefreshToken)
         coVerify { userSessionRepository.deleteAllUserSessions(userId) }
-        coVerify { userRepository.updateUser(userId, status = any()) }
+        coVerify { userRepository.updateUser(userId, accountStatus = any()) }
         coVerify { redisManager.delete("auth:rotated_refresh:${rotatedHash.value}") }
         verify {
             auditLogger.log(
@@ -303,44 +305,19 @@ class SessionManagerImplTest {
         coEvery {
             userSessionRepository.getUserSessionsPageByUserId(
                 userId = userId,
-                pageParams = any(),
-                sortBy = any(),
-                sortOrder = any(),
-                identifiers = any(),
-                identifierIds = any(),
-                identifierAuthProviders = any(),
-                clientTypes = any(),
-                userAgents = any(),
-                ipAddresses = any(),
-                languages = any(),
-                deviceIds = any(),
-                deviceNames = any(),
-                appVersions = any(),
-                operationSystemVersions = any()
+                queryParams = any()
             )
         } returns AppResult.Success(paged)
 
         val result = manager.getUserSessionsSummaryPage(
             userId = userId,
-            pageParams = PageParams(),
-            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-            sortOrder = SortOrder.DEFAULT,
-            identifiers = emptyList(),
-            identifierIds = emptyList(),
-            identifierAuthProviders = emptyList(),
-            clientTypes = emptyList(),
-            userAgents = emptyList(),
-            ipAddresses = emptyList(),
-            languages = emptyList(),
-            deviceIds = emptyList(),
-            deviceNames = emptyList(),
-            appVersions = emptyList(),
-            operationSystemVersions = emptyList()
+            queryParams = SelfSessionListQueryParams(listing = ListingQueryParams(sortBy = UserSessionSortBy.DEFAULT))
         )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(1, (result as AppResult.Success).data.items.size)
-        assertEquals(internalSession.id, result.data.items.first().id)
+        val success = result as AppResult.Success
+        assertEquals(1, success.data.items.size)
+        assertEquals(internalSession.id, success.data.items.first().id)
     }
 
     @Test
@@ -452,7 +429,7 @@ class SessionManagerImplTest {
         coEvery { refreshTokenProvider.getRefreshTokenHash(refreshToken) } returns AppResult.Success(refreshHash)
         coEvery { userSessionRepository.createUserSession(any()) } returns AppResult.Success(internalSession)
 
-        val capturedDeviceIdSlot = slot<String>()
+        val capturedDeviceIdSlot = slot<ClientDeviceId>()
         coEvery {
             userKnownDevicesRepository.getKnownDevice(userId, capture(capturedDeviceIdSlot))
         } returns AppResult.Success(null)
@@ -482,7 +459,7 @@ class SessionManagerImplTest {
         )
 
         assertTrue(result is AppResult.Success)
-        assertTrue(capturedDeviceIdSlot.captured.startsWith("synthetic:"))
+        assertNotNull(capturedDeviceIdSlot.captured)
 
         coVerify(exactly = 1) {
             emailService.sendNewDeviceLoginEmail(

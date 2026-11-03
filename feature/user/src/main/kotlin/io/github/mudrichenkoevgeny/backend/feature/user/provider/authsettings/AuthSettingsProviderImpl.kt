@@ -60,6 +60,31 @@ class AuthSettingsProviderImpl @Inject constructor(
                 type = SettingType.INT
             ),
             SystemSetting(
+                key = KEY_USER_NICKNAME_MIN_LENGTH,
+                value = "${defaults.userNicknameMinLength}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_USER_NICKNAME_MAX_LENGTH,
+                value = "${defaults.userNicknameMaxLength}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_USER_DISPLAY_NAME_MIN_LENGTH,
+                value = "${defaults.userDisplayNameMinLength}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_USER_DISPLAY_NAME_MAX_LENGTH,
+                value = "${defaults.userDisplayNameMaxLength}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_IS_USER_NICKNAME_CHANGE_ALLOWED,
+                value = "${defaults.isUserNicknameChangeAllowed}",
+                type = SettingType.BOOLEAN
+            ),
+            SystemSetting(
                 key = KEY_MAX_ACTIVE_SESSIONS_FOR_OPEN_USER,
                 value = "${defaults.maxActiveSessionsForOpenUser}",
                 type = SettingType.INT
@@ -115,6 +140,11 @@ class AuthSettingsProviderImpl @Inject constructor(
             maxEmailIdentifiers = getMaxEmailIdentifiers(),
             maxPhoneIdentifiers = getMaxPhoneIdentifiers(),
             maxIdentifiersPerExternalProvider = getMaxIdentifiersPerExternalProvider(),
+            userNicknameMinLength = getUserNicknameMinLength(),
+            userNicknameMaxLength = getUserNicknameMaxLength(),
+            userDisplayNameMinLength = getUserDisplayNameMinLength(),
+            userDisplayNameMaxLength = getUserDisplayNameMaxLength(),
+            isUserNicknameChangeAllowed = getIsUserNicknameChangeAllowed(),
             maxActiveSessionsForOpenUser = getMaxActiveSessionsForOpenUser(),
             maxActiveSessionsForManagementUser = getMaxActiveSessionsForManagementUser(),
             accessTokenExpirationSeconds = getAccessTokenExpirationSeconds(),
@@ -134,6 +164,11 @@ class AuthSettingsProviderImpl @Inject constructor(
             maxEmailIdentifiers = getMaxEmailIdentifiers(),
             maxPhoneIdentifiers = getMaxPhoneIdentifiers(),
             maxIdentifiersPerExternalProvider = getMaxIdentifiersPerExternalProvider(),
+            userNicknameMinLength = getUserNicknameMinLength(),
+            userNicknameMaxLength = getUserNicknameMaxLength(),
+            userDisplayNameMinLength = getUserDisplayNameMinLength(),
+            userDisplayNameMaxLength = getUserDisplayNameMaxLength(),
+            isUserNicknameChangeAllowed = getIsUserNicknameChangeAllowed(),
             isRegistrationEnabled = getIsRegistrationEnabled()
         )
     }
@@ -162,6 +197,31 @@ class AuthSettingsProviderImpl @Inject constructor(
     override fun getMaxIdentifiersPerExternalProvider(): Int {
         return settingsService.getInt(KEY_MAX_IDENTIFIERS_PER_EXTERNAL_PROVIDER)
             ?: config.managementAuthSettings.maxIdentifiersPerExternalProvider
+    }
+
+    override fun getUserNicknameMinLength(): Int {
+        return settingsService.getInt(KEY_USER_NICKNAME_MIN_LENGTH)
+            ?: config.managementAuthSettings.userNicknameMinLength
+    }
+
+    override fun getUserNicknameMaxLength(): Int {
+        return settingsService.getInt(KEY_USER_NICKNAME_MAX_LENGTH)
+            ?: config.managementAuthSettings.userNicknameMaxLength
+    }
+
+    override fun getUserDisplayNameMinLength(): Int {
+        return settingsService.getInt(KEY_USER_DISPLAY_NAME_MIN_LENGTH)
+            ?: config.managementAuthSettings.userDisplayNameMinLength
+    }
+
+    override fun getUserDisplayNameMaxLength(): Int {
+        return settingsService.getInt(KEY_USER_DISPLAY_NAME_MAX_LENGTH)
+            ?: config.managementAuthSettings.userDisplayNameMaxLength
+    }
+
+    override fun getIsUserNicknameChangeAllowed(): Boolean {
+        return settingsService.getBoolean(KEY_IS_USER_NICKNAME_CHANGE_ALLOWED)
+            ?: config.managementAuthSettings.isUserNicknameChangeAllowed
     }
 
     override fun getMaxActiveSessionsForOpenUser(): Int {
@@ -265,6 +325,31 @@ class AuthSettingsProviderImpl @Inject constructor(
                 type = SettingType.INT
             ),
             SystemSetting(
+                key = KEY_USER_NICKNAME_MIN_LENGTH,
+                value = "${managementAuthSettings.userNicknameMinLength}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_USER_NICKNAME_MAX_LENGTH,
+                value = "${managementAuthSettings.userNicknameMaxLength}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_USER_DISPLAY_NAME_MIN_LENGTH,
+                value = "${managementAuthSettings.userDisplayNameMinLength}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_USER_DISPLAY_NAME_MAX_LENGTH,
+                value = "${managementAuthSettings.userDisplayNameMaxLength}",
+                type = SettingType.INT
+            ),
+            SystemSetting(
+                key = KEY_IS_USER_NICKNAME_CHANGE_ALLOWED,
+                value = "${managementAuthSettings.isUserNicknameChangeAllowed}",
+                type = SettingType.BOOLEAN
+            ),
+            SystemSetting(
                 key = KEY_MAX_ACTIVE_SESSIONS_FOR_OPEN_USER,
                 value = "${managementAuthSettings.maxActiveSessionsForOpenUser}",
                 type = SettingType.INT
@@ -324,6 +409,11 @@ class AuthSettingsProviderImpl @Inject constructor(
         const val KEY_MAX_EMAIL_IDENTIFIERS = "auth.max_email_identifiers"
         const val KEY_MAX_PHONE_IDENTIFIERS = "auth.max_phone_identifiers"
         const val KEY_MAX_IDENTIFIERS_PER_EXTERNAL_PROVIDER = "auth.max_identifiers_per_external_provider"
+        const val KEY_USER_NICKNAME_MIN_LENGTH = "auth.user_nickname_min_length"
+        const val KEY_USER_NICKNAME_MAX_LENGTH = "auth.user_nickname_max_length"
+        const val KEY_USER_DISPLAY_NAME_MIN_LENGTH = "auth.user_display_name_min_length"
+        const val KEY_USER_DISPLAY_NAME_MAX_LENGTH = "auth.user_display_name_max_length"
+        const val KEY_IS_USER_NICKNAME_CHANGE_ALLOWED = "auth.is_user_nickname_change_allowed"
         const val KEY_MAX_ACTIVE_SESSIONS_FOR_OPEN_USER = "auth.max_active_sessions_for_open_user"
         const val KEY_MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER = "auth.max_active_sessions_for_management_user"
         const val KEY_ACCESS_TOKEN_EXPIRATION_SECONDS = "auth.access_token_expiration_seconds"

@@ -178,22 +178,7 @@ class ManagementSessionRouter @Inject constructor(
         val queryParams = call.parseManagementSessionsListQueryParams()
 
         val result = managementGetSessionsUseCase(
-            pageParams = queryParams.listing.pageParams,
-            sortBy = queryParams.listing.sortBy,
-            sortOrder = queryParams.listing.sortOrder,
-            userIds = queryParams.userIds,
-            userRoles = queryParams.userRoles,
-            identifiers = queryParams.identifiers,
-            identifierIds = queryParams.identifierIds,
-            identifierAuthProviders = queryParams.identifierAuthProviders,
-            clientTypes = queryParams.clientTypes,
-            userAgents = queryParams.userAgents,
-            ipAddresses = queryParams.ipAddresses,
-            languages = queryParams.languages,
-            deviceIds = queryParams.deviceIds,
-            deviceNames = queryParams.deviceNames,
-            appVersions = queryParams.appVersions,
-            operationSystemVersions = queryParams.operationSystemVersions,
+            queryParams = queryParams,
             authenticatedRequestContext = authenticatedRequestContext
         )
 
@@ -249,23 +234,12 @@ class ManagementSessionRouter @Inject constructor(
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
         val queryParams = call.parseManagementSessionsListQueryParams()
 
+        val queryParamsWithUserId = queryParams.copy(
+            userIds = listOf(userId.asHexDashString())
+        )
+
         val result = managementGetSessionsUseCase(
-            pageParams = queryParams.listing.pageParams,
-            sortBy = queryParams.listing.sortBy,
-            sortOrder = queryParams.listing.sortOrder,
-            userIds = listOf(userId),
-            userRoles = queryParams.userRoles,
-            identifiers = queryParams.identifiers,
-            identifierIds = queryParams.identifierIds,
-            identifierAuthProviders = queryParams.identifierAuthProviders,
-            clientTypes = queryParams.clientTypes,
-            userAgents = queryParams.userAgents,
-            ipAddresses = queryParams.ipAddresses,
-            languages = queryParams.languages,
-            deviceIds = queryParams.deviceIds,
-            deviceNames = queryParams.deviceNames,
-            appVersions = queryParams.appVersions,
-            operationSystemVersions = queryParams.operationSystemVersions,
+            queryParams = queryParamsWithUserId,
             authenticatedRequestContext = authenticatedRequestContext
         )
 

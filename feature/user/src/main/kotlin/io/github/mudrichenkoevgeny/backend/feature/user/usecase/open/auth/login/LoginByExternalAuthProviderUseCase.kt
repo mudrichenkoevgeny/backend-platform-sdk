@@ -6,22 +6,22 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.login.LoginByExternalAuthProviderParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
-import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,7 +42,7 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
      * **Allowed Account Statuses:** Any (Public access).
      *
      * **Security:**
-     * - Validates the [token] against the specified [authProvider] using a collection of [externalAuthVerifiers].
+     * - Validates token against specified provider using [externalAuthVerifiers].
      * - Checks if the provider is currently enabled via [AuthSettingsProvider].
      * - Protects against token-based brute-force or flooding via [UserRateLimitAction.LOGIN_ATTEMPT].
      * - If multifactor authentication (MFA) is enabled for the account, the [authManager] will return
@@ -50,23 +50,27 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
      *
      * **Workflow:**
      * 1. Verifies rate limits for the provided authentication token.
-     * 2. Confirms the [authProvider] is supported and retrieves the corresponding [ExternalAuthVerifier].
+     * 2. Confirms the provider is supported and retrieves the corresponding [ExternalAuthVerifier].
      * 3. Validates the external token and retrieves verification data (external ID, email).
      * 4. Delegates authentication or user creation to [authManager].
      * 5. Logs the security event via [AuditLogger] with [UserAuditActionType.LOGIN_BY_EXTERNAL_AUTH_PROVIDER].
      *
-     * @param authProvider The external identity provider (e.g., Google, Apple).
-     * @param token The identity token provided by the external provider.
-     * @param requestContext The context of the public request.
+     * @param params Domain parameters containing provider, token, and optional display name.
+     * @param requestContext Context of the public request.
+     * @param allowedRoles Allowed roles for the target account.
+     * @param allowedAccountStatuses Allowed statuses for the target account.
      * @return [AppResult] containing [AuthData] or an MFA challenge.
      */
     suspend operator fun invoke(
-        authProvider: UserAuthProvider,
-        token: String,
+        params: LoginByExternalAuthProviderParams,
         requestContext: RequestContext,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
         allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
     ): AppResult<AuthData> {
+        val authProvider = params.authProvider
+        val token = params.token
+        val displayName = params.displayName
+
         val auditMetadata = requestContext.clientInfo.toAuditMetadata().toMutableSet()
 
         val rateLimitCheck = rateLimiter.checkRateLimit(
@@ -119,8 +123,9 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
         val externalEmail = verificationData.email
         if (externalEmail != null && !emailRestrictionPolicyValidator.isEmailAllowed(
                 email = externalEmail,
-                policy = authSettingsProvider.getOpenEmailRestrictionPolicy())
-            ) {
+                policy = authSettingsProvider.getOpenEmailRestrictionPolicy()
+            )
+        ) {
             return handleError(
                 error = UserError.EmailNotAllowed(),
                 baseMetadata = auditMetadata
@@ -132,7 +137,7 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
             userAuthProvider = verificationData.authProvider,
             identifier = verificationData.externalId,
             externalProviderEmail = verificationData.email,
-            externalProviderDisplayName = verificationData.displayName,
+            externalProviderDisplayName = verificationData.displayName ?: displayName,
             allowedRoles = allowedRoles,
             allowedAccountStatuses = allowedAccountStatuses
         )

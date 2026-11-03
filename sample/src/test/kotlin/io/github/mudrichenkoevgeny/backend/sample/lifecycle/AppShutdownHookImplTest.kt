@@ -5,8 +5,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppSystemResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManager
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.ktor.server.engine.EmbeddedServer
-import io.mockk.coVerify
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -41,10 +41,10 @@ class AppShutdownHookImplTest {
 
         hook.register(server)
 
-        val registeredThread = registrar.lastHook
+        val registeredThread = checkNotNull(registrar.lastHook)
         assertNotNull(registeredThread)
 
-        registeredThread!!.start()
+        registeredThread.start()
         registeredThread.join(2_000)
 
         verify(exactly = 1) { server.stop(any(), any()) }
@@ -61,4 +61,3 @@ class AppShutdownHookImplTest {
         }
     }
 }
-

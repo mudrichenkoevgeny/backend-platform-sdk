@@ -5,7 +5,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.createTestApp
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorCodes
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.localization.SecurityModuleStrings
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
@@ -30,10 +29,10 @@ class SecurityErrorParserTest {
             args = null,
             locale = "en"
         )
-        assertNotNull(response)
-        assertEquals(errorId.asHexDashString(), response!!.id)
-        assertEquals(SecurityErrorCodes.TOTP_ALREADY_ENABLED, response.code)
-        assertEquals(stringsEn.errors.totpAlreadyEnabled, response.message)
+        val nonNullResponse = checkNotNull(response)
+        assertEquals(errorId.asHexDashString(), nonNullResponse.id)
+        assertEquals(SecurityErrorCodes.TOTP_ALREADY_ENABLED, nonNullResponse.code)
+        assertEquals(stringsEn.errors.totpAlreadyEnabled, nonNullResponse.message)
     }
 
     @Test
@@ -44,8 +43,8 @@ class SecurityErrorParserTest {
             args = null,
             locale = "ru"
         )
-        assertNotNull(response)
-        assertEquals(stringsRu.errors.totpAlreadyEnabled, response!!.message)
+        val nonNullResponse = checkNotNull(response)
+        assertEquals(stringsRu.errors.totpAlreadyEnabled, nonNullResponse.message)
     }
 
     @Test

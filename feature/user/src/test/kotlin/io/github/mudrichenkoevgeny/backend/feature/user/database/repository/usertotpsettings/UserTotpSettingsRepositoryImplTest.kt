@@ -12,13 +12,16 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.time.Instant as JavaInstant
-import org.jetbrains.exposed.v1.jdbc.insert
 import kotlin.time.Instant
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -65,7 +68,7 @@ class UserTotpSettingsRepositoryImplTest {
         }
 
         val result = suspendTransaction { repository.getSettingsByUserId(userId) }
-        val data = (result as AppResult.Success).data!!
+        val data = checkNotNull((result as AppResult.Success).data)
 
         assertEquals(newSecret, data.encryptedSecret)
         assertFalse(data.isConfirmed)

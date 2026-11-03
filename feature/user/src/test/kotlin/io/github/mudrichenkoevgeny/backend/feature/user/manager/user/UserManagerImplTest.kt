@@ -1,21 +1,24 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -94,17 +97,13 @@ class UserManagerImplTest {
         coEvery {
             userRepository.updateUser(
                 userId = userId,
-                status = any(),
-                statusOnRestore = any(),
-                authorityLevel = any(),
-                permissionCodes = any(),
-                scheduledPermanentDeletionAt = any()
+                updateUserParams = any()
             )
         } returns AppResult.Success(updatedUser)
 
         val result = userManager.updateUser(
             user = user,
-            accountStatus = UserAccountStatus.PENDING_DELETION
+            updateUserParams = UpdateUserParams(accountStatus = UpdateField.Set(UserAccountStatus.PENDING_DELETION))
         )
 
         assertTrue(result is AppResult.Success)
@@ -126,19 +125,13 @@ class UserManagerImplTest {
         coEvery {
             userRepository.updateUser(
                 userId = userId,
-                status = UpdateField.Ignore,
-                statusOnRestore = UpdateField.Set(UserAccountStatus.BANNED),
-                authorityLevel = any(),
-                permissionCodes = any(),
-                scheduledPermanentDeletionAt = UpdateField.Ignore,
-                accountLockoutType = any(),
-                temporaryLockoutUntil = any()
+                updateUserParams = any()
             )
         } returns AppResult.Success(updatedUser)
 
         val result = userManager.updateUser(
             user = user,
-            accountStatus = UserAccountStatus.BANNED
+            updateUserParams = UpdateUserParams(accountStatus = UpdateField.Set(UserAccountStatus.BANNED))
         )
 
         assertTrue(result is AppResult.Success)
@@ -184,32 +177,19 @@ class UserManagerImplTest {
         coEvery {
             userRepository.getUsersPageWithAccessFilter(
                 accessFilter = any(),
-                pageParams = any(),
-                sortBy = any(),
-                sortOrder = any(),
-                roles = any(),
-                accountStatuses = any(),
-                accountStatusesOnRestore = any(),
-                authorityLevelFrom = any(),
-                authorityLevelTo = any(),
-                permissionCodes = any(),
-                isTotpEnabled = any(),
-                accountLockoutTypes = any()
+                queryParams = any()
             )
         } returns AppResult.Success(paged)
 
         val result = userManager.getUsersInternalPage(
             managementUserPermissionCodes = setOf(UserPermissionCode.USER_GET_OF_USER),
-            pageParams = PageParams(),
-            sortBy = UserSortValues.UserSortBy.DEFAULT,
-            sortOrder = SortOrder.DEFAULT,
-            roles = emptyList(),
-            accountStatuses = emptyList(),
-            accountStatusesOnRestore = emptyList(),
-            authorityLevelFrom = null,
-            authorityLevelTo = null,
-            permissionCodes = emptySet(),
-            isTotpEnabled = null
+            queryParams = UserListQueryParams(
+                listing = ListingQueryParams(
+                    pageParams = PageParams(),
+                    sortBy = UserSortBy.DEFAULT,
+                    sortOrder = SortOrder.DEFAULT
+                )
+            )
         )
 
         assertTrue(result is AppResult.Success)
@@ -221,9 +201,7 @@ class UserManagerImplTest {
         coEvery {
             userRepository.updateUser(
                 userId = userId,
-                status = any(),
-                statusOnRestore = any(),
-                scheduledPermanentDeletionAt = any()
+                updateUserParams = any()
             )
         } returns AppResult.Success(user)
 
@@ -239,9 +217,7 @@ class UserManagerImplTest {
         coEvery {
             userRepository.updateUser(
                 userId = userId,
-                status = any(),
-                statusOnRestore = any(),
-                scheduledPermanentDeletionAt = any()
+                updateUserParams = any()
             )
         } returns AppResult.Success(user)
 

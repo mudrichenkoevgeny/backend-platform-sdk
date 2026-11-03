@@ -141,14 +141,7 @@ class SelfManagementStorageRouter @Inject constructor(
 
         val result = getFilesUseCase(
             authenticatedRequestContext = authenticatedRequestContext,
-            pageParams = queryParams.listing.pageParams,
-            sortBy = queryParams.listing.sortBy,
-            sortOrder = queryParams.listing.sortOrder,
-            categories = queryParams.categories,
-            visibilities = queryParams.visibilities,
-            statuses = queryParams.statuses,
-            mimeTypes = queryParams.mimeTypes,
-            fileNames = queryParams.fileNames
+            queryParams = queryParams
         )
 
         call.respondResult(result, appLogger, appErrorParser) { pagedFiles ->

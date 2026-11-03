@@ -1,6 +1,5 @@
-package io.github.mudrichenkoevgeny.backend.core.database.extensions
+package io.github.mudrichenkoevgeny.backend.core.database.dsl
 
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
 import io.github.mudrichenkoevgeny.backend.core.database.table.TestTable
 import kotlinx.coroutines.runBlocking
@@ -14,9 +13,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class QueryPaginationExtensionsTest {
+class QueryLikeFiltersTest {
 
-    private val dataSource = createTestDataSource("pagination")
+    private val dataSource = createTestDataSource("like_filter")
 
     @BeforeAll
     fun setup() {
@@ -29,9 +28,12 @@ class QueryPaginationExtensionsTest {
     }
 
     @Test
-    fun `applyPagination applies limit and offset to Query without throwing`() = runBlocking {
+    fun `addOrLikeFilter applies like pattern filters to Query`() = runBlocking {
         suspendTransaction {
-            val query = TestTable.selectAll().applyPagination(PageParams())
+            val query = TestTable.selectAll().addOrLikeFilter(
+                column = TestTable.name,
+                rawValues = listOf("alpha", "beta")
+            )
 
             assertNotNull(query)
         }

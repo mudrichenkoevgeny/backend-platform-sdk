@@ -2,10 +2,12 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.query
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.testing.contract.assertAllSortByEnumEntriesParsed
+import io.github.mudrichenkoevgeny.backend.core.common.testing.contract.assertExhaustiveFilterKeysParsed
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserFilterValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionFilterValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.ApplicationRequest
@@ -22,13 +24,12 @@ private const val TEST_IDENTIFIER_ID = "123e4567-e89b-12d3-a456-426614174000"
 private const val TEST_IDENTIFIER = "test@example.com"
 private const val TEST_IP = "127.0.0.1"
 private const val INVALID_VAL = "invalid"
-private const val ROLE_KEY = "user_role"
 
 class ManagementSessionListQueryParameterParserTest {
 
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()
-    private val filterNames = UserFilterValues.UserSessionFilterValues
+    private val filterNames = UserSessionFilterValues
 
     @BeforeEach
     fun setUp() {
@@ -36,13 +37,43 @@ class ManagementSessionListQueryParameterParserTest {
     }
 
     @Test
+    fun `parseManagementSessionsListQueryParams should extract and parse all wire keys defined in UserSessionFilterValues`() {
+        assertExhaustiveFilterKeysParsed(
+            filterKeysClass = UserSessionFilterValues::class,
+            sampleValueProvider = ::getSampleValidValueForSessionFilterKey,
+            parseFunction = { mockCall -> mockCall.parseManagementSessionsListQueryParams() }
+        )
+    }
+
+    @Test
+    fun `parseManagementSessionsListQueryParams should accept and parse all UserSessionSortBy wire values`() {
+        assertAllSortByEnumEntriesParsed(
+            enumEntries = UserSessionSortBy.entries,
+            wireValueExtractor = { sortByEntry -> sortByEntry.value },
+            parseFunction = { mockCall -> mockCall.parseManagementSessionsListQueryParams() },
+            assertSortByFunction = { parsedQueryParams, expectedSortBy ->
+                assertEquals(expectedSortBy, parsedQueryParams.listing.sortBy)
+            }
+        )
+    }
+
+    private fun getSampleValidValueForSessionFilterKey(key: String): String = when {
+        key == filterNames.USER_ROLE || key == filterNames.EXCLUDE_USER_ROLE -> "user"
+        key == filterNames.IDENTIFIER_AUTH_PROVIDER || key == filterNames.EXCLUDE_IDENTIFIER_AUTH_PROVIDER -> "google"
+        key == filterNames.CLIENT_TYPE || key == filterNames.EXCLUDE_CLIENT_TYPE -> "android"
+        key.endsWith("_from") || key.endsWith("_to") -> "2026-01-01T00:00:00Z"
+        key.startsWith("is_") -> "true"
+        else -> "sample_value"
+    }
+
+    @Test
     fun `should parse valid session query parameters successfully`() {
         setupMockParameters(
             mapOf(
                 filterNames.USER_ID to listOf(TEST_USER_ID),
-                ROLE_KEY to listOf("user"),
+                filterNames.USER_ROLE to listOf("user"),
                 filterNames.IDENTIFIER_ID to listOf(TEST_IDENTIFIER_ID),
-                filterNames.USER_AUTH_PROVIDER to listOf("google"),
+                filterNames.IDENTIFIER_AUTH_PROVIDER to listOf("google"),
                 filterNames.CLIENT_TYPE to listOf("android"),
                 filterNames.IDENTIFIER to listOf(TEST_IDENTIFIER),
                 filterNames.IP_ADDRESS to listOf(TEST_IP)
@@ -51,14 +82,14 @@ class ManagementSessionListQueryParameterParserTest {
 
         val result = call.parseManagementSessionsListQueryParams()
 
-        assertEquals(TEST_USER_ID, result.userIds.first().value.toString())
+        assertEquals(TEST_USER_ID, result.userIds.first())
         assertEquals(UserRole.USER, result.userRoles.first())
-        assertEquals(TEST_IDENTIFIER_ID, result.identifierIds.first().value.toString())
+        assertEquals(TEST_IDENTIFIER_ID, result.identifierIds.first())
         assertEquals(UserAuthProvider.GOOGLE, result.identifierAuthProviders.first())
         assertEquals(ClientType.ANDROID, result.clientTypes.first())
-        assertEquals(TEST_IDENTIFIER, result.identifiers.first())
-        assertEquals(TEST_IP, result.ipAddresses.first())
-        assertEquals(UserSortValues.UserSessionSortBy.DEFAULT, result.listing.sortBy)
+        assertEquals(TEST_IDENTIFIER, result.identifier)
+        assertEquals(TEST_IP, result.ipAddress)
+        assertEquals(UserSessionSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test
@@ -71,23 +102,10 @@ class ManagementSessionListQueryParameterParserTest {
     }
 
     @Test
-    fun `should throw RequestHandlingException when user id is invalid`() {
-        setupMockParameters(mapOf(filterNames.USER_ID to listOf(INVALID_VAL)))
-
-        val exception = assertThrows<RequestHandlingException> {
-            call.parseManagementSessionsListQueryParams()
-        }
-
-        val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.USER_ID, error.parameterName)
-    }
-
-    @Test
     fun `should throw RequestHandlingException when user role is invalid`() {
         setupMockParameters(
             mapOf(
-                filterNames.USER_ID to listOf(TEST_USER_ID),
-                ROLE_KEY to listOf(INVALID_VAL)
+                filterNames.USER_ROLE to listOf(INVALID_VAL)
             )
         )
 
@@ -96,32 +114,14 @@ class ManagementSessionListQueryParameterParserTest {
         }
 
         val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(ROLE_KEY, error.parameterName)
-    }
-
-    @Test
-    fun `should throw RequestHandlingException when identifier id is invalid`() {
-        setupMockParameters(
-            mapOf(
-                filterNames.USER_ID to listOf(TEST_USER_ID),
-                filterNames.IDENTIFIER_ID to listOf(INVALID_VAL)
-            )
-        )
-
-        val exception = assertThrows<RequestHandlingException> {
-            call.parseManagementSessionsListQueryParams()
-        }
-
-        val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.IDENTIFIER_ID, error.parameterName)
+        assertEquals(filterNames.USER_ROLE, error.parameterName)
     }
 
     @Test
     fun `should throw RequestHandlingException when auth provider is invalid`() {
         setupMockParameters(
             mapOf(
-                filterNames.USER_ID to listOf(TEST_USER_ID),
-                filterNames.USER_AUTH_PROVIDER to listOf(INVALID_VAL)
+                filterNames.IDENTIFIER_AUTH_PROVIDER to listOf(INVALID_VAL)
             )
         )
 
@@ -130,14 +130,13 @@ class ManagementSessionListQueryParameterParserTest {
         }
 
         val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.USER_AUTH_PROVIDER, error.parameterName)
+        assertEquals(filterNames.IDENTIFIER_AUTH_PROVIDER, error.parameterName)
     }
 
     @Test
     fun `should throw RequestHandlingException when client type is invalid`() {
         setupMockParameters(
             mapOf(
-                filterNames.USER_ID to listOf(TEST_USER_ID),
                 filterNames.CLIENT_TYPE to listOf(INVALID_VAL)
             )
         )

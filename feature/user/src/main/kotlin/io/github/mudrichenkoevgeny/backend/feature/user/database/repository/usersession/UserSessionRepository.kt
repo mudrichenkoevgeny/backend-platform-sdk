@@ -3,12 +3,14 @@ package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.use
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementSessionListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfSessionListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
@@ -142,62 +144,19 @@ interface UserSessionRepository {
      * @param operationSystemVersions optional filters for OS versions
      * @return paged result or a database error
      */
+    /**
+     * Returns a paginated list of sessions filtered by target user roles and additional criteria.
+     */
     suspend fun getUserSessionsPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter = UserRoleAccessFilter(emptySet()),
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        userIds: List<UserId> = emptyList(),
-        userRoles: List<UserRole> = emptyList(),
-        identifiers: List<String> = emptyList(),
-        identifierIds: List<UserIdentifierId> = emptyList(),
-        identifierAuthProviders: List<UserAuthProvider> = emptyList(),
-        clientTypes: List<ClientType> = emptyList(),
-        userAgents: List<String> = emptyList(),
-        ipAddresses: List<String> = emptyList(),
-        languages: List<String> = emptyList(),
-        deviceIds: List<String> = emptyList(),
-        deviceNames: List<String> = emptyList(),
-        appVersions: List<String> = emptyList(),
-        operationSystemVersions: List<String> = emptyList()
+        queryParams: ManagementSessionListQueryParams
     ): AppResult<PagedResult<UserSessionInternal>>
 
     /**
      * Returns a paginated list of sessions belonging to a specific user.
-     * Optimized for direct owner access to their session history, bypassing role-based visibility checks.
-     *
-     * @param userId the owner of the sessions
-     * @param pageParams pagination settings (page index and size)
-     * @param sortBy field to sort by
-     * @param sortOrder sorting direction
-     * @param identifiers optional filters for identifier values associated with the session
-     * @param identifierIds optional filters for specific user identifier IDs
-     * @param identifierAuthProviders optional filters for authentication providers
-     * @param clientTypes optional filter by client platform types
-     * @param userAgents optional filters for client user-agent strings
-     * @param ipAddresses optional filters for client IP addresses
-     * @param languages optional filters for client language headers
-     * @param deviceIds optional filters for unique hardware device IDs
-     * @param deviceNames optional filters for device names
-     * @param appVersions optional filters for application versions
-     * @param operationSystemVersions optional filters for OS versions
-     * @return paged result of the user's sessions or a database error
      */
     suspend fun getUserSessionsPageByUserId(
         userId: UserId,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        identifiers: List<String> = emptyList(),
-        identifierIds: List<UserIdentifierId> = emptyList(),
-        identifierAuthProviders: List<UserAuthProvider> = emptyList(),
-        clientTypes: List<ClientType> = emptyList(),
-        userAgents: List<String> = emptyList(),
-        ipAddresses: List<String> = emptyList(),
-        languages: List<String> = emptyList(),
-        deviceIds: List<String> = emptyList(),
-        deviceNames: List<String> = emptyList(),
-        appVersions: List<String> = emptyList(),
-        operationSystemVersions: List<String> = emptyList()
+        queryParams: SelfSessionListQueryParams
     ): AppResult<PagedResult<UserSessionInternal>>
 }

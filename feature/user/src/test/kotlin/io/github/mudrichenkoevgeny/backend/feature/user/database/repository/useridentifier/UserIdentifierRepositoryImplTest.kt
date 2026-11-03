@@ -1,27 +1,33 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier
 
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.backend.core.database.testing.assertAllQueryParamsApplied
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserIdentifiersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementIdentifierListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfIdentifierListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserIdentifierSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -55,9 +61,10 @@ class UserIdentifierRepositoryImplTest {
         val result = suspendTransaction { repository.getUserIdentifierInternalById(identifier.id) }
 
         val success = result as AppResult.Success
-        assertNotNull(success.data)
-        assertEquals(identifier.id, success.data!!.id)
-        assertEquals(identifier.identifier, success.data!!.identifier)
+        val data = success.data
+        assertNotNull(data)
+        assertEquals(identifier.id, data?.id)
+        assertEquals(identifier.identifier, data?.identifier)
     }
 
     @Test
@@ -125,11 +132,14 @@ class UserIdentifierRepositoryImplTest {
         val result = suspendTransaction {
             repository.getUserIdentifiersPageByUserId(
                 userId = userId,
-                params = PageParams(),
-                sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
-                sortOrder = SortOrder.ASC,
-                userAuthProviders = emptyList(),
-                identifiers = listOf("PLE")
+                queryParams = SelfIdentifierListQueryParams(
+                    listing = ListingQueryParams(
+                        pageParams = PageParams(),
+                        sortBy = UserIdentifierSortBy.DEFAULT,
+                        sortOrder = SortOrder.ASC
+                    ),
+                    searchQuery = "PLE"
+                )
             )
         }
 
@@ -151,18 +161,37 @@ class UserIdentifierRepositoryImplTest {
         val result = suspendTransaction {
             repository.getUserIdentifiersPageWithAccessFilter(
                 accessFilter = UserRoleAccessFilter(setOf(UserRole.ADMIN)),
-                params = PageParams(),
-                sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
-                sortOrder = SortOrder.ASC,
-                userIds = emptyList(),
-                userAuthProviders = emptyList(),
-                identifiers = emptyList()
+                queryParams = ManagementIdentifierListQueryParams(
+                    listing = ListingQueryParams(
+                        pageParams = PageParams(),
+                        sortBy = UserIdentifierSortBy.DEFAULT,
+                        sortOrder = SortOrder.ASC
+                    )
+                )
             )
         }
 
         val data = (result as AppResult.Success).data
         assertEquals(1, data.items.size)
         assertEquals("admin_ident", data.items.first().identifier)
+    }
+
+    @Test
+    fun `getUserIdentifiersPageWithAccessFilter should apply every query parameter to generated SQL`() = runBlocking {
+        suspendTransaction {
+            assertAllQueryParamsApplied(
+                queryParamsClass = ManagementIdentifierListQueryParams::class,
+                defaultInstance = ManagementIdentifierListQueryParams(
+                    listing = ListingQueryParams(sortBy = UserIdentifierSortBy.DEFAULT)
+                ),
+                ignoredProperties = emptySet()
+            ) { queryParams ->
+                repository.getUserIdentifiersPageWithAccessFilter(
+                    accessFilter = UserRoleAccessFilter(setOf(UserRole.ADMIN)),
+                    queryParams = queryParams
+                )
+            }
+        }
     }
 
     private suspend fun createTestUserInDb(role: UserRole = UserRole.USER): UserId {

@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.f
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.presigned.PresignedUrl
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.storage.UserStorageTargetScopes
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -53,7 +54,7 @@ class GeneratePresignedUploadUrlUseCaseTest {
                 mimeType = "image/png",
                 category = StorageCategory.IMAGE,
                 visibility = StorageFileVisibility.PUBLIC,
-                targetScope = "avatar",
+                targetScope = UserStorageTargetScopes.AVATAR,
                 customStorageQuotaBytes = null,
                 customMaxUploadSizeBytes = null,
                 customMaxPendingUploads = null
@@ -104,7 +105,7 @@ class GeneratePresignedUploadUrlUseCaseTest {
                 mimeType = "image/png",
                 category = StorageCategory.IMAGE,
                 visibility = StorageFileVisibility.PUBLIC,
-                targetScope = "avatar",
+                targetScope = UserStorageTargetScopes.AVATAR,
                 customStorageQuotaBytes = null,
                 customMaxUploadSizeBytes = null,
                 customMaxPendingUploads = null

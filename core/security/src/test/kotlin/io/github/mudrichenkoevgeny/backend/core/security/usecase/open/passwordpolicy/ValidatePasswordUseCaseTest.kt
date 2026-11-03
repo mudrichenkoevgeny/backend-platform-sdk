@@ -1,15 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicyFailReason
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicy.validator.PasswordPolicyValidator
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicy.validator.PasswordPolicyValidatorImpl
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorArgs
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.passwordpolicy.validator.FakePasswordPolicyValidator
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolicy.validator.PasswordPolicyValidatorImpl
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.passwordpolicy.validator.PasswordPolicyValidatorMock
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -60,7 +58,7 @@ class ValidatePasswordUseCaseTest {
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error as SecurityError.PasswordTooWeak
 
-        val args = error.publicArgs!!
+        val args = checkNotNull(error.publicArgs)
         assertEquals(true, args[SecurityErrorArgs.PASSWORD_FAIL_TOO_SHORT])
         assertEquals(10, args[SecurityErrorArgs.PASSWORD_MIN_LENGTH])
     }
@@ -75,7 +73,7 @@ class ValidatePasswordUseCaseTest {
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error as SecurityError.PasswordTooWeak
 
-        val args = error.publicArgs!!
+        val args = checkNotNull(error.publicArgs)
         assertEquals(true, args[SecurityErrorArgs.PASSWORD_FAIL_NO_UPPERCASE])
         assertEquals(true, args[SecurityErrorArgs.PASSWORD_FAIL_NO_DIGIT])
         assertTrue(args[SecurityErrorArgs.PASSWORD_FAIL_NO_LOWERCASE] != true)
@@ -83,7 +81,7 @@ class ValidatePasswordUseCaseTest {
 
     @Test
     fun `invoke handles validator failures correctly`() {
-        val fakeValidator = FakePasswordPolicyValidator(failReasons = listOf(PasswordPolicyFailReason.TOO_SHORT))
+        val fakeValidator = PasswordPolicyValidatorMock(failReasons = listOf(PasswordPolicyFailReason.TOO_SHORT))
         val customUseCase = ValidatePasswordUseCase(securitySettingsProvider, fakeValidator)
 
         every { securitySettingsProvider.getManagementPasswordPolicy() } returns defaultPolicy

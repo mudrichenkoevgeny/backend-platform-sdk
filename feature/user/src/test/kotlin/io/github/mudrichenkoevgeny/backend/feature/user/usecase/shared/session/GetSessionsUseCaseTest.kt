@@ -1,19 +1,20 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.session
 
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.listing.createTestPagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfSessionListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.session.GetSessionsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionSummary
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.listing.createTestPagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -34,7 +35,13 @@ class GetSessionsUseCaseTest {
     private val context = createTestAuthenticatedRequestContext(userRole = UserRole.USER)
     private val userId = context.userId
 
-    private val defaultPageParams = PageParams()
+    private val defaultQueryParams = SelfSessionListQueryParams(
+        listing = ListingQueryParams(
+            pageParams = PageParams(),
+            sortBy = UserSessionSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT
+        )
+    )
 
     @Test
     fun `successfully returns paged sessions when user is active`() = runTest {
@@ -45,38 +52,12 @@ class GetSessionsUseCaseTest {
         coEvery {
             sessionManager.getUserSessionsSummaryPage(
                 userId = userId,
-                pageParams = defaultPageParams,
-                sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-                sortOrder = SortOrder.DEFAULT,
-                identifiers = emptyList(),
-                identifierIds = emptyList(),
-                identifierAuthProviders = emptyList(),
-                clientTypes = emptyList(),
-                userAgents = emptyList(),
-                ipAddresses = emptyList(),
-                languages = emptyList(),
-                deviceIds = emptyList(),
-                deviceNames = emptyList(),
-                appVersions = emptyList(),
-                operationSystemVersions = emptyList()
+                queryParams = any()
             )
         } returns AppResult.Success(pagedResult)
 
         val result = useCase(
-            pageParams = defaultPageParams,
-            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-            sortOrder = SortOrder.DEFAULT,
-            identifiers = emptyList(),
-            identifierIds = emptyList(),
-            identifierAuthProviders = emptyList(),
-            clientTypes = emptyList(),
-            userAgents = emptyList(),
-            ipAddresses = emptyList(),
-            languages = emptyList(),
-            deviceIds = emptyList(),
-            deviceNames = emptyList(),
-            appVersions = emptyList(),
-            operationSystemVersions = emptyList(),
+            queryParams = defaultQueryParams,
             authenticatedRequestContext = context
         )
 
@@ -90,20 +71,7 @@ class GetSessionsUseCaseTest {
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = useCase(
-            pageParams = defaultPageParams,
-            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-            sortOrder = SortOrder.DEFAULT,
-            identifiers = emptyList(),
-            identifierIds = emptyList(),
-            identifierAuthProviders = emptyList(),
-            clientTypes = emptyList(),
-            userAgents = emptyList(),
-            ipAddresses = emptyList(),
-            languages = emptyList(),
-            deviceIds = emptyList(),
-            deviceNames = emptyList(),
-            appVersions = emptyList(),
-            operationSystemVersions = emptyList(),
+            queryParams = defaultQueryParams,
             authenticatedRequestContext = context
         )
 
@@ -117,20 +85,7 @@ class GetSessionsUseCaseTest {
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Error(error)
 
         val result = useCase(
-            pageParams = defaultPageParams,
-            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-            sortOrder = SortOrder.DEFAULT,
-            identifiers = emptyList(),
-            identifierIds = emptyList(),
-            identifierAuthProviders = emptyList(),
-            clientTypes = emptyList(),
-            userAgents = emptyList(),
-            ipAddresses = emptyList(),
-            languages = emptyList(),
-            deviceIds = emptyList(),
-            deviceNames = emptyList(),
-            appVersions = emptyList(),
-            operationSystemVersions = emptyList(),
+            queryParams = defaultQueryParams,
             authenticatedRequestContext = context
         )
 

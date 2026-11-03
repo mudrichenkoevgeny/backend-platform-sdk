@@ -1,4 +1,4 @@
-package io.github.mudrichenkoevgeny.backend.core.database.extensions
+package io.github.mudrichenkoevgeny.backend.core.database.dsl
 
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import kotlinx.serialization.serializer
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
-class JsonbColumnExtensionsTest {
+class JsonbOperatorsTest {
 
     companion object {
         @JvmStatic

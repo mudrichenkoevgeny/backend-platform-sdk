@@ -56,11 +56,11 @@ Inject [RedisManager] to interact with Redis. Use `warmup()` during application 
 [DatabaseModules]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/database/di/DatabaseModules.kt
 [FlywayDatabaseMigrator]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/database/migrator/FlywayDatabaseMigrator.kt
 [HealthCheck]: ../common/src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/common/healthcheck/HealthCheck.kt
-[JsonbColumnExtensions]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/database/extensions/JsonbColumnExtensions.kt
+[JsonbColumnExtensions]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/database/dsl/JsonbOperators.kt
 [PageParams]: ../common/src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/common/pagination/PageParams.kt
-[QueryPaginationExtensions]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/database/extensions/QueryPaginationExtensions.kt
+[QueryPaginationExtensions]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/database/dsl/QueryPagination.kt
 [RedisHealthCheck]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/database/healthcheck/RedisHealthCheck.kt
 [RedisManager]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/database/manager/redis/RedisManager.kt
 [RedisManagerImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/database/manager/redis/RedisManagerImpl.kt
-[SqlLikePatternExtensions]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/database/extensions/SqlLikePatternExtensions.kt
+[SqlLikePatternExtensions]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/database/dsl/SqlLikePatterns.kt
 [dbQuery]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/database/util/DatabaseUtils.kt

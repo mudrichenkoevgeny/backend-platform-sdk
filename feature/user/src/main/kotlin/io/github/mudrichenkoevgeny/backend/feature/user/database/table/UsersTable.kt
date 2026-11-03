@@ -17,6 +17,8 @@ import org.jetbrains.exposed.v1.json.jsonb
  * The app must include this path in its Flyway migration locations.
  */
 object UsersTable : BaseTable("users") {
+    const val NICKNAME_UNIQUE_INDEX_NAME = "idx_users_nickname"
+
     val role = enumerationByName("role", BaseDbConstraints.ENUM_MAX_LENGTH, UserRole::class)
     val accountStatus = enumerationByName("account_status", BaseDbConstraints.ENUM_MAX_LENGTH, UserAccountStatus::class)
     val accountStatusOnRestore = enumerationByName(
@@ -24,7 +26,7 @@ object UsersTable : BaseTable("users") {
         BaseDbConstraints.ENUM_MAX_LENGTH,
         UserAccountStatus::class
     ).nullable()
-    val authorityLevel = integer("authority_level")
+    val authorityLevel = integer("authority_level").default(0)
     val permissionCodes = jsonb<Set<String>>(
         "permission_codes",
         FoundationJson,
@@ -39,4 +41,8 @@ object UsersTable : BaseTable("users") {
     val lastLoginAt = timestamp("last_login_at").nullable()
     val lastActiveAt = timestamp("last_active_at").nullable()
     val scheduledPermanentDeletionAt = timestamp("scheduled_permanent_deletion_at").nullable()
+    val nickname = varchar("nickname", BaseDbConstraints.DEFAULT_MAX_LENGTH).nullable()
+    val displayName = varchar("display_name", BaseDbConstraints.DEFAULT_MAX_LENGTH).nullable()
+    val avatarFileId = uuid("avatar_file_id").nullable()
+    val birthdate = timestamp("birthdate").nullable()
 }

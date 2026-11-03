@@ -117,7 +117,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
         val request = LoginByExternalAuthProviderRequest("GOOGLE", "external_token_123")
         val authData = createTestAuthData()
 
-        coEvery { loginByExternalAuthProviderUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
+        coEvery { loginByExternalAuthProviderUseCase(any(), any(), any(), any()) } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 

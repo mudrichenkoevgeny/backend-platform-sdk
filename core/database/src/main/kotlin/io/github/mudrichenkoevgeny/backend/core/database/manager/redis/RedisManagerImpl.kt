@@ -123,6 +123,18 @@ class RedisManagerImpl @Inject constructor(
         }
     }
 
+    override suspend fun deleteBatch(keys: List<String>): AppResult<Unit> {
+        if (keys.isEmpty()) return AppResult.Success(Unit)
+        return try {
+            getConnection().async().del(*keys.toTypedArray()).await()
+            AppResult.Success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppResult.Error(CommonError.Internal(e))
+        }
+    }
+
     override suspend fun publish(channel: String, message: String): AppResult<Unit> {
         return try {
             getConnection().async().publish(channel, message).await()

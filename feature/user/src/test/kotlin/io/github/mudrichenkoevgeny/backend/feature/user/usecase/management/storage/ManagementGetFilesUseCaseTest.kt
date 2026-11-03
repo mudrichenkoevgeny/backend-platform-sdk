@@ -10,7 +10,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
-import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageFileSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.permission.StoragePermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -68,7 +68,7 @@ class ManagementGetFilesUseCaseTest {
             storageManager.getStorageFilesSummaryPage(
                 managementUserPermissionCodes = managementUser.permissionCodes,
                 pageParams = pageParams,
-                sortBy = StorageSortValues.StorageFileSortBy.DEFAULT,
+                sortBy = StorageFileSortBy.DEFAULT,
                 sortOrder = SortOrder.DEFAULT,
                 ownerUserIds = emptyList(),
                 categories = emptyList(),

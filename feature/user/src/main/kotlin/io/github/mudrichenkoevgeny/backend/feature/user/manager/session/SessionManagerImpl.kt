@@ -4,9 +4,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundS
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
+import io.github.mudrichenkoevgeny.backend.core.common.model.client.DeviceIdResolver
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionRequirement
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
@@ -17,6 +17,7 @@ import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.userknowndevices.UserKnownDevicesRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
@@ -26,16 +27,18 @@ import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAcc
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.token.RotatedRefreshTokenData
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementSessionListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfSessionListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceId
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
+import kotlin.uuid.Uuid
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
@@ -45,13 +48,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.DeletedSessions
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionSummary
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.isValid
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.SessionToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -193,7 +196,7 @@ class SessionManagerImpl @Inject constructor(
         val createUserSessionResult = userSessionRepository.createUserSession(userSession)
 
         if (checkNewDevice) {
-            val deviceId = resolveDeviceId(userId, clientInfo)
+            val deviceId = DeviceIdResolver.resolveDeviceId(userId.asHexDashString(), clientInfo)
             val knownDeviceResult = userKnownDevicesRepository.getKnownDevice(userId, deviceId)
             when (knownDeviceResult) {
                 is AppResult.Success -> {
@@ -237,20 +240,6 @@ class SessionManagerImpl @Inject constructor(
             )
             is AppResult.Error -> createUserSessionResult
         }
-    }
-
-    private fun resolveDeviceId(userId: UserId, clientInfo: ClientInfo): String {
-        val rawDeviceId = clientInfo.clientDeviceInfo.deviceId?.asHexDashString()
-        if (!rawDeviceId.isNullOrBlank()) {
-            return rawDeviceId
-        }
-
-        val ip = clientInfo.ipAddress ?: "unknown_ip"
-        val userAgent = clientInfo.userAgent ?: "unknown_ua"
-        val rawString = "${userId.value}:$ip:$userAgent"
-        val hashBytes = MessageDigest.getInstance("SHA-256").digest(rawString.toByteArray())
-        val hexString = hashBytes.joinToString("") { "%02x".format(it) }
-        return "synthetic:$hexString"
     }
 
     private suspend fun notifyNewDeviceDetected(
@@ -306,7 +295,7 @@ class SessionManagerImpl @Inject constructor(
 
         val now = Clock.System.now()
 
-        val isSessionValid = currentUserSession?.isValid(
+        val isSessionValid = currentUserSession?.toUserSessionPrivate()?.isValid(
             clientDeviceId = clientInfo.clientDeviceInfo.deviceId,
             now = now
         ) ?: false
@@ -378,7 +367,7 @@ class SessionManagerImpl @Inject constructor(
 
                     userRepository.updateUser(
                         userId = rotatedData.getUserId(),
-                        status = UpdateField.Set(UserAccountStatus.SECURITY_HOLD)
+                        updateUserParams = UpdateUserParams(accountStatus = UpdateField.Set(UserAccountStatus.SECURITY_HOLD))
                     )
 
                     redisManager.delete(buildRotatedRefreshKey(refreshTokenHash.value))
@@ -500,43 +489,13 @@ class SessionManagerImpl @Inject constructor(
 
     override suspend fun getUserSessionsSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserSessionSortBy,
-        sortOrder: SortOrder,
-        userIds: List<UserId>,
-        userRoles: List<UserRole>,
-        identifiers: List<String>,
-        identifierIds: List<UserIdentifierId>,
-        identifierAuthProviders: List<UserAuthProvider>,
-        clientTypes: List<ClientType>,
-        userAgents: List<String>,
-        ipAddresses: List<String>,
-        languages: List<String>,
-        deviceIds: List<String>,
-        deviceNames: List<String>,
-        appVersions: List<String>,
-        operationSystemVersions: List<String>
+        queryParams: ManagementSessionListQueryParams
     ): AppResult<PagedResult<UserSessionSummary>> = dbQuery {
         val accessFilter = buildAccessFilter(managementUserPermissionCodes)
 
         val getSessionsResult = userSessionRepository.getUserSessionsPageWithAccessFilter(
             accessFilter = accessFilter,
-            pageParams = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            userIds = userIds,
-            userRoles = userRoles,
-            identifiers = identifiers,
-            identifierIds = identifierIds,
-            identifierAuthProviders = identifierAuthProviders,
-            clientTypes = clientTypes,
-            userAgents = userAgents,
-            ipAddresses = ipAddresses,
-            languages = languages,
-            deviceIds = deviceIds,
-            deviceNames = deviceNames,
-            appVersions = appVersions,
-            operationSystemVersions = operationSystemVersions
+            queryParams = queryParams
         )
 
         when (getSessionsResult) {
@@ -580,37 +539,11 @@ class SessionManagerImpl @Inject constructor(
 
     override suspend fun getUserSessionsSummaryPage(
         userId: UserId,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserSessionSortBy,
-        sortOrder: SortOrder,
-        identifiers: List<String>,
-        identifierIds: List<UserIdentifierId>,
-        identifierAuthProviders: List<UserAuthProvider>,
-        clientTypes: List<ClientType>,
-        userAgents: List<String>,
-        ipAddresses: List<String>,
-        languages: List<String>,
-        deviceIds: List<String>,
-        deviceNames: List<String>,
-        appVersions: List<String>,
-        operationSystemVersions: List<String>
+        queryParams: SelfSessionListQueryParams
     ): AppResult<PagedResult<UserSessionSummary>> = dbQuery {
         val result = userSessionRepository.getUserSessionsPageByUserId(
             userId = userId,
-            pageParams = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            identifiers = identifiers,
-            identifierIds = identifierIds,
-            identifierAuthProviders = identifierAuthProviders,
-            clientTypes = clientTypes,
-            userAgents = userAgents,
-            ipAddresses = ipAddresses,
-            languages = languages,
-            deviceIds = deviceIds,
-            deviceNames = deviceNames,
-            appVersions = appVersions,
-            operationSystemVersions = operationSystemVersions
+            queryParams = queryParams
         )
 
         result.mapSuccess { paged ->

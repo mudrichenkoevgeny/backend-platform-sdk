@@ -7,7 +7,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.error.naming.S
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.error.naming.StorageErrorCodes
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.localization.StorageModuleStrings
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
@@ -32,11 +31,11 @@ class StorageErrorParserTest {
             args = mapOf(StorageErrorArgs.MAX_FILE_SIZE_BYTES to "52428800"),
             locale = "en"
         )
-        assertNotNull(response)
-        assertEquals(errorId.asHexDashString(), response!!.id)
-        assertEquals(StorageErrorCodes.FILE_SIZE_EXCEEDS_LIMIT, response.code)
-        val expectedSize = ByteSizeFormatter.format("52428800", locale = "en")!!
-        assertEquals(stringsEn.errors.fileSizeExceedsLimit(expectedSize), response.message)
+        val nonNullResponse = checkNotNull(response)
+        assertEquals(errorId.asHexDashString(), nonNullResponse.id)
+        assertEquals(StorageErrorCodes.FILE_SIZE_EXCEEDS_LIMIT, nonNullResponse.code)
+        val expectedSize = checkNotNull(ByteSizeFormatter.format("52428800", locale = "en"))
+        assertEquals(stringsEn.errors.fileSizeExceedsLimit(expectedSize), nonNullResponse.message)
     }
 
     @Test
@@ -48,8 +47,8 @@ class StorageErrorParserTest {
             args = null,
             locale = "en"
         )
-        assertNotNull(response)
-        assertEquals(stringsEn.errors.fileSizeExceedsLimitWithoutArgs, response!!.message)
+        val nonNullResponse = checkNotNull(response)
+        assertEquals(stringsEn.errors.fileSizeExceedsLimitWithoutArgs, nonNullResponse.message)
     }
 
     @Test
@@ -60,9 +59,9 @@ class StorageErrorParserTest {
             args = mapOf(StorageErrorArgs.MAX_FILE_SIZE_BYTES to "52428800"),
             locale = "ru"
         )
-        assertNotNull(response)
-        val expectedSize = ByteSizeFormatter.format("52428800", locale = "ru")!!
-        assertEquals(stringsRu.errors.fileSizeExceedsLimit(expectedSize), response!!.message)
+        val nonNullResponse = checkNotNull(response)
+        val expectedSize = checkNotNull(ByteSizeFormatter.format("52428800", locale = "ru"))
+        assertEquals(stringsRu.errors.fileSizeExceedsLimit(expectedSize), nonNullResponse.message)
     }
 
     @Test

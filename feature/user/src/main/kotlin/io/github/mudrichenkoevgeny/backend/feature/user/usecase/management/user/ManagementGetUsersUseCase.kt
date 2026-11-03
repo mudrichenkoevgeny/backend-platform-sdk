@@ -1,20 +1,14 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.user
 
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserSummary
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserSummary
 import javax.inject.Inject
@@ -39,32 +33,12 @@ class ManagementGetUsersUseCase @Inject constructor(
      * 1. Validates the existence and status of the management caller.
      * 2. Delegates the filtered search to [userManager] which applies role-based visibility rules.
      *
-     * @param pageParams pagination settings (page index and size).
-     * @param sortBy field to sort by.
-     * @param sortOrder sorting direction.
-     * @param roles filter by [UserInternal.role].
-     * @param accountStatuses filter by [UserInternal.accountStatus].
-     * @param accountStatusesOnRestore filter by [UserInternal.accountStatusOnRestore].
-     * @param authorityLevelFrom inclusive lower bound for [UserInternal.authorityLevel].
-     * @param authorityLevelTo inclusive upper bound for [UserInternal.authorityLevel].
-     * @param requiredPermissionCodes filter for users possessing all of these permission codes.
-     * @param isTotpEnabled filter by MFA status.
-     * @param accountLockoutTypes filter by account lockout types.
-     * @param authenticatedRequestContext context containing the ID of the manager performing the search.
+     * @param queryParams Filtered search parameters.
+     * @param authenticatedRequestContext Context containing the ID of the manager performing the search.
      * @return [AppResult] containing [PagedResult] of [UserSummary].
      */
     suspend operator fun invoke(
-        pageParams: PageParams = PageParams(),
-        sortBy: UserSortValues.UserSortBy = UserSortValues.UserSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        roles: List<UserRole> = emptyList(),
-        accountStatuses: List<UserAccountStatus> = emptyList(),
-        accountStatusesOnRestore: List<UserAccountStatus> = emptyList(),
-        authorityLevelFrom: Int? = null,
-        authorityLevelTo: Int? = null,
-        requiredPermissionCodes: Set<PermissionCode> = emptySet(),
-        isTotpEnabled: Boolean? = null,
-        accountLockoutTypes: List<AccountLockoutType> = emptyList(),
+        queryParams: UserListQueryParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<UserSummary>> {
         val managementUserId = authenticatedRequestContext.userId
@@ -83,17 +57,7 @@ class ManagementGetUsersUseCase @Inject constructor(
 
         return userManager.getUsersInternalPage(
             managementUserPermissionCodes = managementUser.permissionCodes,
-            pageParams = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            roles = roles,
-            accountStatuses = accountStatuses,
-            accountStatusesOnRestore = accountStatusesOnRestore,
-            authorityLevelFrom = authorityLevelFrom,
-            authorityLevelTo = authorityLevelTo,
-            permissionCodes = requiredPermissionCodes,
-            isTotpEnabled = isTotpEnabled,
-            accountLockoutTypes = accountLockoutTypes
+            queryParams = queryParams
         ).mapSuccess { paged ->
             PagedResult(
                 items = paged.items.map { it.toUserSummary() },

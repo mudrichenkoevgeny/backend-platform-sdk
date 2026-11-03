@@ -1,16 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementIdentifierListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfIdentifierListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierSummary
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 
 /**
@@ -137,41 +136,23 @@ interface IdentifierManager {
      * Applies role-scoped visibility based on [managementUserPermissionCodes].
      *
      * @param managementUserPermissionCodes caller permissions used to derive access rules
-     * @param pageParams pagination settings (page, size)
-     * @param sortBy field to sort by
-     * @param sortOrder sorting direction
-     * @param userIds optional filters for specific user IDs
-     * @param userAuthProviders optional filters for authentication providers
-     * @param identifiers optional substring patterns for identifier values
+     * @param queryParams structured filter and pagination parameters ([ManagementIdentifierListQueryParams])
      * @return [AppResult.Success] containing [PagedResult] of [UserIdentifierSummary] or an error
      */
     suspend fun getUserIdentifiersSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        userIds: List<UserId> = emptyList(),
-        userAuthProviders: List<UserAuthProvider> = emptyList(),
-        identifiers: List<String> = emptyList()
+        queryParams: ManagementIdentifierListQueryParams
     ): AppResult<PagedResult<UserIdentifierSummary>>
 
     /**
      * Returns a paginated list of identifier summaries belonging to the current user.
      *
      * @param userId the ID of the user requesting their own identifiers
-     * @param pageParams pagination settings (page, size)
-     * @param sortBy field to sort by
-     * @param sortOrder sorting direction
-     * @param userAuthProviders optional filters for authentication providers
-     * @param identifiers optional substring patterns for identifier values
+     * @param queryParams structured filter and pagination parameters ([SelfIdentifierListQueryParams])
      * @return [AppResult.Success] containing [PagedResult] of [UserIdentifierSummary] or an error
      */
     suspend fun getUserIdentifiersSummaryPage(
         userId: UserId,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        userAuthProviders: List<UserAuthProvider> = emptyList(),
-        identifiers: List<String> = emptyList()
+        queryParams: SelfIdentifierListQueryParams
     ): AppResult<PagedResult<UserIdentifierSummary>>
 }

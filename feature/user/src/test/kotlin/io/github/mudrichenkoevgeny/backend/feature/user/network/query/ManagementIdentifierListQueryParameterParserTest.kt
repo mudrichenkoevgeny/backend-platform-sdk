@@ -2,9 +2,12 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.query
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.testing.contract.assertAllSortByEnumEntriesParsed
+import io.github.mudrichenkoevgeny.backend.core.common.testing.contract.assertExhaustiveFilterKeysParsed
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserFilterValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserIdentifierFilterValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserIdentifierSortBy
+import io.ktor.http.Parameters
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.ApplicationRequest
 import io.mockk.every
@@ -25,11 +28,39 @@ class ManagementIdentifierListQueryParameterParserTest {
 
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()
-    private val filterNames = UserFilterValues.UserIdentifierFilterValues
+    private val filterNames = UserIdentifierFilterValues
 
     @BeforeEach
     fun setUp() {
         every { call.request } returns request
+    }
+
+    @Test
+    fun `parseManagementIdentifiersListQueryParams should extract and parse all wire keys defined in UserIdentifierFilterValues`() {
+        assertExhaustiveFilterKeysParsed(
+            filterKeysClass = UserIdentifierFilterValues::class,
+            sampleValueProvider = ::getSampleValidValueForIdentifierFilterKey,
+            parseFunction = { mockCall -> mockCall.parseManagementIdentifiersListQueryParams() }
+        )
+    }
+
+    @Test
+    fun `parseManagementIdentifiersListQueryParams should accept and parse all UserIdentifierSortBy wire values`() {
+        assertAllSortByEnumEntriesParsed(
+            enumEntries = UserIdentifierSortBy.entries,
+            wireValueExtractor = { sortByEntry -> sortByEntry.value },
+            parseFunction = { mockCall -> mockCall.parseManagementIdentifiersListQueryParams() },
+            assertSortByFunction = { parsedQueryParams, expectedSortBy ->
+                assertEquals(expectedSortBy, parsedQueryParams.listing.sortBy)
+            }
+        )
+    }
+
+    private fun getSampleValidValueForIdentifierFilterKey(key: String): String = when {
+        key == filterNames.USER_AUTH_PROVIDER -> UserAuthProvider.GOOGLE.value
+        key.endsWith("_from") || key.endsWith("_to") -> "2026-01-01T00:00:00Z"
+        key.startsWith("is_") -> "true"
+        else -> "sample_value"
     }
 
     @Test
@@ -44,10 +75,10 @@ class ManagementIdentifierListQueryParameterParserTest {
 
         val result = call.parseManagementIdentifiersListQueryParams()
 
-        assertEquals(TEST_USER_ID, result.userIds.first().value.toString())
+        assertEquals(TEST_USER_ID, result.userIds.first())
         assertEquals(UserAuthProvider.GOOGLE, result.userAuthProviders.first())
-        assertEquals(TEST_IDENTIFIER, result.identifiers.first())
-        assertEquals(UserSortValues.UserIdentifierSortBy.DEFAULT, result.listing.sortBy)
+        assertEquals(TEST_IDENTIFIER, result.identifier)
+        assertEquals(UserIdentifierSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test
@@ -60,15 +91,9 @@ class ManagementIdentifierListQueryParameterParserTest {
     }
 
     @Test
-    fun `should throw RequestHandlingException when user id is invalid`() {
+    fun `should not throw RequestHandlingException when user id is invalid`() {
         setupMockParameters(mapOf(filterNames.USER_ID to listOf(INVALID_UUID)))
-
-        val exception = assertThrows<RequestHandlingException> {
-            call.parseManagementIdentifiersListQueryParams()
-        }
-
-        val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.USER_ID, error.parameterName)
+        call.parseManagementIdentifiersListQueryParams()
     }
 
     @Test
@@ -89,7 +114,7 @@ class ManagementIdentifierListQueryParameterParserTest {
     }
 
     private fun setupMockParameters(params: Map<String, List<String>>) {
-        val parameters = io.ktor.http.Parameters.build {
+        val parameters = Parameters.build {
             params.forEach { (key, values) -> appendAll(key, values) }
         }
         every { request.queryParameters } returns parameters

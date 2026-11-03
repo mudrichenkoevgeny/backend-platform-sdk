@@ -412,4 +412,99 @@ sealed class UserError(
         httpStatusCode = HttpStatusCode.UnprocessableEntity,
         appErrorSeverity = AppErrorSeverity.LOW
     )
+
+    /**
+     * The requested nickname is already taken by another user.
+     */
+    class NicknameAlreadyTaken(
+        val nickname: String
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.NICKNAME_ALREADY_TAKEN,
+        publicArgs = mapOf(UserErrorArgs.NICKNAME to nickname),
+        httpStatusCode = HttpStatusCode.UnprocessableEntity,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
+     * Modifying the nickname is disabled by system configuration.
+     */
+    class NicknameChangeDisabled : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.NICKNAME_CHANGE_DISABLED,
+        httpStatusCode = HttpStatusCode.Forbidden,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
+     * The provided nickname character length is below the required minimum.
+     */
+    class NicknameTooShort(
+        val minLength: Int
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.NICKNAME_TOO_SHORT,
+        publicArgs = mapOf(UserErrorArgs.NICKNAME_MIN_LENGTH to minLength),
+        httpStatusCode = HttpStatusCode.UnprocessableEntity,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
+     * The provided nickname character length exceeds the allowed maximum.
+     */
+    class NicknameTooLong(
+        val maxLength: Int
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.NICKNAME_TOO_LONG,
+        publicArgs = mapOf(UserErrorArgs.NICKNAME_MAX_LENGTH to maxLength),
+        httpStatusCode = HttpStatusCode.UnprocessableEntity,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
+     * The provided nickname contains unsupported or illegal characters.
+     */
+    class InvalidNicknameCharacters : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.INVALID_NICKNAME_CHARACTERS,
+        httpStatusCode = HttpStatusCode.UnprocessableEntity,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
+     * The provided display name character length is below the required minimum.
+     */
+    class DisplayNameTooShort(
+        val minLength: Int
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.DISPLAY_NAME_TOO_SHORT,
+        publicArgs = mapOf(UserErrorArgs.DISPLAY_NAME_MIN_LENGTH to minLength),
+        httpStatusCode = HttpStatusCode.UnprocessableEntity,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
+     * The provided display name character length exceeds the allowed maximum.
+     */
+    class DisplayNameTooLong(
+        val maxLength: Int
+    ) : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.DISPLAY_NAME_TOO_LONG,
+        publicArgs = mapOf(UserErrorArgs.DISPLAY_NAME_MAX_LENGTH to maxLength),
+        httpStatusCode = HttpStatusCode.UnprocessableEntity,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
+
+    /**
+     * The provided display name contains illegal control characters or line breaks.
+     */
+    class InvalidDisplayNameCharacters : UserError(
+        errorId = ErrorId.generate(),
+        code = UserErrorCodes.INVALID_DISPLAY_NAME_CHARACTERS,
+        httpStatusCode = HttpStatusCode.UnprocessableEntity,
+        appErrorSeverity = AppErrorSeverity.LOW
+    )
 }

@@ -66,4 +66,15 @@ interface LockoutManager {
     suspend fun clearLockout(
         identifier: String
     ): AppResult<Unit>
+
+    /**
+     * Clears all failed attempt counters, consecutive lockouts, indefinite lockout state, and lockout state in Redis
+     * for a batch of [identifiers] in a single operation.
+     *
+     * @param identifiers List of unique key strings for tracking attempts.
+     * @return [AppResult.Success] with [Unit] or an error.
+     */
+    suspend fun clearLockoutsBatch(
+        identifiers: List<String>
+    ): AppResult<Unit>
 }

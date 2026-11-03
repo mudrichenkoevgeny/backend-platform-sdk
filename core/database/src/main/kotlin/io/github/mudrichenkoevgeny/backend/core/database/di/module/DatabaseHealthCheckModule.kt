@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.database.di.module
 import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheck
 import io.github.mudrichenkoevgeny.backend.core.database.healthcheck.DatabaseHealthCheck
 import io.github.mudrichenkoevgeny.backend.core.database.healthcheck.RedisHealthCheck
+import kotlin.collections.Set
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoSet
@@ -11,7 +12,7 @@ import dagger.multibindings.Multibinds
 /**
  * Dagger module that contributes database-related [HealthCheck] implementations to the app's health set.
  *
- * Binds [DatabaseHealthCheck] and [RedisHealthCheck] into a [Set][kotlin.collections.Set] of [HealthCheck].
+ * Binds [DatabaseHealthCheck] and [RedisHealthCheck] into a [Set] of [HealthCheck].
  */
 @Module
 interface DatabaseHealthCheckModule {

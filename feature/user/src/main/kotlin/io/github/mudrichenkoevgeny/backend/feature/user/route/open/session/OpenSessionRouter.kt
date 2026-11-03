@@ -259,21 +259,8 @@ class OpenSessionRouter @Inject constructor(
         }
 
         val result = getSessionsUseCase(
-            authenticatedRequestContext = authenticatedRequestContext,
-            pageParams = queryParams.listing.pageParams,
-            sortBy = queryParams.listing.sortBy,
-            sortOrder = queryParams.listing.sortOrder,
-            identifiers = queryParams.identifiers,
-            identifierIds = queryParams.identifierIds,
-            identifierAuthProviders = queryParams.identifierAuthProviders,
-            clientTypes = queryParams.clientTypes,
-            userAgents = queryParams.userAgents,
-            ipAddresses = queryParams.ipAddresses,
-            languages = queryParams.languages,
-            deviceIds = queryParams.deviceIds,
-            deviceNames = queryParams.deviceNames,
-            appVersions = queryParams.appVersions,
-            operationSystemVersions = queryParams.operationSystemVersions
+            queryParams = queryParams,
+            authenticatedRequestContext = authenticatedRequestContext
         )
 
         call.respondResult(result, appLogger, appErrorParser) { pagedSessions ->

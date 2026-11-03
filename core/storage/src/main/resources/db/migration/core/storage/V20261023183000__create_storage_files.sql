@@ -23,3 +23,5 @@ ON storage_files(content_hash) WHERE content_hash IS NOT NULL;
 
 CREATE INDEX IF NOT EXISTS idx_storage_files_created_at
 ON storage_files(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_storage_files_file_name_trgm ON storage_files USING gin (LOWER(file_name) gin_trgm_ops);

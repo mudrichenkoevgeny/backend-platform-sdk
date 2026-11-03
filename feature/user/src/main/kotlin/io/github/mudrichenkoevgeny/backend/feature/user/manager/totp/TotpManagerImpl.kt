@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.totp
 
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.combine
 import io.github.mudrichenkoevgeny.backend.core.common.result.flatMapSuccess
@@ -58,7 +59,7 @@ class TotpManagerImpl @Inject constructor(
             .flatMapSuccess {
                 userRepository.updateUser(
                     userId = userId,
-                    isTotpEnabled = UpdateField.Set(true)
+                    updateUserParams = UpdateUserParams(isTotpEnabled = UpdateField.Set(true))
                 )
             }
             .mapSuccess { }
@@ -72,7 +73,7 @@ class TotpManagerImpl @Inject constructor(
 
         val userUpdateResult = userRepository.updateUser(
             userId = userId,
-            isTotpEnabled = UpdateField.Set(false)
+            updateUserParams = UpdateUserParams(isTotpEnabled = UpdateField.Set(false))
         )
 
         when (userUpdateResult) {

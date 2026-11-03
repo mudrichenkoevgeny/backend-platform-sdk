@@ -1,19 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.identifier
 
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementIdentifierListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierSummary
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,23 +34,13 @@ class ManagementGetIdentifiersUseCase @Inject constructor(
      * 2. Delegates the filtered search to [identifierManager], which enforces role-based
      *    access and data masking.
      *
-     * @param pageParams pagination settings (page index and size).
-     * @param sortBy field to sort by.
-     * @param sortOrder sorting direction.
-     * @param userIds optional filters for specific user IDs.
-     * @param userAuthProviders optional filter by authentication provider types.
-     * @param identifiers optional filter by identifier strings (e.g., specific email fragments).
-     * @param authenticatedRequestContext context containing the ID of the management caller performing the search.
+     * @param queryParams Filtered search parameters.
+     * @param authenticatedRequestContext Context containing the ID of the management caller performing the search.
      * @return [AppResult] containing [PagedResult] of [UserIdentifierSummary] within the caller's authorized scope.
      */
     suspend operator fun invoke(
-        pageParams: PageParams = PageParams(),
-        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        userIds: List<UserId> = emptyList(),
-        userAuthProviders: List<UserAuthProvider> = emptyList(),
-        identifiers: List<String> = emptyList(),
-        authenticatedRequestContext: AuthenticatedRequestContext,
+        queryParams: ManagementIdentifierListQueryParams,
+        authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<UserIdentifierSummary>> {
         val managementUserId = authenticatedRequestContext.userId
 
@@ -72,12 +58,7 @@ class ManagementGetIdentifiersUseCase @Inject constructor(
 
         return identifierManager.getUserIdentifiersSummaryPage(
             managementUserPermissionCodes = managementUser.permissionCodes,
-            pageParams = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            userIds = userIds,
-            userAuthProviders = userAuthProviders,
-            identifiers = identifiers
+            queryParams = queryParams
         )
     }
 }

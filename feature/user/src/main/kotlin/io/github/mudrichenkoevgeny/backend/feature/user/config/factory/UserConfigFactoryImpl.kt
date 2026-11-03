@@ -48,12 +48,17 @@ class UserConfigFactoryImpl @Inject constructor(
         val maxEmailIdentifiers = envReader.getByKey(UserEnvKeys.MAX_EMAIL_IDENTIFIERS).toInt()
         val maxPhoneIdentifiers = envReader.getByKey(UserEnvKeys.MAX_PHONE_IDENTIFIERS).toInt()
         val maxIdentifiersPerExternalProvider = envReader.getByKey(UserEnvKeys.MAX_IDENTIFIERS_PER_EXTERNAL_PROVIDER).toInt()
+        val userNicknameMinLength = envReader.getByKey(UserEnvKeys.USER_NICKNAME_MIN_LENGTH).toInt()
+        val userNicknameMaxLength = envReader.getByKey(UserEnvKeys.USER_NICKNAME_MAX_LENGTH).toInt()
+        val userDisplayNameMinLength = envReader.getByKey(UserEnvKeys.USER_DISPLAY_NAME_MIN_LENGTH).toInt()
+        val userDisplayNameMaxLength = envReader.getByKey(UserEnvKeys.USER_DISPLAY_NAME_MAX_LENGTH).toInt()
+        val isUserNicknameChangeAllowed = envReader.getByKey(UserEnvKeys.IS_USER_NICKNAME_CHANGE_ALLOWED).toBoolean()
         val maxActiveSessionsForOpenUser = envReader.getByKey(UserEnvKeys.MAX_ACTIVE_SESSIONS_FOR_OPEN_USER).toInt()
         val maxActiveSessionsForManagementUser = envReader.getByKey(UserEnvKeys.MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER).toInt()
         val accessTokenExpirationSeconds = envReader.getByKey(UserEnvKeys.ACCESS_TOKEN_EXPIRATION_SECONDS).toInt()
         val refreshTokenExpirationSeconds = envReader.getByKey(UserEnvKeys.REFRESH_TOKEN_EXPIRATION_SECONDS).toInt()
         val accountDeletionGracePeriodSeconds = envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_GRACE_PERIOD_SECONDS).toInt()
-        val accountDeletionCheckIntervalSeconds = envReader.getByKeyOrNull(UserEnvKeys.ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS)?.toIntOrNull() ?: 600
+        val accountDeletionCheckIntervalSeconds = envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS).toInt()
         val isRegistrationEnabled = envReader.getByKeyOrNull(UserEnvKeys.IS_REGISTRATION_ENABLED)?.toBooleanStrictOrNull() ?: true
 
         val isOpenEmailBlacklistEnabled = envReader
@@ -83,6 +88,11 @@ class UserConfigFactoryImpl @Inject constructor(
             maxEmailIdentifiers = maxEmailIdentifiers,
             maxPhoneIdentifiers = maxPhoneIdentifiers,
             maxIdentifiersPerExternalProvider = maxIdentifiersPerExternalProvider,
+            userNicknameMinLength = userNicknameMinLength,
+            userNicknameMaxLength = userNicknameMaxLength,
+            userDisplayNameMinLength = userDisplayNameMinLength,
+            userDisplayNameMaxLength = userDisplayNameMaxLength,
+            isUserNicknameChangeAllowed = isUserNicknameChangeAllowed,
             maxActiveSessionsForOpenUser = maxActiveSessionsForOpenUser,
             maxActiveSessionsForManagementUser = maxActiveSessionsForManagementUser,
             accessTokenExpirationSeconds = accessTokenExpirationSeconds,

@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.use
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.model.device.UserKnownDevice
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import kotlin.time.Instant
 
@@ -30,7 +31,7 @@ interface UserKnownDevicesRepository {
      */
     suspend fun updateKnownDevice(
         userId: UserId,
-        deviceId: String,
+        deviceId: ClientDeviceId,
         lastIpAddress: UpdateField<String?> = UpdateField.Ignore,
         lastSeenAt: UpdateField<Instant> = UpdateField.Ignore
     ): AppResult<UserKnownDevice>
@@ -42,5 +43,5 @@ interface UserKnownDevicesRepository {
      * @param deviceId unique device identifier
      * @return known device when found, `null` when missing, or an error
      */
-    suspend fun getKnownDevice(userId: UserId, deviceId: String): AppResult<UserKnownDevice?>
+    suspend fun getKnownDevice(userId: UserId, deviceId: ClientDeviceId): AppResult<UserKnownDevice?>
 }

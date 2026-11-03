@@ -178,12 +178,7 @@ class ManagementIdentifierRouter @Inject constructor(
         val queryParams = call.parseManagementIdentifiersListQueryParams()
 
         val result = managementGetIdentifiersUseCase(
-            pageParams = queryParams.listing.pageParams,
-            sortBy = queryParams.listing.sortBy,
-            sortOrder = queryParams.listing.sortOrder,
-            userIds = queryParams.userIds,
-            userAuthProviders = queryParams.userAuthProviders,
-            identifiers = queryParams.identifiers,
+            queryParams = queryParams,
             authenticatedRequestContext = authenticatedRequestContext
         )
 
@@ -239,13 +234,12 @@ class ManagementIdentifierRouter @Inject constructor(
         val authenticatedRequestContext = call.getAuthenticatedRequestContext()
         val queryParams = call.parseManagementIdentifiersListQueryParams()
 
+        val queryParamsWithUserId = queryParams.copy(
+            userIds = listOf(userId.asHexDashString())
+        )
+
         val result = managementGetIdentifiersUseCase(
-            pageParams = queryParams.listing.pageParams,
-            sortBy = queryParams.listing.sortBy,
-            sortOrder = queryParams.listing.sortOrder,
-            userIds = listOf(userId),
-            userAuthProviders = queryParams.userAuthProviders,
-            identifiers = queryParams.identifiers,
+            queryParams = queryParamsWithUserId,
             authenticatedRequestContext = authenticatedRequestContext
         )
 

@@ -21,7 +21,7 @@ fun ApplicationCall.extractClientInfo(): ClientInfo {
             clientType = request.headers[CommonHttpHeaders.CLIENT_TYPE_HEADER_NAME]?.let { clientType ->
                 ClientType.fromValueOrNull(clientType)
             },
-            language = request.headers[HttpHeaders.AcceptLanguage],
+            language = ClientDeviceInfo.parsePrimaryLanguage(request.headers[HttpHeaders.AcceptLanguage]),
             appVersion = request.headers[CommonHttpHeaders.APP_VERSION_HEADER_NAME],
             operationSystemVersion = request.headers[CommonHttpHeaders.OPERATION_SYSTEM_VERSION_HEADER_NAME]
         ),

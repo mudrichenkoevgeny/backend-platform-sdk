@@ -134,6 +134,22 @@ class LockoutManagerImpl @Inject constructor(
         return AppResult.Success(Unit)
     }
 
+    override suspend fun clearLockoutsBatch(identifiers: List<String>): AppResult<Unit> {
+        if (identifiers.isEmpty()) {
+            return AppResult.Success(Unit)
+        }
+        val keysToDelete = mutableListOf<String>()
+        for (identifier in identifiers) {
+            keysToDelete.add(buildLockoutKey(identifier))
+            keysToDelete.add(buildIndefiniteLockoutKey(identifier))
+            keysToDelete.add(buildConsecutiveKey(identifier))
+            for (type in LockoutAttemptType.entries) {
+                keysToDelete.add(buildCounterKey(identifier, type))
+            }
+        }
+        return redisManager.deleteBatch(keysToDelete)
+    }
+
     private fun buildCounterKey(identifier: String, type: LockoutAttemptType): String {
         return "lockout:failed:${type.name.lowercase()}:$identifier"
     }

@@ -1,11 +1,17 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.database.repository
 
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
+import io.github.mudrichenkoevgeny.backend.core.database.testing.assertAllQueryParamsApplied
 import io.github.mudrichenkoevgeny.backend.core.storage.database.table.StorageFilesTable
+import io.github.mudrichenkoevgeny.backend.core.storage.network.model.ManagementStorageFileListQueryParams
+import io.github.mudrichenkoevgeny.backend.core.storage.network.model.SelfStorageFileListQueryParams
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileInternal
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageFileSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
 import kotlinx.coroutines.runBlocking
@@ -173,5 +179,38 @@ class StorageFilesRepositoryImplTest {
 
         assertEquals(null, (file1Db as AppResult.Success).data)
         assertEquals(file2.id, (file2Db as AppResult.Success).data?.id)
+    }
+
+    @Test
+    fun `getStorageFilesPageForManagement should apply every query parameter to generated SQL`() = runBlocking {
+        suspendTransaction {
+            assertAllQueryParamsApplied(
+                queryParamsClass = ManagementStorageFileListQueryParams::class,
+                defaultInstance = ManagementStorageFileListQueryParams(
+                    listing = ListingQueryParams(sortBy = StorageFileSortBy.CREATED_AT)
+                ),
+                ignoredProperties = emptySet()
+            ) { queryParams ->
+                repository.getStorageFilesPageForManagement(queryParams = queryParams)
+            }
+        }
+    }
+
+    @Test
+    fun `getStorageFilesPageByOwnerUserId should apply every query parameter to generated SQL`() = runBlocking {
+        suspendTransaction {
+            assertAllQueryParamsApplied(
+                queryParamsClass = SelfStorageFileListQueryParams::class,
+                defaultInstance = SelfStorageFileListQueryParams(
+                    listing = ListingQueryParams(sortBy = StorageFileSortBy.CREATED_AT)
+                ),
+                ignoredProperties = emptySet()
+            ) { queryParams ->
+                repository.getStorageFilesPageByOwnerUserId(
+                    ownerUserId = "owner-123",
+                    queryParams = queryParams
+                )
+            }
+        }
     }
 }

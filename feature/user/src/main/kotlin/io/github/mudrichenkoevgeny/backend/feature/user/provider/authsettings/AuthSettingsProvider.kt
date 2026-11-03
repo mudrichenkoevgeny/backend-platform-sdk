@@ -57,6 +57,31 @@ interface AuthSettingsProvider {
     fun getMaxIdentifiersPerExternalProvider(): Int
 
     /**
+     * Returns the minimum character length for user nicknames.
+     */
+    fun getUserNicknameMinLength(): Int
+
+    /**
+     * Returns the maximum character length for user nicknames.
+     */
+    fun getUserNicknameMaxLength(): Int
+
+    /**
+     * Returns the minimum character length for user display names.
+     */
+    fun getUserDisplayNameMinLength(): Int
+
+    /**
+     * Returns the maximum character length for user display names.
+     */
+    fun getUserDisplayNameMaxLength(): Int
+
+    /**
+     * Returns whether users are permitted to modify their nickname.
+     */
+    fun getIsUserNicknameChangeAllowed(): Boolean
+
+    /**
      * Returns the maximum number of active sessions allowed per open user account.
      */
     fun getMaxActiveSessionsForOpenUser(): Int

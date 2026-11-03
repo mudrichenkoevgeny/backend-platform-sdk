@@ -1,12 +1,14 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier
 
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementIdentifierListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
@@ -17,7 +19,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserIdentifierSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -155,7 +157,7 @@ class IdentifierManagerImplTest {
         )
 
         coEvery {
-            repository.getUserIdentifiersPageWithAccessFilter(any(), any(), any(), any(), any(), any(), any())
+            repository.getUserIdentifiersPageWithAccessFilter(any(), any())
         } returns AppResult.Success(pagedResult)
         coEvery {
             userManager.getUserInternalById(user1Id)
@@ -168,12 +170,13 @@ class IdentifierManagerImplTest {
 
         val result = manager.getUserIdentifiersSummaryPage(
             managementUserPermissionCodes = permissions,
-            pageParams = PageParams(),
-            sortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
-            sortOrder = SortOrder.DEFAULT,
-            userIds = emptyList(),
-            userAuthProviders = emptyList(),
-            identifiers = emptyList()
+            queryParams = ManagementIdentifierListQueryParams(
+                listing = ListingQueryParams(
+                    pageParams = PageParams(),
+                    sortBy = UserIdentifierSortBy.DEFAULT,
+                    sortOrder = SortOrder.DEFAULT
+                )
+            )
         )
 
         assertTrue(result is AppResult.Success)

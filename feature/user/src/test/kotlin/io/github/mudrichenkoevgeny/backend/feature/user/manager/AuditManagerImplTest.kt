@@ -1,19 +1,17 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager
 
 import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepository
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.listing.createTestPagedResult
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.navigation.screen.management.audit.list.ManagementAuditEventListParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.listing.createTestPagedResult
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -74,17 +72,7 @@ class AuditManagerImplTest {
         coEvery {
             repository.getEventsPageWithAccessFilter(
                 accessFilter = any(),
-                pageParams = any(),
-                sortBy = any(),
-                sortOrder = any(),
-                actorIds = any(),
-                actorTypes = any(),
-                actorUserRoles = any(),
-                actions = any(),
-                resources = any(),
-                resourceIds = any(),
-                statuses = any(),
-                messages = any()
+                queryParams = any()
             )
         } returns AppResult.Success(pagedResult)
 
@@ -92,9 +80,7 @@ class AuditManagerImplTest {
 
         val result = auditManager.getAuditEventsSummaryPage(
             managementUserPermissionCodes = permissions,
-            pageParams = PageParams(),
-            sortBy = AuditSortValues.AuditEventSortBy.DEFAULT,
-            sortOrder = SortOrder.DEFAULT
+            queryParams = ManagementAuditEventListParams()
         )
 
         assertTrue(result is AppResult.Success)

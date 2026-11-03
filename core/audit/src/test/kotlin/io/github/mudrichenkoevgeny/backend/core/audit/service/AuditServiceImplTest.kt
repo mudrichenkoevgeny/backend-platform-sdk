@@ -27,7 +27,6 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -72,9 +71,9 @@ class AuditServiceImplTest {
 
         val stored = suspendTransaction { repository.getEventById(event.id) }
         val success = stored as AppResult.Success
-        assertNotNull(success.data)
-        assertEquals(event.id, success.data!!.id)
-        assertEquals("login", success.data!!.action.value)
+        val data = checkNotNull(success.data)
+        assertEquals(event.id, data.id)
+        assertEquals("login", data.action.value)
     }
 
     @Test

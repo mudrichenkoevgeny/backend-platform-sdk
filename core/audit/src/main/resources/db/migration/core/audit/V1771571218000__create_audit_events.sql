@@ -19,3 +19,4 @@ CREATE INDEX IF NOT EXISTS idx_audit_events_action ON audit_events(action);
 CREATE INDEX IF NOT EXISTS idx_audit_events_resource_resource_id ON audit_events(resource, resource_id);
 CREATE INDEX IF NOT EXISTS idx_audit_events_created_at ON audit_events(created_at);
 CREATE INDEX IF NOT EXISTS idx_audit_events_metadata_gin ON audit_events USING GIN (metadata);
+CREATE INDEX IF NOT EXISTS idx_audit_events_message_trgm ON audit_events USING gin (LOWER(message) gin_trgm_ops);

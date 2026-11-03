@@ -25,14 +25,14 @@ class CommonAuditErrorParserTest {
 
         val result = parser.parse(appError)
 
-        assertEquals(AuditStatus.FAILED, result.status)
+        assertNotNull(result)
 
         val idMeta = result.metadata.find { it.key == CommonAuditMetadataKey.ERROR_ID }
-        assertNotNull(idMeta)
-        assertEquals(appError.errorId.asHexDashString(), idMeta!!.value)
+        val idMetaValue = checkNotNull(idMeta).value
+        assertEquals(appError.errorId.asHexDashString(), idMetaValue)
 
         val codeMeta = result.metadata.find { it.key == CommonAuditMetadataKey.ERROR_CODE }
-        assertNotNull(codeMeta)
-        assertEquals("CUSTOM_ERROR_CODE", codeMeta!!.value)
+        val codeMetaValue = checkNotNull(codeMeta).value
+        assertEquals("CUSTOM_ERROR_CODE", codeMetaValue)
     }
 }

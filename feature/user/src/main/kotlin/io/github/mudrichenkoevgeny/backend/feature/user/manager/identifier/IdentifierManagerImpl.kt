@@ -12,6 +12,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementIdentifierListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfIdentifierListQueryParams
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
@@ -21,7 +23,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.i
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierSummary
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserIdentifierSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
@@ -198,23 +200,13 @@ class IdentifierManagerImpl @Inject constructor(
 
     override suspend fun getUserIdentifiersSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy,
-        sortOrder: SortOrder,
-        userIds: List<UserId>,
-        userAuthProviders: List<UserAuthProvider>,
-        identifiers: List<String>
+        queryParams: ManagementIdentifierListQueryParams
     ): AppResult<PagedResult<UserIdentifierSummary>> = dbQuery {
         val accessFilter = buildAccessFilter(managementUserPermissionCodes)
 
         val getIdentifiersResult = userIdentifierRepository.getUserIdentifiersPageWithAccessFilter(
             accessFilter = accessFilter,
-            params = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            userIds = userIds,
-            userAuthProviders = userAuthProviders,
-            identifiers = identifiers
+            queryParams = queryParams
         )
 
         when (getIdentifiersResult) {
@@ -259,19 +251,11 @@ class IdentifierManagerImpl @Inject constructor(
 
     override suspend fun getUserIdentifiersSummaryPage(
         userId: UserId,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy,
-        sortOrder: SortOrder,
-        userAuthProviders: List<UserAuthProvider>,
-        identifiers: List<String>
+        queryParams: SelfIdentifierListQueryParams
     ): AppResult<PagedResult<UserIdentifierSummary>> = dbQuery {
         userIdentifierRepository.getUserIdentifiersPageByUserId(
             userId = userId,
-            params = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            userAuthProviders = userAuthProviders,
-            identifiers = identifiers
+            queryParams = queryParams
         ).mapSuccess { paged ->
             PagedResult(
                 items = paged.items.map { it.toUserIdentifierSummary() },

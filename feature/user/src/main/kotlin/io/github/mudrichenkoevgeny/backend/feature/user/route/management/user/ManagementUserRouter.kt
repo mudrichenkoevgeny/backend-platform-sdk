@@ -7,7 +7,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.mod
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateFieldValue
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
@@ -15,6 +14,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.user.toCreateUserParams
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.user.toUpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseUsersListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
@@ -48,8 +49,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contra
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserSummaryPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.ManagementUpdateUserRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.create.CreateByEmailRequest
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.UpdateUserRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.users.ManagementUsersRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
@@ -245,17 +246,7 @@ class ManagementUserRouter @Inject constructor(
         val queryParams = call.parseUsersListQueryParams()
 
         val result = managementGetUsersUseCase(
-            pageParams = queryParams.listing.pageParams,
-            sortBy = queryParams.listing.sortBy,
-            sortOrder = queryParams.listing.sortOrder,
-            roles = queryParams.roles,
-            accountStatuses = queryParams.accountStatuses,
-            accountStatusesOnRestore = queryParams.accountStatusesOnRestore,
-            authorityLevelFrom = queryParams.authorityLevelFrom,
-            authorityLevelTo = queryParams.authorityLevelTo,
-            requiredPermissionCodes = queryParams.requiredPermissionCodes,
-            isTotpEnabled = queryParams.isTotpEnabled,
-            accountLockoutTypes = queryParams.accountLockoutTypes,
+            queryParams = queryParams,
             authenticatedRequestContext = authenticatedRequestContext
         )
 
@@ -310,27 +301,11 @@ class ManagementUserRouter @Inject constructor(
             return
         }
 
-        val request = call.validateRequest<CreateByEmailRequest>()
-
-        val userRole = request.role.validateFieldValue(
-            fieldName = UserApiFields.ROLE,
-            parser = UserRole::fromValueOrNull
-        )
-
-        val accountStatus = request.status.validateFieldValue(
-            fieldName = UserApiFields.ACCOUNT_STATUS,
-            parser = UserAccountStatus::fromValueOrNull
-        )
+        val createByEmailRequest = call.validateRequest<CreateByEmailRequest>()
+        val createUserParams = createByEmailRequest.toCreateUserParams()
 
         val result = managementCreateUserUseCase(
-            email = request.email,
-            password = request.password,
-            role = userRole,
-            accountStatus = accountStatus,
-            authorityLevel = request.authorityLevel,
-            permissionCodes = request.permissionCodes.map { permissionCode ->
-                PermissionCode(permissionCode)
-            }.toSet(),
+            createUserParams = createUserParams,
             authenticatedRequestContext = authenticatedRequestContext
         )
 
@@ -356,7 +331,7 @@ class ManagementUserRouter @Inject constructor(
             pathParameter<String>(UserApiPaths.USER_ID) {
                 description = UPDATE_USER_ROUTE_PATH_USER_ID_DESCRIPTION
             }
-            body<UpdateUserRequest>()
+            body<ManagementUpdateUserRequest>()
         }
         response {
             code(HttpStatusCode.OK) {
@@ -393,28 +368,12 @@ class ManagementUserRouter @Inject constructor(
             return
         }
 
-        val request = call.validateRequest<UpdateUserRequest>()
-
-        val accountStatus = request.accountStatus?.validateFieldValue(
-            fieldName = UserApiFields.ACCOUNT_STATUS,
-            parser = UserAccountStatus::fromValueOrNull
-        )
-
-        val lockoutType = request.lockoutType?.validateFieldValue(
-            fieldName = UserApiFields.ACCOUNT_LOCKOUT_TYPE,
-            parser = AccountLockoutType::fromValueOrNull
-        )
+        val request = call.validateRequest<ManagementUpdateUserRequest>()
+        val updateUserParams = request.toUpdateUserParams()
 
         val result = managementUpdateUserUseCase(
             userId = userId,
-            accountStatus = accountStatus,
-            authorityLevel = request.authorityLevel,
-            permissionCodes = request.permissionCodes?.map { permissionCode ->
-                PermissionCode(permissionCode)
-            }?.toSet(),
-            lockoutType = lockoutType,
-            temporaryLockoutUntil = request.temporaryLockoutUntil,
-            storageConfiguration = request.storageConfiguration,
+            updateUserParams = updateUserParams,
             authenticatedRequestContext = authenticatedRequestContext
         )
         call.respondResult(result, appLogger, appErrorParser) { userPrivate: UserPrivate ->

@@ -1,18 +1,20 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.session
 
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementSessionListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionSummary
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -32,10 +34,17 @@ class ManagementGetSessionsUseCaseTest {
 
     private val defaultContext = createTestAuthenticatedRequestContext()
 
+    private val defaultQueryParams = ManagementSessionListQueryParams(
+        listing = ListingQueryParams(
+            pageParams = PageParams(),
+            sortBy = UserSessionSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT
+        )
+    )
+
     @Test
     fun `successfully retrieves paginated sessions`() = runTest {
         val managementUserId = defaultContext.userId
-        val pageParams = PageParams()
         val pagedResult = PagedResult<UserSessionSummary>(
             items = emptyList(),
             totalCount = 0,
@@ -54,42 +63,12 @@ class ManagementGetSessionsUseCaseTest {
         coEvery {
             sessionManager.getUserSessionsSummaryPage(
                 managementUserPermissionCodes = any(),
-                pageParams = pageParams,
-                sortBy = any(),
-                sortOrder = any(),
-                userIds = any(),
-                userRoles = any(),
-                identifiers = any(),
-                identifierIds = any(),
-                identifierAuthProviders = any(),
-                clientTypes = any(),
-                userAgents = any(),
-                ipAddresses = any(),
-                languages = any(),
-                deviceIds = any(),
-                deviceNames = any(),
-                appVersions = any(),
-                operationSystemVersions = any()
+                queryParams = any()
             )
         } returns AppResult.Success(pagedResult)
 
         val result = useCase(
-            pageParams = pageParams,
-            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-            sortOrder = SortOrder.DEFAULT,
-            userIds = emptyList(),
-            userRoles = emptyList(),
-            identifiers = emptyList(),
-            identifierIds = emptyList(),
-            identifierAuthProviders = emptyList(),
-            clientTypes = emptyList(),
-            userAgents = emptyList(),
-            ipAddresses = emptyList(),
-            languages = emptyList(),
-            deviceIds = emptyList(),
-            deviceNames = emptyList(),
-            appVersions = emptyList(),
-            operationSystemVersions = emptyList(),
+            queryParams = defaultQueryParams,
             authenticatedRequestContext = defaultContext
         )
 
@@ -107,22 +86,7 @@ class ManagementGetSessionsUseCaseTest {
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
 
         val result = useCase(
-            pageParams = PageParams(0, 20),
-            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-            sortOrder = SortOrder.DEFAULT,
-            userIds = emptyList(),
-            userRoles = emptyList(),
-            identifiers = emptyList(),
-            identifierIds = emptyList(),
-            identifierAuthProviders = emptyList(),
-            clientTypes = emptyList(),
-            userAgents = emptyList(),
-            ipAddresses = emptyList(),
-            languages = emptyList(),
-            deviceIds = emptyList(),
-            deviceNames = emptyList(),
-            appVersions = emptyList(),
-            operationSystemVersions = emptyList(),
+            queryParams = defaultQueryParams,
             authenticatedRequestContext = defaultContext
         )
 
@@ -134,22 +98,7 @@ class ManagementGetSessionsUseCaseTest {
         coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(null)
 
         val result = useCase(
-            pageParams = PageParams(0, 20),
-            sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-            sortOrder = SortOrder.DEFAULT,
-            userIds = emptyList(),
-            userRoles = emptyList(),
-            identifiers = emptyList(),
-            identifierIds = emptyList(),
-            identifierAuthProviders = emptyList(),
-            clientTypes = emptyList(),
-            userAgents = emptyList(),
-            ipAddresses = emptyList(),
-            languages = emptyList(),
-            deviceIds = emptyList(),
-            deviceNames = emptyList(),
-            appVersions = emptyList(),
-            operationSystemVersions = emptyList(),
+            queryParams = defaultQueryParams,
             authenticatedRequestContext = defaultContext
         )
 

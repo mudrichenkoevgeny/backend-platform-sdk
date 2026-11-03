@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.c
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.storage.UserStorageTargetScopes
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -35,7 +36,7 @@ class ConfirmUploadUseCaseTest {
         category = StorageCategory.IMAGE,
         visibility = StorageFileVisibility.PUBLIC,
         status = StorageFileStatus.READY,
-        targetScope = "avatar",
+        targetScope = UserStorageTargetScopes.AVATAR,
         fileUrl = "https://cdn.example.com/avatar.png",
         createdAt = Clock.System.now(),
         updatedAt = null

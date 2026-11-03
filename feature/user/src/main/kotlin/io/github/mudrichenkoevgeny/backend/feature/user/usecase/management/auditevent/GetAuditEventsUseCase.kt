@@ -1,21 +1,16 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auditevent
 
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.backend.core.audit.network.model.ManagementAuditEventListQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.AuditManager
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.AuditManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventSummary
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.navigation.screen.management.audit.list.ManagementAuditEventListParams
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,32 +37,12 @@ class GetAuditEventsUseCase @Inject constructor(
      * 2. Delegates the filtered search to [auditManager], which reconciles the provided filters
      *    with the caller's permissions to ensure only authorized events are returned.
      *
-     * @param pageParams Pagination settings (index and size).
-     * @param sortBy Field to sort by (defaults to CREATED_AT).
-     * @param sortOrder Sorting direction (defaults to DESC).
-     * @param actorIds Filter by specific actor identifiers.
-     * @param actorTypes Filter by types of actors (e.g., USER, SYSTEM).
-     * @param actorUserRoles Filter by specific user roles of the actors.
-     * @param actions Filter by specific audit actions.
-     * @param resources Filter by targeted resource types.
-     * @param resourceIds Filter by specific resource identifiers.
-     * @param statuses Filter by audit event statuses (e.g., SUCCESS, FAILURE).
-     * @param messages Filter by free-text audit messages.
+     * @param queryParams Filter and pagination parameters.
      * @param authenticatedRequestContext The context of the authenticated management caller.
      * @return [AppResult] containing a [PagedResult] of [AuditEventSummary] within the authorized scope.
      */
     suspend operator fun invoke(
-        pageParams: PageParams,
-        sortBy: AuditSortValues.AuditEventSortBy = AuditSortValues.AuditEventSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        actorIds: List<String> = emptyList(),
-        actorTypes: List<AuditActorType> = emptyList(),
-        actorUserRoles: List<String> = emptyList(),
-        actions: List<AuditActionType> = emptyList(),
-        resources: List<AuditResourceType> = emptyList(),
-        resourceIds: List<String> = emptyList(),
-        statuses: List<AuditStatus> = emptyList(),
-        messages: List<String> = emptyList(),
+        queryParams: ManagementAuditEventListQueryParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<AuditEventSummary>> {
         val currentUserId = authenticatedRequestContext.userId
@@ -82,17 +57,7 @@ class GetAuditEventsUseCase @Inject constructor(
 
         return auditManager.getAuditEventsSummaryPage(
             managementUserPermissionCodes = currentUser.permissionCodes,
-            pageParams = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            actorIds = actorIds,
-            actorTypes = actorTypes,
-            actorUserRoles = actorUserRoles,
-            actions = actions,
-            resources = resources,
-            resourceIds = resourceIds,
-            statuses = statuses,
-            messages = messages
+            queryParams = queryParams
         )
     }
 }

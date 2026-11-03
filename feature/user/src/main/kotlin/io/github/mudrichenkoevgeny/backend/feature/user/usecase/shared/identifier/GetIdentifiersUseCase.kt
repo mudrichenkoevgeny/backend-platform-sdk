@@ -1,18 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.identifier
 
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfIdentifierListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierSummary
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,21 +28,13 @@ class GetIdentifiersUseCase @Inject constructor(
      * 2. Verifies that the account status permits data retrieval.
      * 3. Fetches a filtered and sorted page of identifiers via [IdentifierManager].
      *
+     * @param queryParams Filtered search parameters.
      * @param authenticatedRequestContext Context containing the authenticated user's ID.
-     * @param pageParams Pagination settings (page index and size).
-     * @param sortBy Field to sort by (e.g., created at, updated at).
-     * @param sortOrder Sorting direction (ASC/DESC).
-     * @param userAuthProviders Optional filter by authentication provider types (EMAIL, PHONE, etc.).
-     * @param identifiers Optional filter by specific identifier substrings.
      * @return [AppResult] with [PagedResult] of [UserIdentifierSummary].
      */
     suspend operator fun invoke(
-        authenticatedRequestContext: AuthenticatedRequestContext,
-        pageParams: PageParams = PageParams(),
-        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        userAuthProviders: List<UserAuthProvider> = emptyList(),
-        identifiers: List<String> = emptyList()
+        queryParams: SelfIdentifierListQueryParams,
+        authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<UserIdentifierSummary>> {
         val currentUserId = authenticatedRequestContext.userId
 
@@ -63,11 +52,7 @@ class GetIdentifiersUseCase @Inject constructor(
 
         return identifierManager.getUserIdentifiersSummaryPage(
             userId = currentUserId,
-            pageParams = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            userAuthProviders = userAuthProviders,
-            identifiers = identifiers
+            queryParams = queryParams
         )
     }
 }

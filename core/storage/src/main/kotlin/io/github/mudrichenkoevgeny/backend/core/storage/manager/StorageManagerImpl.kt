@@ -1,7 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.manager
 
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.dataOrNull
 import io.github.mudrichenkoevgeny.backend.core.common.result.flatMapSuccess
@@ -11,10 +10,11 @@ import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
 import io.github.mudrichenkoevgeny.backend.core.storage.database.repository.StorageFilesRepository
 import io.github.mudrichenkoevgeny.backend.core.storage.error.model.StorageError
+import io.github.mudrichenkoevgeny.backend.core.storage.network.model.ManagementStorageFileListQueryParams
+import io.github.mudrichenkoevgeny.backend.core.storage.network.model.SelfStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.backend.core.storage.service.StorageService
 import io.github.mudrichenkoevgeny.backend.core.storage.settings.provider.StorageSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
@@ -22,16 +22,15 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.f
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFilePrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileSummary
-import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.presigned.PresignedUrl
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.permission.StoragePermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.mapper.file.toStorageFilePrivate
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.mapper.file.toStorageFileSummary
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import io.github.mudrichenkoevgeny.shared.foundation.core.storage.mapper.file.toStorageFileSummary
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
@@ -291,25 +290,11 @@ class StorageManagerImpl @Inject constructor(
 
     override suspend fun getSelfStorageFilesSummaryPage(
         ownerUserId: String,
-        pageParams: PageParams,
-        sortBy: StorageSortValues.StorageFileSortBy,
-        sortOrder: SortOrder,
-        categories: List<StorageCategory>,
-        visibilities: List<StorageFileVisibility>,
-        statuses: List<StorageFileStatus>,
-        mimeTypes: List<String>,
-        fileNames: List<String>
+        queryParams: SelfStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileSummary>> = dbQuery {
         val result = filesRepository.getStorageFilesPageByOwnerUserId(
             ownerUserId = ownerUserId,
-            pageParams = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            categories = categories,
-            visibilities = visibilities,
-            statuses = statuses,
-            mimeTypes = mimeTypes,
-            fileNames = fileNames
+            queryParams = queryParams
         )
 
         result.mapSuccess { paged ->
@@ -322,30 +307,14 @@ class StorageManagerImpl @Inject constructor(
 
     override suspend fun getStorageFilesSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
-        pageParams: PageParams,
-        sortBy: StorageSortValues.StorageFileSortBy,
-        sortOrder: SortOrder,
-        ownerUserIds: List<String>,
-        categories: List<StorageCategory>,
-        visibilities: List<StorageFileVisibility>,
-        statuses: List<StorageFileStatus>,
-        mimeTypes: List<String>,
-        fileNames: List<String>
+        queryParams: ManagementStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileSummary>> = dbQuery {
         if (!managementUserPermissionCodes.contains(StoragePermissionCode.STORAGE_VIEW_OTHER_USERS_FILES)) {
             return@dbQuery AppResult.Error(StorageError.FileNotFound(null))
         }
 
         val getFilesResult = filesRepository.getStorageFilesPageForManagement(
-            pageParams = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            ownerUserIds = ownerUserIds,
-            categories = categories,
-            visibilities = visibilities,
-            statuses = statuses,
-            mimeTypes = mimeTypes,
-            fileNames = fileNames
+            queryParams = queryParams
         )
 
         val expirationSeconds = settingsProvider.getPresignedUrlExpirationSeconds()
@@ -378,13 +347,13 @@ class StorageManagerImpl @Inject constructor(
             return@dbQuery AppResult.Success(0)
         }
 
-        val s3Keys = deletedFiles.map { it.s3Key }
+        val s3Keys = deletedFiles.map { storageFile -> storageFile.s3Key }
         val deleteStorageResult = storageService.deleteBatch(s3Keys)
         if (deleteStorageResult is AppResult.Error) {
             return@dbQuery deleteStorageResult
         }
 
-        val fileIds = deletedFiles.map { it.id }
+        val fileIds = deletedFiles.map { storageFile -> storageFile.id }
         val hardDeleteResult = filesRepository.hardDeleteStorageFilesBatch(fileIds)
         if (hardDeleteResult is AppResult.Error) {
             return@dbQuery hardDeleteResult

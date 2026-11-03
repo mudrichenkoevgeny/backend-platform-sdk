@@ -2,10 +2,12 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.query
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.testing.contract.assertAllSortByEnumEntriesParsed
+import io.github.mudrichenkoevgeny.backend.core.common.testing.contract.assertExhaustiveFilterKeysParsed
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserFilterValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionFilterValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionSortBy
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.ApplicationRequest
 import io.mockk.every
@@ -31,7 +33,7 @@ class SelfSessionListQueryParameterParserTest {
 
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()
-    private val filterNames = UserFilterValues.UserSessionFilterValues
+    private val filterNames = UserSessionFilterValues
 
     @BeforeEach
     fun setUp() {
@@ -39,11 +41,40 @@ class SelfSessionListQueryParameterParserTest {
     }
 
     @Test
+    fun `parseSelfSessionsListQueryParams should extract and parse all wire keys defined in UserSessionFilterValues`() {
+        assertExhaustiveFilterKeysParsed(
+            filterKeysClass = UserSessionFilterValues::class,
+            sampleValueProvider = ::getSampleValidValueForSessionFilterKey,
+            parseFunction = { mockCall -> mockCall.parseSelfSessionsListQueryParams() }
+        )
+    }
+
+    @Test
+    fun `parseSelfSessionsListQueryParams should accept and parse all UserSessionSortBy wire values`() {
+        assertAllSortByEnumEntriesParsed(
+            enumEntries = UserSessionSortBy.entries,
+            wireValueExtractor = { sortByEntry -> sortByEntry.value },
+            parseFunction = { mockCall -> mockCall.parseSelfSessionsListQueryParams() },
+            assertSortByFunction = { parsedQueryParams, expectedSortBy ->
+                assertEquals(expectedSortBy, parsedQueryParams.listing.sortBy)
+            }
+        )
+    }
+
+    private fun getSampleValidValueForSessionFilterKey(key: String): String = when {
+        key == filterNames.IDENTIFIER_AUTH_PROVIDER || key == filterNames.EXCLUDE_IDENTIFIER_AUTH_PROVIDER -> "google"
+        key == filterNames.CLIENT_TYPE || key == filterNames.EXCLUDE_CLIENT_TYPE -> "android"
+        key.endsWith("_from") || key.endsWith("_to") -> "2026-01-01T00:00:00Z"
+        key.startsWith("is_") -> "true"
+        else -> "sample_value"
+    }
+
+    @Test
     fun `should parse valid session query parameters successfully`() {
         setupMockParameters(
             mapOf(
                 filterNames.IDENTIFIER_ID to listOf(TEST_IDENTIFIER_ID),
-                filterNames.USER_AUTH_PROVIDER to listOf("google"),
+                filterNames.IDENTIFIER_AUTH_PROVIDER to listOf("google"),
                 filterNames.CLIENT_TYPE to listOf("android"),
                 filterNames.IDENTIFIER to listOf(TEST_IDENTIFIER),
                 filterNames.USER_AGENT to listOf(TEST_USER_AGENT),
@@ -58,18 +89,18 @@ class SelfSessionListQueryParameterParserTest {
 
         val result = call.parseSelfSessionsListQueryParams()
 
-        assertEquals(TEST_IDENTIFIER_ID, result.identifierIds.first().value.toString())
+        assertEquals(TEST_IDENTIFIER_ID, result.identifierIds.first())
         assertEquals(UserAuthProvider.GOOGLE, result.identifierAuthProviders.first())
         assertEquals(ClientType.ANDROID, result.clientTypes.first())
-        assertEquals(TEST_IDENTIFIER, result.identifiers.first())
-        assertEquals(TEST_USER_AGENT, result.userAgents.first())
-        assertEquals(TEST_IP, result.ipAddresses.first())
-        assertEquals(TEST_LANGUAGE, result.languages.first())
-        assertEquals(TEST_DEVICE_ID, result.deviceIds.first())
-        assertEquals(TEST_DEVICE_NAME, result.deviceNames.first())
-        assertEquals(TEST_APP_VERSION, result.appVersions.first())
-        assertEquals(TEST_OS_VERSION, result.operationSystemVersions.first())
-        assertEquals(UserSortValues.UserSessionSortBy.DEFAULT, result.listing.sortBy)
+        assertEquals(TEST_IDENTIFIER, result.identifier)
+        assertEquals(TEST_USER_AGENT, result.userAgent)
+        assertEquals(TEST_IP, result.ipAddress)
+        assertEquals(TEST_LANGUAGE, result.language)
+        assertEquals(TEST_DEVICE_ID, result.deviceId)
+        assertEquals(TEST_DEVICE_NAME, result.deviceName)
+        assertEquals(TEST_APP_VERSION, result.appVersion)
+        assertEquals(TEST_OS_VERSION, result.osVersion)
+        assertEquals(UserSessionSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test
@@ -81,15 +112,15 @@ class SelfSessionListQueryParameterParserTest {
         assertTrue(result.identifierIds.isEmpty())
         assertTrue(result.identifierAuthProviders.isEmpty())
         assertTrue(result.clientTypes.isEmpty())
-        assertTrue(result.identifiers.isEmpty())
-        assertTrue(result.userAgents.isEmpty())
-        assertTrue(result.ipAddresses.isEmpty())
-        assertTrue(result.languages.isEmpty())
-        assertTrue(result.deviceIds.isEmpty())
-        assertTrue(result.deviceNames.isEmpty())
-        assertTrue(result.appVersions.isEmpty())
-        assertTrue(result.operationSystemVersions.isEmpty())
-        assertEquals(UserSortValues.UserSessionSortBy.DEFAULT, result.listing.sortBy)
+        assertTrue(result.identifier == null)
+        assertTrue(result.userAgent == null)
+        assertTrue(result.ipAddress == null)
+        assertTrue(result.language == null)
+        assertTrue(result.deviceId == null)
+        assertTrue(result.deviceName == null)
+        assertTrue(result.appVersion == null)
+        assertTrue(result.osVersion == null)
+        assertEquals(UserSessionSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test
@@ -106,14 +137,14 @@ class SelfSessionListQueryParameterParserTest {
 
     @Test
     fun `should throw RequestHandlingException when auth provider is invalid`() {
-        setupMockParameters(mapOf(filterNames.USER_AUTH_PROVIDER to listOf(INVALID_VAL)))
+        setupMockParameters(mapOf(filterNames.IDENTIFIER_AUTH_PROVIDER to listOf(INVALID_VAL)))
 
         val exception = assertThrows<RequestHandlingException> {
             call.parseSelfSessionsListQueryParams()
         }
 
         val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.USER_AUTH_PROVIDER, error.parameterName)
+        assertEquals(filterNames.IDENTIFIER_AUTH_PROVIDER, error.parameterName)
     }
 
     @Test

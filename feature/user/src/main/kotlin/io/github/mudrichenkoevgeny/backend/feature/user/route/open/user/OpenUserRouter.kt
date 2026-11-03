@@ -7,11 +7,13 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.mod
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.user.toUpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
@@ -20,6 +22,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationp
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.ScheduleUserDeletionUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.GetUserUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.RestoreUserUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.UpdateSelfUserUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
@@ -28,6 +31,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toA
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.SelfUpdateUserRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserPrivatePayload
@@ -35,6 +39,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get
+import io.github.smiley4.ktoropenapi.patch
 import io.github.smiley4.ktoropenapi.post
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
@@ -65,13 +70,15 @@ class OpenUserRouter @Inject constructor(
     private val auditErrorConverter: AuditErrorConverter,
     private val getUserUseCase: GetUserUseCase,
     private val scheduleUserDeletionUseCase: ScheduleUserDeletionUseCase,
-    private val restoreUserUseCase: RestoreUserUseCase
+    private val restoreUserUseCase: RestoreUserUseCase,
+    private val updateSelfUserUseCase: UpdateSelfUserUseCase
 ) : BaseRouter {
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetUserRoute(this)
             registerScheduleDeletionRoute(this)
             registerRestoreUserRoute(this)
+            registerUpdateUserRoute(this)
         }
     }
 
@@ -107,6 +114,17 @@ class OpenUserRouter @Inject constructor(
             path = OpenUserRoutes.RESTORE_USER,
             builder = { restoreUserDocs(allowedRoles, allowedAccountStatuses) },
             body = { restoreUser(allowedRoles, allowedAccountStatuses) }
+        )
+    }
+
+    private fun registerUpdateUserRoute(route: Route) {
+        val allowedRoles = setOf(UserRole.USER)
+        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
+
+        route.patch(
+            path = OpenUserRoutes.UPDATE_USER,
+            builder = { updateUserDocs(allowedRoles, allowedAccountStatuses) },
+            body = { updateUser(allowedRoles, allowedAccountStatuses) }
         )
     }
 
@@ -267,6 +285,68 @@ class OpenUserRouter @Inject constructor(
         }
     }
 
+    private fun RouteConfig.updateUserDocs(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        summary = UPDATE_USER_ROUTE_SUMMARY
+        operationId = UPDATE_USER_ROUTE_OPERATION_ID
+        tags = listOf(CommonSwaggerTags.OPEN_PREFIX + UserSwaggerTags.USER)
+
+        description = getFormattedDescription(
+            description = UPDATE_USER_ROUTE_DESCRIPTION,
+            allowedRoles = allowedRoles.mapToSet { it.value },
+            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            isPublic = false
+        )
+
+        request {
+            body<SelfUpdateUserRequest>()
+        }
+
+        response {
+            code(HttpStatusCode.OK) {
+                body<UserPrivatePayload>()
+                description = UPDATE_USER_ROUTE_RESPONSE_OK_DESCRIPTION
+            }
+        }
+    }
+
+    private suspend fun RoutingContext.updateUser(
+        allowedRoles: Set<UserRole>,
+        allowedAccountStatuses: Set<UserAccountStatus>
+    ) {
+        val authenticatedRequestContext = call.getAuthenticatedRequestContext()
+
+        val authorizeResult = authenticationProvider.requireUser(
+            call = call,
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
+        )
+
+        if (authorizeResult is AppResult.Error) {
+            logErrorToAudit(
+                authenticatedRequestContext = authenticatedRequestContext,
+                actionType = UserAuditActionType.SELF_UPDATE_USER,
+                error = authorizeResult.error
+            )
+            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            return
+        }
+
+        val selfUpdateUserRequest = call.validateRequest<SelfUpdateUserRequest>()
+        val updateUserParams = selfUpdateUserRequest.toUpdateUserParams()
+
+        val result = updateSelfUserUseCase(
+            updateUserParams = updateUserParams,
+            authenticatedRequestContext = authenticatedRequestContext
+        )
+
+        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+            userPrivate.toUserPrivatePayload()
+        }
+    }
+
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
         actionType: AuditActionType,
@@ -303,5 +383,10 @@ class OpenUserRouter @Inject constructor(
         const val RESTORE_USER_ROUTE_DESCRIPTION = "Restores an account that was previously scheduled for deletion."
         const val RESTORE_USER_ROUTE_OPERATION_ID = "openRestoreUser"
         const val RESTORE_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User account restored successfully"
+
+        const val UPDATE_USER_ROUTE_SUMMARY = "Update current user profile"
+        const val UPDATE_USER_ROUTE_DESCRIPTION = "Partially updates details and profile fields of the currently authenticated user."
+        const val UPDATE_USER_ROUTE_OPERATION_ID = "openUpdateUser"
+        const val UPDATE_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "Updated user profile data."
     }
 }

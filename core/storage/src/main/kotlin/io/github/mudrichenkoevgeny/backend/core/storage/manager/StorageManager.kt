@@ -1,16 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.manager
 
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
+import io.github.mudrichenkoevgeny.backend.core.storage.network.model.ManagementStorageFileListQueryParams
+import io.github.mudrichenkoevgeny.backend.core.storage.network.model.SelfStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFilePrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileSummary
-import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.presigned.PresignedUrl
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
@@ -130,26 +129,12 @@ interface StorageManager {
      * Designed for "Self" service scenarios.
      *
      * @param ownerUserId The ID of the owner requesting their own files.
-     * @param pageParams Pagination settings (page index and size).
-     * @param sortBy Field to sort the results by.
-     * @param sortOrder Sorting direction (ASC/DESC).
-     * @param categories Optional filter by categories.
-     * @param visibilities Optional filter by visibilities.
-     * @param statuses Optional filter by file statuses.
-     * @param mimeTypes Optional filter by MIME type substrings.
-     * @param fileNames Optional filter by file name substrings.
+     * @param queryParams structured filter and pagination parameters ([SelfStorageFileListQueryParams]).
      * @return [AppResult.Success] with [PagedResult] of the user's storage file summaries or an error.
      */
     suspend fun getSelfStorageFilesSummaryPage(
         ownerUserId: String,
-        pageParams: PageParams,
-        sortBy: StorageSortValues.StorageFileSortBy = StorageSortValues.StorageFileSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        categories: List<StorageCategory> = emptyList(),
-        visibilities: List<StorageFileVisibility> = emptyList(),
-        statuses: List<StorageFileStatus> = emptyList(),
-        mimeTypes: List<String> = emptyList(),
-        fileNames: List<String> = emptyList()
+        queryParams: SelfStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileSummary>>
 
     /**
@@ -158,28 +143,12 @@ interface StorageManager {
      * Applies role-scoped visibility based on [managementUserPermissionCodes].
      *
      * @param managementUserPermissionCodes Caller permissions used to derive access rules.
-     * @param pageParams Pagination settings (page index and size).
-     * @param sortBy Field to sort the results by.
-     * @param sortOrder Sorting direction (ASC/DESC).
-     * @param ownerUserIds Optional filter for specific owner user IDs.
-     * @param categories Optional filter by categories.
-     * @param visibilities Optional filter by visibilities.
-     * @param statuses Optional filter by file statuses.
-     * @param mimeTypes Optional filter by MIME type substrings.
-     * @param fileNames Optional filter by file name substrings.
+     * @param queryParams structured filter and pagination parameters ([ManagementStorageFileListQueryParams]).
      * @return [AppResult.Success] with [PagedResult] of storage file summaries or an error.
      */
     suspend fun getStorageFilesSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
-        pageParams: PageParams,
-        sortBy: StorageSortValues.StorageFileSortBy = StorageSortValues.StorageFileSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        ownerUserIds: List<String> = emptyList(),
-        categories: List<StorageCategory> = emptyList(),
-        visibilities: List<StorageFileVisibility> = emptyList(),
-        statuses: List<StorageFileStatus> = emptyList(),
-        mimeTypes: List<String> = emptyList(),
-        fileNames: List<String> = emptyList()
+        queryParams: ManagementStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileSummary>>
 
     /**

@@ -1,31 +1,35 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession
 
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.backend.core.database.testing.assertAllQueryParamsApplied
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserIdentifiersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserSessionsTable
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementSessionListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfSessionListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -61,9 +65,9 @@ class UserSessionRepositoryImplTest {
         val result = suspendTransaction { repository.getUserSessionInternalById(session.id) }
 
         val success = result as AppResult.Success
-        assertNotNull(success.data)
-        assertEquals(session.id, success.data!!.id)
-        assertEquals(session.refreshTokenHash, success.data!!.refreshTokenHash)
+        val data = checkNotNull(success.data)
+        assertEquals(session.id, data.id)
+        assertEquals(session.refreshTokenHash, data.refreshTokenHash)
     }
 
     @Test
@@ -127,7 +131,7 @@ class UserSessionRepositoryImplTest {
         suspendTransaction { repository.updateLastAccessed(session.id) }
         val updated = suspendTransaction { repository.getUserSessionInternalById(session.id) }
 
-        val data = (updated as AppResult.Success).data!!
+        val data = checkNotNull((updated as AppResult.Success).data)
         assertTrue(data.lastAccessedAt > session.lastAccessedAt)
     }
 
@@ -162,10 +166,10 @@ class UserSessionRepositoryImplTest {
         val result = suspendTransaction {
             repository.getUserSessionsPageByUserId(
                 userId = userId,
-                pageParams = PageParams(),
-                sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-                sortOrder = SortOrder.DEFAULT,
-                deviceNames = listOf("iphone")
+                queryParams = SelfSessionListQueryParams(
+                    listing = ListingQueryParams(sortBy = UserSessionSortBy.DEFAULT),
+                    deviceName = "iphone"
+                )
             )
         }
 
@@ -190,16 +194,53 @@ class UserSessionRepositoryImplTest {
         val result = suspendTransaction {
             repository.getUserSessionsPageWithAccessFilter(
                 accessFilter = UserRoleAccessFilter(setOf(UserRole.ADMIN)),
-                pageParams = PageParams(),
-                sortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-                sortOrder = SortOrder.ASC,
-                userRoles = listOf(UserRole.ADMIN)
+                queryParams = ManagementSessionListQueryParams(
+                    listing = ListingQueryParams(sortBy = UserSessionSortBy.DEFAULT),
+                    userRoles = listOf(UserRole.ADMIN)
+                )
             )
         }
 
         val data = (result as AppResult.Success).data
         assertEquals(1, data.items.size)
         assertEquals(adminId, data.items.first().userId)
+    }
+
+    @Test
+    fun `getUserSessionsPageWithAccessFilter should apply every query parameter to generated SQL`() = runBlocking {
+        suspendTransaction {
+            assertAllQueryParamsApplied(
+                queryParamsClass = ManagementSessionListQueryParams::class,
+                defaultInstance = ManagementSessionListQueryParams(
+                    listing = ListingQueryParams(sortBy = UserSessionSortBy.DEFAULT)
+                ),
+                ignoredProperties = emptySet()
+            ) { queryParams ->
+                repository.getUserSessionsPageWithAccessFilter(
+                    accessFilter = UserRoleAccessFilter(setOf(UserRole.ADMIN)),
+                    queryParams = queryParams
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `getUserSessionsPageByUserId should apply every query parameter to generated SQL`() = runBlocking {
+        val userId = UserId.generate()
+        suspendTransaction {
+            assertAllQueryParamsApplied(
+                queryParamsClass = SelfSessionListQueryParams::class,
+                defaultInstance = SelfSessionListQueryParams(
+                    listing = ListingQueryParams(sortBy = UserSessionSortBy.DEFAULT)
+                ),
+                ignoredProperties = emptySet()
+            ) { queryParams ->
+                repository.getUserSessionsPageByUserId(
+                    userId = userId,
+                    queryParams = queryParams
+                )
+            }
+        }
     }
 
     private suspend fun createTestUserInDb(role: UserRole = UserRole.USER): UserId {

@@ -41,7 +41,7 @@ object UserSessionsTable : BaseTable("user_sessions") {
         BaseDbConstraints.ENUM_MAX_LENGTH,
         ClientType::class
     ).nullable()
-    val deviceId = text("device_id").nullable()
+    val deviceId = uuid("device_id").nullable()
     val deviceName = text("device_name").nullable()
     val appVersion = varchar("app_version", BaseDbConstraints.VERSION_MAX_LENGTH).nullable()
     val operationSystemVersion = varchar("operation_system_version", BaseDbConstraints.VERSION_MAX_LENGTH).nullable()

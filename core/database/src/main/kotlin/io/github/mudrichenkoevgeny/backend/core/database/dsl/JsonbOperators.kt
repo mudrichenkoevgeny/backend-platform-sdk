@@ -1,4 +1,4 @@
-package io.github.mudrichenkoevgeny.backend.core.database.extensions
+package io.github.mudrichenkoevgeny.backend.core.database.dsl
 
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray

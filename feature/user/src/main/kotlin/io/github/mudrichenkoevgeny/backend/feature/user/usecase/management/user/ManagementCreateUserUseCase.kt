@@ -7,20 +7,20 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.CreateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserManagementRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
@@ -54,35 +54,25 @@ class ManagementCreateUserUseCase @Inject constructor(
      * - Requires an active management session with appropriate creation permissions.
      * - Enforces MFA step-up verification for the management caller via [authenticationChallengeService].
      * - Validates the new user's password against the system's [ValidatePasswordUseCase] policy if specified.
-     * - Restricts the [authorityLevel] and [permissionCodes] of the new user to be within
+     * - Restricts the [CreateUserParams.authorityLevel] and [CreateUserParams.permissions] of the new user to be within
      *   the bounds of the management caller's own authority and permissions.
      * - Protects against resource exhaustion via [UserManagementRateLimitAction.MANAGEMENT_USER_CREATE].
      *
      * **Workflow:**
      * 1. Validates the management caller's session, account status, and rate limits.
-     * 2. Verifies that the management caller has the required [UserPermissionCode] based on the target [role].
+     * 2. Verifies that the management caller has the required [UserPermissionCode] based on the target [CreateUserParams.role].
      * 3. Ensures the management caller is not granting permissions or authority levels they do not possess.
-     * 4. Validates the provided [password] policy if a password is supplied.
+     * 4. Validates the provided password policy if a password is supplied.
      * 5. Confirms the management session via [authenticationChallengeService].
      * 6. Creates the user and their authentication identity via [authManager].
      * 7. Logs the creation event via [AuditLogger] with [UserAuditActionType.MANAGEMENT_CREATE_USER].
      *
-     * @param email The email address for the new user.
-     * @param password The optional plaintext password for the new user, or null if created without an initial password.
-     * @param role The assigned role.
-     * @param accountStatus The initial status for the new user.
-     * @param authorityLevel The numeric authority level assigned to the user.
-     * @param permissionCodes The set of functional permissions granted to the user.
+     * @param createUserParams The structured parameter holder for creating the user ([CreateUserParams]).
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] containing the [UserInternal] of the created user.
      */
     suspend operator fun invoke(
-        email: String,
-        password: String?,
-        role: UserRole,
-        accountStatus: UserAccountStatus,
-        authorityLevel: Int,
-        permissionCodes: Set<PermissionCode>,
+        createUserParams: CreateUserParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<UserInternal> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
@@ -93,7 +83,7 @@ class ManagementCreateUserUseCase @Inject constructor(
         auditMetadata.add(
             AuditEventMetadata(
                 key = UserAuditMetadataKey.EMAIL_ADDRESS,
-                value = email
+                value = createUserParams.email
             )
         )
 
@@ -132,7 +122,7 @@ class ManagementCreateUserUseCase @Inject constructor(
             )
         }
 
-        if (authorityLevel >= managementUser.authorityLevel) {
+        if (createUserParams.authorityLevel >= managementUser.authorityLevel) {
             return handleError(
                 error = UserError.UserInsufficientAuthorityLevel(managementUserId),
                 actorId = auditActorId,
@@ -141,7 +131,7 @@ class ManagementCreateUserUseCase @Inject constructor(
             )
         }
 
-        val requiredPermission = when (role) {
+        val requiredPermission = when (createUserParams.role) {
             UserRole.USER -> UserPermissionCode.USER_CREATE_AS_USER
             UserRole.STAFF -> UserPermissionCode.USER_CREATE_AS_STAFF
             else -> return handleError(
@@ -153,7 +143,7 @@ class ManagementCreateUserUseCase @Inject constructor(
         }
 
         if (requiredPermission !in managementUser.permissionCodes
-            || !managementUser.permissionCodes.containsAll(permissionCodes)
+            || !managementUser.permissionCodes.containsAll(createUserParams.permissions)
         ) {
             return handleError(
                 error = UserError.UserMissingPermissions(managementUserId),
@@ -163,6 +153,7 @@ class ManagementCreateUserUseCase @Inject constructor(
             )
         }
 
+        val password = createUserParams.password
         if (password != null) {
             val passwordPolicyCheckResult = validatePasswordUseCase(password)
             if (passwordPolicyCheckResult is AppResult.Error) {
@@ -175,12 +166,12 @@ class ManagementCreateUserUseCase @Inject constructor(
             }
         }
 
-        val policy = when (role) {
+        val policy = when (createUserParams.role) {
             UserRole.USER -> authSettingsProvider.getOpenEmailRestrictionPolicy()
             else -> authSettingsProvider.getManagementEmailRestrictionPolicy()
         }
 
-        if (!emailRestrictionPolicyValidator.isEmailAllowed(email, policy)) {
+        if (!emailRestrictionPolicyValidator.isEmailAllowed(createUserParams.email, policy)) {
             return handleError(
                 error = UserError.EmailNotAllowed(),
                 actorId = auditActorId,
@@ -219,12 +210,12 @@ class ManagementCreateUserUseCase @Inject constructor(
 
         val createUserResult = authManager.createUserAndIdentifier(
             userAuthProvider = UserAuthProvider.EMAIL,
-            identifier = email,
-            password = password,
-            roleForUserCreation = role,
-            accountStatusForUserCreation = accountStatus,
-            authorityLevelForUserCreation = authorityLevel,
-            permissionCodesForUserCreation = permissionCodes
+            identifier = createUserParams.email,
+            password = createUserParams.password,
+            roleForUserCreation = createUserParams.role,
+            accountStatusForUserCreation = createUserParams.accountStatus,
+            authorityLevelForUserCreation = createUserParams.authorityLevel,
+            permissionCodesForUserCreation = createUserParams.permissions
         )
 
         return when (createUserResult) {

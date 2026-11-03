@@ -1,13 +1,17 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.user
 
+import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -44,7 +48,9 @@ interface UserManager {
         role: UserRole,
         accountStatus: UserAccountStatus,
         authorityLevel: Int,
-        permissions: Set<PermissionCode>
+        permissions: Set<PermissionCode>,
+        displayName: String? = null,
+        nickname: String? = null
     ): AppResult<UserInternal>
 
     /**
@@ -57,6 +63,8 @@ interface UserManager {
      * @param accountStatus Status used if a new user is created. Defaults to [UserAccountStatus.ACTIVE].
      * @param authorityLevel The numerical rank of the user's authority.
      * @param permissions Permission codes assigned if a new user is created.
+     * @param displayName Optional display name if a new user is created.
+     * @param nickname Optional nickname if a new user is created.
      * @return [AppResult.Success] with the loaded or created [UserInternal], or an error.
      */
     suspend fun getOrCreateUser(
@@ -64,31 +72,23 @@ interface UserManager {
         role: UserRole = UserRole.USER,
         accountStatus: UserAccountStatus = UserAccountStatus.ACTIVE,
         authorityLevel: Int,
-        permissions: Set<PermissionCode>
+        permissions: Set<PermissionCode>,
+        displayName: String? = null,
+        nickname: String? = null
     ): AppResult<UserInternal>
 
     /**
-     * Updates user details from an administrative context.
+     * Updates user details from an administrative context using [updateUserParams].
      *
      * Allows modification of sensitive fields like status, authority level, permissions, and storage configuration.
      *
      * @param user The current internal user instance to update.
-     * @param accountStatus New account status if update is requested.
-     * @param authorityLevel New authority level if update is requested.
-     * @param permissions New set of permission codes if update is requested.
-     * @param lockoutType New account lockout type if update is requested.
-     * @param temporaryLockoutUntil New temporary lockout expiration timestamp in epoch milliseconds if update is requested.
-     * @param storageConfiguration New storage configuration overrides if update is requested.
+     * @param updateUserParams The structured update parameters holder.
      * @return [AppResult.Success] with the updated [UserInternal], null if user not found, or an error.
      */
     suspend fun updateUser(
         user: UserInternal,
-        accountStatus: UserAccountStatus? = null,
-        authorityLevel: Int? = null,
-        permissions: Set<PermissionCode>? = null,
-        lockoutType: AccountLockoutType? = null,
-        temporaryLockoutUntil: Long? = null,
-        storageConfiguration: UserStorageConfigurationPayload? = null
+        updateUserParams: UpdateUserParams
     ): AppResult<UserInternal?>
 
     /**
@@ -109,6 +109,14 @@ interface UserManager {
     ): AppResult<UserInternal?>
 
     /**
+     * Retrieves user internal model by nickname.
+     *
+     * @param nickname user nickname string.
+     * @return [AppResult.Success] with [UserInternal] if found, null if missing, or an error.
+     */
+    suspend fun getUserInternalByNickname(nickname: String): AppResult<UserInternal?>
+
+    /**
      * Returns a paginated list of internal user models visible to the caller based on management scope.
      *
      * @param managementUserPermissionCodes Caller permission codes used to derive access boundaries.
@@ -127,17 +135,7 @@ interface UserManager {
      */
     suspend fun getUsersInternalPage(
         managementUserPermissionCodes: Set<PermissionCode>,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserSortBy = UserSortValues.UserSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        roles: List<UserRole> = emptyList(),
-        accountStatuses: List<UserAccountStatus> = emptyList(),
-        accountStatusesOnRestore: List<UserAccountStatus> = emptyList(),
-        authorityLevelFrom: Int? = null,
-        authorityLevelTo: Int? = null,
-        permissionCodes: Set<PermissionCode> = emptySet(),
-        isTotpEnabled: Boolean? = null,
-        accountLockoutTypes: List<AccountLockoutType> = emptyList()
+        queryParams: UserListQueryParams
     ): AppResult<PagedResult<UserInternal>>
 
     /**

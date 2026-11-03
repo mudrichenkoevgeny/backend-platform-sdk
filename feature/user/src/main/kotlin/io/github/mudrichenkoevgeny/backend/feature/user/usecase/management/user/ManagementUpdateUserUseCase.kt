@@ -3,10 +3,12 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.user
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.dataOrNull
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -14,23 +16,22 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.Authenti
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserManagementRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.user.UserUpdateValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserPrivate
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserStorageConfigurationPayload
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
@@ -43,47 +44,39 @@ class ManagementUpdateUserUseCase @Inject constructor(
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
     private val webSocketManager: WebSocketManager,
-    private val authenticationChallengeService: AuthenticationChallengeService
+    private val authenticationChallengeService: AuthenticationChallengeService,
+    private val userUpdateValidator: UserUpdateValidator
 ) {
     /**
-     * Updates account status, authority level, or permissions for a target user.
+     * Updates account status, authority level, permissions, or profile details for a target user.
      *
      * **Allowed Account Statuses:** [UserAccountStatus.ACTIVE] for the management caller.
      *
      * **Security:**
      * - Requires an active session for the management caller (STAFF or ADMIN) with sufficient permissions.
      * - Enforces MFA step-up verification if the session is stale or security-sensitive.
-     * - Validates that the management caller's [authorityLevel] is strictly greater than the target's.
+     * - Validates that the management caller's authority level is strictly greater than the target's.
      * - Prevents self-modification of management fields.
      * - Protects against abuse via [UserManagementRateLimitAction.MANAGEMENT_USER_UPDATE].
      *
      * **Workflow:**
      * 1. Validates the management caller's account status and rate limits.
-     * 2. Checks authority level hierarchy between the management caller and target.
+     * 2. Checks authority level hierarchy between the management caller and target user.
      * 3. Determines required permissions based on the specific fields being updated and target role.
-     * 4. Ensures the management caller's session is confirmed via [authenticationChallengeService].
-     * 5. Performs the update via [userManager].
-     * 6. Notifies the target user's active sessions via [webSocketManager] using [UserWebSocketEventTypes.USER_UPDATED].
-     * 7. Logs the action via [AuditLogger] with [UserAuditActionType.MANAGEMENT_UPDATE_USER].
+     * 4. Validates nickname and display name via [userUpdateValidator].
+     * 5. Ensures the management caller's session is confirmed via [authenticationChallengeService].
+     * 6. Performs the update via [userManager].
+     * 7. Notifies the target user's active sessions via [webSocketManager] using [UserWebSocketEventTypes.USER_UPDATED].
+     * 8. Logs the action via [AuditLogger] with [UserAuditActionType.MANAGEMENT_UPDATE_USER].
      *
-     * @param userId The ID of the target user to update.
-     * @param accountStatus The new account status, if provided.
-     * @param authorityLevel The new authority level, if provided.
-     * @param permissionCodes The new set of permission codes, if provided.
-     * @param lockoutType The new account lockout type, if provided.
-     * @param temporaryLockoutUntil The new temporary lockout expiration timestamp in epoch milliseconds, if provided.
-     * @param storageConfiguration The new storage configuration overrides, if provided.
+     * @param userId The unique identifier of the target user to update.
+     * @param updateUserParams The structured update parameters holder ([UpdateUserParams]).
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] containing the updated [UserPrivate].
      */
     suspend operator fun invoke(
         userId: UserId,
-        accountStatus: UserAccountStatus? = null,
-        authorityLevel: Int? = null,
-        permissionCodes: Set<PermissionCode>? = null,
-        lockoutType: AccountLockoutType? = null,
-        temporaryLockoutUntil: Long? = null,
-        storageConfiguration: UserStorageConfigurationPayload? = null,
+        updateUserParams: UpdateUserParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<UserPrivate> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
@@ -167,7 +160,8 @@ class ManagementUpdateUserUseCase @Inject constructor(
 
         val requiredPermissions = mutableSetOf<PermissionCode>()
 
-        if (accountStatus != null) {
+        val targetAccountStatus = (updateUserParams.accountStatus as? UpdateField.Set)?.value
+        if (targetAccountStatus != null) {
             val updateStatusPermission = when (targetUser.role) {
                 UserRole.USER -> UserPermissionCode.USER_UPDATE_STATUS_FOR_USER
                 UserRole.STAFF -> UserPermissionCode.USER_UPDATE_STATUS_FOR_STAFF
@@ -182,8 +176,9 @@ class ManagementUpdateUserUseCase @Inject constructor(
             requiredPermissions.add(updateStatusPermission)
         }
 
-        if (authorityLevel != null) {
-            if (authorityLevel >= managementUser.authorityLevel) {
+        val targetAuthorityLevel = (updateUserParams.authorityLevel as? UpdateField.Set)?.value
+        if (targetAuthorityLevel != null) {
+            if (targetAuthorityLevel >= managementUser.authorityLevel) {
                 return handleError(
                     error = UserError.UserInsufficientAuthorityLevel(managementUserId),
                     actorId = auditActorId,
@@ -206,7 +201,8 @@ class ManagementUpdateUserUseCase @Inject constructor(
             requiredPermissions.add(updateAuthorityLevelPermission)
         }
 
-        if (permissionCodes != null) {
+        val targetPermissions = (updateUserParams.permissions as? UpdateField.Set)?.value
+        if (targetPermissions != null) {
             val updatePermissionsPermission = when (targetUser.role) {
                 UserRole.USER -> UserPermissionCode.USER_UPDATE_PERMISSIONS_FOR_USER
                 UserRole.STAFF -> UserPermissionCode.USER_UPDATE_PERMISSIONS_FOR_STAFF
@@ -220,7 +216,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
             }
             requiredPermissions.add(updatePermissionsPermission)
 
-            val forbiddenManagementPermissions = permissionCodes.filter { it !in managementUser.permissionCodes }
+            val forbiddenManagementPermissions = targetPermissions.filter { it !in managementUser.permissionCodes }
             if (forbiddenManagementPermissions.isNotEmpty()) {
                 return handleError(
                     error = UserError.UserMissingPermissions(managementUserId),
@@ -232,7 +228,10 @@ class ManagementUpdateUserUseCase @Inject constructor(
             }
         }
 
-        if (lockoutType != null || temporaryLockoutUntil != null || storageConfiguration != null) {
+        if (updateUserParams.lockoutType !is UpdateField.Ignore ||
+            updateUserParams.temporaryLockoutUntil !is UpdateField.Ignore ||
+            updateUserParams.storageConfiguration !is UpdateField.Ignore
+        ) {
             val updateSecurityPermission = when (targetUser.role) {
                 UserRole.USER -> UserPermissionCode.USER_UPDATE_SECURITY_FOR_USER
                 UserRole.STAFF -> UserPermissionCode.USER_UPDATE_SECURITY_FOR_STAFF
@@ -288,14 +287,23 @@ class ManagementUpdateUserUseCase @Inject constructor(
             )
         }
 
+        val userValidationResult = userUpdateValidator.validate(
+            user = targetUser,
+            updateUserParams = updateUserParams
+        )
+        if (userValidationResult is AppResult.Error) {
+            return handleError(
+                error = userValidationResult.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
+                baseMetadata = auditMetadata
+            )
+        }
+
         val updateResult = userManager.updateUser(
             user = targetUser,
-            accountStatus = accountStatus,
-            authorityLevel = authorityLevel,
-            permissions = permissionCodes,
-            lockoutType = lockoutType,
-            temporaryLockoutUntil = temporaryLockoutUntil,
-            storageConfiguration = storageConfiguration
+            updateUserParams = updateUserParams
         ).mapNotNullOrError(UserError.UserNotFound(targetUser.id))
 
         return when (updateResult) {

@@ -1,19 +1,21 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.user
 
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserSummary
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -33,9 +35,13 @@ class ManagementGetUsersUseCaseTest {
     private val context = createTestAuthenticatedRequestContext()
     private val managerId = context.userId
 
-    private val defaultPageParams = PageParams()
-    private val defaultSortBy = UserSortValues.UserSortBy.DEFAULT
-    private val defaultSortOrder = SortOrder.DEFAULT
+    private val defaultQueryParams = UserListQueryParams(
+        listing = ListingQueryParams(
+            pageParams = PageParams(),
+            sortBy = UserSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT
+        )
+    )
 
     @BeforeEach
     fun setUp() {
@@ -72,32 +78,12 @@ class ManagementGetUsersUseCaseTest {
         coEvery {
             userManager.getUsersInternalPage(
                 managementUserPermissionCodes = any(),
-                pageParams = any(),
-                sortBy = any(),
-                sortOrder = any(),
-                roles = any(),
-                accountStatuses = any(),
-                accountStatusesOnRestore = any(),
-                authorityLevelFrom = any(),
-                authorityLevelTo = any(),
-                permissionCodes = any(),
-                isTotpEnabled = any(),
-                accountLockoutTypes = any()
+                queryParams = any()
             )
         } returns AppResult.Success(pagedInternalResult)
 
         val result = useCase(
-            pageParams = defaultPageParams,
-            sortBy = defaultSortBy,
-            sortOrder = defaultSortOrder,
-            roles = emptyList(),
-            accountStatuses = emptyList(),
-            accountStatusesOnRestore = emptyList(),
-            authorityLevelFrom = null,
-            authorityLevelTo = null,
-            requiredPermissionCodes = emptySet(),
-            isTotpEnabled = null,
-            accountLockoutTypes = emptyList(),
+            queryParams = defaultQueryParams,
             authenticatedRequestContext = context
         )
 
@@ -111,17 +97,7 @@ class ManagementGetUsersUseCaseTest {
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 
         val result = useCase(
-            pageParams = defaultPageParams,
-            sortBy = defaultSortBy,
-            sortOrder = defaultSortOrder,
-            roles = emptyList(),
-            accountStatuses = emptyList(),
-            accountStatusesOnRestore = emptyList(),
-            authorityLevelFrom = null,
-            authorityLevelTo = null,
-            requiredPermissionCodes = emptySet(),
-            isTotpEnabled = null,
-            accountLockoutTypes = emptyList(),
+            queryParams = defaultQueryParams,
             authenticatedRequestContext = context
         )
 
@@ -133,17 +109,7 @@ class ManagementGetUsersUseCaseTest {
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(null)
 
         val result = useCase(
-            pageParams = defaultPageParams,
-            sortBy = defaultSortBy,
-            sortOrder = defaultSortOrder,
-            roles = emptyList(),
-            accountStatuses = emptyList(),
-            accountStatusesOnRestore = emptyList(),
-            authorityLevelFrom = null,
-            authorityLevelTo = null,
-            requiredPermissionCodes = emptySet(),
-            isTotpEnabled = null,
-            accountLockoutTypes = emptyList(),
+            queryParams = defaultQueryParams,
             authenticatedRequestContext = context
         )
 

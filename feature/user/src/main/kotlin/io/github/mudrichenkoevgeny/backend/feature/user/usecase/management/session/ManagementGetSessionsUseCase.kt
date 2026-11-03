@@ -1,22 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.session
 
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementSessionListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionSummary
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -41,42 +34,12 @@ class ManagementGetSessionsUseCase @Inject constructor(
      * 2. Delegates the filtered search to [sessionManager], which enforces role-based
      *    access and data masking (e.g., masked vs. unmasked session details).
      *
-     * @param pageParams pagination settings (page index and size).
-     * @param sortBy field to sort by.
-     * @param sortOrder sorting direction.
-     * @param userIds optional filters for specific user IDs.
-     * @param userRoles optional filters for specific user roles.
-     * @param identifiers optional filters for identifier values (e.g., emails).
-     * @param identifierIds optional filters for specific user identifier IDs.
-     * @param identifierAuthProviders optional filter by authentication provider types.
-     * @param clientTypes optional filter by client platform types.
-     * @param userAgents optional filters for client user-agent strings.
-     * @param ipAddresses optional filters for client IP addresses.
-     * @param languages optional filters for client language headers.
-     * @param deviceIds optional filters for hardware device IDs.
-     * @param deviceNames optional filters for human-readable device names.
-     * @param appVersions optional filters for application versions.
-     * @param operationSystemVersions optional filters for OS versions.
-     * @param authenticatedRequestContext context containing the ID of the management caller performing the search.
+     * @param queryParams Filtered search parameters.
+     * @param authenticatedRequestContext Context containing the ID of the management caller performing the search.
      * @return [AppResult] containing [PagedResult] of [UserSessionSummary] within the caller's authorized scope.
      */
     suspend operator fun invoke(
-        pageParams: PageParams = PageParams(),
-        sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        userIds: List<UserId> = emptyList(),
-        userRoles: List<UserRole> = emptyList(),
-        identifiers: List<String> = emptyList(),
-        identifierIds: List<UserIdentifierId> = emptyList(),
-        identifierAuthProviders: List<UserAuthProvider> = emptyList(),
-        clientTypes: List<ClientType> = emptyList(),
-        userAgents: List<String> = emptyList(),
-        ipAddresses: List<String> = emptyList(),
-        languages: List<String> = emptyList(),
-        deviceIds: List<String> = emptyList(),
-        deviceNames: List<String> = emptyList(),
-        appVersions: List<String> = emptyList(),
-        operationSystemVersions: List<String> = emptyList(),
+        queryParams: ManagementSessionListQueryParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<UserSessionSummary>> {
         val managementUserId = authenticatedRequestContext.userId
@@ -95,22 +58,7 @@ class ManagementGetSessionsUseCase @Inject constructor(
 
         return sessionManager.getUserSessionsSummaryPage(
             managementUserPermissionCodes = managementUser.permissionCodes,
-            pageParams = pageParams,
-            sortBy = sortBy,
-            sortOrder = sortOrder,
-            userIds = userIds,
-            userRoles = userRoles,
-            identifiers = identifiers,
-            identifierIds = identifierIds,
-            identifierAuthProviders = identifierAuthProviders,
-            clientTypes = clientTypes,
-            userAgents = userAgents,
-            ipAddresses = ipAddresses,
-            languages = languages,
-            deviceIds = deviceIds,
-            deviceNames = deviceNames,
-            appVersions = appVersions,
-            operationSystemVersions = operationSystemVersions
+            queryParams = queryParams
         )
     }
 }

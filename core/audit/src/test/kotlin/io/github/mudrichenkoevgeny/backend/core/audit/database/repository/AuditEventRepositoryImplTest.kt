@@ -8,13 +8,19 @@ import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.m
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.createTestCompositeAuditActionTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.metadata.createTestCompositeAuditMetadataKeyParser
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.createTestCompositeAuditResourceTypeParser
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
+import io.github.mudrichenkoevgeny.backend.core.database.testing.assertAllQueryParamsApplied
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditEventSortBy
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.backend.core.audit.network.model.ManagementAuditEventListQueryParams
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -73,11 +79,11 @@ class AuditEventRepositoryImplTest {
         val result = suspendTransaction { repository.getEventById(event.id) }
 
         val success = result as AppResult.Success
-        assertNotNull(success.data)
-        assertEquals(event.id, success.data!!.id)
-        assertEquals("login", success.data!!.action.value)
-        assertEquals("session", success.data!!.resource.value)
-        assertEquals(AuditStatus.SUCCESS, success.data!!.status)
+        val data = checkNotNull(success.data)
+        assertEquals(event.id, data.id)
+        assertEquals("login", data.action.value)
+        assertEquals("session", data.resource.value)
+        assertEquals(AuditStatus.SUCCESS, data.status)
     }
 
     @Test
@@ -103,7 +109,7 @@ class AuditEventRepositoryImplTest {
         val result = suspendTransaction {
             repository.getEventsPageWithAccessFilter(
                 accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
-                pageParams = PageParams()
+                queryParams = ManagementAuditEventListQueryParams(listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT))
             )
         }
 
@@ -128,7 +134,7 @@ class AuditEventRepositoryImplTest {
         val result = suspendTransaction {
             repository.getEventsPageWithAccessFilter(
                 accessFilter = AuditAccessFilter(emptySet(), emptySet()),
-                pageParams = PageParams()
+                queryParams = ManagementAuditEventListQueryParams(listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT))
             )
         }
 
@@ -152,8 +158,10 @@ class AuditEventRepositoryImplTest {
         val result = suspendTransaction {
             repository.getEventsPageWithAccessFilter(
                 accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
-                pageParams = PageParams(),
-                actorIds = listOf(actorId)
+                queryParams = ManagementAuditEventListQueryParams(
+                    listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT),
+                    actorIds = listOf(actorId)
+                )
             )
         }
 
@@ -179,12 +187,34 @@ class AuditEventRepositoryImplTest {
         val result = suspendTransaction {
             repository.getEventsPageWithAccessFilter(
                 accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
-                pageParams = PageParams(),
-                messages = listOf("DATA")
+                queryParams = ManagementAuditEventListQueryParams(
+                    listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT),
+                    searchQuery = "DATA"
+                )
             )
         }
 
         val success = result as AppResult.Success
         assertTrue(success.data.items.any { it.message == message })
     }
+
+    @Test
+    fun `getEventsPageWithAccessFilter should apply every query parameter to generated SQL`() = runBlocking {
+        suspendTransaction {
+            assertAllQueryParamsApplied(
+                queryParamsClass = ManagementAuditEventListQueryParams::class,
+                defaultInstance = ManagementAuditEventListQueryParams(
+                    listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT)
+                ),
+                ignoredProperties = setOf("listing")
+            ) { queryParams ->
+                repository.getEventsPageWithAccessFilter(
+                    accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), setOf("admin")),
+                    queryParams = queryParams
+                )
+            }
+        }
+    }
 }
+
+

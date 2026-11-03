@@ -10,6 +10,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorCodes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.UserModuleStrings
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.resolveDisplayNameTooLongMessage
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.resolveDisplayNameTooShortMessage
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.resolveNicknameTooLongMessage
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.resolveNicknameTooShortMessage
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.resolveTotalUserIdentifiersLimitReachedMessage
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.resolveUserIdentifierLimitReachedMessage
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.resolveUserLockedMessage
@@ -79,6 +83,27 @@ class UserErrorParser @Inject constructor() : AppErrorSpecificParser {
                 val limit = args?.get(UserErrorArgs.MAX_NUMBER_OF_IDENTIFIERS)
                 userStrings.resolveTotalUserIdentifiersLimitReachedMessage(limit = limit)
             }
+
+            UserErrorCodes.NICKNAME_ALREADY_TAKEN -> strings.nicknameAlreadyTaken
+            UserErrorCodes.NICKNAME_CHANGE_DISABLED -> strings.nicknameChangeDisabled
+            UserErrorCodes.NICKNAME_TOO_SHORT -> {
+                val minLength = args?.get(UserErrorArgs.NICKNAME_MIN_LENGTH)
+                userStrings.resolveNicknameTooShortMessage(minLength = minLength)
+            }
+            UserErrorCodes.NICKNAME_TOO_LONG -> {
+                val maxLength = args?.get(UserErrorArgs.NICKNAME_MAX_LENGTH)
+                userStrings.resolveNicknameTooLongMessage(maxLength = maxLength)
+            }
+            UserErrorCodes.INVALID_NICKNAME_CHARACTERS -> strings.invalidNicknameCharacters
+            UserErrorCodes.DISPLAY_NAME_TOO_SHORT -> {
+                val minLength = args?.get(UserErrorArgs.DISPLAY_NAME_MIN_LENGTH)
+                userStrings.resolveDisplayNameTooShortMessage(minLength = minLength)
+            }
+            UserErrorCodes.DISPLAY_NAME_TOO_LONG -> {
+                val maxLength = args?.get(UserErrorArgs.DISPLAY_NAME_MAX_LENGTH)
+                userStrings.resolveDisplayNameTooLongMessage(maxLength = maxLength)
+            }
+            UserErrorCodes.INVALID_DISPLAY_NAME_CHARACTERS -> strings.invalidDisplayNameCharacters
 
             else -> return null
         }

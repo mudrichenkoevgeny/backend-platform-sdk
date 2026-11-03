@@ -1,4 +1,4 @@
-package io.github.mudrichenkoevgeny.backend.core.database.extensions
+package io.github.mudrichenkoevgeny.backend.core.database.dsl
 
 import org.jetbrains.exposed.v1.core.LikePattern
 

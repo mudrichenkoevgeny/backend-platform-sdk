@@ -1,19 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager
 
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.backend.core.audit.network.model.ManagementAuditEventListQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventSummary
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingParamNames
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.navigation.screen.management.audit.list.ManagementAuditEventListParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 
@@ -48,36 +42,14 @@ interface AuditManager {
     ): AppResult<AuditEventPrivate?>
 
     /**
-     * Returns a paginated list of condensed audit event summaries matching the given filters.
-     *
-     * Pagination and sort follow [ListingParamNames]; filters match the management list API axes.
+     * Returns a paginated list of condensed audit event summaries matching the given filters in [queryParams].
      *
      * @param managementUserPermissionCodes caller permissions used to evaluate access rules and masking
-     * @param pageParams One-based page and size ([ListingParamNames.Pagination]).
-     * @param sortBy List `sort_by` ([ListingParamNames.Sort.SORT_BY]).
-     * @param sortOrder List `sort_order` ([ListingParamNames.Sort.SORT_ORDER]).
-     * @param actorIds Actor id filters.
-     * @param actorTypes Actor type filters.
-     * @param actorUserRoles Actor user role filters.
-     * @param actions Action filters.
-     * @param resources Resource type filters.
-     * @param resourceIds Resource id filters.
-     * @param statuses Status filters.
-     * @param messages Message filters (case-insensitive substring).
+     * @param queryParams query parameters and filters
      * @return [AppResult.Success] containing [PagedResult] of [AuditEventSummary] or an error
      */
     suspend fun getAuditEventsSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
-        pageParams: PageParams,
-        sortBy: AuditSortValues.AuditEventSortBy = AuditSortValues.AuditEventSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        actorIds: List<String> = emptyList(),
-        actorTypes: List<AuditActorType> = emptyList(),
-        actorUserRoles: List<String> = emptyList(),
-        actions: List<AuditActionType> = emptyList(),
-        resources: List<AuditResourceType> = emptyList(),
-        resourceIds: List<String> = emptyList(),
-        statuses: List<AuditStatus> = emptyList(),
-        messages: List<String> = emptyList()
+        queryParams: ManagementAuditEventListQueryParams
     ): AppResult<PagedResult<AuditEventSummary>>
 }

@@ -38,6 +38,7 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(testFixtures(project(":core:common")))
+    testImplementation(testFixtures(project(":core:database")))
     testRuntimeOnly(libs.junit.jupiter.engine)
     testRuntimeOnly(libs.kotlin.test.junit5)
     testImplementation(libs.h2database)

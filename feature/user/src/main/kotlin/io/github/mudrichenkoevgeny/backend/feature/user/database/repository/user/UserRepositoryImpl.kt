@@ -3,46 +3,58 @@ package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.use
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.model.onSet
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.getNumOfTotalPages
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
+import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.core.common.util.toJavaInstant
 import io.github.mudrichenkoevgeny.backend.core.common.util.toKotlinInstant
-import io.github.mudrichenkoevgeny.backend.core.database.extensions.applyPagination
-import io.github.mudrichenkoevgeny.backend.core.database.extensions.jsonbContainsAllStrings
+import io.github.mudrichenkoevgeny.backend.core.database.dsl.applyNullabilityFilter
+import io.github.mudrichenkoevgeny.backend.core.database.dsl.applyPagination
+import io.github.mudrichenkoevgeny.backend.core.database.dsl.applyTimestampFilter
+import io.github.mudrichenkoevgeny.backend.core.database.dsl.jsonbContainsAllStrings
+import io.github.mudrichenkoevgeny.backend.core.database.dsl.substringSqlLikePattern
 import io.github.mudrichenkoevgeny.backend.core.database.mapper.toExposedSortOrder
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserStorageConfiguration
+import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.isNotNull
-import org.jetbrains.exposed.v1.core.lessEq
-import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
+import org.jetbrains.exposed.v1.core.isNotNull
+import org.jetbrains.exposed.v1.core.isNull
+import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.core.like
+import org.jetbrains.exposed.v1.core.lowerCase
+import org.jetbrains.exposed.v1.core.notInList
 import org.jetbrains.exposed.v1.core.or
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.not
+import io.github.mudrichenkoevgeny.backend.core.database.error.PostgreSqlErrorCodes
+import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
-import java.time.Instant as JavaInstant
+import kotlin.uuid.Uuid
 import javax.inject.Inject
-import kotlin.time.Instant as KotlinInstant
 import javax.inject.Singleton
+import java.time.Instant as JavaInstant
+import kotlin.time.Instant as KotlinInstant
 
 /**
  * Default [UserRepository] implementation backed by Exposed and [UsersTable].
@@ -54,33 +66,52 @@ import javax.inject.Singleton
 class UserRepositoryImpl @Inject constructor() : UserRepository {
 
     override suspend fun createUser(user: UserInternal): AppResult<UserInternal> {
-        val inserted = UsersTable.insert { row ->
-            row[id] = user.id.value
-            row[role] = user.role
-            row[accountStatus] = user.accountStatus
-            row[accountStatusOnRestore] = user.accountStatusOnRestore
-            row[authorityLevel] = user.authorityLevel
-            row[permissionCodes] = user.permissionCodes.map { it.value }.toSet()
-            row[isTotpEnabled] = user.isTotpEnabled
-            row[storageQuotaBytes] = user.storageConfiguration?.quotaBytes
-            row[storageMaxUploadSizeBytes] = user.storageConfiguration?.maxUploadSizeBytes
-            row[storageMaxPendingUploads] = user.storageConfiguration?.maxPendingUploads
-            row[lastLoginAt] = user.lastLoginAt?.toJavaInstant()
-            row[lastActiveAt] = user.lastActiveAt?.toJavaInstant()
-            row[createdAt] = user.createdAt.toJavaInstant()
-            row[updatedAt] = user.updatedAt?.toJavaInstant()
-            row[scheduledPermanentDeletionAt] = user.scheduledPermanentDeletionAt?.toJavaInstant()
-            row[accountLockoutType] = user.lockoutType
-            row[temporaryLockoutUntil] = user.temporaryLockoutUntil?.toJavaInstant()
-        }
+        try {
+            val inserted = UsersTable.insert { row ->
+                row[id] = user.id.value
+                row[role] = user.role
+                row[accountStatus] = user.accountStatus
+                row[accountStatusOnRestore] = user.accountStatusOnRestore
+                row[authorityLevel] = user.authorityLevel
+                row[permissionCodes] = user.permissionCodes.mapToSet { permissionCode ->
+                    permissionCode.value
+                }
+                row[isTotpEnabled] = user.isTotpEnabled
+                row[storageQuotaBytes] = user.storageConfiguration?.quotaBytes
+                row[storageMaxUploadSizeBytes] = user.storageConfiguration?.maxUploadSizeBytes
+                row[storageMaxPendingUploads] = user.storageConfiguration?.maxPendingUploads
+                row[lastLoginAt] = user.lastLoginAt?.toJavaInstant()
+                row[lastActiveAt] = user.lastActiveAt?.toJavaInstant()
+                row[createdAt] = user.createdAt.toJavaInstant()
+                row[updatedAt] = user.updatedAt?.toJavaInstant()
+                row[scheduledPermanentDeletionAt] = user.scheduledPermanentDeletionAt?.toJavaInstant()
+                row[accountLockoutType] = user.lockoutType
+                row[temporaryLockoutUntil] = user.temporaryLockoutUntil?.toJavaInstant()
+                row[nickname] = user.nickname
+                row[displayName] = user.displayName
+                row[avatarFileId] = user.avatarFileId?.value
+                row[birthdate] = user.birthdate?.toJavaInstant()
+            }
 
-        if (inserted.insertedCount == 0) {
+            if (inserted.insertedCount == 0) {
+                return AppResult.Error(
+                    CommonError.Database("User creation failed for id=${user.id.value}")
+                )
+            }
+
+            return AppResult.Success(user)
+        } catch (e: ExposedSQLException) {
+            val isUniqueViolation = e.sqlState == PostgreSqlErrorCodes.UNIQUE_VIOLATION
+            val isNicknameConstraint = e.message?.contains(UsersTable.NICKNAME_UNIQUE_INDEX_NAME, ignoreCase = true) == true
+
+            if (isUniqueViolation && isNicknameConstraint) {
+                val nick = user.nickname ?: ""
+                return AppResult.Error(UserError.NicknameAlreadyTaken(nick))
+            }
             return AppResult.Error(
-                CommonError.Database("User creation failed for id=${user.id.value}")
+                CommonError.Database("User creation failed for id=${user.id.value}: ${e.message}")
             )
         }
-
-        return AppResult.Success(user)
     }
 
     override suspend fun deleteUser(userId: UserId): AppResult<Unit> {
@@ -90,100 +121,103 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
 
     override suspend fun updateUser(
         userId: UserId,
-        status: UpdateField<UserAccountStatus>,
-        statusOnRestore: UpdateField<UserAccountStatus>,
-        authorityLevel: UpdateField<Int>,
-        permissionCodes: UpdateField<Set<PermissionCode>>,
-        isTotpEnabled: UpdateField<Boolean>,
-        storageQuotaBytes: UpdateField<Long>,
-        storageMaxUploadSizeBytes: UpdateField<Long>,
-        storageMaxPendingUploads: UpdateField<Int>,
-        lastLoginAt: UpdateField<KotlinInstant>,
-        lastActiveAt: UpdateField<KotlinInstant>,
-        scheduledPermanentDeletionAt: UpdateField<KotlinInstant>,
-        accountLockoutType: UpdateField<AccountLockoutType>,
-        temporaryLockoutUntil: UpdateField<KotlinInstant>
+        updateUserParams: UpdateUserParams
     ): AppResult<UserInternal> {
-        val statusToSet = if (status is UpdateField.Set) {
-            status.value
+        val accountStatusToSet = if (updateUserParams.accountStatus is UpdateField.Set) {
+            updateUserParams.accountStatus.value
                 ?: return AppResult.Error(CommonError.Database("Status cannot be null"))
         } else null
 
-        val authorityLevelToSet = if (authorityLevel is UpdateField.Set) {
-            authorityLevel.value
+        val authorityLevelToSet = if (updateUserParams.authorityLevel is UpdateField.Set) {
+            updateUserParams.authorityLevel.value
                 ?: return AppResult.Error(CommonError.Database("Authority level cannot be null"))
         } else null
 
-        val isTotpEnabledToSet = if (isTotpEnabled is UpdateField.Set) {
-            isTotpEnabled.value
+        val isTotpEnabledToSet = if (updateUserParams.isTotpEnabled is UpdateField.Set) {
+            updateUserParams.isTotpEnabled.value
                 ?: return AppResult.Error(CommonError.Database("isTotpEnabled cannot be null"))
         } else null
 
         val updatedAtJavaInstant = JavaInstant.now()
 
-        val updatedRows = UsersTable.update({ UsersTable.id eq userId.value }) { updateStatement ->
-            statusToSet?.let { accountStatus ->
-                updateStatement[UsersTable.accountStatus] = accountStatus
-            }
-
-            statusOnRestore.onSet { accountStatusOnRestore ->
-                updateStatement[UsersTable.accountStatusOnRestore] = accountStatusOnRestore
-            }
-
-            authorityLevelToSet?.let { level ->
-                updateStatement[UsersTable.authorityLevel] = level
-            }
-
-            permissionCodes.onSet { codes ->
-                updateStatement[UsersTable.permissionCodes] = codes?.map { permissionCode ->
-                    permissionCode.value
-                }?.toSet() ?: emptySet()
-            }
-
-            isTotpEnabledToSet?.let { enabled ->
-                updateStatement[UsersTable.isTotpEnabled] = enabled
-            }
-
-            storageQuotaBytes.onSet { quota ->
-                updateStatement[UsersTable.storageQuotaBytes] = quota
-            }
-
-            storageMaxUploadSizeBytes.onSet { maxUploadSize ->
-                updateStatement[UsersTable.storageMaxUploadSizeBytes] = maxUploadSize
-            }
-
-            storageMaxPendingUploads.onSet { maxPending ->
-                updateStatement[UsersTable.storageMaxPendingUploads] = maxPending
-            }
-
-            lastLoginAt.onSet { lastLoginAt ->
-                updateStatement[UsersTable.lastLoginAt] = lastLoginAt?.toJavaInstant()
-            }
-
-            lastActiveAt.onSet { lastActiveAt ->
-                updateStatement[UsersTable.lastActiveAt] = lastActiveAt?.toJavaInstant()
-            }
-
-            scheduledPermanentDeletionAt.onSet { scheduledDeletionAt ->
-                updateStatement[UsersTable.scheduledPermanentDeletionAt] = scheduledDeletionAt?.toJavaInstant()
-            }
-
-            accountLockoutType.onSet { type ->
-                if (type != null) {
-                    updateStatement[UsersTable.accountLockoutType] = type
+        try {
+            val updatedRows = UsersTable.update({ UsersTable.id eq userId.value }) { updateStatement ->
+                accountStatusToSet?.let { statusToSet ->
+                    updateStatement[UsersTable.accountStatus] = statusToSet
                 }
+
+                updateUserParams.accountStatusOnRestore.onSet { statusOnRestore ->
+                    updateStatement[UsersTable.accountStatusOnRestore] = statusOnRestore
+                }
+
+                authorityLevelToSet?.let { authorityLevel ->
+                    updateStatement[UsersTable.authorityLevel] = authorityLevel
+                }
+
+                updateUserParams.permissions.onSet { permissionCodes ->
+                    updateStatement[UsersTable.permissionCodes] = permissionCodes?.map { permissionCode ->
+                        permissionCode.value
+                    }?.toSet() ?: emptySet()
+                }
+
+                isTotpEnabledToSet?.let { isTotpEnabled ->
+                    updateStatement[UsersTable.isTotpEnabled] = isTotpEnabled
+                }
+
+                updateUserParams.storageConfiguration.onSet { config ->
+                    updateStatement[UsersTable.storageQuotaBytes] = config?.quotaBytes
+                    updateStatement[UsersTable.storageMaxUploadSizeBytes] = config?.maxUploadSizeBytes
+                    updateStatement[UsersTable.storageMaxPendingUploads] = config?.maxPendingUploads
+                }
+
+                updateUserParams.scheduledPermanentDeletionAt.onSet { scheduledPermanentDeletionAt ->
+                    updateStatement[UsersTable.scheduledPermanentDeletionAt] = scheduledPermanentDeletionAt?.toJavaInstant()
+                }
+
+                updateUserParams.lockoutType.onSet { accountLockoutType ->
+                    if (accountLockoutType != null) {
+                        updateStatement[UsersTable.accountLockoutType] = accountLockoutType
+                    }
+                }
+
+                updateUserParams.temporaryLockoutUntil.onSet { temporaryLockoutUntil ->
+                    updateStatement[UsersTable.temporaryLockoutUntil] = temporaryLockoutUntil?.toJavaInstant()
+                }
+
+                updateUserParams.nickname.onSet { nickname ->
+                    updateStatement[UsersTable.nickname] = nickname
+                }
+
+                updateUserParams.displayName.onSet { displayName ->
+                    updateStatement[UsersTable.displayName] = displayName
+                }
+
+                updateUserParams.avatarFileId.onSet { avatarFileId ->
+                    updateStatement[UsersTable.avatarFileId] = avatarFileId?.value
+                }
+
+                updateUserParams.birthdate.onSet { birthdate ->
+                    updateStatement[UsersTable.birthdate] = birthdate?.toJavaInstant()
+                }
+
+                updateStatement[UsersTable.updatedAt] = updatedAtJavaInstant
             }
 
-            temporaryLockoutUntil.onSet { until ->
-                updateStatement[UsersTable.temporaryLockoutUntil] = until?.toJavaInstant()
+            if (updatedRows == 0) {
+                return AppResult.Error(
+                    CommonError.Database("Failed to update fields for user id=${userId.value}")
+                )
             }
+        } catch (e: ExposedSQLException) {
+            val isUniqueViolation = e.sqlState == PostgreSqlErrorCodes.UNIQUE_VIOLATION
+            val isNicknameConstraint = e.message?.contains(UsersTable.NICKNAME_UNIQUE_INDEX_NAME, ignoreCase = true) == true
 
-            updateStatement[UsersTable.updatedAt] = updatedAtJavaInstant
-        }
-
-        if (updatedRows == 0) {
+            if (isUniqueViolation && isNicknameConstraint) {
+                val newNick = (updateUserParams.nickname as? UpdateField.Set)?.value ?: ""
+                return AppResult.Error(UserError.NicknameAlreadyTaken(newNick))
+            }
             return AppResult.Error(
-                CommonError.Database("Failed to update fields for user id=${userId.value}")
+                CommonError.Database("Failed to update fields for user id=${userId.value}: ${e.message}")
             )
         }
 
@@ -191,7 +225,24 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
     }
 
     override suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?> {
-        return AppResult.Success(getUserResultRow(userId)?.toUserInternal())
+        return try {
+            AppResult.Success(getUserResultRow(userId)?.toUserInternal())
+        } catch (e: ExposedSQLException) {
+            AppResult.Error(CommonError.Database("Error retrieving user by id: ${e.message}"))
+        }
+    }
+
+    override suspend fun getUserInternalByNickname(nickname: String): AppResult<UserInternal?> {
+        return try {
+            val resultRow = UsersTable
+                .selectAll()
+                .where { UsersTable.nickname.lowerCase() eq nickname.lowercase() }
+                .singleOrNull()
+
+            AppResult.Success(resultRow?.toUserInternal())
+        } catch (e: ExposedSQLException) {
+            AppResult.Error(CommonError.Database("Error retrieving user by nickname: ${e.message}"))
+        }
     }
 
     private fun getUserResultRow(userId: UserId): ResultRow? {
@@ -203,19 +254,10 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
 
     override suspend fun getUsersPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserSortBy,
-        sortOrder: SortOrder,
-        roles: List<UserRole>,
-        accountStatuses: List<UserAccountStatus>,
-        accountStatusesOnRestore: List<UserAccountStatus>,
-        authorityLevelFrom: Int?,
-        authorityLevelTo: Int?,
-        permissionCodes: Set<PermissionCode>,
-        isTotpEnabled: Boolean?,
-        accountLockoutTypes: List<AccountLockoutType>
+        queryParams: UserListQueryParams
     ): AppResult<PagedResult<UserInternal>> {
-        val query = UsersTable.selectAll()
+        return try {
+            val query = UsersTable.selectAll()
 
         query.andWhere {
             val roleConditions = accessFilter.allowedUserRoles
@@ -223,87 +265,253 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             roleConditions.reduceOrNull { acc, op -> acc or op } ?: Op.FALSE
         }
 
-        if (roles.isNotEmpty()) {
-            query.andWhere { UsersTable.role inList roles }
-        }
-        if (accountStatuses.isNotEmpty()) {
-            query.andWhere { UsersTable.accountStatus inList accountStatuses }
-        }
-        if (accountStatusesOnRestore.isNotEmpty()) {
-            query.andWhere { UsersTable.accountStatusOnRestore inList accountStatusesOnRestore }
-        }
-
-        if (authorityLevelFrom != null) {
-            query.andWhere { UsersTable.authorityLevel greaterEq authorityLevelFrom }
-        }
-        if (authorityLevelTo != null) {
-            query.andWhere { UsersTable.authorityLevel lessEq authorityLevelTo }
+        if (queryParams.userIds.isNotEmpty()) {
+            val entityIds = queryParams.userIds.mapNotNull { userIdString ->
+                runCatching { EntityID(Uuid.parse(userIdString), UsersTable) }.getOrNull()
+            }
+            if (entityIds.isNotEmpty()) {
+                query.andWhere { UsersTable.id inList entityIds }
+            }
         }
 
-        if (isTotpEnabled != null) {
-            query.andWhere { UsersTable.isTotpEnabled eq isTotpEnabled }
+        if (queryParams.roles.isNotEmpty()) {
+            query.andWhere { UsersTable.role inList queryParams.roles }
+        }
+        if (queryParams.excludeRoles.isNotEmpty()) {
+            query.andWhere { UsersTable.role notInList queryParams.excludeRoles }
         }
 
-        if (accountLockoutTypes.isNotEmpty()) {
-            query.andWhere { UsersTable.accountLockoutType inList accountLockoutTypes }
+        if (queryParams.accountStatuses.isNotEmpty()) {
+            query.andWhere { UsersTable.accountStatus inList queryParams.accountStatuses }
+        }
+        if (queryParams.excludeAccountStatuses.isNotEmpty()) {
+            query.andWhere { UsersTable.accountStatus notInList queryParams.excludeAccountStatuses }
         }
 
-        if (permissionCodes.isNotEmpty()) {
+        if (queryParams.accountStatusesOnRestore.isNotEmpty()) {
+            query.andWhere { UsersTable.accountStatusOnRestore inList queryParams.accountStatusesOnRestore }
+        }
+        if (queryParams.excludeAccountStatusesOnRestore.isNotEmpty()) {
+            query.andWhere { UsersTable.accountStatusOnRestore notInList queryParams.excludeAccountStatusesOnRestore }
+        }
+        query.applyNullabilityFilter(UsersTable.accountStatusOnRestore, queryParams.isAccountStatusOnRestoreSet)
+
+        if (queryParams.authorityLevelFrom != null) {
+            query.andWhere { UsersTable.authorityLevel greaterEq queryParams.authorityLevelFrom }
+        }
+        if (queryParams.authorityLevelTo != null) {
+            query.andWhere { UsersTable.authorityLevel lessEq queryParams.authorityLevelTo }
+        }
+
+        if (queryParams.isTotpEnabled != null) {
+            query.andWhere { UsersTable.isTotpEnabled eq queryParams.isTotpEnabled }
+        }
+
+        if (queryParams.accountLockoutTypes.isNotEmpty()) {
+            query.andWhere { UsersTable.accountLockoutType inList queryParams.accountLockoutTypes }
+        }
+        if (queryParams.excludeAccountLockoutTypes.isNotEmpty()) {
+            query.andWhere { UsersTable.accountLockoutType notInList queryParams.excludeAccountLockoutTypes }
+        }
+
+        if (!queryParams.nickname.isNullOrBlank()) {
+            query.andWhere { UsersTable.nickname.lowerCase() eq queryParams.nickname.lowercase() }
+        }
+        query.applyNullabilityFilter(UsersTable.nickname, queryParams.isNicknameSet)
+
+        if (!queryParams.displayName.isNullOrBlank()) {
+            query.andWhere { UsersTable.displayName.lowerCase() eq queryParams.displayName.lowercase() }
+        }
+        query.applyNullabilityFilter(UsersTable.displayName, queryParams.isDisplayNameSet)
+
+        query.applyNullabilityFilter(UsersTable.avatarFileId, queryParams.isAvatarSet)
+
+        query.applyTimestampFilter(
+            column = UsersTable.createdAt,
+            fromInstant = queryParams.createdAtFrom,
+            toInstant = queryParams.createdAtTo
+        )
+        query.applyTimestampFilter(
+            column = UsersTable.updatedAt,
+            fromInstant = queryParams.updatedAtFrom,
+            toInstant = queryParams.updatedAtTo,
+            isSet = queryParams.isUpdatedAtSet
+        )
+        query.applyTimestampFilter(
+            column = UsersTable.lastLoginAt,
+            fromInstant = queryParams.lastLoginAtFrom,
+            toInstant = queryParams.lastLoginAtTo,
+            isSet = queryParams.isLastLoginAtSet
+        )
+        query.applyTimestampFilter(
+            column = UsersTable.lastActiveAt,
+            fromInstant = queryParams.lastActiveAtFrom,
+            toInstant = queryParams.lastActiveAtTo,
+            isSet = queryParams.isLastActiveAtSet
+        )
+        query.applyTimestampFilter(
+            column = UsersTable.scheduledPermanentDeletionAt,
+            fromInstant = queryParams.scheduledPermanentDeletionAtFrom,
+            toInstant = queryParams.scheduledPermanentDeletionAtTo,
+            isSet = queryParams.isScheduledPermanentDeletionAtSet
+        )
+        query.applyTimestampFilter(
+            column = UsersTable.temporaryLockoutUntil,
+            fromInstant = queryParams.temporaryLockoutUntilFrom,
+            toInstant = queryParams.temporaryLockoutUntilTo,
+            isSet = queryParams.isTemporaryLockoutUntilSet
+        )
+        query.applyTimestampFilter(
+            column = UsersTable.birthdate,
+            fromInstant = queryParams.birthdateFrom,
+            toInstant = queryParams.birthdateTo,
+            isSet = queryParams.isBirthdateSet
+        )
+
+        if (queryParams.storageQuotaBytesFrom != null) {
+            query.andWhere { UsersTable.storageQuotaBytes greaterEq queryParams.storageQuotaBytesFrom }
+        }
+        if (queryParams.storageQuotaBytesTo != null) {
+            query.andWhere { UsersTable.storageQuotaBytes lessEq queryParams.storageQuotaBytesTo }
+        }
+        if (queryParams.isStorageQuotaBytesSet == true) {
+            query.andWhere { UsersTable.storageQuotaBytes.isNotNull() }
+        } else if (queryParams.isStorageQuotaBytesSet == false) {
+            query.andWhere { UsersTable.storageQuotaBytes.isNull() }
+        }
+
+        if (queryParams.storageMaxUploadSizeBytesFrom != null) {
+            query.andWhere { UsersTable.storageMaxUploadSizeBytes greaterEq queryParams.storageMaxUploadSizeBytesFrom }
+        }
+        if (queryParams.storageMaxUploadSizeBytesTo != null) {
+            query.andWhere { UsersTable.storageMaxUploadSizeBytes lessEq queryParams.storageMaxUploadSizeBytesTo }
+        }
+        if (queryParams.isStorageMaxUploadSizeBytesSet == true) {
+            query.andWhere { UsersTable.storageMaxUploadSizeBytes.isNotNull() }
+        } else if (queryParams.isStorageMaxUploadSizeBytesSet == false) {
+            query.andWhere { UsersTable.storageMaxUploadSizeBytes.isNull() }
+        }
+
+        if (queryParams.storageMaxPendingUploadsFrom != null) {
+            query.andWhere { UsersTable.storageMaxPendingUploads greaterEq queryParams.storageMaxPendingUploadsFrom }
+        }
+        if (queryParams.storageMaxPendingUploadsTo != null) {
+            query.andWhere { UsersTable.storageMaxPendingUploads lessEq queryParams.storageMaxPendingUploadsTo }
+        }
+        query.applyNullabilityFilter(UsersTable.storageMaxPendingUploads, queryParams.isStorageMaxPendingUploadsSet)
+
+        if (queryParams.isStorageConfigurationSet == true) {
             query.andWhere {
-                UsersTable.permissionCodes jsonbContainsAllStrings permissionCodes.map { it.value }.toSet()
+                UsersTable.storageQuotaBytes.isNotNull() or
+                    UsersTable.storageMaxUploadSizeBytes.isNotNull() or
+                    UsersTable.storageMaxPendingUploads.isNotNull()
+            }
+        } else if (queryParams.isStorageConfigurationSet == false) {
+            query.andWhere {
+                UsersTable.storageQuotaBytes.isNull() and
+                    UsersTable.storageMaxUploadSizeBytes.isNull() and
+                    UsersTable.storageMaxPendingUploads.isNull()
+            }
+        }
+
+        if (!queryParams.searchQuery.isNullOrBlank()) {
+            val pattern = substringSqlLikePattern(queryParams.searchQuery.lowercase())
+            query.andWhere {
+                (UsersTable.nickname.lowerCase() like pattern) or
+                        (UsersTable.displayName.lowerCase() like pattern)
+            }
+        }
+
+        if (queryParams.requiredPermissionCodes.isNotEmpty()) {
+            query.andWhere {
+                UsersTable.permissionCodes jsonbContainsAllStrings queryParams.requiredPermissionCodes.mapToSet { it.value }
+            }
+        }
+        if (queryParams.excludePermissionCodes.isNotEmpty()) {
+            query.andWhere {
+                not(UsersTable.permissionCodes jsonbContainsAllStrings queryParams.excludePermissionCodes.mapToSet { it.value })
             }
         }
 
         val totalCount = query.count()
 
-        val sortColumn = when (sortBy) {
-            UserSortValues.UserSortBy.LAST_LOGIN_AT -> UsersTable.lastLoginAt
-            UserSortValues.UserSortBy.LAST_ACTIVE_AT -> UsersTable.lastActiveAt
-            UserSortValues.UserSortBy.SCHEDULED_PERMANENT_DELETION_AT -> UsersTable.scheduledPermanentDeletionAt
-            UserSortValues.UserSortBy.CREATED_AT -> UsersTable.createdAt
-            UserSortValues.UserSortBy.UPDATED_AT -> UsersTable.updatedAt
-            UserSortValues.UserSortBy.ACCOUNT_LOCKOUT_TYPE -> UsersTable.accountLockoutType
-            UserSortValues.UserSortBy.TEMPORARY_LOCKOUT_UNTIL -> UsersTable.temporaryLockoutUntil
+        val sortColumn = when (queryParams.listing.sortBy) {
+            UserSortBy.AUTHORITY_LEVEL -> UsersTable.authorityLevel
+            UserSortBy.LAST_LOGIN_AT -> UsersTable.lastLoginAt
+            UserSortBy.LAST_ACTIVE_AT -> UsersTable.lastActiveAt
+            UserSortBy.SCHEDULED_PERMANENT_DELETION_AT -> UsersTable.scheduledPermanentDeletionAt
+            UserSortBy.TEMPORARY_LOCKOUT_UNTIL -> UsersTable.temporaryLockoutUntil
+            UserSortBy.NICKNAME -> UsersTable.nickname
+            UserSortBy.DISPLAY_NAME -> UsersTable.displayName
+            UserSortBy.BIRTHDATE -> UsersTable.birthdate
+            UserSortBy.CREATED_AT -> UsersTable.createdAt
+            UserSortBy.UPDATED_AT -> UsersTable.updatedAt
         }
 
         val users = query
-            .orderBy(sortColumn to sortOrder.toExposedSortOrder())
-            .applyPagination(pageParams)
+            .orderBy(sortColumn to queryParams.listing.sortOrder.toExposedSortOrder())
+            .applyPagination(queryParams.listing.pageParams)
             .map { it.toUserInternal() }
 
-        val totalPages = getNumOfTotalPages(totalCount, pageParams.size)
+        val totalPages = getNumOfTotalPages(totalCount, queryParams.listing.pageParams.size)
 
-        return AppResult.Success(
+        AppResult.Success(
             PagedResult(
                 items = users,
                 totalCount = totalCount,
-                pageNumber = pageParams.page,
-                pageSize = pageParams.size,
+                pageNumber = queryParams.listing.pageParams.page,
+                pageSize = queryParams.listing.pageParams.size,
                 totalPages = totalPages
             )
         )
+        } catch (e: ExposedSQLException) {
+            AppResult.Error(CommonError.Database("Error retrieving users page: ${e.message}"))
+        }
     }
 
     override suspend fun deleteUsersDueForPermanentDeletion(asOf: KotlinInstant): AppResult<Int> {
-        val asOfJavaInstant = asOf.toJavaInstant()
-        val deletedCount = UsersTable.deleteWhere {
-            (UsersTable.scheduledPermanentDeletionAt.isNotNull()) and
-                (UsersTable.scheduledPermanentDeletionAt lessEq asOfJavaInstant)
+        return try {
+            val asOfJavaInstant = asOf.toJavaInstant()
+            val deletedCount = UsersTable.deleteWhere {
+                UsersTable.scheduledPermanentDeletionAt lessEq asOfJavaInstant
+            }
+            AppResult.Success(deletedCount)
+        } catch (e: ExposedSQLException) {
+            AppResult.Error(CommonError.Database("Error deleting users due for deletion: ${e.message}"))
         }
-        return AppResult.Success(deletedCount)
     }
 
     override suspend fun getExpiredTemporaryLockouts(asOf: KotlinInstant): AppResult<List<UserId>> {
-        val asOfJavaInstant = asOf.toJavaInstant()
-        val userIds = UsersTable
-            .selectAll()
-            .where {
-                (UsersTable.accountLockoutType eq AccountLockoutType.TEMPORARY) and
-                    (UsersTable.temporaryLockoutUntil.isNotNull()) and
-                    (UsersTable.temporaryLockoutUntil lessEq asOfJavaInstant)
+        return try {
+            val asOfJavaInstant = asOf.toJavaInstant()
+            val userIds = UsersTable
+                .selectAll()
+                .where {
+                    (UsersTable.accountLockoutType eq AccountLockoutType.TEMPORARY) and
+                        (UsersTable.temporaryLockoutUntil lessEq asOfJavaInstant)
+                }
+                .map { UserId(it[UsersTable.id].value) }
+            AppResult.Success(userIds)
+        } catch (e: ExposedSQLException) {
+            AppResult.Error(CommonError.Database("Error retrieving expired temporary lockouts: ${e.message}"))
+        }
+    }
+
+    override suspend fun unlockUsersBatch(userIds: List<UserId>): AppResult<Unit> {
+        if (userIds.isEmpty()) {
+            return AppResult.Success(Unit)
+        }
+        return try {
+            val ids = userIds.map { it.value }
+            UsersTable.update({ UsersTable.id inList ids }) { row ->
+                row[UsersTable.accountLockoutType] = AccountLockoutType.NONE
+                row[UsersTable.temporaryLockoutUntil] = null
+                row[UsersTable.updatedAt] = JavaInstant.now()
             }
-            .map { UserId(it[UsersTable.id].value) }
-        return AppResult.Success(userIds)
+            AppResult.Success(Unit)
+        } catch (e: ExposedSQLException) {
+            AppResult.Error(CommonError.Database("Error unlocking users batch: ${e.message}"))
+        }
     }
 
     private fun ResultRow.toUserInternal(): UserInternal {
@@ -335,7 +543,11 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             scheduledPermanentDeletionAt = this[UsersTable.scheduledPermanentDeletionAt]?.toKotlinInstant(),
             lockoutType = this[UsersTable.accountLockoutType],
             temporaryLockoutUntil = this[UsersTable.temporaryLockoutUntil]?.toKotlinInstant(),
-            storageConfiguration = storageConfig
+            storageConfiguration = storageConfig,
+            nickname = this[UsersTable.nickname],
+            displayName = this[UsersTable.displayName],
+            avatarFileId = this[UsersTable.avatarFileId]?.let { FileId(it) },
+            birthdate = this[UsersTable.birthdate]?.toKotlinInstant()
         )
     }
 }

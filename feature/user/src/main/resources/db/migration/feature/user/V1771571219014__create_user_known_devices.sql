@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS user_known_devices (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    device_id TEXT NOT NULL,
+    device_id UUID NOT NULL,
     first_ip_address VARCHAR(64),
     last_ip_address VARCHAR(64),
     user_agent VARCHAR(255),

@@ -1,17 +1,21 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
+import io.github.mudrichenkoevgeny.backend.core.database.testing.assertAllQueryParamsApplied
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
@@ -19,7 +23,10 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -52,8 +59,9 @@ class UserRepositoryImplTest {
         val result = suspendTransaction { repository.getUserInternalById(user.id) }
 
         val success = result as AppResult.Success
-        assertNotNull(success.data)
-        assertEquals(user.id, success.data!!.id)
+        val data = success.data
+        assertNotNull(data)
+        assertEquals(user.id, data?.id)
     }
 
     @Test
@@ -70,14 +78,14 @@ class UserRepositoryImplTest {
         val result = suspendTransaction {
             repository.updateUser(
                 userId = userId,
-                status = UpdateField.Set(UserAccountStatus.BANNED),
-                statusOnRestore = UpdateField.Set(UserAccountStatus.ACTIVE),
-                authorityLevel = UpdateField.Set(10),
-                permissionCodes = UpdateField.Set(permissions),
-                isTotpEnabled = UpdateField.Set(true),
-                lastLoginAt = UpdateField.Set(newLoginAt),
-                lastActiveAt = UpdateField.Set(newActiveAt),
-                scheduledPermanentDeletionAt = UpdateField.Set(deletionAt)
+                updateUserParams = UpdateUserParams(
+                    accountStatus = UpdateField.Set(UserAccountStatus.BANNED),
+                    accountStatusOnRestore = UpdateField.Set(UserAccountStatus.ACTIVE),
+                    authorityLevel = UpdateField.Set(10),
+                    permissions = UpdateField.Set(permissions),
+                    isTotpEnabled = UpdateField.Set(true),
+                    scheduledPermanentDeletionAt = UpdateField.Set(deletionAt)
+                )
             )
         }
 
@@ -110,16 +118,19 @@ class UserRepositoryImplTest {
         val result = suspendTransaction {
             repository.getUsersPageWithAccessFilter(
                 accessFilter = UserRoleAccessFilter(allowedUserRoles = setOf(UserRole.ADMIN)),
-                pageParams = PageParams(),
-                sortBy = UserSortValues.UserSortBy.DEFAULT,
-                sortOrder = SortOrder.DEFAULT,
-                roles = listOf(UserRole.ADMIN),
-                accountStatuses = listOf(UserAccountStatus.ACTIVE),
-                accountStatusesOnRestore = emptyList(),
-                authorityLevelFrom = 40,
-                authorityLevelTo = 60,
-                permissionCodes = setOf(permission),
-                isTotpEnabled = true
+                queryParams = UserListQueryParams(
+                    listing = ListingQueryParams(
+                        pageParams = PageParams(),
+                        sortBy = UserSortBy.DEFAULT,
+                        sortOrder = SortOrder.DEFAULT
+                    ),
+                    roles = listOf(UserRole.ADMIN),
+                    accountStatuses = listOf(UserAccountStatus.ACTIVE),
+                    authorityLevelFrom = 40,
+                    authorityLevelTo = 60,
+                    requiredPermissionCodes = setOf(permission),
+                    isTotpEnabled = true
+                )
             )
         }
 
@@ -129,7 +140,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    fun `getUsersPageWithAccessFilter filters by accountLockoutTypes and sorts by ACCOUNT_LOCKOUT_TYPE`() = runBlocking {
+    fun `getUsersPageWithAccessFilter filters by accountLockoutTypes and sorts by TEMPORARY_LOCKOUT_UNTIL`() = runBlocking {
         val userId1 = UserId.generate()
         val userId2 = UserId.generate()
         val user1 = createTestUser(userId1).copy(lockoutType = AccountLockoutType.TEMPORARY)
@@ -143,16 +154,38 @@ class UserRepositoryImplTest {
         val result = suspendTransaction {
             repository.getUsersPageWithAccessFilter(
                 accessFilter = UserRoleAccessFilter(allowedUserRoles = setOf(UserRole.USER)),
-                pageParams = PageParams(),
-                sortBy = UserSortValues.UserSortBy.ACCOUNT_LOCKOUT_TYPE,
-                sortOrder = SortOrder.ASC,
-                accountLockoutTypes = listOf(AccountLockoutType.TEMPORARY)
+                queryParams = UserListQueryParams(
+                    listing = ListingQueryParams(
+                        pageParams = PageParams(),
+                        sortBy = UserSortBy.TEMPORARY_LOCKOUT_UNTIL,
+                        sortOrder = SortOrder.ASC
+                    ),
+                    accountLockoutTypes = listOf(AccountLockoutType.TEMPORARY)
+                )
             )
         }
 
         val success = result as AppResult.Success
         assertEquals(1, success.data.items.size)
         assertEquals(userId1, success.data.items.first().id)
+    }
+
+    @Test
+    fun `getUsersPageWithAccessFilter should apply every query parameter to generated SQL`() = runBlocking {
+        suspendTransaction {
+            assertAllQueryParamsApplied(
+                queryParamsClass = UserListQueryParams::class,
+                defaultInstance = UserListQueryParams(
+                    listing = ListingQueryParams(sortBy = UserSortBy.DEFAULT)
+                ),
+                ignoredProperties = emptySet()
+            ) { queryParams ->
+                repository.getUsersPageWithAccessFilter(
+                    accessFilter = UserRoleAccessFilter(setOf(UserRole.ADMIN)),
+                    queryParams = queryParams
+                )
+            }
+        }
     }
 
     @Test

@@ -46,6 +46,11 @@ interface RedisManager {
     suspend fun delete(key: String): AppResult<Unit>
 
     /**
+     * Removes the specified list of [keys] in a single batch operation.
+     */
+    suspend fun deleteBatch(keys: List<String>): AppResult<Unit>
+
+    /**
      * Posts a [message] to the given [channel].
      */
     suspend fun publish(channel: String, message: String): AppResult<Unit>

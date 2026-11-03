@@ -1,16 +1,14 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.session
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementSessionListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfSessionListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.DeletedSessions
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
@@ -185,42 +183,12 @@ interface SessionManager {
      * Applies role-scoped visibility based on [managementUserPermissionCodes].
      *
      * @param managementUserPermissionCodes Caller permissions used to derive access rules.
-     * @param pageParams Pagination settings (page index and size).
-     * @param sortBy Field to sort the results by.
-     * @param sortOrder Sorting direction (ASC/DESC).
-     * @param userIds Optional filter for specific user IDs.
-     * @param userRoles optional filters for specific user roles
-     * @param identifiers Optional filter for identifier values (e.g., specific emails).
-     * @param identifierIds Optional filter for specific user identifier IDs.
-     * @param identifierAuthProviders Optional filter for authentication providers.
-     * @param clientTypes Optional filter by client platform types.
-     * @param userAgents Optional filter for client user-agent strings.
-     * @param ipAddresses Optional filter for client IP addresses.
-     * @param languages Optional filter for client language headers.
-     * @param deviceIds Optional filter for unique hardware device IDs.
-     * @param deviceNames Optional filter for human-readable device names.
-     * @param appVersions Optional filter for application versions.
-     * @param operationSystemVersions Optional filter for OS versions.
+     * @param queryParams Structured filter and pagination parameters ([ManagementSessionListQueryParams]).
      * @return [AppResult.Success] with [PagedResult] of session summaries or an error.
      */
     suspend fun getUserSessionsSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        userIds: List<UserId> = emptyList(),
-        userRoles: List<UserRole> = emptyList(),
-        identifiers: List<String> = emptyList(),
-        identifierIds: List<UserIdentifierId> = emptyList(),
-        identifierAuthProviders: List<UserAuthProvider> = emptyList(),
-        clientTypes: List<ClientType> = emptyList(),
-        userAgents: List<String> = emptyList(),
-        ipAddresses: List<String> = emptyList(),
-        languages: List<String> = emptyList(),
-        deviceIds: List<String> = emptyList(),
-        deviceNames: List<String> = emptyList(),
-        appVersions: List<String> = emptyList(),
-        operationSystemVersions: List<String> = emptyList()
+        queryParams: ManagementSessionListQueryParams
     ): AppResult<PagedResult<UserSessionSummary>>
 
     /**
@@ -229,37 +197,11 @@ interface SessionManager {
      * Designed for "Self" service scenarios.
      *
      * @param userId The ID of the user requesting their own sessions.
-     * @param pageParams Pagination settings (page index and size).
-     * @param sortBy Field to sort the results by.
-     * @param sortOrder Sorting direction.
-     * @param identifiers Optional filter for identifier values associated with the session.
-     * @param identifierIds Optional filter for specific user identifier IDs.
-     * @param identifierAuthProviders Optional filter for authentication providers.
-     * @param clientTypes Optional filter by client platform types.
-     * @param userAgents Optional filter for client user-agent strings.
-     * @param ipAddresses Optional filter for client IP addresses.
-     * @param languages Optional filter for client language headers.
-     * @param deviceIds Optional filter for unique hardware device IDs.
-     * @param deviceNames Optional filter for device names.
-     * @param appVersions Optional filter for application versions.
-     * @param operationSystemVersions Optional filter for OS versions.
+     * @param queryParams Structured filter and pagination parameters ([SelfSessionListQueryParams]).
      * @return [AppResult.Success] with [PagedResult] of the user's session summaries or an error.
      */
     suspend fun getUserSessionsSummaryPage(
         userId: UserId,
-        pageParams: PageParams,
-        sortBy: UserSortValues.UserSessionSortBy = UserSortValues.UserSessionSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        identifiers: List<String> = emptyList(),
-        identifierIds: List<UserIdentifierId> = emptyList(),
-        identifierAuthProviders: List<UserAuthProvider> = emptyList(),
-        clientTypes: List<ClientType> = emptyList(),
-        userAgents: List<String> = emptyList(),
-        ipAddresses: List<String> = emptyList(),
-        languages: List<String> = emptyList(),
-        deviceIds: List<String> = emptyList(),
-        deviceNames: List<String> = emptyList(),
-        appVersions: List<String> = emptyList(),
-        operationSystemVersions: List<String> = emptyList()
+        queryParams: SelfSessionListQueryParams
     ): AppResult<PagedResult<UserSessionSummary>>
 }

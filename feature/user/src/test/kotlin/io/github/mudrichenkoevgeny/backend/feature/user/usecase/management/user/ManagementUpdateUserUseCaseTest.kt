@@ -5,20 +5,24 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorPars
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserPrivate
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.user.toUpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.user.UserUpdateValidator
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.patch.PatchField
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.ManagementUpdateUserRequest
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserPrivate
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -37,6 +41,7 @@ class ManagementUpdateUserUseCaseTest {
     private val sessionManager = mockk<SessionManager>()
     private val webSocketManager = mockk<WebSocketManager>(relaxed = true)
     private val authenticationChallengeService = mockk<AuthenticationChallengeService>()
+    private val userUpdateValidator = mockk<UserUpdateValidator>(relaxed = true)
 
     private val useCase = ManagementUpdateUserUseCase(
         rateLimiter = rateLimiter,
@@ -45,7 +50,8 @@ class ManagementUpdateUserUseCaseTest {
         userManager = userManager,
         sessionManager = sessionManager,
         webSocketManager = webSocketManager,
-        authenticationChallengeService = authenticationChallengeService
+        authenticationChallengeService = authenticationChallengeService,
+        userUpdateValidator = userUpdateValidator
     )
 
     private val context = createTestAuthenticatedRequestContext()
@@ -84,12 +90,13 @@ class ManagementUpdateUserUseCaseTest {
         } returns AppResult.Success(Unit)
         coEvery { sessionManager.getAllUserSessionsInternalList(targetId) } returns AppResult.Success(listOf(targetSession))
         coEvery {
-            userManager.updateUser(any(), any(), any(), any(), any(), any(), any())
+            userManager.updateUser(any(), any())
         } returns AppResult.Success(updatedUserInternal)
 
+        val request = ManagementUpdateUserRequest(permissionCodes = PatchField.Value(setOf(newPermission.value)))
         val result = useCase(
             userId = targetId,
-            permissionCodes = setOf(newPermission),
+            updateUserParams = request.toUpdateUserParams(),
             authenticatedRequestContext = context
         )
 
@@ -120,7 +127,12 @@ class ManagementUpdateUserUseCaseTest {
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
 
-        val result = useCase(targetId, authorityLevel = 40, authenticatedRequestContext = context)
+        val request = ManagementUpdateUserRequest(authorityLevel = PatchField.Value(40))
+        val result = useCase(
+            userId = targetId,
+            updateUserParams = request.toUpdateUserParams(),
+            authenticatedRequestContext = context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserInsufficientAuthorityLevel)
     }
@@ -145,9 +157,10 @@ class ManagementUpdateUserUseCaseTest {
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
 
+        val request = ManagementUpdateUserRequest(permissionCodes = PatchField.Value(setOf(forbiddenPermission.value)))
         val result = useCase(
             userId = targetId,
-            permissionCodes = setOf(forbiddenPermission),
+            updateUserParams = request.toUpdateUserParams(),
             authenticatedRequestContext = context
         )
 
@@ -172,9 +185,10 @@ class ManagementUpdateUserUseCaseTest {
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
 
+        val request = ManagementUpdateUserRequest(accountStatus = PatchField.Value(UserAccountStatus.BANNED.value))
         val result = useCase(
             userId = targetId,
-            accountStatus = UserAccountStatus.BANNED,
+            updateUserParams = request.toUpdateUserParams(),
             authenticatedRequestContext = context
         )
 
@@ -197,9 +211,10 @@ class ManagementUpdateUserUseCaseTest {
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
 
+        val request = ManagementUpdateUserRequest(authorityLevel = PatchField.Value(80))
         val result = useCase(
             userId = targetId,
-            authorityLevel = 80,
+            updateUserParams = request.toUpdateUserParams(),
             authenticatedRequestContext = context
         )
 

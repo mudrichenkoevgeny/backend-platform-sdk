@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.model.ExternalAuthProviderData
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.auth.login.LoginByExternalAuthProviderParams
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestOpenAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
@@ -96,7 +97,11 @@ class LoginByExternalAuthProviderUseCaseTest {
             )
         } returns AppResult.Success(authData)
 
-        val result = useCase(provider, TEST_TOKEN, context)
+        val params = LoginByExternalAuthProviderParams(
+            authProvider = provider,
+            token = TEST_TOKEN
+        )
+        val result = useCase(params, context)
 
         assertEquals(AppResult.Success(authData), result)
 
@@ -124,7 +129,11 @@ class LoginByExternalAuthProviderUseCaseTest {
 
         coEvery { rateLimiter.checkRateLimit(any(), TEST_TOKEN) } returns AppResult.Error(error)
 
-        val result = useCase(UserAuthProvider.GOOGLE, TEST_TOKEN, context)
+        val params = LoginByExternalAuthProviderParams(
+            authProvider = UserAuthProvider.GOOGLE,
+            token = TEST_TOKEN
+        )
+        val result = useCase(params, context)
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {
@@ -157,7 +166,11 @@ class LoginByExternalAuthProviderUseCaseTest {
             blacklist = listOf("@tempmail.com")
         )
 
-        val result = useCase(provider, TEST_TOKEN, context)
+        val params = LoginByExternalAuthProviderParams(
+            authProvider = provider,
+            token = TEST_TOKEN
+        )
+        val result = useCase(params, context)
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.EmailNotAllowed)
@@ -172,7 +185,11 @@ class LoginByExternalAuthProviderUseCaseTest {
         every { externalAuthVerifier.provider } returns UserAuthProvider.GOOGLE
         mockProviderSupport(provider, supported = false)
 
-        val result = useCase(provider, TEST_TOKEN, context)
+        val params = LoginByExternalAuthProviderParams(
+            authProvider = provider,
+            token = TEST_TOKEN
+        )
+        val result = useCase(params, context)
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {
@@ -197,7 +214,11 @@ class LoginByExternalAuthProviderUseCaseTest {
         mockProviderSupport(provider, supported = true)
         coEvery { externalAuthVerifier.verify(TEST_TOKEN) } returns AppResult.Error(authError)
 
-        val result = useCase(provider, TEST_TOKEN, context)
+        val params = LoginByExternalAuthProviderParams(
+            authProvider = provider,
+            token = TEST_TOKEN
+        )
+        val result = useCase(params, context)
 
         assertTrue(result is AppResult.Error)
         coVerify {

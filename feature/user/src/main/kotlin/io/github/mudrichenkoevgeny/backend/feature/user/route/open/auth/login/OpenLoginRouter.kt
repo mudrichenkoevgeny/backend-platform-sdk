@@ -2,7 +2,6 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.login
 
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.model.SecurityRequirementType
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
@@ -12,6 +11,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.v
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.auth.toLoginByExternalAuthProviderParams
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.LoginByExternalAuthProviderUseCase
@@ -251,17 +251,10 @@ class OpenLoginRouter @Inject constructor(
         allowedAccountStatuses: Set<UserAccountStatus>
     ) {
         val request = call.validateRequest<LoginByExternalAuthProviderRequest>()
-
-        val authProvider = UserAuthProvider.fromValueOrNull(request.authProvider)
-            ?: throw RequestHandlingException(
-                CommonError.InvalidFieldValue(
-                    fieldName = UserApiFields.AUTH_PROVIDER
-                )
-            )
+        val params = request.toLoginByExternalAuthProviderParams()
 
         val result = loginByExternalAuthProviderUseCase(
-            authProvider = authProvider,
-            token = request.externalProviderToken,
+            params = params,
             requestContext = call.getRequestContext(),
             allowedRoles = allowedRoles,
             allowedAccountStatuses = allowedAccountStatuses

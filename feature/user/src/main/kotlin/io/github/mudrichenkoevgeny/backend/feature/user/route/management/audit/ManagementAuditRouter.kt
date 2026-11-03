@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
-import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseAuditEventsListQueryParams
+import io.github.mudrichenkoevgeny.backend.core.audit.network.query.parseAuditEventsListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.route.AuditSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auditevent.GetAuditEventsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auditevent.GetAuditEventUseCase
@@ -131,17 +131,7 @@ class ManagementAuditRouter @Inject constructor(
         )
 
         val result = getAuditEventsUseCase(
-            pageParams = queryParams.listing.pageParams,
-            sortBy = queryParams.listing.sortBy,
-            sortOrder = queryParams.listing.sortOrder,
-            actorIds = queryParams.actorIds,
-            actorTypes = queryParams.actorTypes,
-            actorUserRoles = queryParams.actorUserRoles,
-            actions = queryParams.actions,
-            resources = queryParams.resources,
-            resourceIds = queryParams.resourceIds,
-            statuses = queryParams.statuses,
-            messages = queryParams.messages,
+            queryParams = queryParams,
             authenticatedRequestContext = authenticatedRequestContext
         )
 

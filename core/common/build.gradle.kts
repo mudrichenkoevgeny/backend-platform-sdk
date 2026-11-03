@@ -64,6 +64,10 @@ dependencies {
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.ktor.server.test.host)
     testFixturesApi(libs.mockk)
+    testFixturesApi(libs.junit.jupiter.api)
+    testFixturesApi(libs.kotlin.reflect)
+    testFixturesImplementation(libs.junit.jupiter.api)
+    testFixturesImplementation(libs.kotlin.reflect)
     compileOnly(libs.h2database)
 }
 

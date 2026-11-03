@@ -1,9 +1,9 @@
-package io.github.mudrichenkoevgeny.backend.core.database.extensions
+package io.github.mudrichenkoevgeny.backend.core.database.dsl
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class SubstringSqlLikePatternTest {
+class SqlLikePatternsTest {
 
     @Test
     fun `substringSqlLikePattern builds simple pattern`() {

@@ -51,6 +51,9 @@ dependencies {
     testImplementation(libs.exposed.json)
     testRuntimeOnly(libs.h2database)
     testImplementation(libs.kotlinx.coroutines.core) // Transitive for Project Modules
+    testFixturesApi(libs.kotlin.reflect)
+    testFixturesApi(libs.junit.jupiter.api)
+    testFixturesApi(libs.mockk)
 }
 
 tasks.test {

@@ -6,7 +6,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.Co
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.CommonErrorCodes
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.localization.CommonModuleStrings
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
@@ -25,10 +24,10 @@ class CommonAppErrorSpecificParserTest {
             args = mapOf(CommonErrorArgs.FIELD_NAME to "email"),
             locale = "en"
         )
-        assertNotNull(response)
-        assertEquals(errorId.asHexDashString(), response!!.id)
-        assertEquals(CommonErrorCodes.MISSING_REQUIRED_FIELD, response.code)
-        assertEquals(stringsEn.errors.missingField("email"), response.message)
+        val nonNullResponse = checkNotNull(response)
+        assertEquals(errorId.asHexDashString(), nonNullResponse.id)
+        assertEquals(CommonErrorCodes.MISSING_REQUIRED_FIELD, nonNullResponse.code)
+        assertEquals(stringsEn.errors.missingField("email"), nonNullResponse.message)
     }
 
     @Test
@@ -39,8 +38,8 @@ class CommonAppErrorSpecificParserTest {
             args = mapOf(CommonErrorArgs.FIELD_NAME to "email"),
             locale = "ru"
         )
-        assertNotNull(response)
-        assertEquals(stringsRu.errors.missingField("email"), response!!.message)
+        val nonNullResponse = checkNotNull(response)
+        assertEquals(stringsRu.errors.missingField("email"), nonNullResponse.message)
     }
 
     @Test

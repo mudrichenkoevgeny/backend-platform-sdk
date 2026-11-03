@@ -10,7 +10,6 @@ import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
@@ -47,10 +46,10 @@ class SystemSettingRepositoryImplTest {
         val result = suspendTransaction { repository.getSettingByKey(setting.key) }
 
         val success = result as AppResult.Success
-        assertNotNull(success.data)
-        assertEquals(setting.key, success.data!!.key)
-        assertEquals(setting.value, success.data!!.value)
-        assertEquals(setting.type, success.data!!.type)
+        val data = checkNotNull(success.data)
+        assertEquals(setting.key, data.key)
+        assertEquals(setting.value, data.value)
+        assertEquals(setting.type, data.type)
     }
 
     @Test
@@ -69,10 +68,10 @@ class SystemSettingRepositoryImplTest {
 
         val result = suspendTransaction { repository.getSettingByKey(key) }
         val success = result as AppResult.Success
+        val data = checkNotNull(success.data)
 
-        assertNotNull(success.data)
-        assertEquals("true", success.data!!.value)
-        assertEquals("Updated status", success.data!!.description)
+        assertEquals("true", data.value)
+        assertEquals("Updated status", data.description)
 
         val allSettings = suspendTransaction { repository.getAllSettings() } as AppResult.Success
         assertEquals(1, allSettings.data.count { it.key == key })
@@ -105,10 +104,10 @@ class SystemSettingRepositoryImplTest {
         val check1 = suspendTransaction { repository.getSettingByKey("batch.key.1") } as AppResult.Success
         val check2 = suspendTransaction { repository.getSettingByKey("batch.key.2") } as AppResult.Success
 
-        assertNotNull(check1.data)
-        assertNotNull(check2.data)
-        assertEquals("val1", check1.data!!.value)
-        assertEquals("val2", check2.data!!.value)
+        val data1 = checkNotNull(check1.data)
+        val data2 = checkNotNull(check2.data)
+        assertEquals("val1", data1.value)
+        assertEquals("val2", data2.value)
     }
 
     @Test

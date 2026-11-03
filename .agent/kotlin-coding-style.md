@@ -22,6 +22,13 @@ This document defines the mandatory Kotlin syntax and formatting standards for t
 ### Trailing Commas
 - **Strict Ban:** Do not write trailing commas at the end of argument, parameter, or entry lists.
 
+### Non-Null Assertion Operator (`!!`)
+- **Strict Ban:** The non-null assertion operator (`!!`) is strictly forbidden in production code.
+- **Allowed Alternatives:**
+    - Handle absence gracefully using safe calls (`?.`), Elvis operators (`?:`), safe casts (`as?`), or explicit `if`/`when` smart-casts.
+    - Use `requireNotNull(...)` or `checkNotNull(...)` with descriptive messages only when asserting invariants or unrecoverable programming errors, never as a substitute for error handling.
+- **Exceptions:** Allowed in test code (`*Test.kt`, `src/commonTest/`, `src/test/`) when asserting non-null values where failure is intended to fail the test.
+
 ## 2. Control Flow
 
 ### `when` Expressions

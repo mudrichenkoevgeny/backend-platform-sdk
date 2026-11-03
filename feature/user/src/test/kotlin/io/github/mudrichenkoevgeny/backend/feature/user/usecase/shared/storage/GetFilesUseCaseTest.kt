@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
-import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageFileSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.storage.domain.model.file.createTestStorageFileSummary
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -49,7 +49,7 @@ class GetFilesUseCaseTest {
             storageManager.getSelfStorageFilesSummaryPage(
                 ownerUserId = currentUserId.asHexDashString(),
                 pageParams = pageParams,
-                sortBy = StorageSortValues.StorageFileSortBy.DEFAULT,
+                sortBy = StorageFileSortBy.DEFAULT,
                 sortOrder = SortOrder.DEFAULT,
                 categories = emptyList(),
                 visibilities = emptyList(),

@@ -1,16 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier
 
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementIdentifierListQueryParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfIdentifierListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 
 /**
@@ -83,47 +82,31 @@ interface UserIdentifierRepository {
     ): AppResult<UserIdentifierInternal?>
 
     /**
-     * Returns a paginated list of identifiers filtered by target user roles and additional criteria.
-     * * This method performs a cross-table check using [accessFilter] to restrict results
-     * to identifiers belonging to users with specific roles.
+     * Returns a paginated list of identifiers matching optional filters in [queryParams].
+     *
+     * This method performs a cross-table check using [accessFilter] to restrict results
+     * to identifiers belonging to users matching allowed roles.
      *
      * @param accessFilter row-level visibility based on user roles
-     * @param params pagination settings (page, size)
-     * @param sortBy field to sort by
-     * @param sortOrder sorting direction
-     * @param userIds optional filters for specific user IDs
-     * @param userAuthProviders optional filters for authentication providers
-     * @param identifiers optional substring patterns for identifier values
-     * @return paged result or a database error
+     * @param queryParams structured filter and pagination parameters
+     * @return paged result of matching identifiers or a database error
      */
     suspend fun getUserIdentifiersPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter = UserRoleAccessFilter(emptySet()),
-        params: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        userIds: List<UserId> = emptyList(),
-        userAuthProviders: List<UserAuthProvider> = emptyList(),
-        identifiers: List<String> = emptyList()
+        queryParams: ManagementIdentifierListQueryParams
     ): AppResult<PagedResult<UserIdentifierInternal>>
 
     /**
-     * Returns a paginated list of identifiers belonging to a specific user.
-     * * Optimized for direct owner access, bypassing role-based visibility checks.
+     * Returns a paginated list of identifiers belonging to a specific user matching optional filters in [queryParams].
+     *
+     * Optimized for direct owner access, bypassing role-based visibility checks.
      *
      * @param userId the owner of the identifiers
-     * @param params pagination settings (page, size)
-     * @param sortBy field to sort by
-     * @param sortOrder sorting direction
-     * @param userAuthProviders optional filters for authentication providers
-     * @param identifiers optional substring patterns for identifier values
-     * @return paged result or a database error
+     * @param queryParams structured filter and pagination parameters
+     * @return paged result of matching identifiers or a database error
      */
     suspend fun getUserIdentifiersPageByUserId(
         userId: UserId,
-        params: PageParams,
-        sortBy: UserSortValues.UserIdentifierSortBy = UserSortValues.UserIdentifierSortBy.DEFAULT,
-        sortOrder: SortOrder = SortOrder.DEFAULT,
-        userAuthProviders: List<UserAuthProvider> = emptyList(),
-        identifiers: List<String> = emptyList()
+        queryParams: SelfIdentifierListQueryParams
     ): AppResult<PagedResult<UserIdentifierInternal>>
 }

@@ -9,7 +9,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.U
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.error.naming.UserErrorCodes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.localization.UserModuleStrings
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import kotlin.time.Instant
@@ -37,10 +36,10 @@ class UserErrorParserTest {
             args = null,
             locale = "en"
         )
-        assertNotNull(response)
-        assertEquals(errorId.asHexDashString(), response!!.id)
-        assertEquals(UserErrorCodes.USER_NOT_FOUND, response.code)
-        assertEquals(stringsEn.errors.notFound, response.message)
+        val nonNullResponse = checkNotNull(response)
+        assertEquals(errorId.asHexDashString(), nonNullResponse.id)
+        assertEquals(UserErrorCodes.USER_NOT_FOUND, nonNullResponse.code)
+        assertEquals(stringsEn.errors.notFound, nonNullResponse.message)
     }
 
     @Test
@@ -51,8 +50,8 @@ class UserErrorParserTest {
             args = null,
             locale = "ru"
         )
-        assertNotNull(response)
-        assertEquals(stringsRu.errors.notFound, response!!.message)
+        val nonNullResponse = checkNotNull(response)
+        assertEquals(stringsRu.errors.notFound, nonNullResponse.message)
     }
 
     @Test
@@ -65,12 +64,12 @@ class UserErrorParserTest {
         )
 
         val response = parser.getApiErrorResponse(appError, "en")
+        val nonNullResponse = checkNotNull(response)
 
-        assertNotNull(response)
-        assertEquals(appError.errorId.asHexDashString(), response!!.id)
-        assertEquals(UserErrorCodes.USER_LOCKED, response.code)
-        assertEquals(stringsEn.errors.locked(formattedDate), response.message)
-        assertEquals(lockoutUntilEpoch.toString(), response.args[UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL])
+        assertEquals(appError.errorId.asHexDashString(), nonNullResponse.id)
+        assertEquals(UserErrorCodes.USER_LOCKED, nonNullResponse.code)
+        assertEquals(stringsEn.errors.locked(formattedDate), nonNullResponse.message)
+        assertEquals(lockoutUntilEpoch.toString(), nonNullResponse.args[UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL])
     }
 
     @Test

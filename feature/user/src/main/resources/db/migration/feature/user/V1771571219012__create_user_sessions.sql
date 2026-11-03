@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS user_sessions (
 
     -- Device Info
     client_type VARCHAR(32),
-    device_id TEXT,
+    device_id UUID,
     device_name TEXT,
     app_version VARCHAR(64),
     operation_system_version VARCHAR(64),

@@ -314,12 +314,8 @@ class OpenIdentifierRouter @Inject constructor(
         }
 
         val result = getIdentifiersUseCase(
-            authenticatedRequestContext = authenticatedRequestContext,
-            pageParams = queryParams.listing.pageParams,
-            sortBy = queryParams.listing.sortBy,
-            sortOrder = queryParams.listing.sortOrder,
-            userAuthProviders = queryParams.userAuthProviders,
-            identifiers = queryParams.identifiers
+            queryParams = queryParams,
+            authenticatedRequestContext = authenticatedRequestContext
         )
 
         call.respondResult(result, appLogger, appErrorParser) { pagedIdentifiers ->

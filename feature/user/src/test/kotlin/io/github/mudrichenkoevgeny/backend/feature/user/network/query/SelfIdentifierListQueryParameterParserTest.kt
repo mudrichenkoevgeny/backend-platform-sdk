@@ -2,9 +2,11 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.query
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+import io.github.mudrichenkoevgeny.backend.core.common.testing.contract.assertAllSortByEnumEntriesParsed
+import io.github.mudrichenkoevgeny.backend.core.common.testing.contract.assertExhaustiveFilterKeysParsed
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserFilterValues
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserIdentifierFilterValues
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserIdentifierSortBy
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.ApplicationRequest
 import io.mockk.every
@@ -23,11 +25,39 @@ class SelfIdentifierListQueryParameterParserTest {
 
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()
-    private val filterNames = UserFilterValues.UserIdentifierFilterValues
+    private val filterNames = UserIdentifierFilterValues
 
     @BeforeEach
     fun setUp() {
         every { call.request } returns request
+    }
+
+    @Test
+    fun `parseSelfIdentifiersListQueryParams should extract and parse all wire keys defined in UserIdentifierFilterValues`() {
+        assertExhaustiveFilterKeysParsed(
+            filterKeysClass = UserIdentifierFilterValues::class,
+            sampleValueProvider = ::getSampleValidValueForIdentifierFilterKey,
+            parseFunction = { mockCall -> mockCall.parseSelfIdentifiersListQueryParams() }
+        )
+    }
+
+    @Test
+    fun `parseSelfIdentifiersListQueryParams should accept and parse all UserIdentifierSortBy wire values`() {
+        assertAllSortByEnumEntriesParsed(
+            enumEntries = UserIdentifierSortBy.entries,
+            wireValueExtractor = { sortByEntry -> sortByEntry.value },
+            parseFunction = { mockCall -> mockCall.parseSelfIdentifiersListQueryParams() },
+            assertSortByFunction = { parsedQueryParams, expectedSortBy ->
+                assertEquals(expectedSortBy, parsedQueryParams.listing.sortBy)
+            }
+        )
+    }
+
+    private fun getSampleValidValueForIdentifierFilterKey(key: String): String = when {
+        key == filterNames.USER_AUTH_PROVIDER -> UserAuthProvider.GOOGLE.value
+        key.endsWith("_from") || key.endsWith("_to") -> "2026-01-01T00:00:00Z"
+        key.startsWith("is_") -> "true"
+        else -> "sample_value"
     }
 
     @Test
@@ -42,8 +72,8 @@ class SelfIdentifierListQueryParameterParserTest {
         val result = call.parseSelfIdentifiersListQueryParams()
 
         assertEquals(UserAuthProvider.GOOGLE, result.userAuthProviders.first())
-        assertEquals(TEST_IDENTIFIER, result.identifiers.first())
-        assertEquals(UserSortValues.UserIdentifierSortBy.DEFAULT, result.listing.sortBy)
+        assertEquals(TEST_IDENTIFIER, result.identifier)
+        assertEquals(UserIdentifierSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test
@@ -53,8 +83,8 @@ class SelfIdentifierListQueryParameterParserTest {
         val result = call.parseSelfIdentifiersListQueryParams()
 
         assertTrue(result.userAuthProviders.isEmpty())
-        assertTrue(result.identifiers.isEmpty())
-        assertEquals(UserSortValues.UserIdentifierSortBy.DEFAULT, result.listing.sortBy)
+        assertTrue(result.identifier == null)
+        assertEquals(UserIdentifierSortBy.DEFAULT, result.listing.sortBy)
     }
 
     @Test

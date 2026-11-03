@@ -100,12 +100,17 @@ class UserConfigFactoryImplTest {
         every { envReader.getByKey(UserEnvKeys.MAX_EMAIL_IDENTIFIERS) } returns "1"
         every { envReader.getByKey(UserEnvKeys.MAX_PHONE_IDENTIFIERS) } returns "1"
         every { envReader.getByKey(UserEnvKeys.MAX_IDENTIFIERS_PER_EXTERNAL_PROVIDER) } returns "1"
+        every { envReader.getByKey(UserEnvKeys.USER_NICKNAME_MIN_LENGTH) } returns "3"
+        every { envReader.getByKey(UserEnvKeys.USER_NICKNAME_MAX_LENGTH) } returns "30"
+        every { envReader.getByKey(UserEnvKeys.USER_DISPLAY_NAME_MIN_LENGTH) } returns "2"
+        every { envReader.getByKey(UserEnvKeys.USER_DISPLAY_NAME_MAX_LENGTH) } returns "50"
+        every { envReader.getByKey(UserEnvKeys.IS_USER_NICKNAME_CHANGE_ALLOWED) } returns "true"
         every { envReader.getByKey(UserEnvKeys.MAX_ACTIVE_SESSIONS_FOR_OPEN_USER) } returns "5"
         every { envReader.getByKey(UserEnvKeys.MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER) } returns "3"
         every { envReader.getByKey(UserEnvKeys.ACCESS_TOKEN_EXPIRATION_SECONDS) } returns "3600"
         every { envReader.getByKey(UserEnvKeys.REFRESH_TOKEN_EXPIRATION_SECONDS) } returns "86400"
         every { envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_GRACE_PERIOD_SECONDS) } returns "3600"
-        every { envReader.getByKeyOrNull(UserEnvKeys.ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS) } returns "600"
+        every { envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS) } returns "600"
         every { envReader.getByKeyOrNull(UserEnvKeys.IS_REGISTRATION_ENABLED) } returns null
         every { envReader.getByKeyOrNull(UserEnvKeys.IS_EMAIL_BLACKLIST_ENABLED_OPEN) } returns null
         every { envReader.getByKeyOrNull(UserEnvKeys.EMAIL_BLACKLIST_OPEN) } returns null
