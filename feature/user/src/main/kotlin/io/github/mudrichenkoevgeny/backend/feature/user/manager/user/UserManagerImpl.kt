@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
+import io.github.mudrichenkoevgeny.backend.core.storage.manager.StorageManager
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
@@ -36,7 +37,8 @@ import kotlin.time.Instant
 class UserManagerImpl @Inject constructor(
     private val userRepository: UserRepository,
     private val authSettingsProvider: AuthSettingsProvider,
-    private val lockoutManager: LockoutManager
+    private val lockoutManager: LockoutManager,
+    private val storageManager: StorageManager
 ) : UserManager {
 
     override suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?> = dbQuery {
@@ -45,7 +47,7 @@ class UserManagerImpl @Inject constructor(
             is AppResult.Success -> userResult.data ?: return@dbQuery AppResult.Success(null)
             is AppResult.Error -> return@dbQuery userResult
         }
-        AppResult.Success(enrichUserInternalWithLockout(user))
+        AppResult.Success(enrichUserInternal(user))
     }
 
     override suspend fun createUser(
@@ -77,6 +79,7 @@ class UserManagerImpl @Inject constructor(
             nickname = nickname,
             displayName = displayName,
             avatarFileId = null,
+            avatarUrls = null,
             birthdate = null
         )
 
@@ -138,7 +141,7 @@ class UserManagerImpl @Inject constructor(
         userRepository.updateUser(
             userId = user.id,
             updateUserParams = repositoryUpdateParams
-        ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
+        ).mapSuccess { userInternal -> enrichUserInternal(userInternal) }
     }
 
     override suspend fun getUserInternal(
@@ -159,13 +162,18 @@ class UserManagerImpl @Inject constructor(
                     return@dbQuery AppResult.Error(UserError.UserMissingPermissions(managementUserId))
                 }
 
-                AppResult.Success(enrichUserInternalWithLockout(targetUser))
+                AppResult.Success(enrichUserInternal(targetUser))
             }
         }
     }
 
     override suspend fun getUserInternalByNickname(nickname: String): AppResult<UserInternal?> = dbQuery {
-        userRepository.getUserInternalByNickname(nickname)
+        val userResult = userRepository.getUserInternalByNickname(nickname)
+        val user = when (userResult) {
+            is AppResult.Success -> userResult.data ?: return@dbQuery AppResult.Success(null)
+            is AppResult.Error -> return@dbQuery userResult
+        }
+        AppResult.Success(enrichUserInternal(user))
     }
 
     override suspend fun getUsersInternalPage(
@@ -181,7 +189,7 @@ class UserManagerImpl @Inject constructor(
         val enrichedItems = when (pagedResult) {
             is AppResult.Success -> {
                 val enrichedList = pagedResult.data.items.map { item ->
-                    enrichUserInternalWithLockout(item)
+                    enrichUserInternal(item)
                 }
                 PagedResult(
                     items = enrichedList,
@@ -208,7 +216,7 @@ class UserManagerImpl @Inject constructor(
                 accountStatusOnRestore = UpdateField.Set(null),
                 scheduledPermanentDeletionAt = UpdateField.Set(null)
             )
-        ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
+        ).mapSuccess { userInternal -> enrichUserInternal(userInternal) }
     }
 
     override suspend fun scheduleUserDeletion(
@@ -222,7 +230,7 @@ class UserManagerImpl @Inject constructor(
                 accountStatusOnRestore = UpdateField.Set(currentStatus),
                 scheduledPermanentDeletionAt = UpdateField.Set(getScheduledPermanentDeletionAt())
             )
-        ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
+        ).mapSuccess { userInternal -> enrichUserInternal(userInternal) }
     }
 
     override suspend fun deleteUser(userId: UserId): AppResult<Unit> = dbQuery {
@@ -245,7 +253,7 @@ class UserManagerImpl @Inject constructor(
                 lockoutType = UpdateField.Set(AccountLockoutType.NONE),
                 temporaryLockoutUntil = UpdateField.Set(null)
             )
-        ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
+        ).mapSuccess { userInternal -> enrichUserInternal(userInternal) }
     }
 
     override suspend fun lockUserAccount(
@@ -258,7 +266,7 @@ class UserManagerImpl @Inject constructor(
                 lockoutType = UpdateField.Set(AccountLockoutType.TEMPORARY),
                 temporaryLockoutUntil = UpdateField.Set(temporaryLockoutUntil)
             )
-        ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
+        ).mapSuccess { userInternal -> enrichUserInternal(userInternal) }
     }
 
     override suspend fun lockUserAccountIndefinitely(userId: UserId): AppResult<UserInternal> = dbQuery {
@@ -268,7 +276,7 @@ class UserManagerImpl @Inject constructor(
                 lockoutType = UpdateField.Set(AccountLockoutType.INDEFINITE),
                 temporaryLockoutUntil = UpdateField.Set(null)
             )
-        ).mapSuccess { userInternal -> enrichUserInternalWithLockout(userInternal) }
+        ).mapSuccess { userInternal -> enrichUserInternal(userInternal) }
     }
 
     override suspend fun deleteUsersDueForPermanentDeletion(): AppResult<Int> = dbQuery {
@@ -290,6 +298,27 @@ class UserManagerImpl @Inject constructor(
         lockoutManager.clearLockoutsBatch(identifierStrings)
 
         userRepository.unlockUsersBatch(userIds).mapSuccess { userIds.size }
+    }
+
+    private suspend fun enrichUserInternal(user: UserInternal): UserInternal {
+        val userWithLockout = enrichUserInternalWithLockout(user)
+        return enrichUserInternalWithAvatarUrls(userWithLockout)
+    }
+
+    private suspend fun enrichUserInternalWithAvatarUrls(user: UserInternal): UserInternal {
+        val avatarFileId = user.avatarFileId ?: return user
+
+        val filePrivateResult = storageManager.getSelfStorageFilePrivate(
+            ownerUserId = user.id.asHexDashString(),
+            fileId = avatarFileId
+        )
+
+        val avatarUrls = when (filePrivateResult) {
+            is AppResult.Success -> filePrivateResult.data?.fileUrls
+            is AppResult.Error -> null
+        } ?: return user
+
+        return user.copy(avatarUrls = avatarUrls)
     }
 
     private suspend fun enrichUserInternalWithLockout(user: UserInternal): UserInternal {

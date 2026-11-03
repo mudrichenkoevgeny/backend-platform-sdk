@@ -71,7 +71,6 @@ class UserRepositoryImplTest {
         suspendTransaction { repository.createUser(user) }
 
         val newLoginAt = Instant.parse(LAST_LOGIN_AT)
-        val newActiveAt = newLoginAt + 1.days
         val deletionAt = newLoginAt + 30.days
         val permissions = setOf(PermissionCode("TEST_CODE"))
 
@@ -95,8 +94,8 @@ class UserRepositoryImplTest {
         assertEquals(10, updated.authorityLevel)
         assertEquals(permissions, updated.permissionCodes)
         assertTrue(updated.isTotpEnabled)
-        assertEquals(newLoginAt, updated.lastLoginAt)
-        assertEquals(newActiveAt, updated.lastActiveAt)
+        assertEquals(user.lastLoginAt, updated.lastLoginAt)
+        assertEquals(user.lastActiveAt, updated.lastActiveAt)
         assertEquals(deletionAt, updated.scheduledPermanentDeletionAt)
         assertNotNull(updated.updatedAt)
     }
@@ -178,7 +177,7 @@ class UserRepositoryImplTest {
                 defaultInstance = UserListQueryParams(
                     listing = ListingQueryParams(sortBy = UserSortBy.DEFAULT)
                 ),
-                ignoredProperties = emptySet()
+                ignoredProperties = setOf("listing")
             ) { queryParams ->
                 repository.getUsersPageWithAccessFilter(
                     accessFilter = UserRoleAccessFilter(setOf(UserRole.ADMIN)),

@@ -1,8 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.manager
 
+import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
+import io.github.mudrichenkoevgeny.backend.core.common.network.httpclient.HttpClientProvider
+import io.github.mudrichenkoevgeny.backend.core.common.network.httpclient.HttpClientSettings
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.common.result.dataOrNull
 import io.github.mudrichenkoevgeny.backend.core.common.result.flatMapSuccess
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
@@ -28,9 +30,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.v
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.permission.StoragePermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.mapper.file.toStorageFilePrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.mapper.file.toStorageFileSummary
+import io.ktor.client.request.get
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
@@ -44,8 +50,12 @@ class StorageManagerImpl @Inject constructor(
     private val filesRepository: StorageFilesRepository,
     private val settingsProvider: StorageSettingsProvider,
     private val storageService: StorageService,
-    private val storageConfig: StorageConfig
+    private val storageConfig: StorageConfig,
+    private val httpClientProvider: HttpClientProvider,
+    @param:BackgroundScope private val scope: CoroutineScope
 ) : StorageManager {
+
+    private val httpClient by lazy { httpClientProvider.create(HttpClientSettings()) }
 
     override suspend fun initiateFileUpload(
         ownerUserId: String,
@@ -149,6 +159,7 @@ class StorageManagerImpl @Inject constructor(
             contentHash = null,
             s3Bucket = storageConfig.s3BucketName,
             s3Key = s3Key,
+            fileUrls = null,
             createdAt = now,
             updatedAt = now
         )
@@ -203,8 +214,22 @@ class StorageManagerImpl @Inject constructor(
                     }
             }
             .mapSuccess { updatedFile ->
-                val fileUrl = storageService.getUrl(updatedFile.s3Key).dataOrNull().orEmpty()
-                updatedFile.toStorageFilePrivate(fileUrl = fileUrl)
+                val fileUrls = storageService.resolveFileUrls(updatedFile)
+                val updatedWithUrls = updatedFile.copy(fileUrls = fileUrls)
+                if (updatedWithUrls.mimeType.startsWith(VIDEO_MIME_TYPE_PREFIX)) {
+                    val warmupUrl = fileUrls.urlPresets.values.firstOrNull()
+                    if (!warmupUrl.isNullOrBlank()) {
+                        scope.launch {
+                            try {
+                                httpClient.get(warmupUrl)
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (_: Exception) {
+                            }
+                        }
+                    }
+                }
+                updatedWithUrls.toStorageFilePrivate()
             }
     }
 
@@ -261,8 +286,8 @@ class StorageManagerImpl @Inject constructor(
                     }
                 }
 
-                val fileUrl = storageService.getUrl(file.s3Key).dataOrNull().orEmpty()
-                AppResult.Success(file.toStorageFilePrivate(fileUrl = fileUrl))
+                val fileUrls = storageService.resolveFileUrls(file)
+                AppResult.Success(file.copy(fileUrls = fileUrls).toStorageFilePrivate())
             }
             is AppResult.Error -> fileResult
         }
@@ -278,12 +303,8 @@ class StorageManagerImpl @Inject constructor(
 
         filesRepository.getStorageFileById(fileId).mapSuccess { file ->
             file?.let {
-                val fileUrl = storageService.generatePresignedGetUrl(
-                    key = it.s3Key,
-                    expirationSeconds = settingsProvider.getPresignedUrlExpirationSeconds()
-                ).dataOrNull().orEmpty()
-
-                it.toStorageFilePrivate(fileUrl = fileUrl)
+                val fileUrls = storageService.resolveFileUrls(it)
+                it.copy(fileUrls = fileUrls).toStorageFilePrivate()
             }
         }
     }
@@ -299,8 +320,8 @@ class StorageManagerImpl @Inject constructor(
 
         result.mapSuccess { paged ->
             paged.mapItems { fileInternal ->
-                val fileUrl = storageService.getUrl(fileInternal.s3Key).dataOrNull().orEmpty()
-                fileInternal.toStorageFileSummary(fileUrl = fileUrl)
+                val fileUrls = storageService.resolveFileUrls(fileInternal)
+                fileInternal.copy(fileUrls = fileUrls).toStorageFileSummary()
             }
         }
     }
@@ -317,16 +338,10 @@ class StorageManagerImpl @Inject constructor(
             queryParams = queryParams
         )
 
-        val expirationSeconds = settingsProvider.getPresignedUrlExpirationSeconds()
-
         getFilesResult.mapSuccess { paged ->
             paged.mapItems { fileInternal ->
-                val fileUrl = storageService.generatePresignedGetUrl(
-                    key = fileInternal.s3Key,
-                    expirationSeconds = expirationSeconds
-                ).dataOrNull().orEmpty()
-
-                fileInternal.toStorageFileSummary(fileUrl = fileUrl)
+                val fileUrls = storageService.resolveFileUrls(fileInternal)
+                fileInternal.copy(fileUrls = fileUrls).toStorageFileSummary()
             }
         }
     }
@@ -419,5 +434,9 @@ class StorageManagerImpl @Inject constructor(
         }
 
         AppResult.Success(readyFiles.size + abandonedFileIds.size)
+    }
+
+    companion object {
+        private const val VIDEO_MIME_TYPE_PREFIX = "video/"
     }
 }

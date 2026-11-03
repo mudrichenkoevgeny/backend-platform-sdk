@@ -72,6 +72,7 @@ class StorageFilesRepositoryImplTest {
         contentHash = "hash",
         s3Bucket = "files",
         s3Key = "uploads/test.png",
+        fileUrls = null,
         createdAt = createdAt,
         updatedAt = createdAt
     )

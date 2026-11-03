@@ -475,6 +475,7 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
             contentHash = this[StorageFilesTable.contentHash],
             s3Bucket = this[StorageFilesTable.s3Bucket],
             s3Key = this[StorageFilesTable.s3Key],
+            fileUrls = null,
             createdAt = this[StorageFilesTable.createdAt].toKotlinInstant(),
             updatedAt = this[StorageFilesTable.updatedAt]?.toKotlinInstant()
         )

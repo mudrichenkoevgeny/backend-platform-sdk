@@ -547,6 +547,7 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             nickname = this[UsersTable.nickname],
             displayName = this[UsersTable.displayName],
             avatarFileId = this[UsersTable.avatarFileId]?.let { FileId(it) },
+            avatarUrls = null,
             birthdate = this[UsersTable.birthdate]?.toKotlinInstant()
         )
     }

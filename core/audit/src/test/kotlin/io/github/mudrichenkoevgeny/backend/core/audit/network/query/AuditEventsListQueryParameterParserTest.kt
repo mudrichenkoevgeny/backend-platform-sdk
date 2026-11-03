@@ -58,9 +58,10 @@ class AuditEventsListQueryParameterParserTest {
     }
 
     private fun getSampleValidValueForAuditFilterKey(key: String): String = when {
-        key == params.ACTOR_TYPE -> AuditActorType.USER.value
-        key == params.STATUS -> AuditStatus.SUCCESS.value
-        key == params.ACTION -> UserAuditActionType.LOGIN_BY_EMAIL.value
+        key == params.EVENT_ID -> "00000000-0000-0000-0000-000000000001"
+        key == params.ACTOR_TYPE || key == params.EXCLUDE_ACTOR_TYPE -> AuditActorType.USER.value
+        key == params.STATUS || key == params.EXCLUDE_STATUS -> AuditStatus.SUCCESS.value
+        key == params.ACTION || key == params.EXCLUDE_ACTION -> UserAuditActionType.LOGIN_BY_EMAIL.value
         key == params.RESOURCE -> UserAuditResourceType.USER.value
         key.endsWith("_from") || key.endsWith("_to") -> "2026-01-01T00:00:00Z"
         else -> "sample_value"
@@ -121,8 +122,8 @@ class AuditEventsListQueryParameterParserTest {
 
         val result = call.parseAuditEventsListQueryParams(actionParser, resourceParser)
 
-        assertEquals(listOf(mockAction.value), result.actions)
-        assertEquals(listOf(mockResource.value), result.resources)
+        assertEquals(listOf(mockAction), result.actions)
+        assertEquals(listOf(mockResource), result.resources)
     }
 
     @Test

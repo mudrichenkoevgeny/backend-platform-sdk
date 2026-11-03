@@ -7,8 +7,12 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.AuditManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventSummary
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.navigation.screen.management.audit.list.ManagementAuditEventListParams
+import io.github.mudrichenkoevgeny.backend.core.audit.network.model.ManagementAuditEventListQueryParams
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditEventSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
@@ -22,7 +26,13 @@ import org.junit.jupiter.api.Test
 
 class GetAuditEventsUseCaseTest {
 
-    private val queryParams = ManagementAuditEventListParams()
+    private val queryParams = ManagementAuditEventListQueryParams(
+        listing = ListingQueryParams(
+            pageParams = PageParams(),
+            sortBy = AuditEventSortBy.DEFAULT,
+            sortOrder = SortOrder.DEFAULT
+        )
+    )
 
     @Test
     fun `returns UserForbidden when current user is not found`() = runTest {

@@ -34,6 +34,8 @@ services:
       - RESEND_API_KEY
       - S3_ACCESS_KEY
       - S3_SECRET_KEY
+      - STORAGE_IMGPROXY_KEY
+      - STORAGE_IMGPROXY_SALT
     volumes:
       - ${LOG_PATH}:/app/logs
       - ./secrets:/app/sample/deploy/secrets
@@ -83,6 +85,8 @@ services:
       - RESEND_API_KEY
       - S3_ACCESS_KEY
       - S3_SECRET_KEY
+      - STORAGE_IMGPROXY_KEY
+      - STORAGE_IMGPROXY_SALT
     volumes:
       - ${LOG_PATH}:/app/logs
       - ./secrets:/app/sample/deploy/secrets
@@ -132,6 +136,8 @@ services:
       - RESEND_API_KEY
       - S3_ACCESS_KEY
       - S3_SECRET_KEY
+      - STORAGE_IMGPROXY_KEY
+      - STORAGE_IMGPROXY_SALT
     volumes:
       - ${LOG_PATH}:/app/logs
       - ./secrets:/app/sample/deploy/secrets
@@ -294,6 +300,30 @@ services:
     networks:
       - app-network
 
+  imgproxy:
+    image: darthsim/imgproxy:latest
+    ports:
+      - "${IMGPROXY_PORT:-8081}:8080"
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID_FILE: /run/secrets/S3_ACCESS_KEY
+      AWS_SECRET_ACCESS_KEY_FILE: /run/secrets/S3_SECRET_KEY
+      AWS_REGION: ${S3_REGION}
+      IMGPROXY_S3_ENDPOINT: ${S3_ENDPOINT}
+      IMGPROXY_KEY_FILE: /run/secrets/STORAGE_IMGPROXY_KEY
+      IMGPROXY_SALT_FILE: /run/secrets/STORAGE_IMGPROXY_SALT
+      IMGPROXY_ENFORCE_WEBP: "true"
+      IMGPROXY_VIDEO_THUMBNAIL_SECOND: ${STORAGE_IMGPROXY_VIDEO_THUMBNAIL_SECOND}
+    secrets:
+      - S3_ACCESS_KEY
+      - S3_SECRET_KEY
+      - STORAGE_IMGPROXY_KEY
+      - STORAGE_IMGPROXY_SALT
+    networks:
+      - app-network
+
 secrets:
   DB_USER:
     file: ./secrets/DB_USER
@@ -315,6 +345,10 @@ secrets:
     file: ./secrets/S3_ACCESS_KEY
   S3_SECRET_KEY:
     file: ./secrets/S3_SECRET_KEY
+  STORAGE_IMGPROXY_KEY:
+    file: ./secrets/STORAGE_IMGPROXY_KEY
+  STORAGE_IMGPROXY_SALT:
+    file: ./secrets/STORAGE_IMGPROXY_SALT
 
 networks:
   app-network:

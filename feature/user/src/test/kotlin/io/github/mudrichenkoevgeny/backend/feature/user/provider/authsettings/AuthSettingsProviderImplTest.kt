@@ -61,7 +61,7 @@ class AuthSettingsProviderImplTest {
         assertTrue(result is AppResult.Success)
         coVerify(exactly = 1) {
             settingsService.registerDefaults(match { list ->
-                list.size == 14
+                list.size == 19
             })
         }
     }
@@ -77,7 +77,7 @@ class AuthSettingsProviderImplTest {
         assertTrue(result is AppResult.Success)
         coVerify(exactly = 1) {
             settingsService.updateSettings(match { list ->
-                list.size == 14
+                list.size == 19
             })
         }
     }

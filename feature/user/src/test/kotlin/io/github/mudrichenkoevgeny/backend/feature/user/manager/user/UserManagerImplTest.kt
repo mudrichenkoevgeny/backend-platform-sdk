@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryPa
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
+import io.github.mudrichenkoevgeny.backend.core.storage.manager.StorageManager
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
@@ -34,7 +35,8 @@ class UserManagerImplTest {
     private val userRepository = mockk<UserRepository>()
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val lockoutManager = mockk<LockoutManager>(relaxed = true)
-    private val userManager = UserManagerImpl(userRepository, authSettingsProvider, lockoutManager)
+    private val storageManager = mockk<StorageManager>(relaxed = true)
+    private val userManager = UserManagerImpl(userRepository, authSettingsProvider, lockoutManager, storageManager)
 
     private val userId = UserId.generate()
 
@@ -171,6 +173,17 @@ class UserManagerImplTest {
     }
 
     @Test
+    fun `getUserInternalByNickname returns success`() = runTest {
+        val user = createSampleUserInternal(userId, nickname = "testnick")
+        coEvery { userRepository.getUserInternalByNickname("testnick") } returns AppResult.Success(user)
+
+        val result = userManager.getUserInternalByNickname("testnick")
+
+        assertTrue(result is AppResult.Success)
+        assertEquals(user, (result as AppResult.Success).data)
+    }
+
+    @Test
     fun `getUsersInternalPage calls repository with filter`() = runTest {
         val paged = PagedResult(emptyList<UserInternal>(), 0, 1, 10, 0)
 
@@ -248,13 +261,15 @@ class UserManagerImplTest {
     private fun createSampleUserInternal(
         uId: UserId,
         role: UserRole = UserRole.USER,
-        status: UserAccountStatus = UserAccountStatus.ACTIVE
+        status: UserAccountStatus = UserAccountStatus.ACTIVE,
+        nickname: String? = null
     ) = createTestUserInternal(
         id = uId,
         role = role,
         accountStatus = status,
         accountStatusOnRestore = status,
         authorityLevel = 1,
+        nickname = nickname,
         lastLoginAt = Clock.System.now(),
         lastActiveAt = Clock.System.now()
     )

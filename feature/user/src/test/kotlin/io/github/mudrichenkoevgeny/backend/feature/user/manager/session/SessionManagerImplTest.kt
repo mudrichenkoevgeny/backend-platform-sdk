@@ -211,14 +211,14 @@ class SessionManagerImplTest {
         coEvery { redisManager.get("auth:rotated_refresh:${rotatedHash.value}") } returns AppResult.Success(jsonString)
         coEvery { userSessionRepository.getUserSessionInternalById(sessionId) } returns AppResult.Success(userSession)
         coEvery { userSessionRepository.deleteAllUserSessions(userId) } returns AppResult.Success(Unit)
-        coEvery { userRepository.updateUser(userId, accountStatus = any()) } returns AppResult.Success(mockk())
+        coEvery { userRepository.updateUser(userId, updateUserParams = any()) } returns AppResult.Success(mockk())
 
         val result = manager.refreshSession(rotatedRefreshToken, clientInfo)
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.InvalidRefreshToken)
         coVerify { userSessionRepository.deleteAllUserSessions(userId) }
-        coVerify { userRepository.updateUser(userId, accountStatus = any()) }
+        coVerify { userRepository.updateUser(userId, updateUserParams = any()) }
         coVerify { redisManager.delete("auth:rotated_refresh:${rotatedHash.value}") }
         verify {
             auditLogger.log(
@@ -461,7 +461,7 @@ class SessionManagerImplTest {
         assertTrue(result is AppResult.Success)
         assertNotNull(capturedDeviceIdSlot.captured)
 
-        coVerify(exactly = 1) {
+        coVerify(timeout = 2000, exactly = 1) {
             emailService.sendNewDeviceLoginEmail(
                 email = "test@example.com",
                 ipAddress = any(),

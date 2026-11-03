@@ -1,13 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager
 
 import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepository
+import io.github.mudrichenkoevgeny.backend.core.audit.network.model.ManagementAuditEventListQueryParams
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditEventSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventPrivate
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.navigation.screen.management.audit.list.ManagementAuditEventListParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventInternal
@@ -80,7 +82,7 @@ class AuditManagerImplTest {
 
         val result = auditManager.getAuditEventsSummaryPage(
             managementUserPermissionCodes = permissions,
-            queryParams = ManagementAuditEventListParams()
+            queryParams = ManagementAuditEventListQueryParams(listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT))
         )
 
         assertTrue(result is AppResult.Success)

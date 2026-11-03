@@ -10,10 +10,11 @@ The backend is selected from configuration ([StorageConfig]) during DI wiring.
 ## What it provides
 
 - **Config**: [StorageConfig] built by [StorageConfigFactory] from env via [StorageEnvKeys].
-- **Storage API**: [StorageService] with `save`, `delete`, and `getUrl`.
+- **Storage API**: [StorageService] with `save`, `delete`, `getUrl`, and `resolveFileUrls`.
 - **Implementations**:
-    - [S3StorageService] — uploads/deletes objects in S3-compatible storage.
+    - [S3StorageService] — uploads/deletes objects in S3-compatible storage and resolves signed `FileUrls`.
     - [LocalStorageService] — saves/deletes files on local filesystem.
+- **Media Preview (imgproxy)**: [ImgproxyUrlBuilder] constructs signed HMAC-SHA256 URLs for dynamic resolution presets (such as `thumbnail`, `preview`, `avatar_sm`).
 - **DI wiring**: [StorageModules] aggregates config and service selection.
 
 ## Environment variables
@@ -21,7 +22,7 @@ The backend is selected from configuration ([StorageConfig]) during DI wiring.
 The default config factory ([StorageConfigFactoryImpl]) reads:
 
 - `STORAGE_TYPE` — `"S3"` or `"LOCAL"` (fallback: `"LOCAL"`).
-- `S3_ENDPOINT` — S3 endpoint URL (AWS or S3-compatible, e.g. MinIO).
+- `S3_ENDPOINT` — S3 endpoint URL (AWS or S3-compatible, such as MinIO).
 - `S3_REGION` — region name for the AWS client.
 - `S3_BUCKET_NAME` — default bucket name.
 - `S3_PUBLIC_URL` — base public URL used to build object URLs.
@@ -29,6 +30,12 @@ The default config factory ([StorageConfigFactoryImpl]) reads:
 - `LOCAL_STORAGE_PATH` — root directory for local storage.
 - `S3_ACCESS_KEY_FILE` — path to a file containing S3 access key.
 - `S3_SECRET_KEY_FILE` — path to a file containing S3 secret key.
+- `STORAGE_IMGPROXY_ENABLED` — `"true"`/`"false"` to enable imgproxy URL signing and pre-warming.
+- `STORAGE_IMGPROXY_BASE_URL` — base public URL of the imgproxy service.
+- `STORAGE_IMGPROXY_KEY_FILE` — path to a file containing the hex-encoded imgproxy secret key.
+- `STORAGE_IMGPROXY_SALT_FILE` — path to a file containing the hex-encoded imgproxy salt.
+- `STORAGE_IMGPROXY_PRESETS` — preset configuration string (format: `"thumbnail=150:fill,preview=600:fit"`).
+- `STORAGE_IMGPROXY_VIDEO_THUMBNAIL_SECOND` — video frame extraction timestamp in seconds (default: `2`).
 
 See: [StorageEnvKeys].
 

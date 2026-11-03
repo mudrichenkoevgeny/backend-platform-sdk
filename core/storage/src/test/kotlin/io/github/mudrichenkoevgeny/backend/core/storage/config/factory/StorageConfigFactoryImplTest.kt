@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.storage.config.factory
 
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.storage.config.envkeys.StorageEnvKeys
+import io.github.mudrichenkoevgeny.backend.core.storage.config.model.ImgproxyResizeType
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
 import io.mockk.every
 import io.mockk.mockk
@@ -35,6 +36,14 @@ class StorageConfigFactoryImplTest {
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IS_DEDUPLICATION_ENABLED) } returns "true"
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS) } returns "86400"
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_MAINTENANCE_BATCH_SIZE) } returns "100"
+        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_ENABLED) } returns "true"
+        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_BASE_URL) } returns "http://localhost:8081"
+        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_KEY_FILE) } returns null
+        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_SALT_FILE) } returns null
+        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_KEY) } returns "testkey"
+        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_SALT) } returns "testsalt"
+        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_PRESETS) } returns "thumbnail=150:fill,preview=600:fit"
+        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_VIDEO_THUMBNAIL_SECOND) } returns "2"
     }
 
     @Test
@@ -63,5 +72,12 @@ class StorageConfigFactoryImplTest {
         assertTrue(config.forcePathStyle)
         assertEquals(100, config.maintenanceBatchSize)
         assertEquals(86400, config.managementStorageSettings.deletedFilesCleanupIntervalSeconds)
+
+        val imgproxyConfig = requireNotNull(config.imgproxyConfig)
+        assertEquals(2, imgproxyConfig.presets.size)
+        assertEquals(150, imgproxyConfig.presets["thumbnail"]?.sizePixels)
+        assertEquals(ImgproxyResizeType.FILL, imgproxyConfig.presets["thumbnail"]?.resizeType)
+        assertEquals(600, imgproxyConfig.presets["preview"]?.sizePixels)
+        assertEquals(ImgproxyResizeType.FIT, imgproxyConfig.presets["preview"]?.resizeType)
     }
 }

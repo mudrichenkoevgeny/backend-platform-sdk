@@ -168,7 +168,7 @@ class UserSessionRepositoryImplTest {
                 userId = userId,
                 queryParams = SelfSessionListQueryParams(
                     listing = ListingQueryParams(sortBy = UserSessionSortBy.DEFAULT),
-                    deviceName = "iphone"
+                    deviceName = "iPhone 15"
                 )
             )
         }
@@ -214,7 +214,7 @@ class UserSessionRepositoryImplTest {
                 defaultInstance = ManagementSessionListQueryParams(
                     listing = ListingQueryParams(sortBy = UserSessionSortBy.DEFAULT)
                 ),
-                ignoredProperties = emptySet()
+                ignoredProperties = setOf("listing")
             ) { queryParams ->
                 repository.getUserSessionsPageWithAccessFilter(
                     accessFilter = UserRoleAccessFilter(setOf(UserRole.ADMIN)),

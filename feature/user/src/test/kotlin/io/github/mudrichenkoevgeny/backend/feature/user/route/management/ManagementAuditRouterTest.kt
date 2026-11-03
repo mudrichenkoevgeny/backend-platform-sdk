@@ -109,17 +109,7 @@ class ManagementAuditRouterTest : BaseRouterTest() {
 
         coEvery {
             getAuditEventsUseCase(
-                pageParams = any(),
-                sortBy = any(),
-                sortOrder = any(),
-                actorIds = any(),
-                actorTypes = any(),
-                actorUserRoles = any(),
-                actions = any(),
-                resources = any(),
-                resourceIds = any(),
-                statuses = any(),
-                messages = any(),
+                queryParams = any(),
                 authenticatedRequestContext = any()
             )
         } returns AppResult.Success(pagedResult)
@@ -146,8 +136,8 @@ class ManagementAuditRouterTest : BaseRouterTest() {
 
         coEvery {
             getAuditEventsUseCase(
-                any(), any(), any(), any(), any(), any(),
-                any(), any(), any(), any(), any(), any()
+                queryParams = any(),
+                authenticatedRequestContext = any()
             )
         } returns AppResult.Success(emptyPagedResult)
 

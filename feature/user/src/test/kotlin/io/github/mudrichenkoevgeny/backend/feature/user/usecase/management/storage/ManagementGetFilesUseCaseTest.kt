@@ -1,8 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.storage
 
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.storage.manager.StorageManager
+import io.github.mudrichenkoevgeny.backend.core.storage.network.model.ManagementStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
@@ -41,8 +43,7 @@ class ManagementGetFilesUseCaseTest {
         fileName = "document.pdf",
         fileSizeBytes = 1000L,
         mimeType = "application/pdf",
-        category = StorageCategory.DOCUMENT,
-        fileUrl = "https://cdn.example.com/document.pdf"
+        category = StorageCategory.DOCUMENT
     )
 
     private val pagedResult = PagedResult(
@@ -61,25 +62,23 @@ class ManagementGetFilesUseCaseTest {
             accountStatus = UserAccountStatus.ACTIVE,
             permissionCodes = setOf(StoragePermissionCode.STORAGE_VIEW_OTHER_USERS_FILES)
         )
-        val pageParams = PageParams()
+        val queryParams = ManagementStorageFileListQueryParams(
+            listing = ListingQueryParams(
+                pageParams = PageParams(),
+                sortBy = StorageFileSortBy.DEFAULT,
+                sortOrder = SortOrder.DEFAULT
+            )
+        )
 
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
         coEvery {
             storageManager.getStorageFilesSummaryPage(
                 managementUserPermissionCodes = managementUser.permissionCodes,
-                pageParams = pageParams,
-                sortBy = StorageFileSortBy.DEFAULT,
-                sortOrder = SortOrder.DEFAULT,
-                ownerUserIds = emptyList(),
-                categories = emptyList(),
-                visibilities = emptyList(),
-                statuses = emptyList(),
-                mimeTypes = emptyList(),
-                fileNames = emptyList()
+                queryParams = any()
             )
         } returns AppResult.Success(pagedResult)
 
-        val result = useCase(context, pageParams)
+        val result = useCase(context, queryParams)
 
         assertEquals(AppResult.Success(pagedResult), result)
     }
@@ -88,7 +87,14 @@ class ManagementGetFilesUseCaseTest {
     fun `returns UserForbidden error when management user is not found`() = runTest {
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(null)
 
-        val result = useCase(context)
+        val queryParams = ManagementStorageFileListQueryParams(
+            listing = ListingQueryParams(
+                pageParams = PageParams(),
+                sortBy = StorageFileSortBy.DEFAULT,
+                sortOrder = SortOrder.DEFAULT
+            )
+        )
+        val result = useCase(context, queryParams)
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserForbidden)
     }
@@ -104,7 +110,14 @@ class ManagementGetFilesUseCaseTest {
 
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
 
-        val result = useCase(context)
+        val queryParams = ManagementStorageFileListQueryParams(
+            listing = ListingQueryParams(
+                pageParams = PageParams(),
+                sortBy = StorageFileSortBy.DEFAULT,
+                sortOrder = SortOrder.DEFAULT
+            )
+        )
+        val result = useCase(context, queryParams)
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserMissingPermissions)
     }

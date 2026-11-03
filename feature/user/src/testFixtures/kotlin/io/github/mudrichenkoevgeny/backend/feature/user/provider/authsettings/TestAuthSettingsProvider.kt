@@ -77,6 +77,12 @@ class TestAuthSettingsProvider : AuthSettingsProvider {
     override fun getOpenEmailRestrictionPolicy(): EmailRestrictionPolicy = currentOpenEmailRestrictionPolicy
     override fun getManagementEmailRestrictionPolicy(): EmailRestrictionPolicy = currentManagementEmailRestrictionPolicy
 
+    override fun getUserNicknameMinLength(): Int = 3
+    override fun getUserNicknameMaxLength(): Int = 30
+    override fun getUserDisplayNameMinLength(): Int = 2
+    override fun getUserDisplayNameMaxLength(): Int = 50
+    override fun getIsUserNicknameChangeAllowed(): Boolean = true
+
     override suspend fun updateManagementAuthSettings(
         managementAuthSettings: ManagementAuthSettings
     ): AppResult<Unit> {

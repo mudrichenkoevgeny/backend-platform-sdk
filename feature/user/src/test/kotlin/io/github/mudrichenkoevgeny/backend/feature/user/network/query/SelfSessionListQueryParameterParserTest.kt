@@ -64,6 +64,7 @@ class SelfSessionListQueryParameterParserTest {
     private fun getSampleValidValueForSessionFilterKey(key: String): String = when {
         key == filterNames.IDENTIFIER_AUTH_PROVIDER || key == filterNames.EXCLUDE_IDENTIFIER_AUTH_PROVIDER -> "google"
         key == filterNames.CLIENT_TYPE || key == filterNames.EXCLUDE_CLIENT_TYPE -> "android"
+        key == filterNames.SESSION_ID || key == filterNames.USER_ID || key == filterNames.IDENTIFIER_ID -> "00000000-0000-0000-0000-000000000001"
         key.endsWith("_from") || key.endsWith("_to") -> "2026-01-01T00:00:00Z"
         key.startsWith("is_") -> "true"
         else -> "sample_value"

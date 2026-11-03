@@ -11,14 +11,18 @@ import io.github.mudrichenkoevgeny.backend.core.storage.service.StorageService
 import io.github.mudrichenkoevgeny.backend.core.storage.settings.provider.StorageSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileUrlPresets
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
+import io.github.mudrichenkoevgeny.backend.core.common.network.httpclient.HttpClientProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileUrls
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -36,17 +40,28 @@ class StorageManagerImplTest {
     private val settingsProvider = mockk<StorageSettingsProvider>()
     private val storageService = mockk<StorageService>()
     private val storageConfig = createTestStorageConfig(maintenanceBatchSize = 10)
+    private val httpClientProvider = HttpClientProvider()
+    private val testScope = TestScope()
 
     private val manager = StorageManagerImpl(
         filesRepository = filesRepository,
         settingsProvider = settingsProvider,
         storageService = storageService,
-        storageConfig = storageConfig
+        storageConfig = storageConfig,
+        httpClientProvider = httpClientProvider,
+        scope = testScope
     )
 
     @BeforeAll
     fun setupAll() {
         Database.connect(dataSource)
+        every { storageService.resolveFileUrls(any()) } answers {
+            val file = firstArg<StorageFileInternal>()
+            FileUrls(
+                originalUrl = "https://cdn.example.com/${file.s3Key}",
+                urlPresets = mapOf(FileUrlPresets.THUMBNAIL to "https://cdn.example.com/thumb.png")
+            )
+        }
     }
 
     private fun createSampleFileInternal(
@@ -66,6 +81,7 @@ class StorageManagerImplTest {
         contentHash = "hash",
         s3Bucket = "files",
         s3Key = s3Key,
+        fileUrls = null,
         createdAt = Clock.System.now(),
         updatedAt = Clock.System.now()
     )

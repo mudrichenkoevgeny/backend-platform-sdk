@@ -29,6 +29,10 @@ This document defines the mandatory Kotlin syntax and formatting standards for t
     - Use `requireNotNull(...)` or `checkNotNull(...)` with descriptive messages only when asserting invariants or unrecoverable programming errors, never as a substitute for error handling.
 - **Exceptions:** Allowed in test code (`*Test.kt`, `src/commonTest/`, `src/test/`) when asserting non-null values where failure is intended to fail the test.
 
+### Single Declaration Per File
+- **Strict Requirement:** Every public `interface`, `class`, or `object` must reside in its own dedicated file matching its declaration name.
+- **Strict Ban:** Do not place an interface and its implementation class in the same file.
+
 ## 2. Control Flow
 
 ### `when` Expressions

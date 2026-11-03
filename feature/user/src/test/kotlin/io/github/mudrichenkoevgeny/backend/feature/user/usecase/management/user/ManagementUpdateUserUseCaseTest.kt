@@ -59,6 +59,11 @@ class ManagementUpdateUserUseCaseTest {
     private val targetId = UserId.generate()
     private val sessionId = context.sessionId
 
+    @org.junit.jupiter.api.BeforeEach
+    fun setup() {
+        coEvery { userUpdateValidator.validate(any(), any()) } returns AppResult.Success(Unit)
+    }
+
     @Test
     fun `successfully updates user permissions and notifies sessions`() = runTest {
         val permission = UserPermissionCode.USER_UPDATE_PERMISSIONS_FOR_USER

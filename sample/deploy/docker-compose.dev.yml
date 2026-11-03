@@ -67,3 +67,8 @@ services:
   kafka-console:
     ports:
       - "8085:8080"
+
+  imgproxy:
+    env_file:
+      - ./env/.versions.env
+      - ./env/.env.config.dev

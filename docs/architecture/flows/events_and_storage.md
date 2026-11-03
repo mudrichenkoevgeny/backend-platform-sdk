@@ -58,14 +58,15 @@ sequenceDiagram
     
     Storage-->>UseCase: Success (File Key)
 
-    %% URL Generation
-    UseCase->>Storage: getUrl(key)
+    %% URL & Preset Resolution
+    UseCase->>Storage: resolveFileUrls(StorageFileInternal)
     
     alt Using S3StorageService
-        Storage->>Storage: Construct URL from S3_PUBLIC_URL + Key
+        Storage->>Storage: Generate originalUrl (presigned for private, public CDN for public)
+        Storage->>Storage: Build HMAC-SHA256 signed imgproxy urlPresets (thumbnail, preview, avatar_sm)
     else Using LocalStorageService
-        Storage->>Storage: Construct URL from S3_PUBLIC_URL + Key
+        Storage->>Storage: Construct originalUrl from S3_PUBLIC_URL + Key
     end
     
-    Storage-->>UseCase: "https://assets.domain.com/avatar.png"
+    Storage-->>UseCase: FileUrls(originalUrl, urlPresets)
 ```

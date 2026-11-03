@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 CREATE TABLE IF NOT EXISTS storage_files (
     id UUID PRIMARY KEY,
     owner_user_id VARCHAR(255),

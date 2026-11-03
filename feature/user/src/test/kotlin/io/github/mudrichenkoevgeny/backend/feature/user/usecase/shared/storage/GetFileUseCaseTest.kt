@@ -37,7 +37,6 @@ class GetFileUseCaseTest {
         visibility = StorageFileVisibility.PUBLIC,
         status = StorageFileStatus.READY,
         targetScope = UserStorageTargetScopes.AVATAR,
-        fileUrl = "https://cdn.example.com/avatar.png",
         createdAt = Clock.System.now(),
         updatedAt = null
     )

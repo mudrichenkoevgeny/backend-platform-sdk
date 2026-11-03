@@ -17,6 +17,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.s
  * @param forcePathStyle whether to force path-style S3 addressing (useful for some S3-compatible providers).
  * @param maintenanceBatchSize maximum number of file records to process in a single pass during background scheduled jobs.
  * @param managementStorageSettings default platform-wide storage settings parsed from configuration/env.
+ * @param imgproxyConfig optional imgproxy service configuration for generating media previews and thumbnails.
  */
 data class StorageConfig(
     val s3Endpoint: String,
@@ -27,5 +28,6 @@ data class StorageConfig(
     val s3PublicUrl: String,
     val forcePathStyle: Boolean,
     val maintenanceBatchSize: Int,
-    val managementStorageSettings: ManagementStorageSettings
+    val managementStorageSettings: ManagementStorageSettings,
+    val imgproxyConfig: ImgproxyConfig? = null
 )

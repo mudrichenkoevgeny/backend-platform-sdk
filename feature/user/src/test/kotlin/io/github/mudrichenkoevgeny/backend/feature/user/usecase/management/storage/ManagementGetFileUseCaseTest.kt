@@ -47,7 +47,6 @@ class ManagementGetFileUseCaseTest {
         visibility = StorageFileVisibility.PUBLIC,
         status = StorageFileStatus.READY,
         targetScope = "doc",
-        fileUrl = "https://cdn.example.com/document.pdf",
         createdAt = Clock.System.now(),
         updatedAt = null
     )

@@ -54,7 +54,8 @@ class SelfIdentifierListQueryParameterParserTest {
     }
 
     private fun getSampleValidValueForIdentifierFilterKey(key: String): String = when {
-        key == filterNames.USER_AUTH_PROVIDER -> UserAuthProvider.GOOGLE.value
+        key == filterNames.USER_AUTH_PROVIDER || key == filterNames.EXCLUDE_USER_AUTH_PROVIDER -> UserAuthProvider.GOOGLE.value
+        key == filterNames.USER_ID || key == filterNames.IDENTIFIER_ID -> "00000000-0000-0000-0000-000000000001"
         key.endsWith("_from") || key.endsWith("_to") -> "2026-01-01T00:00:00Z"
         key.startsWith("is_") -> "true"
         else -> "sample_value"

@@ -11,8 +11,13 @@ import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
+import kotlin.reflect.full.companionObjectInstance
+import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
+import kotlin.time.Clock
+import kotlin.time.Instant
+import kotlin.uuid.Uuid
 
 /**
  * Custom [SqlLogger] that captures all generated SQL statements and expanded arguments
@@ -110,10 +115,17 @@ fun createSampleValueForType(type: KType, propertyName: String): Any? {
     val classifier = type.classifier as? KClass<*> ?: return null
 
     return when {
-        classifier == String::class -> "sample_${propertyName}_val"
+        classifier == String::class -> {
+            if (propertyName.endsWith("Id", ignoreCase = true) || propertyName.endsWith("Ids", ignoreCase = true)) {
+                "00000000-0000-0000-0000-000000000001"
+            } else {
+                "sample_${propertyName}_val"
+            }
+        }
         classifier == Int::class -> 9999
         classifier == Long::class -> 8888L
         classifier == Boolean::class -> true
+        classifier == Instant::class -> Clock.System.now()
         classifier.java.isEnum -> classifier.java.enumConstants.let { constants ->
             if (constants.size > 1) constants[1] else constants.firstOrNull()
         }
@@ -138,20 +150,11 @@ fun createSampleValueForType(type: KType, propertyName: String): Any? {
         }
         classifier == List::class || classifier == Set::class -> {
             val elementType = type.arguments.firstOrNull()?.type?.classifier as? KClass<*>
-            val sampleElement = if (elementType != null && elementType.java.isEnum) {
-                elementType.java.enumConstants.firstOrNull()
-            } else if (elementType != null) {
-                try {
-                    val constructor = elementType.primaryConstructor
-                    if (constructor != null && constructor.parameters.size == 1
-                        && constructor.parameters.first().type.classifier == String::class
-                    ) {
-                        constructor.call("sample_perm")
-                    } else {
-                        "sample_item"
-                    }
-                } catch (e: Exception) {
-                    "sample_item"
+            val sampleElement = if (elementType != null) {
+                if (elementType == String::class && (propertyName.endsWith("Id", ignoreCase = true) || propertyName.endsWith("Ids", ignoreCase = true))) {
+                    "00000000-0000-0000-0000-000000000001"
+                } else {
+                    createSampleInstanceForClass(elementType)
                 }
             } else {
                 "sample_item"
@@ -163,6 +166,69 @@ fun createSampleValueForType(type: KType, propertyName: String): Any? {
                 null
             }
         }
-        else -> null
+        else -> createSampleInstanceForClass(classifier)
     }
+}
+
+/**
+ * Creates a non-null sample instance of [kClass] for reflection-based query testing.
+ */
+fun createSampleInstanceForClass(kClass: KClass<*>): Any? {
+    if (kClass == String::class) return "sample_item"
+    if (kClass == Int::class) return 9999
+    if (kClass == Long::class) return 8888L
+    if (kClass == Boolean::class) return true
+    if (kClass == Instant::class) return Clock.System.now()
+    if (kClass.java.isEnum) return kClass.java.enumConstants.firstOrNull()
+
+    if (kClass.java.isInterface) {
+        try {
+            return java.lang.reflect.Proxy.newProxyInstance(
+                kClass.java.classLoader,
+                arrayOf(kClass.java)
+            ) { _, method, _ ->
+                when (method.name) {
+                    "getValue" -> "sample_item"
+                    "toString" -> "sample_item"
+                    "hashCode" -> 123
+                    "equals" -> false
+                    else -> "sample_item"
+                }
+            }
+        } catch (_: Exception) {
+        }
+    }
+
+    try {
+        val companionObj = kClass.companionObjectInstance
+        if (companionObj != null) {
+            val generateFunc = companionObj::class.memberFunctions.firstOrNull {
+                it.name == "generate" && it.parameters.size == 1
+            }
+            if (generateFunc != null) {
+                return generateFunc.call(companionObj)
+            }
+        }
+    } catch (_: Exception) {
+    }
+
+    try {
+        val constructor = kClass.primaryConstructor
+        if (constructor != null && constructor.parameters.size == 1) {
+            val paramType = constructor.parameters.first().type.classifier as? KClass<*>
+            if (paramType != null) {
+                val paramSample = createSampleInstanceForClass(paramType)
+                if (paramSample != null) {
+                    return constructor.call(paramSample)
+                }
+            }
+        }
+    } catch (_: Exception) {
+    }
+
+    if (kClass.simpleName == "Uuid") {
+        return Uuid.random()
+    }
+
+    return "sample_item"
 }

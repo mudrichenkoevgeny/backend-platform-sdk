@@ -59,4 +59,28 @@ object StorageEnvKeys {
 
     /** Batch size for background maintenance jobs. */
     const val STORAGE_MAINTENANCE_BATCH_SIZE = "STORAGE_MAINTENANCE_BATCH_SIZE"
+
+    /** Whether imgproxy image/video preview and thumbnail generation is enabled. */
+    const val STORAGE_IMGPROXY_ENABLED = "STORAGE_IMGPROXY_ENABLED"
+
+    /** Base public URL of the imgproxy service. */
+    const val STORAGE_IMGPROXY_BASE_URL = "STORAGE_IMGPROXY_BASE_URL"
+
+    /** Secret file path for the imgproxy HMAC-SHA256 secret key. */
+    const val STORAGE_IMGPROXY_KEY_FILE = "STORAGE_IMGPROXY_KEY_FILE"
+
+    /** Secret file path for the imgproxy HMAC-SHA256 salt. */
+    const val STORAGE_IMGPROXY_SALT_FILE = "STORAGE_IMGPROXY_SALT_FILE"
+
+    /** Hex-encoded secret key used for imgproxy HMAC-SHA256 URL signing (fallback if key file is not provided). */
+    const val STORAGE_IMGPROXY_KEY = "STORAGE_IMGPROXY_KEY"
+
+    /** Hex-encoded salt used for imgproxy HMAC-SHA256 URL signing (fallback if salt file is not provided). */
+    const val STORAGE_IMGPROXY_SALT = "STORAGE_IMGPROXY_SALT"
+
+    /** String of preset specifications for imgproxy (format: "thumbnail=150:fill,preview=600:fit"). */
+    const val STORAGE_IMGPROXY_PRESETS = "STORAGE_IMGPROXY_PRESETS"
+
+    /** Default video seek timestamp in seconds when extracting video thumbnail frames. */
+    const val STORAGE_IMGPROXY_VIDEO_THUMBNAIL_SECOND = "STORAGE_IMGPROXY_VIDEO_THUMBNAIL_SECOND"
 }

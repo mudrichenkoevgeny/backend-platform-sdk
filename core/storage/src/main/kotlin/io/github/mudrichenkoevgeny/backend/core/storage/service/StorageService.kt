@@ -3,6 +3,8 @@ package io.github.mudrichenkoevgeny.backend.core.storage.service
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.storage.domain.model.S3ObjectMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileUrls
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileInternal
 
 /**
  * Abstraction over S3-compatible object storage used by the SDK.
@@ -84,4 +86,13 @@ interface StorageService {
      */
     suspend fun getObjectMetadata(key: String, bucket: String? = null): AppResult<S3ObjectMetadata> =
         AppResult.Error(CommonError.Internal(UnsupportedOperationException("getObjectMetadata is not implemented")))
+
+    /**
+     * Resolves structured URLs ([FileUrls]) for a given storage file, including presigned GET URLs
+     * for non-public files and signed imgproxy URLs for thumbnails and previews.
+     *
+     * @param file target internal storage file record.
+     * @return [FileUrls] containing original, thumbnail, and preview URLs.
+     */
+    fun resolveFileUrls(file: StorageFileInternal): FileUrls
 }

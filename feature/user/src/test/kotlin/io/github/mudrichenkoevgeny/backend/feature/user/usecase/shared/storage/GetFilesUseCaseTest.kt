@@ -1,8 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.storage
 
+import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.storage.manager.StorageManager
+import io.github.mudrichenkoevgeny.backend.core.storage.network.model.SelfStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
@@ -29,8 +31,7 @@ class GetFilesUseCaseTest {
         fileName = "avatar.png",
         fileSizeBytes = 500L,
         mimeType = "image/png",
-        category = StorageCategory.IMAGE,
-        fileUrl = "https://cdn.example.com/avatar.png"
+        category = StorageCategory.IMAGE
     )
 
     private val pagedResult = PagedResult(
@@ -43,23 +44,22 @@ class GetFilesUseCaseTest {
 
     @Test
     fun `returns paged summary files for current user`() = runTest {
-        val pageParams = PageParams()
+        val queryParams = SelfStorageFileListQueryParams(
+            listing = ListingQueryParams(
+                pageParams = PageParams(),
+                sortBy = StorageFileSortBy.DEFAULT,
+                sortOrder = SortOrder.DEFAULT
+            )
+        )
 
         coEvery {
             storageManager.getSelfStorageFilesSummaryPage(
                 ownerUserId = currentUserId.asHexDashString(),
-                pageParams = pageParams,
-                sortBy = StorageFileSortBy.DEFAULT,
-                sortOrder = SortOrder.DEFAULT,
-                categories = emptyList(),
-                visibilities = emptyList(),
-                statuses = emptyList(),
-                mimeTypes = emptyList(),
-                fileNames = emptyList()
+                queryParams = any()
             )
         } returns AppResult.Success(pagedResult)
 
-        val result = useCase(context, pageParams)
+        val result = useCase(context, queryParams)
 
         assertEquals(AppResult.Success(pagedResult), result)
     }

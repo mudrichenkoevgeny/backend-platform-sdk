@@ -1,11 +1,16 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.service
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
-import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.result.dataOrNull
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
 import io.github.mudrichenkoevgeny.backend.core.storage.domain.model.S3ObjectMetadata
 import io.github.mudrichenkoevgeny.backend.core.storage.error.model.StorageError
+import io.github.mudrichenkoevgeny.backend.core.storage.imgproxy.ImgproxyUrlBuilder
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileUrls
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileInternal
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.future.await
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
@@ -39,11 +44,13 @@ import javax.inject.Singleton
  * Upload, delete, and head object operations execute asynchronously via [S3AsyncClient] and [S3Presigner].
  *
  * @param config Configuration parameters holding S3 credentials, endpoint, and bucket options.
+ * @param imgproxyUrlBuilder Service used to construct signed imgproxy thumbnail and preview URLs.
  * @param appLogger Application logger instance used for recording infrastructure errors.
  */
 @Singleton
 class S3StorageService @Inject constructor(
     private val config: StorageConfig,
+    private val imgproxyUrlBuilder: ImgproxyUrlBuilder,
     private val appLogger: AppLogger
 ) : StorageService {
 
@@ -95,6 +102,7 @@ class S3StorageService @Inject constructor(
             .bucket(targetBucket)
             .key(fileName)
             .contentType(contentType)
+            .cacheControl(IMMUTABLE_CACHE_CONTROL_HEADER)
             .build()
 
         return try {
@@ -183,6 +191,7 @@ class S3StorageService @Inject constructor(
                 .bucket(targetBucket)
                 .key(key)
                 .contentType(contentType)
+                .cacheControl(IMMUTABLE_CACHE_CONTROL_HEADER)
                 .build()
 
             val presignRequest = PutObjectPresignRequest.builder()
@@ -238,12 +247,40 @@ class S3StorageService @Inject constructor(
             )
         } catch (e: CancellationException) {
             throw e
-        } catch (e: NoSuchKeyException) {
+        } catch (_: NoSuchKeyException) {
             AppResult.Error(StorageError.FileNotFound())
-        } catch (e: NoSuchBucketException) {
+        } catch (_: NoSuchBucketException) {
             AppResult.Error(StorageError.FileNotFound())
         } catch (e: Exception) {
             AppResult.Error(CommonError.Internal(e))
         }
+    }
+
+    override fun resolveFileUrls(file: StorageFileInternal): FileUrls {
+        val originalUrl = if (file.visibility == StorageFileVisibility.PUBLIC) {
+            getUrl(file.s3Key).dataOrNull().orEmpty()
+        } else {
+            generatePresignedGetUrl(
+                key = file.s3Key,
+                expirationSeconds = PRIVATE_FILE_PRESIGNED_URL_EXPIRATION_SECONDS,
+                bucket = file.s3Bucket
+            ).dataOrNull().orEmpty()
+        }
+
+        val urlPresets = imgproxyUrlBuilder.buildPresetUrls(
+            bucket = file.s3Bucket,
+            key = file.s3Key,
+            mimeType = file.mimeType
+        )
+
+        return FileUrls(
+            originalUrl = originalUrl,
+            urlPresets = urlPresets
+        )
+    }
+
+    companion object {
+        private const val PRIVATE_FILE_PRESIGNED_URL_EXPIRATION_SECONDS = 86400
+        private const val IMMUTABLE_CACHE_CONTROL_HEADER = "public, max-age=31536000, immutable"
     }
 }

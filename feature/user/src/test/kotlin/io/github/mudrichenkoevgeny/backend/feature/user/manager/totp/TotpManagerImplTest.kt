@@ -65,7 +65,7 @@ class TotpManagerImplTest {
             userTotpSettingsRepository.confirmTotp(userId, any())
         } returns AppResult.Success(settings)
         coEvery {
-            userRepository.updateUser(userId, isTotpEnabled = UpdateField.Set(true))
+            userRepository.updateUser(userId, updateUserParams = any())
         } returns AppResult.Success(userInternal)
 
         val result = manager.confirmTotp(userId, decryptedCodes)
@@ -79,7 +79,7 @@ class TotpManagerImplTest {
 
         coEvery { userTotpSettingsRepository.deleteSettings(userId) } returns AppResult.Success(Unit)
         coEvery {
-            userRepository.updateUser(userId, isTotpEnabled = UpdateField.Set(false))
+            userRepository.updateUser(userId, updateUserParams = any())
         } returns AppResult.Success(userInternal)
 
         val result = manager.disableTotp(userId)

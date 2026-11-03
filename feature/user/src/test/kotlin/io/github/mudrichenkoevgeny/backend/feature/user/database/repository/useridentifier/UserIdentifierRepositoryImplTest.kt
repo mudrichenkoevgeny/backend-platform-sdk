@@ -184,7 +184,7 @@ class UserIdentifierRepositoryImplTest {
                 defaultInstance = ManagementIdentifierListQueryParams(
                     listing = ListingQueryParams(sortBy = UserIdentifierSortBy.DEFAULT)
                 ),
-                ignoredProperties = emptySet()
+                ignoredProperties = setOf("listing")
             ) { queryParams ->
                 repository.getUserIdentifiersPageWithAccessFilter(
                     accessFilter = UserRoleAccessFilter(setOf(UserRole.ADMIN)),

@@ -157,6 +157,7 @@ class UserListQueryParameterParserTest {
     }
 
     private fun getSampleValidValueForFilterKey(key: String): String = when {
+        key == filterNames.USER_ID || key == "avatar_file_id" || key.endsWith("_id") -> "00000000-0000-0000-0000-000000000001"
         key.endsWith("_from") || key.endsWith("_to") -> when {
             key.startsWith("authority_level") || key.startsWith("storage_") -> TEST_LEVEL
             else -> TEST_TIMESTAMP
