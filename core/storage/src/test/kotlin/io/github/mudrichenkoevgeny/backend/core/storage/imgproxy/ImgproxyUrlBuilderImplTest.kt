@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.storage.config.model.ImgproxyPre
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.ImgproxyResizeType
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.createTestImgproxyConfig
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.createTestStorageConfig
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileUrlPresets
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -53,7 +54,7 @@ class ImgproxyUrlBuilderImplTest {
         )
         val builder = ImgproxyUrlBuilderImpl(config)
 
-        assertTrue(builder.buildPresetUrls(BUCKET, IMAGE_JPG_FILE, IMAGE_JPEG_MIME).isEmpty())
+        assertTrue(builder.buildPresetUrls(BUCKET, IMAGE_JPG_FILE, IMAGE_JPEG_MIME, StorageCategory.IMAGE).isEmpty())
     }
 
     @Test
@@ -61,16 +62,17 @@ class ImgproxyUrlBuilderImplTest {
         val config = createTestStorageConfig(imgproxyConfig = null)
         val builder = ImgproxyUrlBuilderImpl(config)
 
-        assertTrue(builder.buildPresetUrls(BUCKET, IMAGE_JPG_FILE, IMAGE_JPEG_MIME).isEmpty())
+        assertTrue(builder.buildPresetUrls(BUCKET, IMAGE_JPG_FILE, IMAGE_JPEG_MIME, StorageCategory.IMAGE).isEmpty())
     }
 
     @Test
-    fun `returns empty map for unsupported mime types such as PDF or ZIP`() {
+    fun `returns empty map for unsupported mime types such as PDF, ZIP, or MP4 video`() {
         val config = createTestStorageConfig(imgproxyConfig = enabledConfig)
         val builder = ImgproxyUrlBuilderImpl(config)
 
-        assertTrue(builder.buildPresetUrls(BUCKET, DOC_PDF_FILE, PDF_MIME).isEmpty())
-        assertTrue(builder.buildPresetUrls(BUCKET, ARCHIVE_ZIP_FILE, ZIP_MIME).isEmpty())
+        assertTrue(builder.buildPresetUrls(BUCKET, DOC_PDF_FILE, PDF_MIME, StorageCategory.DOCUMENT).isEmpty())
+        assertTrue(builder.buildPresetUrls(BUCKET, ARCHIVE_ZIP_FILE, ZIP_MIME, StorageCategory.OTHER).isEmpty())
+        assertTrue(builder.buildPresetUrls(BUCKET, CLIP_MP4_FILE, VIDEO_MP4_MIME, StorageCategory.VIDEO).isEmpty())
     }
 
     @Test
@@ -78,7 +80,7 @@ class ImgproxyUrlBuilderImplTest {
         val config = createTestStorageConfig(imgproxyConfig = enabledConfig)
         val builder = ImgproxyUrlBuilderImpl(config)
 
-        val presetUrls = builder.buildPresetUrls(BUCKET, AVATAR_PNG_FILE, IMAGE_PNG_MIME)
+        val presetUrls = builder.buildPresetUrls(BUCKET, AVATAR_PNG_FILE, IMAGE_PNG_MIME, StorageCategory.IMAGE)
 
         assertEquals(2, presetUrls.size)
 
@@ -97,7 +99,7 @@ class ImgproxyUrlBuilderImplTest {
         val config = createTestStorageConfig(imgproxyConfig = enabledConfig)
         val builder = ImgproxyUrlBuilderImpl(config)
 
-        val presetUrls = builder.buildPresetUrls(BUCKET, LOGO_SVG_FILE, SVG_MIME)
+        val presetUrls = builder.buildPresetUrls(BUCKET, LOGO_SVG_FILE, SVG_MIME, StorageCategory.IMAGE)
 
         val thumbnailUrl = requireNotNull(presetUrls[FileUrlPresets.THUMBNAIL])
         val previewUrl = requireNotNull(presetUrls[FileUrlPresets.PREVIEW])
@@ -107,27 +109,13 @@ class ImgproxyUrlBuilderImplTest {
     }
 
     @Test
-    fun `builds video frame extraction URLs with video timestamp option for all presets`() {
-        val config = createTestStorageConfig(imgproxyConfig = enabledConfig)
-        val builder = ImgproxyUrlBuilderImpl(config)
-
-        val presetUrls = builder.buildPresetUrls(BUCKET, CLIP_MP4_FILE, VIDEO_MP4_MIME)
-
-        val thumbnailUrl = requireNotNull(presetUrls[FileUrlPresets.THUMBNAIL])
-        val previewUrl = requireNotNull(presetUrls[FileUrlPresets.PREVIEW])
-
-        assertTrue(thumbnailUrl.contains("/vts:2/rs:fill:150:150/"))
-        assertTrue(previewUrl.contains("/vts:2/rs:fit:600:600/"))
-    }
-
-    @Test
     fun `uses insecure signature when key or salt is blank`() {
         val config = createTestStorageConfig(
             imgproxyConfig = enabledConfig.copy(key = "", salt = "")
         )
         val builder = ImgproxyUrlBuilderImpl(config)
 
-        val presetUrls = builder.buildPresetUrls(BUCKET, PHOTO_JPG_FILE, IMAGE_JPEG_MIME)
+        val presetUrls = builder.buildPresetUrls(BUCKET, PHOTO_JPG_FILE, IMAGE_JPEG_MIME, StorageCategory.IMAGE)
         val thumbnailUrl = requireNotNull(presetUrls[FileUrlPresets.THUMBNAIL])
 
         assertTrue(thumbnailUrl.startsWith("$BASE_URL/insecure/"))

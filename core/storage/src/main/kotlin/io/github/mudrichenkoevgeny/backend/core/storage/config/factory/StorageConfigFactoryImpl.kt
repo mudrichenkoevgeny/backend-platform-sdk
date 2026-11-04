@@ -27,7 +27,8 @@ class StorageConfigFactoryImpl @Inject constructor(
 
         val s3Endpoint = envReader.getByKey(StorageEnvKeys.S3_ENDPOINT)
         val s3Region = envReader.getByKey(StorageEnvKeys.S3_REGION)
-        val s3BucketName = envReader.getByKey(StorageEnvKeys.S3_BUCKET_NAME)
+        val s3BucketNamePrivate = envReader.getByKey(StorageEnvKeys.S3_BUCKET_NAME_PRIVATE)
+        val s3BucketNamePublic = envReader.getByKey(StorageEnvKeys.S3_BUCKET_NAME_PUBLIC)
         val s3PublicUrl = envReader.getByKey(StorageEnvKeys.S3_PUBLIC_URL)
         val forcePathStyle = envReader.getByKey(StorageEnvKeys.S3_FORCE_PATH_STYLE).toBoolean()
 
@@ -94,7 +95,8 @@ class StorageConfigFactoryImpl @Inject constructor(
             s3Region = s3Region,
             s3AccessKey = s3AccessKey,
             s3SecretKey = s3SecretKey,
-            s3BucketName = s3BucketName,
+            s3BucketNamePrivate = s3BucketNamePrivate,
+            s3BucketNamePublic = s3BucketNamePublic,
             s3PublicUrl = s3PublicUrl,
             forcePathStyle = forcePathStyle,
             maintenanceBatchSize = maintenanceBatchSize,

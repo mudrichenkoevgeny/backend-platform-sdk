@@ -172,7 +172,7 @@ class StorageManagerImplTest {
             )
         } returns AppResult.Success(readyFile)
 
-        every { storageService.getUrl(pendingFile.s3Key) } returns AppResult.Success("https://cdn.example.com/files/test.png")
+        every { storageService.getPublicUrl(pendingFile.s3Key, any()) } returns AppResult.Success("https://cdn.example.com/files/test.png")
 
         val result = manager.getSelfStorageFilePrivate(ownerUserId = userId, fileId = fileId)
 

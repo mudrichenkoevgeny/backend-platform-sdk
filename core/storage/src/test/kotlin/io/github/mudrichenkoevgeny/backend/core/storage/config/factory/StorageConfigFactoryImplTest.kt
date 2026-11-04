@@ -17,7 +17,8 @@ class StorageConfigFactoryImplTest {
         private const val S3_SECRET_KEY_FILE = "/secrets/s3-secret"
         private const val S3_ENDPOINT = "https://s3.example.com"
         private const val S3_REGION = "us-east-1"
-        private const val S3_BUCKET_NAME = "my-bucket"
+        private const val S3_BUCKET_NAME_PRIVATE = "my-bucket-private"
+        private const val S3_BUCKET_NAME_PUBLIC = "my-bucket-public"
         private const val S3_PUBLIC_URL = "https://cdn.example.com"
         private const val S3_ACCESS_KEY = "access-key"
         private const val S3_SECRET_KEY = "secret-key"
@@ -53,7 +54,8 @@ class StorageConfigFactoryImplTest {
         every { envReader.getByKey(StorageEnvKeys.S3_SECRET_KEY_FILE) } returns S3_SECRET_KEY_FILE
         every { envReader.getByKey(StorageEnvKeys.S3_ENDPOINT) } returns S3_ENDPOINT
         every { envReader.getByKey(StorageEnvKeys.S3_REGION) } returns S3_REGION
-        every { envReader.getByKey(StorageEnvKeys.S3_BUCKET_NAME) } returns S3_BUCKET_NAME
+        every { envReader.getByKey(StorageEnvKeys.S3_BUCKET_NAME_PRIVATE) } returns S3_BUCKET_NAME_PRIVATE
+        every { envReader.getByKey(StorageEnvKeys.S3_BUCKET_NAME_PUBLIC) } returns S3_BUCKET_NAME_PUBLIC
         every { envReader.getByKey(StorageEnvKeys.S3_PUBLIC_URL) } returns S3_PUBLIC_URL
         every { envReader.getByKey(StorageEnvKeys.S3_FORCE_PATH_STYLE) } returns "true"
         every { envReader.readSecret(S3_ACCESS_KEY_FILE) } returns S3_ACCESS_KEY
@@ -67,7 +69,8 @@ class StorageConfigFactoryImplTest {
         assertEquals(S3_REGION, config.s3Region)
         assertEquals(S3_ACCESS_KEY, config.s3AccessKey)
         assertEquals(S3_SECRET_KEY, config.s3SecretKey)
-        assertEquals(S3_BUCKET_NAME, config.s3BucketName)
+        assertEquals(S3_BUCKET_NAME_PRIVATE, config.s3BucketNamePrivate)
+        assertEquals(S3_BUCKET_NAME_PUBLIC, config.s3BucketNamePublic)
         assertEquals(S3_PUBLIC_URL, config.s3PublicUrl)
         assertTrue(config.forcePathStyle)
         assertEquals(100, config.maintenanceBatchSize)

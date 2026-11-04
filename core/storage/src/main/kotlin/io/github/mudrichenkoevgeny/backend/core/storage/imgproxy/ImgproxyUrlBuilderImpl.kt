@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.storage.imgproxy
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.ImgproxyConfig
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.ImgproxyPreset
 import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConfig
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import java.util.Base64
 import java.util.HexFormat
 import javax.crypto.Mac
@@ -22,7 +23,12 @@ class ImgproxyUrlBuilderImpl @Inject constructor(
     private val storageConfig: StorageConfig
 ) : ImgproxyUrlBuilder {
 
-    override fun buildPresetUrls(bucket: String, key: String, mimeType: String): Map<String, String> {
+    override fun buildPresetUrls(
+        bucket: String,
+        key: String,
+        mimeType: String,
+        category: StorageCategory
+    ): Map<String, String> {
         val config = storageConfig.imgproxyConfig ?: return emptyMap()
         if (!config.isEnabled || config.presets.isEmpty()) {
             return emptyMap()
@@ -34,7 +40,7 @@ class ImgproxyUrlBuilderImpl @Inject constructor(
 
         val result = mutableMapOf<String, String>()
         for ((presetKey, presetSpec) in config.presets) {
-            val options = getProcessingOptions(mimeType, presetSpec, config.videoThumbnailSecond)
+            val options = getProcessingOptions(mimeType, presetSpec)
             val signedUrl = buildSignedUrl(config, bucket, key, options)
             result[presetKey] = signedUrl
         }
@@ -42,13 +48,12 @@ class ImgproxyUrlBuilderImpl @Inject constructor(
     }
 
     private fun isSupportedMimeType(mimeType: String): Boolean {
-        return isRasterImage(mimeType) || isVectorSvg(mimeType) || isVideo(mimeType)
+        return isRasterImage(mimeType) || isVectorSvg(mimeType)
     }
 
     private fun getProcessingOptions(
         mimeType: String,
-        presetSpec: ImgproxyPreset,
-        videoThumbnailSecond: Int
+        presetSpec: ImgproxyPreset
     ): String {
         val size = presetSpec.sizePixels
         val resizeType = presetSpec.resizeType.value
@@ -57,7 +62,6 @@ class ImgproxyUrlBuilderImpl @Inject constructor(
         return when {
             isRasterImage(mimeType) -> resizeOption
             isVectorSvg(mimeType) -> "$resizeOption/$SVG_FORMAT_OPTION"
-            isVideo(mimeType) -> "$VIDEO_SEEK_OPTION_PREFIX$videoThumbnailSecond/$resizeOption"
             else -> resizeOption
         }
     }
@@ -65,8 +69,6 @@ class ImgproxyUrlBuilderImpl @Inject constructor(
     private fun isRasterImage(mimeType: String): Boolean = mimeType in RASTER_IMAGE_MIME_TYPES
 
     private fun isVectorSvg(mimeType: String): Boolean = mimeType == SVG_MIME_TYPE
-
-    private fun isVideo(mimeType: String): Boolean = mimeType.startsWith(VIDEO_MIME_TYPE_PREFIX)
 
     private fun buildSignedUrl(
         config: ImgproxyConfig,
@@ -104,8 +106,6 @@ class ImgproxyUrlBuilderImpl @Inject constructor(
 
     companion object {
         private const val SVG_MIME_TYPE = "image/svg+xml"
-        private const val VIDEO_MIME_TYPE_PREFIX = "video/"
-        private const val VIDEO_SEEK_OPTION_PREFIX = "vts:"
         private const val SVG_FORMAT_OPTION = "fmt:png"
         private const val S3_SCHEME_PREFIX = "s3://"
         private const val INSECURE_SIGNATURE = "insecure"

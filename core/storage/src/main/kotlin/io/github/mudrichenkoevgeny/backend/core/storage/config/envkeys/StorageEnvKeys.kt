@@ -15,8 +15,11 @@ object StorageEnvKeys {
     /** S3 region name. */
     const val S3_REGION = "S3_REGION"
 
-    /** Default S3 bucket name. */
-    const val S3_BUCKET_NAME = "S3_BUCKET_NAME"
+    /** Default S3 bucket name for private files. */
+    const val S3_BUCKET_NAME_PRIVATE = "S3_BUCKET_NAME_PRIVATE"
+
+    /** Default S3 bucket name for public files. */
+    const val S3_BUCKET_NAME_PUBLIC = "S3_BUCKET_NAME_PUBLIC"
 
     /** Base public URL used to build object URLs. */
     const val S3_PUBLIC_URL = "S3_PUBLIC_URL"

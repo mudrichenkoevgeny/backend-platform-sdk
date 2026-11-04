@@ -131,18 +131,31 @@ class StorageManagerImpl @Inject constructor(
         val fileId = FileId.generate()
         val s3Key = "${now.epochSeconds}/${fileId.value}"
 
+        val isPublic = visibility == StorageFileVisibility.PUBLIC
+        val targetBucket = if (isPublic) {
+            storageConfig.s3BucketNamePublic
+        } else {
+            storageConfig.s3BucketNamePrivate
+        }
+        val bucketResult = storageService.ensureBucketExists(bucket = targetBucket, isPublic = isPublic)
+        if (bucketResult is AppResult.Error) {
+            return@dbQuery bucketResult
+        }
+
         val expirationSeconds = settingsProvider.getPresignedUrlExpirationSeconds()
         val presignedUrlResult = storageService.generatePresignedPutUrl(
             key = s3Key,
             contentType = mimeType,
-            expirationSeconds = expirationSeconds
+            expirationSeconds = expirationSeconds,
+            bucket = targetBucket,
+            isPublic = isPublic
         )
         val uploadUrl = when (presignedUrlResult) {
             is AppResult.Success -> presignedUrlResult.data
             is AppResult.Error -> return@dbQuery presignedUrlResult
         }
 
-        val urlResult = storageService.getUrl(s3Key)
+        val urlResult = storageService.getPublicUrl(key = s3Key, bucket = targetBucket)
         val fileUrl = if (urlResult is AppResult.Success) urlResult.data else ""
         val expiresAt = now + expirationSeconds.seconds
 
@@ -157,7 +170,7 @@ class StorageManagerImpl @Inject constructor(
             status = StorageFileStatus.PENDING_UPLOAD,
             targetScope = targetScope,
             contentHash = null,
-            s3Bucket = storageConfig.s3BucketName,
+            s3Bucket = targetBucket,
             s3Key = s3Key,
             fileUrls = null,
             createdAt = now,
@@ -197,7 +210,7 @@ class StorageManagerImpl @Inject constructor(
                     )
                 }
 
-                storageService.getObjectMetadata(file.s3Key)
+                storageService.getObjectMetadata(file.s3Key, isPublic = file.visibility == StorageFileVisibility.PUBLIC)
                     .mapNotNullOrError(
                         StorageError.StorageUploadFailed(
                             fileId = fileId,
