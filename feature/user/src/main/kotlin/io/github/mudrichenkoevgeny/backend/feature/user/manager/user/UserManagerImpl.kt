@@ -9,6 +9,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.storage.manager.StorageManager
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.CreateUserAccountParams
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
@@ -50,22 +51,17 @@ public class UserManagerImpl @Inject constructor(
     }
 
     override suspend fun createUser(
-        role: UserRole,
-        accountStatus: UserAccountStatus,
-        authorityLevel: Int,
-        permissions: Set<PermissionCode>,
-        displayName: String?,
-        nickname: String?
+        createUserAccountParams: CreateUserAccountParams
     ): AppResult<UserInternal> = dbQuery {
         val now = Clock.System.now()
 
         val user = UserInternal(
             id = UserId.generate(),
-            role = role,
-            accountStatus = accountStatus,
-            accountStatusOnRestore = accountStatus,
-            authorityLevel = authorityLevel,
-            permissionCodes = permissions,
+            role = createUserAccountParams.role,
+            accountStatus = createUserAccountParams.accountStatus,
+            accountStatusOnRestore = createUserAccountParams.accountStatus,
+            authorityLevel = createUserAccountParams.authorityLevel,
+            permissionCodes = createUserAccountParams.permissions,
             isTotpEnabled = false,
             lockoutType = AccountLockoutType.NONE,
             temporaryLockoutUntil = null,
@@ -74,12 +70,12 @@ public class UserManagerImpl @Inject constructor(
             createdAt = now,
             updatedAt = null,
             scheduledPermanentDeletionAt = null,
-            storageConfiguration = null,
-            nickname = nickname,
-            displayName = displayName,
-            avatarFileId = null,
+            storageConfiguration = createUserAccountParams.storageConfiguration,
+            nickname = createUserAccountParams.nickname,
+            displayName = createUserAccountParams.displayName,
+            avatarFileId = createUserAccountParams.avatarFileId,
             avatarUrls = null,
-            birthdate = null
+            birthdate = createUserAccountParams.birthdate
         )
 
         userRepository.createUser(user)
@@ -87,21 +83,9 @@ public class UserManagerImpl @Inject constructor(
 
     override suspend fun getOrCreateUser(
         userId: UserId?,
-        role: UserRole,
-        accountStatus: UserAccountStatus,
-        authorityLevel: Int,
-        permissions: Set<PermissionCode>,
-        displayName: String?,
-        nickname: String?
+        createUserAccountParams: CreateUserAccountParams
     ): AppResult<UserInternal> = if (userId == null) {
-        createUser(
-            role = role,
-            accountStatus = accountStatus,
-            authorityLevel = authorityLevel,
-            permissions = permissions,
-            displayName = displayName,
-            nickname = nickname
-        )
+        createUser(createUserAccountParams = createUserAccountParams)
     } else {
         getUserInternalById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
     }

@@ -268,13 +268,9 @@ class SecuritySettingsProviderImplTest {
 
     private fun stubGetJsonPasswordPolicyReturnsNull() {
         every {
-            settingsService.getJson(
+            settingsService.getJson<ManagementPasswordPolicy>(
                 SecuritySettingsProviderImpl.KEY_PASSWORD_POLICY,
-                any<
-                    (
-                        String
-                    ) -> ManagementPasswordPolicy
-                    >()
+                any()
             )
         } returns null
     }

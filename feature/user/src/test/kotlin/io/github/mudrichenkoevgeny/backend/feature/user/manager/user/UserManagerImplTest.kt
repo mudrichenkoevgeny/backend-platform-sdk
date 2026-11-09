@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.storage.manager.StorageManager
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.CreateUserAccountParams
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
@@ -73,10 +74,12 @@ class UserManagerImplTest {
         coEvery { userRepository.createUser(any()) } answers { AppResult.Success(firstArg()) }
 
         val result = userManager.createUser(
-            role = UserRole.USER,
-            accountStatus = UserAccountStatus.ACTIVE,
-            authorityLevel = 1,
-            permissions = emptySet()
+            createUserAccountParams = CreateUserAccountParams(
+                role = UserRole.USER,
+                accountStatus = UserAccountStatus.ACTIVE,
+                authorityLevel = 1,
+                permissions = emptySet()
+            )
         )
 
         assertTrue(result is AppResult.Success)
@@ -93,10 +96,12 @@ class UserManagerImplTest {
 
         val result = userManager.getOrCreateUser(
             userId = userId,
-            role = UserRole.USER,
-            accountStatus = UserAccountStatus.ACTIVE,
-            authorityLevel = 1,
-            permissions = emptySet()
+            createUserAccountParams = CreateUserAccountParams(
+                role = UserRole.USER,
+                accountStatus = UserAccountStatus.ACTIVE,
+                authorityLevel = 1,
+                permissions = emptySet()
+            )
         )
 
         assertTrue(result is AppResult.Success)

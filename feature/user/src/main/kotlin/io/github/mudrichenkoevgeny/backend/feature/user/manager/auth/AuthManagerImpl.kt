@@ -10,12 +10,15 @@ import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.CreateUserAccountParams
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.CreateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.mapper.user.toUserAccountParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
@@ -159,17 +162,12 @@ public class AuthManagerImpl @Inject constructor(
     }
 
     override suspend fun createUserAndIdentifier(
-        userAuthProvider: UserAuthProvider,
-        identifier: String,
-        password: String?,
-        roleForUserCreation: UserRole,
-        accountStatusForUserCreation: UserAccountStatus,
-        authorityLevelForUserCreation: Int,
-        permissionCodesForUserCreation: Set<PermissionCode>
+        createUserParams: CreateUserParams,
+        userAuthProvider: UserAuthProvider
     ): AppResult<UserInternal> = dbQuery {
         val getUserIdentifierResult = identifierManager.getUserIdentifierInternalByProvider(
             userAuthProvider = userAuthProvider,
-            identifier = identifier
+            identifier = createUserParams.email
         )
 
         val existingIdentifier = when (getUserIdentifierResult) {
@@ -183,10 +181,7 @@ public class AuthManagerImpl @Inject constructor(
 
         val userResult = userManager.getOrCreateUser(
             userId = null,
-            role = roleForUserCreation,
-            accountStatus = accountStatusForUserCreation,
-            authorityLevel = authorityLevelForUserCreation,
-            permissions = permissionCodesForUserCreation
+            createUserAccountParams = createUserParams.toUserAccountParams()
         )
         val user = when (userResult) {
             is AppResult.Success -> userResult.data
@@ -196,8 +191,8 @@ public class AuthManagerImpl @Inject constructor(
         val createUserIdentifierResult = identifierManager.createUserIdentifier(
             userId = user.id,
             userAuthProvider = userAuthProvider,
-            identifier = identifier,
-            password = password
+            identifier = createUserParams.email,
+            password = createUserParams.password
         )
 
         when (createUserIdentifierResult) {
@@ -322,10 +317,13 @@ public class AuthManagerImpl @Inject constructor(
             }
             val userResult = userManager.getOrCreateUser(
                 userId = null,
-                role = roleForUserCreation,
-                accountStatus = accountStatusForUserCreation,
-                authorityLevel = authorityLevelForUserCreation,
-                permissions = permissionCodesForUserCreation
+                createUserAccountParams = CreateUserAccountParams(
+                    role = roleForUserCreation,
+                    accountStatus = accountStatusForUserCreation,
+                    authorityLevel = authorityLevelForUserCreation,
+                    permissions = permissionCodesForUserCreation,
+                    displayName = externalProviderDisplayName
+                )
             )
             when (userResult) {
                 is AppResult.Success -> userResult.data.id

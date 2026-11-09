@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.adminacc
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.config.seed.AdminAccount
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.CreateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
@@ -46,12 +47,16 @@ public class SeedAdminAccountsUseCase @Inject constructor(
             async {
                 authManager.createUserAndIdentifier(
                     userAuthProvider = UserAuthProvider.EMAIL,
-                    identifier = adminAccount.email,
-                    password = adminAccount.password,
-                    roleForUserCreation = UserRole.ADMIN,
-                    accountStatusForUserCreation = UserAccountStatus.ACTIVE,
-                    authorityLevelForUserCreation = 100,
-                    permissionCodesForUserCreation = permissionCodesForUserCreation
+                    createUserParams = CreateUserParams(
+                        email = adminAccount.email,
+                        password = adminAccount.password,
+                        role = UserRole.ADMIN,
+                        accountStatus = UserAccountStatus.ACTIVE,
+                        authorityLevel = 100,
+                        permissions = permissionCodesForUserCreation,
+                        nickname = adminAccount.nickname,
+                        displayName = adminAccount.displayName
+                    )
                 )
             }
         }.awaitAll()

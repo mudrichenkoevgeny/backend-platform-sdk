@@ -52,7 +52,9 @@ internal class ArchitectureTest {
     fun `repositories do not depend on routes or usecases`() {
         Konsist.scopeFromProduction().files.assertFalse { file ->
             val isRepositoryFile = file.name.endsWith("Repository.kt") || file.name.endsWith("RepositoryImpl.kt")
-            if (!isRepositoryFile) return@assertFalse false
+            if (!isRepositoryFile) {
+                return@assertFalse false
+            }
             file.imports.any { importDecl ->
                 importDecl.name.contains(".route.") || importDecl.name.contains(".usecase.")
             }

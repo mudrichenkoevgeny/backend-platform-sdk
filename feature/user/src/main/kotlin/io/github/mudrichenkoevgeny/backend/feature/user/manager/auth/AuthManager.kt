@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.auth
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.CreateUserParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -86,27 +87,18 @@ public interface AuthManager {
     ): AppResult<AuthData>
 
     /**
-     * Creates a new user and identifier without initiating a session.
-     * * Primarily used for seeding data or administrative management. Fails if the identifier
+     * Registers a new user and creates their initial authentication identifier.
+     *
+     * Primarily used for seeding data or administrative management. Fails if the identifier
      * is already registered.
      *
+     * @param createUserParams Domain parameter holder for user creation.
      * @param userAuthProvider The authentication method to be registered.
-     * @param identifier The unique identifier string.
-     * @param password Raw password to be hashed.
-     * @param roleForUserCreation Explicit role for the new user.
-     * @param accountStatusForUserCreation Explicit status for the new user.
-     * @param authorityLevelForUserCreation  Explicit authorityLevel for the new user.
-     * @param permissionCodesForUserCreation Initial permissions.
      * @return [AppResult] with the created [UserInternal].
      */
     public suspend fun createUserAndIdentifier(
-        userAuthProvider: UserAuthProvider,
-        identifier: String,
-        password: String? = null,
-        roleForUserCreation: UserRole,
-        accountStatusForUserCreation: UserAccountStatus,
-        authorityLevelForUserCreation: Int,
-        permissionCodesForUserCreation: Set<PermissionCode>
+        createUserParams: CreateUserParams,
+        userAuthProvider: UserAuthProvider = UserAuthProvider.EMAIL
     ): AppResult<UserInternal>
 
     /**

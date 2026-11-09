@@ -6,7 +6,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.config.seed.AdminAccount
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
@@ -42,12 +41,7 @@ class SeedAdminAccountsUseCaseTest {
         coEvery {
             authManager.createUserAndIdentifier(
                 userAuthProvider = UserAuthProvider.EMAIL,
-                identifier = adminEmail,
-                password = adminPassword,
-                roleForUserCreation = UserRole.ADMIN,
-                accountStatusForUserCreation = UserAccountStatus.ACTIVE,
-                authorityLevelForUserCreation = 100,
-                permissionCodesForUserCreation = permissions
+                createUserParams = any()
             )
         } returns AppResult.Success(createTestUserInternal())
 
@@ -71,13 +65,8 @@ class SeedAdminAccountsUseCaseTest {
 
         coEvery {
             authManager.createUserAndIdentifier(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any()
+                createUserParams = any(),
+                userAuthProvider = any()
             )
         } returns AppResult.Error(alreadyExistsError)
 
@@ -101,13 +90,8 @@ class SeedAdminAccountsUseCaseTest {
 
         coEvery {
             authManager.createUserAndIdentifier(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any()
+                createUserParams = any(),
+                userAuthProvider = any()
             )
         } returns AppResult.Error(criticalError)
 
@@ -134,12 +118,7 @@ class SeedAdminAccountsUseCaseTest {
         coEvery {
             authManager.createUserAndIdentifier(
                 userAuthProvider = any(),
-                identifier = eq(configAccount.email),
-                password = any(),
-                roleForUserCreation = any(),
-                accountStatusForUserCreation = any(),
-                authorityLevelForUserCreation = any(),
-                permissionCodesForUserCreation = any()
+                createUserParams = match { it.email == configAccount.email }
             )
         } returns AppResult.Success(createTestUserInternal())
 
@@ -165,24 +144,14 @@ class SeedAdminAccountsUseCaseTest {
         coEvery {
             authManager.createUserAndIdentifier(
                 userAuthProvider = any(),
-                identifier = eq("first@admin.com"),
-                password = any(),
-                roleForUserCreation = any(),
-                accountStatusForUserCreation = any(),
-                authorityLevelForUserCreation = any(),
-                permissionCodesForUserCreation = any()
+                createUserParams = match { it.email == "first@admin.com" }
             )
         } returns AppResult.Error(criticalError)
 
         coEvery {
             authManager.createUserAndIdentifier(
                 userAuthProvider = any(),
-                identifier = eq("second@admin.com"),
-                password = any(),
-                roleForUserCreation = any(),
-                accountStatusForUserCreation = any(),
-                authorityLevelForUserCreation = any(),
-                permissionCodesForUserCreation = any()
+                createUserParams = match { it.email == "second@admin.com" }
             )
         } returns AppResult.Success(createTestUserInternal())
 

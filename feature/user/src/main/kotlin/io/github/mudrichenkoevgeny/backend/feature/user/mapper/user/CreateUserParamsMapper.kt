@@ -9,8 +9,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.f
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.toFileIdOrNull
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserStorageConfiguration
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.create.CreateByEmailRequest
+import kotlin.time.Instant
 
 /**
  * Converts a [CreateByEmailRequest] DTO into a domain-layer [CreateUserParams] holder.
@@ -37,6 +39,10 @@ public fun CreateByEmailRequest.toCreateUserParams(): CreateUserParams {
         )
     }
 
+    val parsedBirthdate = birthdate?.let { birthdateMillis ->
+        Instant.fromEpochMilliseconds(birthdateMillis)
+    }
+
     return CreateUserParams(
         email = email,
         password = password,
@@ -44,9 +50,10 @@ public fun CreateByEmailRequest.toCreateUserParams(): CreateUserParams {
         accountStatus = userAccountStatus,
         authorityLevel = authorityLevel,
         permissions = permissionCodes.mapToSet { permissionCodeStr -> PermissionCode(permissionCodeStr) },
-        storageConfiguration = storageConfiguration,
+        storageConfiguration = storageConfiguration?.toUserStorageConfiguration(),
         nickname = nickname,
         displayName = displayName,
-        avatarFileId = parsedAvatarFileId
+        avatarFileId = parsedAvatarFileId,
+        birthdate = parsedBirthdate
     )
 }

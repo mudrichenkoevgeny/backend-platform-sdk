@@ -1,12 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.CreateUserAccountParams
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import kotlin.time.Instant
@@ -27,21 +27,13 @@ public interface UserManager {
     public suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?>
 
     /**
-     * Creates a new user entity.
+     * Creates a new user entity profile using [createUserAccountParams].
      *
-     * @param role User role.
-     * @param accountStatus Initial account status.
-     * @param authorityLevel The numerical rank of the user's authority.
-     * @param permissions Explicit permission codes assigned to the new user.
+     * @param createUserAccountParams Parameter holder containing initial user profile settings.
      * @return [AppResult.Success] with the created [UserInternal] or an error.
      */
     public suspend fun createUser(
-        role: UserRole,
-        accountStatus: UserAccountStatus,
-        authorityLevel: Int,
-        permissions: Set<PermissionCode>,
-        displayName: String? = null,
-        nickname: String? = null
+        createUserAccountParams: CreateUserAccountParams
     ): AppResult<UserInternal>
 
     /**
@@ -50,22 +42,12 @@ public interface UserManager {
      * Useful for idempotent authentication flows where user existence must be ensured.
      *
      * @param userId Optional user ID to load.
-     * @param role Role used if a new user is created. Defaults to [UserRole.USER].
-     * @param accountStatus Status used if a new user is created. Defaults to [UserAccountStatus.ACTIVE].
-     * @param authorityLevel The numerical rank of the user's authority.
-     * @param permissions Permission codes assigned if a new user is created.
-     * @param displayName Optional display name if a new user is created.
-     * @param nickname Optional nickname if a new user is created.
+     * @param createUserAccountParams Parameter holder containing initial user profile settings for new user creation.
      * @return [AppResult.Success] with the loaded or created [UserInternal], or an error.
      */
     public suspend fun getOrCreateUser(
         userId: UserId? = null,
-        role: UserRole = UserRole.USER,
-        accountStatus: UserAccountStatus = UserAccountStatus.ACTIVE,
-        authorityLevel: Int,
-        permissions: Set<PermissionCode>,
-        displayName: String? = null,
-        nickname: String? = null
+        createUserAccountParams: CreateUserAccountParams
     ): AppResult<UserInternal>
 
     /**
@@ -111,17 +93,7 @@ public interface UserManager {
      * Returns a paginated list of internal user models visible to the caller based on management scope.
      *
      * @param managementUserPermissionCodes Caller permission codes used to derive access boundaries.
-     * @param pageParams Pagination settings (page index and size).
-     * @param sortBy Field to sort the user list by.
-     * @param sortOrder Sorting direction.
-     * @param roles Optional filters for specific user roles.
-     * @param accountStatuses Optional filters for current account statuses.
-     * @param accountStatusesOnRestore Optional filters for target status assigned on account restore.
-     * @param authorityLevelFrom inclusive lower bound for authority level.
-     * @param authorityLevelTo inclusive upper bound for authority level.
-     * @param permissionCodes Optional filter for users possessing ALL specified permissions.
-     * @param isTotpEnabled filter by TOTP enablement status.
-     * @param accountLockoutTypes Filter by account lockout types.
+     * @param queryParams Search, filter, pagination, and sorting parameters.
      * @return [AppResult.Success] with a [PagedResult] of [UserInternal] or an error.
      */
     public suspend fun getUsersInternalPage(

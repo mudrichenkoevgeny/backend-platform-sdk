@@ -101,12 +101,7 @@ class ManagementCreateUserUseCaseTest {
         coEvery {
             authManager.createUserAndIdentifier(
                 userAuthProvider = UserAuthProvider.EMAIL,
-                identifier = "test@example.com",
-                password = "password123",
-                roleForUserCreation = UserRole.USER,
-                accountStatusForUserCreation = UserAccountStatus.ACTIVE,
-                authorityLevelForUserCreation = 50,
-                permissionCodesForUserCreation = setOf(permission)
+                createUserParams = any()
             )
         } returns AppResult.Success(createdUser)
 
@@ -129,13 +124,8 @@ class ManagementCreateUserUseCaseTest {
         )
         coVerify {
             authManager.createUserAndIdentifier(
-                userAuthProvider = any(),
-                identifier = any(),
-                password = any(),
-                roleForUserCreation = any(),
-                accountStatusForUserCreation = any(),
-                authorityLevelForUserCreation = any(),
-                permissionCodesForUserCreation = any()
+                createUserParams = any(),
+                userAuthProvider = any()
             )
         }
     }
@@ -174,12 +164,7 @@ class ManagementCreateUserUseCaseTest {
         coEvery {
             authManager.createUserAndIdentifier(
                 userAuthProvider = UserAuthProvider.EMAIL,
-                identifier = "test@example.com",
-                password = null,
-                roleForUserCreation = UserRole.USER,
-                accountStatusForUserCreation = UserAccountStatus.ACTIVE,
-                authorityLevelForUserCreation = 50,
-                permissionCodesForUserCreation = setOf(permission)
+                createUserParams = any()
             )
         } returns AppResult.Success(createdUser)
 
@@ -204,12 +189,7 @@ class ManagementCreateUserUseCaseTest {
         coVerify {
             authManager.createUserAndIdentifier(
                 userAuthProvider = UserAuthProvider.EMAIL,
-                identifier = "test@example.com",
-                password = null,
-                roleForUserCreation = UserRole.USER,
-                accountStatusForUserCreation = UserAccountStatus.ACTIVE,
-                authorityLevelForUserCreation = 50,
-                permissionCodesForUserCreation = setOf(permission)
+                createUserParams = any()
             )
         }
     }

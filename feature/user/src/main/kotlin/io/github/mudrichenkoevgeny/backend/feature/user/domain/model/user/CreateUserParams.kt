@@ -4,7 +4,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.pe
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserStorageConfigurationPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserStorageConfiguration
+import kotlin.time.Instant
 
 /**
  * Domain-layer parameter holder for creating a new user account.
@@ -21,6 +22,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.
  * @property nickname optional handle nickname
  * @property displayName optional profile display name
  * @property avatarFileId optional avatar image file identifier
+ * @property birthdate optional user birthdate timestamp
  */
 public data class CreateUserParams(
     val email: String,
@@ -29,9 +31,9 @@ public data class CreateUserParams(
     val accountStatus: UserAccountStatus,
     val authorityLevel: Int,
     val permissions: Set<PermissionCode>,
-    val storageConfiguration: UserStorageConfigurationPayload? = null,
+    val storageConfiguration: UserStorageConfiguration? = null,
     val nickname: String? = null,
     val displayName: String? = null,
-    val avatarFileId: FileId? = null
-    // todo wait for shared update and add birthdate
+    val avatarFileId: FileId? = null,
+    val birthdate: Instant? = null
 )

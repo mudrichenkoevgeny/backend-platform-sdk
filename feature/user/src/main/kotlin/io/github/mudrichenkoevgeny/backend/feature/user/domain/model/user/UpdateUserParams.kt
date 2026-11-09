@@ -5,7 +5,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.pe
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserStorageConfigurationPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserStorageConfiguration
 import kotlin.time.Instant
 
 /**
@@ -22,7 +22,7 @@ import kotlin.time.Instant
  * @property scheduledPermanentDeletionAt timestamp for the final removal of the account update ([UpdateField])
  * @property lockoutType target account lockout type update ([UpdateField])
  * @property temporaryLockoutUntil target temporary lockout expiration timestamp update ([UpdateField])
- * @property storageConfiguration target user storage quota and limit configuration payload update ([UpdateField])
+ * @property storageConfiguration target user storage quota and limit configuration update ([UpdateField])
  * @property nickname target handle nickname update ([UpdateField])
  * @property displayName target profile display name update ([UpdateField])
  * @property avatarFileId target profile avatar image file identifier update ([UpdateField])
@@ -37,7 +37,7 @@ public data class UpdateUserParams(
     val scheduledPermanentDeletionAt: UpdateField<Instant> = UpdateField.Ignore,
     val lockoutType: UpdateField<AccountLockoutType> = UpdateField.Ignore,
     val temporaryLockoutUntil: UpdateField<Instant> = UpdateField.Ignore,
-    val storageConfiguration: UpdateField<UserStorageConfigurationPayload> = UpdateField.Ignore,
+    val storageConfiguration: UpdateField<UserStorageConfiguration> = UpdateField.Ignore,
     val nickname: UpdateField<String> = UpdateField.Ignore,
     val displayName: UpdateField<String> = UpdateField.Ignore,
     val avatarFileId: UpdateField<FileId> = UpdateField.Ignore,

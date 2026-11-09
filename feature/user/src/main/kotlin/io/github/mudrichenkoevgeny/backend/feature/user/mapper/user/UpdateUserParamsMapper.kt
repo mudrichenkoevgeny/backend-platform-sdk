@@ -11,6 +11,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.toFileIdOrNull
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserStorageConfiguration
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.ManagementUpdateUserRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.SelfUpdateUserRequest
@@ -42,7 +43,7 @@ public fun ManagementUpdateUserRequest.toUpdateUserParams(): UpdateUserParams = 
     ) { temporaryLockoutUntil ->
         Instant.fromEpochMilliseconds(temporaryLockoutUntil)
     },
-    storageConfiguration = storageConfiguration.toUpdateField(),
+    storageConfiguration = storageConfiguration.toUpdateField { it.toUserStorageConfiguration() },
     nickname = nickname.toUpdateField(),
     displayName = displayName.toUpdateField(),
     avatarFileId = avatarFileId.validateAndMap(UserApiFields.AVATAR_FILE_ID) { avatarFileId ->

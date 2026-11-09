@@ -9,9 +9,13 @@ import kotlinx.serialization.Serializable
  *
  * @param email admin login email.
  * @param password plaintext password that will be hashed during seeding.
+ * @param nickname optional admin handle nickname.
+ * @param displayName optional admin display name.
  */
 @Serializable
 public data class AdminAccount(
     val email: String,
-    val password: String
+    val password: String,
+    val nickname: String? = null,
+    val displayName: String? = null
 )

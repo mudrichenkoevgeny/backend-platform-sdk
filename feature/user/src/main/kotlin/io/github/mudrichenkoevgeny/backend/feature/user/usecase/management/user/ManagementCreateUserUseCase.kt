@@ -219,13 +219,8 @@ public class ManagementCreateUserUseCase @Inject constructor(
         }
 
         val createUserResult = authManager.createUserAndIdentifier(
-            userAuthProvider = UserAuthProvider.EMAIL,
-            identifier = createUserParams.email,
-            password = createUserParams.password,
-            roleForUserCreation = createUserParams.role,
-            accountStatusForUserCreation = createUserParams.accountStatus,
-            authorityLevelForUserCreation = createUserParams.authorityLevel,
-            permissionCodesForUserCreation = createUserParams.permissions
+            createUserParams = createUserParams,
+            userAuthProvider = UserAuthProvider.EMAIL
         )
 
         return when (createUserResult) {
