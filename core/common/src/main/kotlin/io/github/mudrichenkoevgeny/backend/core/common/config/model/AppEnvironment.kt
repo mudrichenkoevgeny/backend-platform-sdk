@@ -11,9 +11,7 @@ public enum class AppEnvironment {
     TEST,
 
     /** Production environment serving real users. */
-    PROD
-
-    ;
+    PROD;
 
     public companion object {
         /**

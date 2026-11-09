@@ -32,10 +32,13 @@ class JwtExtensionsTest {
         val identifierId = UserIdentifierId.generate()
         val userRole = UserRole.ADMIN
 
-        val token = Jwts.builder().withUserIdSubject(userId).withSessionIdSubject(sessionId)
-            .withIdentifierIdClaim(identifierId).withUserRoleSubject(userRole).signWith(
-                Jwts.SIG.HS256.key().build()
-            ).compact()
+        val token = Jwts.builder()
+            .withUserIdSubject(userId)
+            .withSessionIdSubject(sessionId)
+            .withIdentifierIdClaim(identifierId)
+            .withUserRoleSubject(userRole)
+            .signWith(Jwts.SIG.HS256.key().build())
+            .compact()
 
         val payload = JWT.decode(token)
         assertEquals(

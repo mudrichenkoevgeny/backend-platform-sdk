@@ -59,7 +59,19 @@ import javax.sql.DataSource
  */
 @Singleton
 @Component(
-    modules = [CommonModules::class, ObservabilityModules::class, DatabaseModules::class, SettingsModules::class, SecurityModules::class, AuditModules::class, EventsModules::class, StorageModules::class, UserModules::class, AuditParsersModule::class, AppModule::class]
+    modules = [
+        CommonModules::class,
+        ObservabilityModules::class,
+        DatabaseModules::class,
+        SettingsModules::class,
+        SecurityModules::class,
+        AuditModules::class,
+        EventsModules::class,
+        StorageModules::class,
+        UserModules::class,
+        AuditParsersModule::class,
+        AppModule::class
+    ]
 )
 public interface AppComponent {
     @Component.Factory

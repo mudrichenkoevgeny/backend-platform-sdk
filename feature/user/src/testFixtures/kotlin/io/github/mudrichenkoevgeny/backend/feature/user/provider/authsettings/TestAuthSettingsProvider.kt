@@ -104,6 +104,6 @@ class TestAuthSettingsProvider : AuthSettingsProvider {
     override suspend fun resetManagementAuthSettings(): AppResult<ManagementAuthSettings> {
         resetManagementAuthSettingsCalled = true
         return resetManagementAuthSettingsResult ?: currentManagementAuthSettings?.let { AppResult.Success(it) }
-        ?: error("resetManagementAuthSettingsResult or currentManagementAuthSettings must be set")
+            ?: error("resetManagementAuthSettingsResult or currentManagementAuthSettings must be set")
     }
 }

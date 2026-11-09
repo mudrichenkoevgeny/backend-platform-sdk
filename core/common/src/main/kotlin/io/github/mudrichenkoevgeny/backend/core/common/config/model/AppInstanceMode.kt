@@ -14,9 +14,7 @@ public enum class AppInstanceMode {
     MANAGEMENT,
 
     /** Hybrid mode combining all roles. */
-    FULL
-
-    ;
+    FULL;
 
     public companion object {
         /**

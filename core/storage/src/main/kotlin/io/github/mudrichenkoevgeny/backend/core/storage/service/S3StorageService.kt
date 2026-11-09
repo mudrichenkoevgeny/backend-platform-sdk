@@ -124,7 +124,9 @@ public class S3StorageService @Inject constructor(
         } catch (e: NoSuchBucketException) {
             try {
                 appLogger.logError(CommonError.Internal(e))
-                s3Client.createBucket(CreateBucketRequest.builder().bucket(targetBucket).build()).await()
+                s3Client.createBucket(
+                    CreateBucketRequest.builder().bucket(targetBucket).build()
+                ).await()
                 s3Client
                     .putObject(
                         request,

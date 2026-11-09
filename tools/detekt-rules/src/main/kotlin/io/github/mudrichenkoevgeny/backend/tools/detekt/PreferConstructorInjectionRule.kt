@@ -47,8 +47,8 @@ public class PreferConstructorInjectionRule(
                         Finding(
                             entity = Entity.from(property),
                             message =
-                                "Field injection is prohibited here. Refactor '${property.name}' to be injected " +
-                                    "via constructor (@Inject constructor(private val ${property.name}: ...))."
+                            "Field injection is prohibited here. Refactor '${property.name}' to be injected " +
+                                "via constructor (@Inject constructor(private val ${property.name}: ...))."
                         )
                     )
                 }

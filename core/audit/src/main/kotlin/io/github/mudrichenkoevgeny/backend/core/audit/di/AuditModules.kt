@@ -11,6 +11,10 @@ import io.github.mudrichenkoevgeny.backend.core.audit.di.module.AuditServicesMod
  * Expects database and common configurations to be provided by the application.
  */
 @Module(
-    includes = [AuditRepositoriesModule::class, AuditServicesModule::class, AuditLoggerModule::class]
+    includes = [
+        AuditRepositoriesModule::class,
+        AuditServicesModule::class,
+        AuditLoggerModule::class
+    ]
 )
 public interface AuditModules

@@ -13,7 +13,8 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 fun ApplicationTestBuilder.setupManagementTestEnvironment(router: BaseRouter? = null): String {
-    val signedToken = JWT.create().withSubject("00000000-0000-0000-0000-000000000001")
+    val signedToken = JWT.create()
+        .withSubject("00000000-0000-0000-0000-000000000001")
         .sign(Algorithm.HMAC256("test-secret"))
 
     application {

@@ -271,9 +271,9 @@ class SecuritySettingsProviderImplTest {
             settingsService.getJson(
                 SecuritySettingsProviderImpl.KEY_PASSWORD_POLICY,
                 any<
-                        (
-                    String
-                ) -> ManagementPasswordPolicy
+                    (
+                        String
+                    ) -> ManagementPasswordPolicy
                     >()
             )
         } returns null

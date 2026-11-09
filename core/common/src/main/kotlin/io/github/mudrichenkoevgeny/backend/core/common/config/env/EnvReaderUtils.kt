@@ -13,7 +13,11 @@ import kotlinx.serialization.json.Json
 public fun EnvReader.getStringList(
     key: String,
     delimiter: String = ","
-): List<String> = getByKeyOrNull(key)?.split(delimiter)?.map { it.trim() }?.filter { it.isNotEmpty() } ?: emptyList()
+): List<String> = getByKeyOrNull(key)
+    ?.split(delimiter)
+    ?.map { it.trim() }
+    ?.filter { it.isNotEmpty() }
+    ?: emptyList()
 
 /**
  * Reads a secret file and deserializes its JSON contents into the requested type [T].

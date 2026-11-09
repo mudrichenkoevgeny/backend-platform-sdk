@@ -45,7 +45,7 @@ public class NoInlineCommentRule(
 
     public companion object {
         public const val RULE_DESCRIPTION: String =
-            "Banal and redundant inline comments are prohibited. " +
-                "Decompose complex logic into private functions, use KDoc, or use TODO/FIXME/workaround."
+            "Banal and redundant inline comments are prohibited. Decompose complex logic into private " +
+                "functions, use KDoc, or use TODO/FIXME/workaround."
     }
 }

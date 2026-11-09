@@ -41,5 +41,3 @@ services:
     ports:
       - "9090:9090"
 
-
-# todo review

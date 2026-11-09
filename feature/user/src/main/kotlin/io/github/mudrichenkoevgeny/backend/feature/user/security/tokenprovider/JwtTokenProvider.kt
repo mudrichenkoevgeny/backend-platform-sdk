@@ -49,10 +49,15 @@ public class JwtTokenProvider @Inject constructor(
         issuedAt: Instant,
         expiration: Instant
     ): AppResult<AccessToken> = try {
-        val accessToken = Jwts.builder().withUserIdSubject(userId).withSessionIdSubject(sessionId)
-            .withIdentifierIdClaim(identifierId).withUserRoleSubject(userRole)
-            .issuedAt(Date.from(issuedAt.toJavaInstant())).expiration(Date.from(expiration.toJavaInstant()))
-            .signWith(key).compact()
+        val accessToken = Jwts.builder()
+            .withUserIdSubject(userId)
+            .withSessionIdSubject(sessionId)
+            .withIdentifierIdClaim(identifierId)
+            .withUserRoleSubject(userRole)
+            .issuedAt(Date.from(issuedAt.toJavaInstant()))
+            .expiration(Date.from(expiration.toJavaInstant()))
+            .signWith(key)
+            .compact()
 
         AppResult.Success(AccessToken(accessToken))
     } catch (_: Exception) {

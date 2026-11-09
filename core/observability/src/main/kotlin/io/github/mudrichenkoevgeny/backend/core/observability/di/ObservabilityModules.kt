@@ -13,6 +13,9 @@ import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.Telemetr
  * and [TelemetryModule] ([TelemetryProvider] binding).
  */
 @Module(
-    includes = [ObservabilityConfigModule::class, TelemetryModule::class]
+    includes = [
+        ObservabilityConfigModule::class,
+        TelemetryModule::class
+    ]
 )
 public interface ObservabilityModules
