@@ -29,7 +29,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to unlock user account using phone verification code.
+ * Open use case for self-service account unlocking via phone number and SMS OTP verification.
+ *
+ * Verifies phone OTP codes, validates self-service unlock policies, and clears account lockouts.
  */
 @Singleton
 public class UnlockByPhoneUseCase @Inject constructor(

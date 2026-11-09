@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.adminaccounts
 
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.config.seed.AdminAccount
@@ -17,7 +18,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to seed initial system administrator accounts on startup.
+ * System use case for seeding initial administrator accounts into persistent storage.
+ *
+ * Runs during application startup to bootstrap initial administrative accounts with root authority levels
+ * and configured permission sets if they do not already exist.
  */
 @Singleton
 public class SeedAdminAccountsUseCase @Inject constructor(
@@ -25,19 +29,23 @@ public class SeedAdminAccountsUseCase @Inject constructor(
     private val authManager: AuthManager
 ) {
     /**
-     * Ensures that administrative accounts defined in the configuration are present in the system.
-     * Usually executed during application startup to bootstrap initial access.
+     * Seeds administrative accounts defined in environment configuration into persistent storage.
+     *
+     * **Allowed Account Statuses:** Any (System initialization).
+     *
+     * **Security:**
+     * - System-level bootstrap component; executed on startup without user context.
+     * - Configures seed accounts with [UserRole.ADMIN], [UserAccountStatus.ACTIVE], and top authority level.
      *
      * **Workflow:**
-     * 1. Iterates through the provided list of [AdminAccount] (defaulting to [UserConfig.adminAccountsList]).
-     * 2. Executes [AuthManager.createUserAndIdentifier] for each account in parallel using a coroutine scope.
-     * 3. Configures accounts with [UserRole.ADMIN], [UserAccountStatus.ACTIVE], and a high authority level (100).
-     * 4. Filters out expected "already exists" errors ([UserError.CannotCreateUserIdentifier]).
-     * 5. Returns the first critical error encountered, or [AppResult.Success] if all accounts are processed.
+     * 1. Iterates over [adminAccounts] configured in environment variables or configuration files.
+     * 2. Calls [AuthManager.createUserAndIdentifier] for each account in parallel via [coroutineScope].
+     * 3. Ignores expected [UserError.CannotCreateUserIdentifier] errors if admin accounts already exist.
+     * 4. Returns [AppResult.Success] when all admin accounts exist or are created.
      *
      * @param adminAccounts The list of administrative accounts to seed.
-     * @param permissionCodesForUserCreation The set of permissions to be assigned to the new admin users.
-     * @return [AppResult] indicating whether the seeding process completed without critical failures.
+     * @param permissionCodesForUserCreation The set of permissions assigned to new admin accounts.
+     * @return [AppResult.Success] on successful seeding, or an [AppError] on critical failure.
      */
     public suspend operator fun invoke(
         adminAccounts: List<AdminAccount> = userConfig.adminAccountsList,

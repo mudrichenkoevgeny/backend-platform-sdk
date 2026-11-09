@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.util.Date
 
-class JwtExtensionsTest {
+class JwtUtilsTest {
     @Test
     fun `JwtBuilder extensions should set correct claims`() {
         val userId = UserId.generate()

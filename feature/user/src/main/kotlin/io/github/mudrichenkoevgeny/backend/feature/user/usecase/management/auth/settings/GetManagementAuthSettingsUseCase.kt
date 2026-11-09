@@ -8,7 +8,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get management auth settings.
+ * Management use case for retrieving a comprehensive snapshot of administrative authentication settings and security policies.
+ *
+ * Provides staff and admin clients with effective token TTLs, session limits, lockout thresholds, and TOTP configuration parameters.
  */
 @Singleton
 public class GetManagementAuthSettingsUseCase @Inject constructor(

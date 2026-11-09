@@ -29,7 +29,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to unlock user account using an external auth provider token.
+ * Open use case for self-service account unlocking via external OAuth2/OIDC provider verification.
+ *
+ * Verifies external provider tokens, validates self-service unlock policies, and clears account lockouts.
  */
 @Singleton
 public class UnlockByExternalAuthProviderUseCase @Inject constructor(

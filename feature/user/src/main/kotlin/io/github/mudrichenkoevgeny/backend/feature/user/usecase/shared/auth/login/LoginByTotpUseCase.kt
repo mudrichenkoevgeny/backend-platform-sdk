@@ -31,7 +31,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to authenticate MFA challenge using a TOTP authenticator code.
+ * Shared use case for completing multifactor authentication (MFA) using a time-based one-time password (TOTP) from an authenticator app.
+ *
+ * Verifies the 6-digit TOTP code, enforces rate limits, consumes the MFA challenge token, and completes authentication.
  */
 @Singleton
 public class LoginByTotpUseCase @Inject constructor(

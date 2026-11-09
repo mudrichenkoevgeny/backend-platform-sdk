@@ -31,7 +31,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to authenticate MFA challenge using a TOTP backup recovery code.
+ * Shared use case for completing multifactor authentication (MFA) using a TOTP backup recovery code.
+ *
+ * Verifies the backup recovery code, enforces rate limits and lockout policies, consumes the MFA challenge token, and completes authentication.
  */
 @Singleton
 public class LoginByTotpRecoveryCodeUseCase @Inject constructor(

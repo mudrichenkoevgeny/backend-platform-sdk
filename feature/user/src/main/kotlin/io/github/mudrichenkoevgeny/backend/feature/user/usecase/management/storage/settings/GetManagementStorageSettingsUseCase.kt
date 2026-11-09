@@ -7,7 +7,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get storage settings.
+ * Management use case for retrieving an effective snapshot of global storage settings and policies.
+ *
+ * Exposes platform storage quotas, file size limits, and presigned URL expiration durations to staff and admin clients.
  */
 @Singleton
 public class GetManagementStorageSettingsUseCase @Inject constructor(

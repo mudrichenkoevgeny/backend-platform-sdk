@@ -34,10 +34,10 @@ import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
 /**
- * Use case for resetting authentication settings to default values from a management context.
+ * Management use case for resetting global authentication settings to default platform values.
  *
- * On successful persistence, notifies connected WebSocket clients in open and management scopes
- * with [UserWebSocketEventTypes.OPEN_AUTH_SETTINGS_UPDATED] and [UserWebSocketEventTypes.MANAGEMENT_AUTH_SETTINGS_UPDATED] frames.
+ * On successful persistence, logs an administrative audit record and broadcasts real-time policy update frames to connected
+ * WebSocket clients across Open and Management scopes.
  */
 @Singleton
 public class ResetAuthSettingsUseCase @Inject constructor(

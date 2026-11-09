@@ -32,7 +32,14 @@ public class KtorStrictRouteDefinitionRule(
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
 
-        val fileName = expression.containingKtFile.name
+        val ktFile = expression.containingKtFile
+        val fileName = ktFile.name
+        val filePath = ktFile.virtualFilePath.replace('\\', '/')
+        val isTestFile = fileName.endsWith("Test.kt") ||
+            filePath.contains("/test/") ||
+            filePath.contains("/testFixtures/")
+        if (isTestFile) return
+
         if (!fileName.contains("Router") && !fileName.contains("Route")) return
 
         val calleeName = expression.calleeExpression?.text ?: return

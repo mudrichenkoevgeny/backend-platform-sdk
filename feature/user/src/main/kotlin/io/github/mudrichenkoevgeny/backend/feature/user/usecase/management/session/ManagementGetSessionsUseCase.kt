@@ -14,7 +14,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get sessions.
+ * Management use case for querying paginated and filtered user session records across the platform.
+ *
+ * Enables administrative auditing of user sessions with role-based filtering and sensitive data masking.
  */
 @Singleton
 public class ManagementGetSessionsUseCase @Inject constructor(

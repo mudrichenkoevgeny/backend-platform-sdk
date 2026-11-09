@@ -28,7 +28,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to regenerate fresh TOTP recovery codes.
+ * Shared use case for invalidating existing TOTP recovery codes and generating a fresh set.
+ *
+ * Enforces MFA step-up verification (session confirmation) and rate limiting before generating and persisting new recovery codes.
  */
 @Singleton
 public class RegenerateRecoveryCodesUseCase @Inject constructor(

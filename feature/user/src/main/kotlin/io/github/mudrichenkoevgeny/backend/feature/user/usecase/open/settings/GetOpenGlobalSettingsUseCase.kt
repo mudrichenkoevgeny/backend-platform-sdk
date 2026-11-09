@@ -7,7 +7,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to retrieve public global settings snapshot.
+ * Open use case for retrieving a public snapshot of global platform settings.
+ *
+ * Exposes public policy URLs, support contact emails, minimum app versions, and feature flags to unauthenticated clients.
  */
 @Singleton
 public class GetOpenGlobalSettingsUseCase @Inject constructor(

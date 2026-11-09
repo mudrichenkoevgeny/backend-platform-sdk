@@ -30,7 +30,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to link an external auth provider identifier to an existing user account.
+ * Open use case for linking an external OAuth2/OIDC provider identifier to an existing user account.
+ *
+ * Enforces MFA step-up verification, external token verification, rate limiting, and enabled auth provider checks.
  */
 @Singleton
 public class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(

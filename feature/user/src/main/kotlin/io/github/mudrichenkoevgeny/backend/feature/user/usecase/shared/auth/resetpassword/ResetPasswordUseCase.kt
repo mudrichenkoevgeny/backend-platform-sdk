@@ -29,7 +29,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to reset user password using email verification code.
+ * Shared use case for resetting a user account password using an email OTP verification code.
+ *
+ * Enforces password complexity policies, rate limiting, and OTP verification before updating password hashes and clearing account lockouts.
  */
 @Singleton
 public class ResetPasswordUseCase @Inject constructor(

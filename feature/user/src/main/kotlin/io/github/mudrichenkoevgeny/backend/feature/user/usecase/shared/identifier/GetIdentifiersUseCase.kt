@@ -14,7 +14,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to retrieve a paginated list of user identifiers.
+ * Shared use case for querying a paginated list of authentication identifiers belonging to the authenticated user.
+ *
+ * Enforces account status checks before returning user identifier summaries.
  */
 @Singleton
 public class GetIdentifiersUseCase @Inject constructor(

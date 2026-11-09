@@ -12,7 +12,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to send login confirmation to phone.
+ * Open use case for initiating phone-based authentication by dispatching an SMS OTP code.
+ *
+ * Enforces rate limiting on phone OTP dispatch to prevent SMS flooding and cost exhaustion.
  */
 @Singleton
 public class SendLoginConfirmationToPhoneUseCase @Inject constructor(

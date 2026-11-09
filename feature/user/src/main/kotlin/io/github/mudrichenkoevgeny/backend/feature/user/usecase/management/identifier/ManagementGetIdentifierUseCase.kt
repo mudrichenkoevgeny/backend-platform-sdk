@@ -14,7 +14,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get an identifier.
+ * Management use case for retrieving detailed information about a user identifier record.
+ *
+ * Enforces role-based visibility policies and applies masking to sensitive identifier strings (e.g. emails, phone numbers)
+ * based on the caller's management permissions.
  */
 @Singleton
 public class ManagementGetIdentifierUseCase @Inject constructor(

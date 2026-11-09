@@ -33,7 +33,9 @@ import javax.inject.Singleton
 import kotlin.time.Clock
 
 /**
- * Use case to delete a session.
+ * Management use case for administratively terminating a specific active user session.
+ *
+ * Enforces authority level hierarchy, rate limiting, and MFA step-up verification before revoking the target session and dispatching WebSocket disconnect frames.
  */
 @Singleton
 public class ManagementDeleteSessionUseCase @Inject constructor(

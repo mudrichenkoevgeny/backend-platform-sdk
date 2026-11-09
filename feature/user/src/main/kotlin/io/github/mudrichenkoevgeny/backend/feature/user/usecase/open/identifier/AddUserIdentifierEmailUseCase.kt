@@ -33,7 +33,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to link a new email identifier to an existing user account.
+ * Open use case for linking a new email authentication identifier to an existing user account.
+ *
+ * Enforces MFA step-up verification, email policy restrictions, rate limiting, password validation, and OTP verification.
  */
 @Singleton
 public class AddUserIdentifierEmailUseCase @Inject constructor(

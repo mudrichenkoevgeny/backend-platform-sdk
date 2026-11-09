@@ -18,7 +18,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to send password reset confirmation code to user email.
+ * Shared use case for initiating password recovery by dispatching an OTP verification code to a user's email.
+ *
+ * Protects against email enumeration by executing simulated email dispatches when the email identifier is not found.
  */
 @Singleton
 public class SendResetPasswordConfirmationUseCase @Inject constructor(

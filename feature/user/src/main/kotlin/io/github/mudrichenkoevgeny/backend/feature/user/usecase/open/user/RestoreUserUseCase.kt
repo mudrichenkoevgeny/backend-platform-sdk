@@ -27,7 +27,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to restore a user account scheduled for deletion.
+ * Open use case for self-service restoration of a user account previously scheduled for deletion.
+ *
+ * Enforces MFA step-up verification and rate limiting before restoring account status from `PENDING_DELETION`.
  */
 @Singleton
 public class RestoreUserUseCase @Inject constructor(

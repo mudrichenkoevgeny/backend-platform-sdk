@@ -11,6 +11,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventSummary
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CompositeAuditResourceTypeParser
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.contract.AuditApiPaths
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.route.management.ManagementAuditRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -66,7 +68,11 @@ class ManagementAuditRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Success(event)
 
-        val response = client.get("/management/audit/events/${event.id.value}") {
+        val path = ManagementAuditRoutes.GET_AUDIT_EVENT.replace(
+            "{${AuditApiPaths.EVENT_ID}}",
+            event.id.asHexDashString()
+        )
+        val response = client.get(urlString = path) {
             bearerAuth(token)
         }
 
@@ -88,7 +94,12 @@ class ManagementAuditRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Error(UserError.UserForbidden())
 
-        val response = client.get("/management/audit/events/${AuditEventId.generate().value}") {
+        val eventId = AuditEventId.generate()
+        val path = ManagementAuditRoutes.GET_AUDIT_EVENT.replace(
+            "{${AuditApiPaths.EVENT_ID}}",
+            eventId.asHexDashString()
+        )
+        val response = client.get(urlString = path) {
             bearerAuth(token)
         }
 
@@ -110,7 +121,12 @@ class ManagementAuditRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Error(UserError.UserNotFound())
 
-        val response = client.get("/management/audit/events/${AuditEventId.generate().value}") {
+        val eventId = AuditEventId.generate()
+        val path = ManagementAuditRoutes.GET_AUDIT_EVENT.replace(
+            "{${AuditApiPaths.EVENT_ID}}",
+            eventId.asHexDashString()
+        )
+        val response = client.get(urlString = path) {
             bearerAuth(token)
         }
 
@@ -136,7 +152,7 @@ class ManagementAuditRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Success(pagedResult)
 
-        val response = client.get("/management/audit/events") {
+        val response = client.get(urlString = ManagementAuditRoutes.GET_AUDIT_EVENTS) {
             bearerAuth(token)
         }
 
@@ -166,7 +182,7 @@ class ManagementAuditRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Success(emptyPagedResult)
 
-        val response = client.get("/management/audit/events") {
+        val response = client.get(urlString = ManagementAuditRoutes.GET_AUDIT_EVENTS) {
             bearerAuth(token)
         }
 
@@ -181,7 +197,7 @@ class ManagementAuditRouterTest : BaseRouterTest() {
         val token = setupManagementTestEnvironment(router)
         authProvider.shouldReturnError(AppResult.Error(UserError.InvalidAccessToken()))
 
-        val response = client.get("/management/audit/events") {
+        val response = client.get(urlString = ManagementAuditRoutes.GET_AUDIT_EVENTS) {
             bearerAuth(token)
         }
 

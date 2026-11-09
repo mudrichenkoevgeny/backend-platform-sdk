@@ -73,7 +73,7 @@ class SelfManagementUnlockRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Success(otpConfirmation)
 
-        val response = jsonClient.post(SelfManagementUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION) {
+        val response = jsonClient.post(urlString = SelfManagementUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION) {
             contentType(ContentType.Application.Json)
             setBody(SendConfirmationToEmailRequest(email = "admin@example.com"))
         }
@@ -103,7 +103,7 @@ class SelfManagementUnlockRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Success(Unit)
 
-        val response = jsonClient.post(SelfManagementUnlockRoutes.UNLOCK_BY_EMAIL) {
+        val response = jsonClient.post(urlString = SelfManagementUnlockRoutes.UNLOCK_BY_EMAIL) {
             contentType(ContentType.Application.Json)
             setBody(
                 UnlockByEmailConfirmationRequest(

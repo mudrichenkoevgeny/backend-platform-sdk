@@ -14,7 +14,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get identifiers.
+ * Management use case for querying paginated and filtered user identifier records across the platform.
+ *
+ * Applies role-based access filtering and masking rules to identifier search results based on caller permissions.
  */
 @Singleton
 public class ManagementGetIdentifiersUseCase @Inject constructor(

@@ -31,7 +31,9 @@ import javax.inject.Singleton
 import kotlin.time.Clock
 
 /**
- * Use case to delete a user authentication identifier.
+ * Open use case for self-service deletion of an authentication identifier from a user account.
+ *
+ * Enforces MFA step-up verification, rate limiting, and a safety check preventing deletion of the user's last remaining identifier.
  */
 @Singleton
 public class DeleteUserIdentifierUseCase @Inject constructor(

@@ -14,7 +14,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to retrieve a specific user identifier by ID.
+ * Shared use case for retrieving detailed information about a specific authentication identifier belonging to the authenticated user.
+ *
+ * Enforces account status checks and ownership verification before returning private identifier details.
  */
 @Singleton
 public class GetIdentifierUseCase @Inject constructor(

@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-class EnvReaderExtensionsTest {
+class EnvReaderUtilsTest {
     private val reader = mockk<EnvReader>()
 
     @Test

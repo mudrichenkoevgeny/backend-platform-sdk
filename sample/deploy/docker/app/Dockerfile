@@ -11,11 +11,13 @@ COPY gradle ./gradle
 
 COPY core/ ./core/
 COPY feature/ ./feature/
+COPY tools/ ./tools/
 COPY bom/build.gradle.kts ./bom/
 COPY sample/build.gradle.kts ./sample/
 
 RUN find core/ -type f ! -name "*.gradle.kts" -delete
 RUN find feature/ -type f ! -name "*.gradle.kts" -delete
+RUN find tools/ -type f ! -name "*.gradle.kts" -delete
 
 RUN --mount=type=cache,target=/root/.gradle ./gradlew :sample:dependencies --no-daemon
 

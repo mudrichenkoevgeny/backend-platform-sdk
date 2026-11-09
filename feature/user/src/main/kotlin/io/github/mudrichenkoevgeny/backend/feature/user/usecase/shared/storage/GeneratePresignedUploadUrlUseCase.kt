@@ -14,9 +14,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case for initiating a file upload.
+ * Shared use case for initiating a file upload and generating a presigned S3 upload URL.
  *
- * Delegates quota validation, metadata creation, and presigned URL generation to [StorageManager].
+ * Enforces user storage quotas, file size limits, and pending upload constraints before creating pending file metadata and presigned URLs.
  *
  * @property userManager Manager for retrieving current user profile and custom storage limits.
  * @property storageManager Manager for storage file metadata and quotas.

@@ -33,7 +33,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case for management user creation.
+ * Management use case for administratively creating a new user account with assigned roles, permissions, and authority levels.
+ *
+ * Enforces authority bounds, rate limiting, password complexity validation, and MFA step-up verification for the management creator.
  */
 @Singleton
 public class ManagementCreateUserUseCase @Inject constructor(

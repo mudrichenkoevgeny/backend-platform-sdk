@@ -7,7 +7,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to retrieve public security settings snapshot.
+ * Open use case for retrieving a public snapshot of effective platform security settings and password policies.
+ *
+ * Exposes open security parameters, password complexity requirements, and session timeout policies to public clients.
  */
 @Singleton
 public class GetOpenSecuritySettingsUseCase @Inject constructor(

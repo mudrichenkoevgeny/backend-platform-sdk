@@ -28,7 +28,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to complete user registration via email and confirmation code.
+ * Open use case for completing user account registration via email, password, and OTP code verification.
+ *
+ * Enforces registration status policies, email restrictions, rate limiting, password complexity validation, and OTP verification.
  */
 @Singleton
 public class RegistrationByEmailUseCase @Inject constructor(

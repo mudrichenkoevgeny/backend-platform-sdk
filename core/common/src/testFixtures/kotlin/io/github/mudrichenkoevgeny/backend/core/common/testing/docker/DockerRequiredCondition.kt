@@ -11,12 +11,16 @@ import org.testcontainers.DockerClientFactory
 class DockerRequiredCondition : ExecutionCondition {
     override fun evaluateExecutionCondition(context: ExtensionContext): ConditionEvaluationResult {
         val isDockerAvailable = DockerClientFactory.instance().isDockerAvailable
-        val isCi = System.getenv("CI") == "true"
+        val isCi = System.getenv(ENV_CI) == "true"
 
         return when {
             isDockerAvailable -> ConditionEvaluationResult.enabled("Docker environment is available")
             isCi -> throw IllegalStateException("Docker MUST be running in CI!")
             else -> ConditionEvaluationResult.disabled("Docker environment is not available in local environment")
         }
+    }
+
+    companion object {
+        private const val ENV_CI = "CI"
     }
 }

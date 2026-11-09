@@ -30,7 +30,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to login by phone.
+ * Open use case for authenticating or registering a user account via phone number and SMS OTP code.
+ *
+ * Enforces rate limiting, account lockout checks, and OTP verification before authenticating or creating the user account.
  */
 @Singleton
 public class LoginByPhoneUseCase @Inject constructor(

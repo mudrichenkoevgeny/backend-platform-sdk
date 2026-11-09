@@ -32,7 +32,9 @@ import javax.inject.Singleton
 import kotlin.time.Clock
 
 /**
- * Use case to delete a user.
+ * Management use case for administratively deleting a user account and revoking all active user sessions.
+ *
+ * Enforces authority level hierarchy, rate limiting, and MFA step-up verification before removing user records and terminating active sessions.
  */
 @Singleton
 public class ManagementDeleteUserUseCase @Inject constructor(

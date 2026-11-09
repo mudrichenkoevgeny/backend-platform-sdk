@@ -7,7 +7,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to retrieve public authentication settings.
+ * Open use case for retrieving public authentication settings and available authentication providers.
+ *
+ * Provides public clients with supported auth provider lists, registration status flags, and password requirements.
  */
 @Singleton
 public class GetOpenAuthSettingsUseCase @Inject constructor(

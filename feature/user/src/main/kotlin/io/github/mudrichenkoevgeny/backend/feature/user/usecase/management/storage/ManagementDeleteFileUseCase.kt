@@ -23,15 +23,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case for administrative deletion of a single file record.
+ * Management use case for administrative soft-deletion of a storage file record in the database.
  *
- * Performs a soft delete in the database via [StorageManager] and records audit events.
- * Physical deletion from S3 is handled asynchronously by a background garbage collection job.
- *
- * @property storageManager Manager for storage file operations and soft deletion.
- * @property auditLogger Audit logging facility.
- * @property auditErrorConverter Converter for mapping app errors to audit metadata.
- * @property userManager Manager for retrieving user account status and permissions.
+ * Enforces permission checks and records audit logs; physical storage deletion in S3 is handled asynchronously by background scheduled jobs.
  */
 @Singleton
 public class ManagementDeleteFileUseCase @Inject constructor(

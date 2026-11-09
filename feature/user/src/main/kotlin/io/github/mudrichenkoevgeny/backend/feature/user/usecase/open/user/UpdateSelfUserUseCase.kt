@@ -24,7 +24,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case allowing the authenticated user to update their own profile details.
+ * Open use case for an authenticated user to update their own profile details (nickname, display name, avatar, birthdate).
+ *
+ * Enforces account status checks and profile field validation before persisting updates.
  */
 @Singleton
 public class UpdateSelfUserUseCase @Inject constructor(

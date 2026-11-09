@@ -35,10 +35,10 @@ import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
 /**
- * Use case for updating security settings from a management context.
+ * Management use case for updating global security settings and password policies.
  *
- * On successful persistence, notifies connected WebSocket clients in open and management scopes
- * with [SecurityWebSocketEventTypes.OPEN_SECURITY_SETTINGS_UPDATED] and [SecurityWebSocketEventTypes.MANAGEMENT_SECURITY_SETTINGS_UPDATED] frames.
+ * On successful persistence, logs an administrative audit record and broadcasts real-time security policy update frames to connected
+ * WebSocket clients across Open and Management scopes.
  */
 @Singleton
 public class UpdateSecuritySettingsUseCase @Inject constructor(

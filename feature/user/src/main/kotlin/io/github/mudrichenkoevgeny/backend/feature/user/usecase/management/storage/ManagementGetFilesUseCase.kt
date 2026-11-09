@@ -14,13 +14,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case for administrative retrieval of paginated storage file summaries across the platform.
+ * Management use case for querying paginated and filtered storage file records across the platform.
  *
- * Enforces account status and permission checks via [UserManager]
- * before fetching storage records via [StorageManager].
- *
- * @property storageManager Manager for storage file operations.
- * @property userManager Manager for retrieving user account status and permissions.
+ * Enforces permission checks (`STORAGE_VIEW_OTHER_USERS_FILES`) before retrieving storage summaries.
  */
 @Singleton
 public class ManagementGetFilesUseCase @Inject constructor(

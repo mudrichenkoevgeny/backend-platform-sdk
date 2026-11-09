@@ -12,7 +12,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to retrieve profile of current user.
+ * Shared use case for retrieving the private profile details of the currently authenticated user.
+ *
+ * Fetches internal user account details and maps them to a private user domain model representation.
  */
 @Singleton
 public class GetUserUseCase @Inject constructor(

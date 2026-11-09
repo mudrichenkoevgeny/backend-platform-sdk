@@ -10,7 +10,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to retrieve public user configuration snapshot.
+ * Open use case for retrieving an aggregated platform configuration snapshot for public clients.
+ *
+ * Combines public global settings, security constraints, storage limits, and authentication options into a single payload.
  */
 @Singleton
 public class GetOpenUserConfigurationUseCase @Inject constructor(

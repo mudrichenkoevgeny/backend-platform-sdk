@@ -37,7 +37,9 @@ import javax.inject.Singleton
 import kotlin.time.Clock
 
 /**
- * Use case for updating an existing user's management details.
+ * Management use case for updating account statuses, roles, authority levels, permissions, or profile details for a user account.
+ *
+ * Enforces authority level hierarchy, permission checks, rate limiting, and MFA step-up verification before applying updates.
  */
 @Singleton
 public class ManagementUpdateUserUseCase @Inject constructor(

@@ -13,7 +13,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to retrieve private file details.
+ * Shared use case for retrieving detailed private metadata for a file uploaded by the authenticated user.
+ *
+ * Enforces account status checks and file ownership verification before returning private storage file details.
  */
 @Singleton
 public class GetFileUseCase @Inject constructor(

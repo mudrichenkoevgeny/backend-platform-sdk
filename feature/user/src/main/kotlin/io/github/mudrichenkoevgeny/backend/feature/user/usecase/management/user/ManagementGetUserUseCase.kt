@@ -15,7 +15,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get a user.
+ * Management use case for retrieving detailed account information for a specific user account.
+ *
+ * Enforces role-based visibility and permission checks before retrieving internal user details.
  */
 @Singleton
 public class ManagementGetUserUseCase @Inject constructor(

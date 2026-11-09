@@ -528,7 +528,7 @@ class SessionManagerImplTest {
 
         assertTrue(result is AppResult.Success)
 
-        coVerify {
+        coVerify(timeout = 2000) {
             userKnownDevicesRepository.createKnownDevice(any())
             emailService.sendNewDeviceLoginEmail(
                 email = "test@example.com",

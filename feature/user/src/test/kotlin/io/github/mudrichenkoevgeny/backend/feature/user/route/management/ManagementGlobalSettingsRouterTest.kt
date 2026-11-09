@@ -90,7 +90,9 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
         authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
         every { getManagementGlobalSettingsUseCase() } returns AppResult.Success(sampleSettings())
 
-        val response = jsonClient.get(ManagementGlobalSettingsRoutes.GET_MANAGEMENT_GLOBAL_SETTINGS) {
+        val response = jsonClient.get(
+            urlString = ManagementGlobalSettingsRoutes.GET_MANAGEMENT_GLOBAL_SETTINGS
+        ) {
             bearerAuth(token)
         }
 
@@ -117,7 +119,9 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Success(sampleSettings())
 
-        val response = jsonClient.put(ManagementGlobalSettingsRoutes.UPDATE_MANAGEMENT_GLOBAL_SETTINGS) {
+        val response = jsonClient.put(
+            urlString = ManagementGlobalSettingsRoutes.UPDATE_MANAGEMENT_GLOBAL_SETTINGS
+        ) {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
             setBody(sampleSettings().toManagementGlobalSettingsPayload())
@@ -146,7 +150,9 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
 
         authProvider.shouldReturnError(AppResult.Error(error))
 
-        val response = jsonClient.put(ManagementGlobalSettingsRoutes.UPDATE_MANAGEMENT_GLOBAL_SETTINGS) {
+        val response = jsonClient.put(
+            urlString = ManagementGlobalSettingsRoutes.UPDATE_MANAGEMENT_GLOBAL_SETTINGS
+        ) {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
             setBody(sampleSettings().toManagementGlobalSettingsPayload())
@@ -170,7 +176,9 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
         val error = UserError.InvalidAccessToken()
         authProvider.shouldReturnError(AppResult.Error(error))
 
-        val response = jsonClient.put(ManagementGlobalSettingsRoutes.UPDATE_MANAGEMENT_GLOBAL_SETTINGS) {
+        val response = jsonClient.put(
+            urlString = ManagementGlobalSettingsRoutes.UPDATE_MANAGEMENT_GLOBAL_SETTINGS
+        ) {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
             setBody(sampleSettings().toManagementGlobalSettingsPayload())
@@ -194,7 +202,9 @@ class ManagementGlobalSettingsRouterTest : BaseRouterTest() {
         authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
         coEvery { resetGlobalSettingsUseCase(any()) } returns AppResult.Success(sampleSettings())
 
-        val response = jsonClient.post(ManagementGlobalSettingsRoutes.RESET_MANAGEMENT_GLOBAL_SETTINGS) {
+        val response = jsonClient.post(
+            urlString = ManagementGlobalSettingsRoutes.RESET_MANAGEMENT_GLOBAL_SETTINGS
+        ) {
             bearerAuth(token)
         }
 

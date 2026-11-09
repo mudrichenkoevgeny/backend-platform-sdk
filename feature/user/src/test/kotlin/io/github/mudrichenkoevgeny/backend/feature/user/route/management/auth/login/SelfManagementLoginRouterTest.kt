@@ -77,7 +77,7 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
             }
         }
 
-        val response = client.post(SelfManagementLoginRoutes.LOGIN_BY_EMAIL) {
+        val response = client.post(urlString = SelfManagementLoginRoutes.LOGIN_BY_EMAIL) {
             contentType(ContentType.Application.Json)
             setBody(request)
         }
@@ -114,7 +114,7 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
             }
         }
 
-        val response = client.post(SelfManagementLoginRoutes.LOGIN_BY_TOTP) {
+        val response = client.post(urlString = SelfManagementLoginRoutes.LOGIN_BY_TOTP) {
             contentType(ContentType.Application.Json)
             setBody(request)
         }
@@ -151,7 +151,7 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
             }
         }
 
-        val response = client.post(SelfManagementLoginRoutes.LOGIN_BY_TOTP_RECOVERY_CODE) {
+        val response = client.post(urlString = SelfManagementLoginRoutes.LOGIN_BY_TOTP_RECOVERY_CODE) {
             contentType(ContentType.Application.Json)
             setBody(request)
         }

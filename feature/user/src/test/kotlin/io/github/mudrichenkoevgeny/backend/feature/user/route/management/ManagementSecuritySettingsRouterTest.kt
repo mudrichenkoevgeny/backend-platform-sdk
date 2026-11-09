@@ -86,7 +86,9 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
             createTestManagementSecuritySettings()
         )
 
-        val response = jsonClient.get(ManagementSecuritySettingsRoutes.GET_MANAGEMENT_SECURITY_SETTINGS) {
+        val response = jsonClient.get(
+            urlString = ManagementSecuritySettingsRoutes.GET_MANAGEMENT_SECURITY_SETTINGS
+        ) {
             bearerAuth(token)
         }
 
@@ -115,7 +117,9 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
             createTestManagementSecuritySettings()
         )
 
-        val response = jsonClient.put(ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS) {
+        val response = jsonClient.put(
+            urlString = ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS
+        ) {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
             setBody(createTestManagementSecuritySettings().toManagementSecuritySettingsPayload())
@@ -144,7 +148,9 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
 
         authProvider.shouldReturnError(AppResult.Error(error))
 
-        val response = jsonClient.put(ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS) {
+        val response = jsonClient.put(
+            urlString = ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS
+        ) {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
             setBody(createTestManagementSecuritySettings().toManagementSecuritySettingsPayload())
@@ -168,7 +174,9 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
         val error = UserError.InvalidAccessToken()
         authProvider.shouldReturnError(AppResult.Error(error))
 
-        val response = jsonClient.put(ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS) {
+        val response = jsonClient.put(
+            urlString = ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS
+        ) {
             bearerAuth(token)
             contentType(ContentType.Application.Json)
             setBody(createTestManagementSecuritySettings().toManagementSecuritySettingsPayload())
@@ -194,7 +202,9 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
             createTestManagementSecuritySettings()
         )
 
-        val response = jsonClient.post(ManagementSecuritySettingsRoutes.RESET_MANAGEMENT_SECURITY_SETTINGS) {
+        val response = jsonClient.post(
+            urlString = ManagementSecuritySettingsRoutes.RESET_MANAGEMENT_SECURITY_SETTINGS
+        ) {
             bearerAuth(token)
         }
 

@@ -43,7 +43,7 @@ class OpenGlobalSettingsRouterTest : BaseRouterTest() {
         val settings = sampleSettings()
         coEvery { getOpenGlobalSettingsUseCase() } returns AppResult.Success(settings)
 
-        val response = client.get(OpenGlobalSettingsRoutes.GET_OPEN_GLOBAL_SETTINGS)
+        val response = client.get(urlString = OpenGlobalSettingsRoutes.GET_OPEN_GLOBAL_SETTINGS)
 
         assertEquals(
             HttpStatusCode.OK,

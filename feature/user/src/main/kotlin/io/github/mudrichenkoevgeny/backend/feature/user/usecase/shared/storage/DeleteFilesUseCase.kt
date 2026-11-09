@@ -8,9 +8,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case for self-service batch deletion of user files.
+ * Shared use case for self-service batch soft-deletion of user storage files.
  *
- * Validates file ownership implicitly at the database level and performs a soft delete.
+ * Validates file ownership implicitly at the database level and soft-deletes multiple target file records in a single operation.
  * Physical deletion from S3 is handled asynchronously by a background garbage collection job.
  *
  * @property storageManager Manager for storage file metadata and soft deletion.

@@ -28,7 +28,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to finalize TOTP activation and generate recovery codes.
+ * Shared use case for finalizing TOTP multifactor authentication setup and generating initial recovery codes.
+ *
+ * Verifies the first 6-digit TOTP code, generates encrypted recovery codes, and marks TOTP as enabled for the account.
  */
 @Singleton
 public class EnableTotpUseCase @Inject constructor(

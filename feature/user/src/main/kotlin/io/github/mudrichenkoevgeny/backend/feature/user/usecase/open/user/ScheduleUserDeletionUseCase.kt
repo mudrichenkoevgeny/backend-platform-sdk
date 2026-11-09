@@ -27,7 +27,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to schedule user account deletion after a grace period.
+ * Open use case for scheduling self-service user account deletion after a grace period.
+ *
+ * Enforces MFA step-up verification and rate limiting before updating account status to `PENDING_DELETION`.
  */
 @Singleton
 public class ScheduleUserDeletionUseCase @Inject constructor(

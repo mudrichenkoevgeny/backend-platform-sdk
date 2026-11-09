@@ -14,7 +14,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to rotate and refresh user session tokens.
+ * Shared use case for rotating and refreshing user session tokens.
+ *
+ * Uses cryptographic token hashes to enforce rate limits without exposing raw refresh tokens, delegating session rotation to [SessionManager].
  */
 @Singleton
 public class RefreshTokenUseCase @Inject constructor(

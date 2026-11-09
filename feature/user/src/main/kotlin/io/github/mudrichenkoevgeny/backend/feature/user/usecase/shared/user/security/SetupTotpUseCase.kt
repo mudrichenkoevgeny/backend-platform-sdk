@@ -34,7 +34,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to initiate TOTP setup and generate secret/QR code URL.
+ * Shared use case for initiating TOTP multifactor authentication setup and generating a secret key with a QR code URI.
+ *
+ * Generates an encrypted TOTP secret, constructs an `otpauth://` URI, and creates a setup challenge token for verification.
  */
 @Singleton
 public class SetupTotpUseCase @Inject constructor(

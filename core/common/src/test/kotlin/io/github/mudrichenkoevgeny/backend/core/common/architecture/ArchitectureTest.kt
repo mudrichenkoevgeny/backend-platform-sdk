@@ -26,25 +26,10 @@ internal class ArchitectureTest {
     @Test
     fun `core common does not depend on other internal core or feature modules`() {
         Konsist.scopeFromDirectory("core/common/src/main").imports.assertFalse { importDecl ->
-            importDecl.name.startsWith(
-                "io.github.mudrichenkoevgeny.backend.core.database"
-            ) ||
-                importDecl.name.startsWith(
-                    "io.github.mudrichenkoevgeny.backend.core.security"
-                ) ||
-                importDecl.name.startsWith(
-                    "io.github.mudrichenkoevgeny.backend.core.storage"
-                ) ||
-                importDecl.name.startsWith(
-                    "io.github.mudrichenkoevgeny.backend.core.audit"
-                ) ||
-                importDecl.name.startsWith(
-                    "io.github.mudrichenkoevgeny.backend.core.settings"
-                ) ||
-                importDecl.name.startsWith(
-                    "io.github.mudrichenkoevgeny.backend.core.events"
-                ) ||
-                importDecl.name.startsWith("io.github.mudrichenkoevgeny.backend.feature")
+            val name = importDecl.name
+            val isOtherCore = name.contains(".backend.core.") && !name.contains(".backend.core.common")
+            val isFeature = name.contains(".backend.feature.")
+            isOtherCore || isFeature
         }
     }
 
@@ -52,9 +37,7 @@ internal class ArchitectureTest {
     fun `repositories do not depend on routes or usecases`() {
         Konsist.scopeFromProduction().files.assertFalse { file ->
             val isRepositoryFile = file.name.endsWith("Repository.kt") || file.name.endsWith("RepositoryImpl.kt")
-            if (!isRepositoryFile) {
-                return@assertFalse false
-            }
+            if (!isRepositoryFile) return@assertFalse false
             file.imports.any { importDecl ->
                 importDecl.name.contains(".route.") || importDecl.name.contains(".usecase.")
             }

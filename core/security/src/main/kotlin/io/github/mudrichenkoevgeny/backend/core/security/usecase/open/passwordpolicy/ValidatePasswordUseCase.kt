@@ -11,7 +11,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to validate raw passwords against management password policy.
+ * Open use case for validating raw passwords against the active platform password policy.
+ *
+ * Enforces security constraints (length, character sets, complexity) on passwords submitted during
+ * registration, password resets, or credential updates.
  */
 @Singleton
 public class ValidatePasswordUseCase @Inject constructor(
@@ -19,22 +22,21 @@ public class ValidatePasswordUseCase @Inject constructor(
     private val passwordPolicyValidator: PasswordPolicyValidator
 ) {
     /**
-     * Validates a password against the active security policy.
+     * Validates a raw password against the active management password policy.
+     *
+     * **Allowed Account Statuses:** Any (Public access).
      *
      * **Security:**
-     * - Retrieves the current [ManagementPasswordPolicy] from [securitySettingsProvider] to ensure
-     *   validation is performed against the latest system requirements.
-     * - Enforces complexity rules (e.g., length, character sets) via [passwordPolicyValidator].
+     * - Evaluates passwords against the latest [ManagementPasswordPolicy] fetched from [SecuritySettingsProvider].
+     * - Does not persist or log raw password values.
      *
      * **Workflow:**
-     * 1. Fetches the effective password policy.
-     * 2. Validates the provided raw password string.
-     * 3. Maps any validation failures to [SecurityError.PasswordTooWeak], including specific
-     *    violation details for client-side feedback.
+     * 1. Fetches the active platform password policy from [securitySettingsProvider].
+     * 2. Evaluates the raw password using [passwordPolicyValidator].
+     * 3. Maps complexity failures to [SecurityError.PasswordTooWeak] with specific violation details for client-side feedback.
      *
      * @param password The raw password string to validate.
-     * @return [AppResult.Success] if the password satisfies the policy, or [AppResult.Error]
-     *         with [SecurityError.PasswordTooWeak].
+     * @return [AppResult.Success] if valid, or [AppResult.Error] with [SecurityError.PasswordTooWeak] on policy failure.
      */
     public operator fun invoke(password: String): AppResult<Unit> {
         val passwordPolicy = securitySettingsProvider.getManagementPasswordPolicy()

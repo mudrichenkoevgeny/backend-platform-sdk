@@ -24,7 +24,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to authenticate user via email and password credentials.
+ * Shared use case for authenticating a user account via email and password credentials.
+ *
+ * Enforces rate limiting against credential stuffing attacks and delegates credential verification to [AuthManager].
  */
 @Singleton
 public class LoginByEmailUseCase @Inject constructor(

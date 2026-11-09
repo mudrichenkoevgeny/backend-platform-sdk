@@ -15,7 +15,7 @@ import io.ktor.server.testing.testApplication
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class RoutePortExtensionsTest {
+class RoutePortUtilsTest {
     private val testPortPlugin = createApplicationPlugin("TestPortPlugin") {
         onCall { call ->
             val mockedPort = call.request.headers["X-Test-Port"]?.toIntOrNull()

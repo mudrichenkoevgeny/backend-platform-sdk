@@ -28,7 +28,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to disable TOTP.
+ * Management use case for administratively disabling two-factor authentication (TOTP) on a target user account.
+ *
+ * Enforces authority level hierarchy, rate limiting, and MFA step-up verification before disabling TOTP security settings.
  */
 @Singleton
 public class ManagementDisableTotpUseCase @Inject constructor(

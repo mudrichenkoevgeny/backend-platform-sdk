@@ -37,7 +37,7 @@ class OpenSecuritySettingsRouterTest : BaseRouterTest() {
         val settings = createTestOpenSecuritySettings()
         coEvery { getOpenSecuritySettingsUseCase() } returns AppResult.Success(settings)
 
-        val response = client.get(OpenSecuritySettingsRoutes.GET_OPEN_SECURITY_SETTINGS)
+        val response = client.get(urlString = OpenSecuritySettingsRoutes.GET_OPEN_SECURITY_SETTINGS)
 
         assertEquals(
             HttpStatusCode.OK,

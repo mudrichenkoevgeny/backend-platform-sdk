@@ -58,12 +58,12 @@ class JwtAuthenticationProviderTest {
             sessionManager,
             appErrorParser
         )
-        mockkStatic("io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.JwtExtensionsKt")
+        mockkStatic("io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.JwtUtilsKt")
     }
 
     @AfterEach
     fun tearDown() {
-        unmockkStatic("io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.JwtExtensionsKt")
+        unmockkStatic("io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.JwtUtilsKt")
     }
 
     @Test

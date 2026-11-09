@@ -34,7 +34,10 @@ import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
 /**
- * Use case for resetting storage settings to default values from a management context.
+ * Management use case for resetting global storage settings to default platform values.
+ *
+ * On successful persistence, logs an administrative audit record and broadcasts real-time storage policy update frames to connected
+ * WebSocket clients across Open and Management scopes.
  */
 @Singleton
 public class ResetStorageSettingsUseCase @Inject constructor(

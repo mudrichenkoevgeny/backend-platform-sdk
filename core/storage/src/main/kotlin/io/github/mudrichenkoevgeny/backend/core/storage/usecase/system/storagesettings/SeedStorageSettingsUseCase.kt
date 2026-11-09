@@ -1,29 +1,34 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.usecase.system.storagesettings
 
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.storage.settings.provider.StorageSettingsProvider
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to seed initial system storage settings and defaults.
+ * System use case for seeding default storage management configurations into persistent storage.
+ *
+ * Runs during application bootstrap to ensure platform-wide storage quotas, upload size limits,
+ * presigned URL expiration policies, and cleanup intervals exist in system settings.
  */
 @Singleton
 public class SeedStorageSettingsUseCase @Inject constructor(
     private val storageSettingsProvider: StorageSettingsProvider
 ) {
     /**
-     * Seeds initial storage configurations and defaults into the system storage.
+     * Seeds missing default storage management settings and policies into persistent storage.
+     *
+     * **Allowed Account Statuses:** Any (System initialization).
+     *
+     * **Security:**
+     * - System-level initialization component; no caller authentication or user context required.
      *
      * **Workflow:**
-     * 1. Invokes storageSettingsProvider.initialize() to ensure all required storage
-     *    settings and policies are registered if they do not already exist.
+     * 1. Invokes [StorageSettingsProvider.initialize] to register missing storage management settings.
+     * 2. Populates default storage quotas, upload limits, and presigned URL expiration policies.
      *
-     * **Execution Context:**
-     * - Intended for use during application bootstrap or system initialization.
-     * - Does not require a user context as it operates at the system level.
-     *
-     * @return [AppResult] indicating whether the initialization was successful.
+     * @return [AppResult.Success] on successful seeding, or an [AppError] on storage error.
      */
     public suspend operator fun invoke(): AppResult<Unit> = storageSettingsProvider.initialize()
 }

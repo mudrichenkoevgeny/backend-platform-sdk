@@ -10,7 +10,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get management user configuration.
+ * Management use case for retrieving aggregated platform configuration settings for administrative clients.
+ *
+ * Combines global platform parameters, security policies, storage limits, and authentication constraints into a single payload.
  */
 @Singleton
 public class GetManagementUserConfigurationUseCase @Inject constructor(

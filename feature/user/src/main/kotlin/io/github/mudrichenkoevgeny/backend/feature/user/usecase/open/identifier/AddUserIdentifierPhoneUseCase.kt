@@ -30,7 +30,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to link a new phone identifier to an existing user account.
+ * Open use case for linking a new phone number authentication identifier to an existing user account.
+ *
+ * Enforces MFA step-up verification, rate limiting, and SMS OTP code verification.
  */
 @Singleton
 public class AddUserIdentifierPhoneUseCase @Inject constructor(

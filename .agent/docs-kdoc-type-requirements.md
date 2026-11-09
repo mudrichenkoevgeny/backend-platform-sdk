@@ -54,5 +54,20 @@ Every `const val` representing a route must follow the "Gold Standard":
 - **Conciseness:** Keep templates short; avoid generic filler text.
 - **Security:** Ensure only `publicArgs` placeholders are used in user-facing templates.
 
+## 10. Use Cases (`*UseCase.kt`)
+For every Use Case class and its `invoke` method:
+- **Forbidden Boilerplate:** Do **NOT** use generic filler text like `"Use case to..."` or `"This class is a use case for..."`.
+- **Class-level KDoc:** Must define:
+  1. High-level business intent and role (starts with an active noun or gerund, e.g., `"Management component for..."` or `"Public authentication flow for..."`).
+  2. Scope / Audience (e.g., Open vs Management API context).
+  3. Key System Effects / Side Effects (e.g., database persistence, WebSocket broadcasts, Audit logging, Redis cache synchronization, or Event Bus publications).
+- **`invoke` Method KDoc:** Must define:
+  1. Action summary starting with a 3rd-person verb (e.g., `Updates...`, `Validates...`, `Sends...`).
+  2. `**Allowed Account Statuses:**` Explicitly list allowed caller statuses (e.g. `[UserAccountStatus.ACTIVE]` or `Any (Public access)`).
+  3. `**Security:**` Required roles/permissions, rate limits, session constraints, or MFA/TOTP requirements.
+  4. `**Workflow:**` Step-by-step numbered breakdown of the execution flow (1, 2, 3...).
+  5. `@param` for input parameters (DTOs, RequestContexts, etc.).
+  6. `@return` description of returned `[AppResult.Success]` payload and potential `[AppError]` domain errors on failure.
+
 ---
 *Refer to `AGENTS.md` for the full list of project standards.*

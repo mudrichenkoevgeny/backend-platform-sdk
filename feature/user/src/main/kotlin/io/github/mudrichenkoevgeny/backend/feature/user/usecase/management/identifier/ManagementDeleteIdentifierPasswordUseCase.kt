@@ -36,7 +36,10 @@ import javax.inject.Singleton
 import kotlin.time.Clock
 
 /**
- * Use case to delete a password.
+ * Management use case for administratively revoking and clearing a user identifier password.
+ *
+ * Enforces authority level hierarchy, rate limiting, and MFA step-up verification before revoking password credentials and terminating
+ * associated sessions.
  */
 @Singleton
 public class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(

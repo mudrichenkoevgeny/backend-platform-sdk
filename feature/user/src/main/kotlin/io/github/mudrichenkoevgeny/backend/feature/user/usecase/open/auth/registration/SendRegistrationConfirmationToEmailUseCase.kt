@@ -18,7 +18,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to send email registration confirmation code or notification.
+ * Open use case for initiating email registration by dispatching an OTP verification code or security notification.
+ *
+ * Protects against email enumeration: dispatches a verification code for new emails, or a security notification if the email is already registered.
  */
 @Singleton
 public class SendRegistrationConfirmationToEmailUseCase @Inject constructor(

@@ -16,7 +16,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to send confirmation code for adding a phone identifier.
+ * Open use case for initiating the process of adding a new phone identifier by dispatching an SMS OTP code or security notification.
+ *
+ * Dispatches an SMS OTP verification code for new phone numbers, or a security notification if the number is already registered.
  */
 @Singleton
 public class SendAddPhoneIdentifierConfirmationUseCase @Inject constructor(

@@ -32,7 +32,9 @@ import javax.inject.Singleton
 import kotlin.time.Clock
 
 /**
- * Use case to delete all sessions.
+ * Management use case for administratively terminating all active sessions for a target user account.
+ *
+ * Enforces authority level hierarchy, rate limiting, and MFA step-up verification before revoking sessions and dispatching WebSocket disconnect frames.
  */
 @Singleton
 public class ManagementDeleteAllSessionsUseCase @Inject constructor(

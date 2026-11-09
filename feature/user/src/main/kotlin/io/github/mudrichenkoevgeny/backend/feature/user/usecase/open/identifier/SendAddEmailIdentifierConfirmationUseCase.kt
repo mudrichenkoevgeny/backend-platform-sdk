@@ -19,7 +19,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to send confirmation code for adding an email identifier.
+ * Open use case for initiating the process of adding a new email identifier by dispatching an OTP code or security notification.
+ *
+ * Dispatches an OTP verification code for new emails, or a security notification if the email is already registered to another account.
  */
 @Singleton
 public class SendAddEmailIdentifierConfirmationUseCase @Inject constructor(

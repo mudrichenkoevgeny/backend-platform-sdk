@@ -36,7 +36,10 @@ import javax.inject.Singleton
 import kotlin.time.Clock
 
 /**
- * Use case to delete an identifier.
+ * Management use case for administratively deleting a user identifier record.
+ *
+ * Enforces authority level hierarchy, rate limiting, and MFA step-up verification before deleting the identifier and terminating
+ * linked sessions.
  */
 @Singleton
 public class ManagementDeleteIdentifierUseCase @Inject constructor(

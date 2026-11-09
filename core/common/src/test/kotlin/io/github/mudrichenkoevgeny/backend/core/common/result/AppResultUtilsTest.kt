@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-class AppResultExtensionsTest {
+class AppResultUtilsTest {
     private val testError = object : AppError {
         override val errorId = ErrorId.generate()
         override val code = "test_error"

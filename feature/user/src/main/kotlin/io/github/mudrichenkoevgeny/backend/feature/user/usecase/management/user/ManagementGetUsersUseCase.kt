@@ -15,7 +15,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get users.
+ * Management use case for querying paginated and filtered user account records across the platform.
+ *
+ * Applies role-based visibility rules and permission checks to filter search results according to caller authority.
  */
 @Singleton
 public class ManagementGetUsersUseCase @Inject constructor(

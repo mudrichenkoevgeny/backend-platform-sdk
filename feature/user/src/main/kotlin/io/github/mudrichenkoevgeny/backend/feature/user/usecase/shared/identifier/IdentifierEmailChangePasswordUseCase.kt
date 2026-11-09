@@ -31,7 +31,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to change password for an email identifier.
+ * Shared use case for changing the password associated with an email-based authentication identifier.
+ *
+ * Enforces MFA step-up verification, rate limiting, password complexity policies, and old password credential verification.
  */
 @Singleton
 public class IdentifierEmailChangePasswordUseCase @Inject constructor(
@@ -110,7 +112,6 @@ public class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 error = userResult.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
 
@@ -127,7 +128,6 @@ public class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 error = userSessionResult.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
         }
@@ -141,7 +141,6 @@ public class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 error = ensureSessionConfirmedResult.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
         }
@@ -152,7 +151,6 @@ public class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 error = passwordPolicyCheckResult.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
         }
@@ -166,7 +164,6 @@ public class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 error = identifierResult.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
 

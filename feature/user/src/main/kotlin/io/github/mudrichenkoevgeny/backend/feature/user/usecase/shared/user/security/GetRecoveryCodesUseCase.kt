@@ -27,7 +27,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to retrieve active TOTP recovery codes.
+ * Shared use case for retrieving active TOTP backup recovery codes.
+ *
+ * Enforces MFA step-up verification (session confirmation) and rate limiting before decrypting and returning recovery codes.
  */
 @Singleton
 public class GetRecoveryCodesUseCase @Inject constructor(

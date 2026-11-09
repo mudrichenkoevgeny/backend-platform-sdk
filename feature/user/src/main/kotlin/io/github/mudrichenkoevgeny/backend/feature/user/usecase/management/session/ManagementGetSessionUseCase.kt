@@ -14,7 +14,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get a session.
+ * Management use case for retrieving detailed information about an active or historical user session.
+ *
+ * Applies permission-based visibility rules and data masking to sensitive session details (IP addresses, user agents)
+ * based on the target session owner's role and caller permissions.
  */
 @Singleton
 public class ManagementGetSessionUseCase @Inject constructor(

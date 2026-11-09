@@ -35,10 +35,10 @@ import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
 /**
- * Use case for updating global settings from a management context.
+ * Management use case for updating global platform settings and configurations.
  *
- * On successful persistence, notifies connected WebSocket clients in open and management scopes
- * with [SettingsWebSocketEventTypes.OPEN_GLOBAL_SETTINGS_UPDATED] and [SettingsWebSocketEventTypes.MANAGEMENT_GLOBAL_SETTINGS_UPDATED] frames.
+ * On successful persistence, logs an administrative audit record and broadcasts real-time global settings update frames to connected
+ * WebSocket clients across Open and Management scopes.
  */
 @Singleton
 public class UpdateGlobalSettingsUseCase @Inject constructor(

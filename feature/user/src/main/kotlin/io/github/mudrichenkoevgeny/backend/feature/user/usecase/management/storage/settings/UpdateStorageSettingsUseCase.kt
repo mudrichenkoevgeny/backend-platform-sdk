@@ -35,10 +35,10 @@ import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
 /**
- * Use case for updating storage settings from a management context.
+ * Management use case for updating global storage settings and policies.
  *
- * On successful persistence, notifies connected WebSocket clients in open and management scopes
- * with [StorageWebSocketEventTypes.OPEN_STORAGE_SETTINGS_UPDATED] and [StorageWebSocketEventTypes.MANAGEMENT_STORAGE_SETTINGS_UPDATED] frames.
+ * On successful persistence, logs an administrative audit record and broadcasts real-time storage policy update frames to connected
+ * WebSocket clients across Open and Management scopes.
  */
 @Singleton
 public class UpdateStorageSettingsUseCase @Inject constructor(

@@ -40,7 +40,7 @@ class RequestContextExtractorTest {
         every { call.attributes } returns mockk(relaxed = true)
 
         mockkStatic(
-            JWT_EXTENSIONS_KT,
+            JWT_UTILS_KT,
             CLIENT_INFO_EXTRACTOR_KT
         )
     }
@@ -48,7 +48,7 @@ class RequestContextExtractorTest {
     @AfterEach
     fun tearDown() {
         unmockkStatic(
-            JWT_EXTENSIONS_KT,
+            JWT_UTILS_KT,
             CLIENT_INFO_EXTRACTOR_KT
         )
     }
@@ -128,8 +128,8 @@ class RequestContextExtractorTest {
         private const val TEST_TRACE_ID = "trace-123"
         private const val TEST_USER_ID = "550e8400-e29b-41d4-a716-446655440000"
         private const val TEST_SESSION_ID = "123e4567-e89b-12d3-a456-426614174000"
-        private const val JWT_EXTENSIONS_KT =
-            "io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.JwtExtensionsKt"
+        private const val JWT_UTILS_KT =
+            "io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.JwtUtilsKt"
         private const val CLIENT_INFO_EXTRACTOR_KT =
             "io.github.mudrichenkoevgeny.backend.core.common.network.utils.ClientInfoExtractorKt"
     }

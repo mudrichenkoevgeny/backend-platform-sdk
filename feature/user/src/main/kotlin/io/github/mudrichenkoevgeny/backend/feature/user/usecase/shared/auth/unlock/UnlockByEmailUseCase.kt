@@ -29,7 +29,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to unlock user account using email verification code.
+ * Shared use case for unlocking a temporarily locked user account using an email OTP verification code.
+ *
+ * Verifies self-service unlock policies, rate limits, and email OTP codes before clearing account lockouts.
  */
 @Singleton
 public class UnlockByEmailUseCase @Inject constructor(

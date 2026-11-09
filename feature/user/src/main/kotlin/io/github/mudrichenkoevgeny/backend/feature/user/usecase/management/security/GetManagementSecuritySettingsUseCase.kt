@@ -7,7 +7,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get security settings.
+ * Management use case for retrieving an effective snapshot of global security settings and password policies.
+ *
+ * Exposes current password complexity rules, session confirmation policies, and lockout configurations to administrative clients.
  */
 @Singleton
 public class GetManagementSecuritySettingsUseCase @Inject constructor(

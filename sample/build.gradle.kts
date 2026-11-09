@@ -38,10 +38,19 @@ dependencies {
     implementation(libs.exposed.jdbc)
 
     // Testing
+    testImplementation(testFixtures(project(":core:common")))
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.mockk)
+    testImplementation(libs.testcontainers.core)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.junit.jupiter)
+    testImplementation(libs.flyway.core)
+    testRuntimeOnly(libs.flyway.postgresql)
+    testImplementation(libs.postgresql)
+    testImplementation(libs.exposed.core)
+    testImplementation(libs.exposed.jdbc)
 }
 
 tasks.test {

@@ -12,7 +12,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to retrieve user storage files page.
+ * Shared use case for querying a paginated list of storage files uploaded by the authenticated user.
+ *
+ * Enforces account status checks before returning user storage file summaries.
  */
 @Singleton
 public class GetFilesUseCase @Inject constructor(

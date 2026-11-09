@@ -26,7 +26,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to disable TOTP multifactor authentication.
+ * Shared use case for disabling TOTP multifactor authentication and invalidating recovery codes.
+ *
+ * Enforces MFA step-up verification (session confirmation) and rate limiting before deactivating TOTP settings.
  */
 @Singleton
 public class DisableTotpUseCase @Inject constructor(

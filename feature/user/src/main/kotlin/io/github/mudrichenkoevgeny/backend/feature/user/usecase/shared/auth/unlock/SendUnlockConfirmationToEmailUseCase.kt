@@ -20,7 +20,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to send account unlock confirmation code to user email.
+ * Shared use case for initiating self-service account unlocking by dispatching an OTP verification code to a user's email.
+ *
+ * Verifies self-service unlock settings, enforces rate limiting, and protects against email enumeration via simulated dispatches.
  */
 @Singleton
 public class SendUnlockConfirmationToEmailUseCase @Inject constructor(

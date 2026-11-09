@@ -1,29 +1,34 @@
 package io.github.mudrichenkoevgeny.backend.core.security.usecase.system.settings
 
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to seed initial system security settings and defaults.
+ * System use case for seeding default security management configurations into persistent storage.
+ *
+ * Runs during application bootstrap to ensure default password complexity policies, token expiration durations,
+ * account lockout parameters, and MFA configurations exist in system settings.
  */
 @Singleton
 public class SeedSecuritySettingsUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider
 ) {
     /**
-     * Seeds initial security configurations and defaults into the system storage.
+     * Seeds missing default security management settings and policies into persistent storage.
+     *
+     * **Allowed Account Statuses:** Any (System initialization).
+     *
+     * **Security:**
+     * - System-level initialization component; no caller authentication or user context required.
      *
      * **Workflow:**
-     * 1. Invokes securitySettingsProvider.initialize() to ensure all required security
-     *    settings and policies are registered if they do not already exist.
+     * 1. Invokes [SecuritySettingsProvider.initialize] to register missing security management settings.
+     * 2. Populates default password policies, token TTLs, and lockout thresholds.
      *
-     * **Execution Context:**
-     * - Intended for use during application bootstrap or system initialization.
-     * - Does not require a user context as it operates at the system level.
-     *
-     * @return [AppResult] indicating whether the initialization was successful.
+     * @return [AppResult.Success] on successful seeding, or an [AppError] on storage error.
      */
     public suspend operator fun invoke(): AppResult<Unit> = securitySettingsProvider.initialize()
 }

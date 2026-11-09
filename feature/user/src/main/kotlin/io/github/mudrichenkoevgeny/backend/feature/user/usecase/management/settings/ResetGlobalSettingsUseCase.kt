@@ -34,7 +34,10 @@ import javax.inject.Singleton
 import kotlin.uuid.Uuid
 
 /**
- * Use case for resetting global settings to default values from a management context.
+ * Management use case for resetting global platform settings to default values.
+ *
+ * On successful persistence, logs an administrative audit record and broadcasts real-time global settings update frames to connected
+ * WebSocket clients across Open and Management scopes.
  */
 @Singleton
 public class ResetGlobalSettingsUseCase @Inject constructor(

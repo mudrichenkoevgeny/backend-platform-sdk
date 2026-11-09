@@ -7,7 +7,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to retrieve public storage settings snapshot.
+ * Open use case for retrieving a public snapshot of platform storage settings.
+ *
+ * Exposes file size minimums, maximum upload limits, and public storage parameters to unauthenticated clients.
  */
 @Singleton
 public class GetOpenStorageSettingsUseCase @Inject constructor(

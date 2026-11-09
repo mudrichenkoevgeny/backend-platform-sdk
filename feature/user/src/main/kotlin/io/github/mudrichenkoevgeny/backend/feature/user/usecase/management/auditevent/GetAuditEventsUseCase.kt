@@ -15,7 +15,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get audit events.
+ * Management use case for querying paginated and filtered audit event records across the platform.
+ *
+ * Reconciles request filter parameters against the caller's audit permissions to enforce actor-type scoping
+ * and data masking on sensitive event payloads.
  */
 @Singleton
 public class GetAuditEventsUseCase @Inject constructor(

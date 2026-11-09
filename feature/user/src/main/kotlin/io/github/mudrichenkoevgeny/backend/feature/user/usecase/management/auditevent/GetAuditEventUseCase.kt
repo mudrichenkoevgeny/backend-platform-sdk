@@ -15,7 +15,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get an audit event.
+ * Management use case for retrieving detailed information about a single audit event by its unique ID.
+ *
+ * Enforces permission-based visibility rules and applies data masking to actor identifiers and sensitive metadata
+ * based on the caller's audit permissions.
  */
 @Singleton
 public class GetAuditEventUseCase @Inject constructor(

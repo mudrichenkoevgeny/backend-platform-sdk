@@ -27,7 +27,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to login by external auth provider.
+ * Open use case for authenticating or registering a user account via an external OAuth2/OIDC provider token.
+ *
+ * Verifies external provider tokens, validates email restrictions, creates or authenticates user accounts, and returns session tokens or MFA challenges.
  */
 @Singleton
 public class LoginByExternalAuthProviderUseCase @Inject constructor(

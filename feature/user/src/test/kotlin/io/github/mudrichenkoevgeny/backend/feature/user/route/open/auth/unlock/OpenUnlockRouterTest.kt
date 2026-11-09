@@ -82,7 +82,7 @@ class OpenUnlockRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Success(otpConfirmation)
 
-        val response = jsonClient.post(OpenUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION) {
+        val response = jsonClient.post(urlString = OpenUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION) {
             contentType(ContentType.Application.Json)
             setBody(SendConfirmationToEmailRequest(email = "test@example.com"))
         }
@@ -112,7 +112,7 @@ class OpenUnlockRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Success(Unit)
 
-        val response = jsonClient.post(OpenUnlockRoutes.UNLOCK_BY_EMAIL) {
+        val response = jsonClient.post(urlString = OpenUnlockRoutes.UNLOCK_BY_EMAIL) {
             contentType(ContentType.Application.Json)
             setBody(
                 UnlockByEmailConfirmationRequest(
@@ -147,7 +147,7 @@ class OpenUnlockRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Success(otpConfirmation)
 
-        val response = jsonClient.post(OpenUnlockRoutes.SEND_UNLOCK_PHONE_CONFIRMATION) {
+        val response = jsonClient.post(urlString = OpenUnlockRoutes.SEND_UNLOCK_PHONE_CONFIRMATION) {
             contentType(ContentType.Application.Json)
             setBody(SendConfirmationToPhoneRequest(phoneNumber = "+1234567890"))
         }
@@ -177,7 +177,7 @@ class OpenUnlockRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Success(Unit)
 
-        val response = jsonClient.post(OpenUnlockRoutes.UNLOCK_BY_PHONE) {
+        val response = jsonClient.post(urlString = OpenUnlockRoutes.UNLOCK_BY_PHONE) {
             contentType(ContentType.Application.Json)
             setBody(
                 UnlockByPhoneConfirmationRequest(
@@ -212,7 +212,7 @@ class OpenUnlockRouterTest : BaseRouterTest() {
             )
         } returns AppResult.Success(Unit)
 
-        val response = jsonClient.post(OpenUnlockRoutes.UNLOCK_BY_EXTERNAL_PROVIDER) {
+        val response = jsonClient.post(urlString = OpenUnlockRoutes.UNLOCK_BY_EXTERNAL_PROVIDER) {
             contentType(ContentType.Application.Json)
             setBody(
                 UnlockByExternalAuthProviderRequest(

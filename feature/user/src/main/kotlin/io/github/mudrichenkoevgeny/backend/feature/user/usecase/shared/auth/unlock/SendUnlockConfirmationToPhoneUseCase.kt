@@ -20,7 +20,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to send account unlock confirmation code to user phone.
+ * Shared use case for initiating self-service account unlocking by dispatching an SMS OTP verification code to a user's phone number.
+ *
+ * Verifies self-service unlock settings, enforces rate limiting, and protects against phone number enumeration via simulated SMS dispatches.
  */
 @Singleton
 public class SendUnlockConfirmationToPhoneUseCase @Inject constructor(

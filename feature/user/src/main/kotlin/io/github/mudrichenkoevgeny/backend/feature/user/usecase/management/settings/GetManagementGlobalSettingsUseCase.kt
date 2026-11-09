@@ -7,7 +7,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Use case to get global settings.
+ * Management use case for retrieving an effective snapshot of global platform settings.
+ *
+ * Exposes platform contact emails, policy URLs, minimum supported client versions, and feature flags to staff and admin clients.
  */
 @Singleton
 public class GetManagementGlobalSettingsUseCase @Inject constructor(

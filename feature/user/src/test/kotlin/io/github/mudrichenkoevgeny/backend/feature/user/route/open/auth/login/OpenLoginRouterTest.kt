@@ -91,7 +91,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
             }
         }
 
-        val response = client.post(OpenLoginRoutes.LOGIN_BY_EMAIL) {
+        val response = client.post(urlString = OpenLoginRoutes.LOGIN_BY_EMAIL) {
             contentType(ContentType.Application.Json)
             setBody(request)
         }
@@ -128,7 +128,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
             }
         }
 
-        val response = client.post(OpenLoginRoutes.LOGIN_BY_PHONE) {
+        val response = client.post(urlString = OpenLoginRoutes.LOGIN_BY_PHONE) {
             contentType(ContentType.Application.Json)
             setBody(request)
         }
@@ -164,7 +164,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
             }
         }
 
-        val response = client.post(OpenLoginRoutes.LOGIN_BY_EXTERNAL_AUTH_PROVIDER) {
+        val response = client.post(urlString = OpenLoginRoutes.LOGIN_BY_EXTERNAL_AUTH_PROVIDER) {
             contentType(ContentType.Application.Json)
             setBody(request)
         }
@@ -201,7 +201,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
             }
         }
 
-        val response = client.post(OpenLoginRoutes.LOGIN_BY_TOTP) {
+        val response = client.post(urlString = OpenLoginRoutes.LOGIN_BY_TOTP) {
             contentType(ContentType.Application.Json)
             setBody(request)
         }
@@ -240,7 +240,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
             }
         }
 
-        val response = client.post(OpenLoginRoutes.LOGIN_BY_TOTP_RECOVERY_CODE) {
+        val response = client.post(urlString = OpenLoginRoutes.LOGIN_BY_TOTP_RECOVERY_CODE) {
             contentType(ContentType.Application.Json)
             setBody(request)
         }
@@ -275,7 +275,7 @@ class OpenLoginRouterTest : BaseRouterTest() {
             }
         }
 
-        val response = client.post(OpenLoginRoutes.SEND_LOGIN_CONFIRMATION_TO_PHONE) {
+        val response = client.post(urlString = OpenLoginRoutes.SEND_LOGIN_CONFIRMATION_TO_PHONE) {
             contentType(ContentType.Application.Json)
             setBody(request)
         }
