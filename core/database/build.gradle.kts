@@ -43,12 +43,16 @@ dependencies {
     api(libs.lettuce.core)
 
     // Testing
+    testImplementation(testFixtures(project(":core:common")))
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.exposed.json)
+    testImplementation(libs.testcontainers.core)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.junit.jupiter)
     testRuntimeOnly(libs.h2database)
     testImplementation(libs.kotlinx.coroutines.core) // Transitive for Project Modules
     testFixturesApi(libs.kotlin.reflect)

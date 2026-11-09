@@ -1,8 +1,5 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.mask
 
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.TestAuditActionType
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.TestAuditResourceType
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventInternal
@@ -10,17 +7,22 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.eve
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CommonAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.TestAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.TestAuditResourceType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class AuditDataMaskerTest {
-
     @Test
     fun `maskBySensitivity leaves non sensitive unchanged`() {
         assertEquals(
             "plain",
-            AuditDataMasker.maskBySensitivity("plain", AuditValueSensitivity.NON_SENSITIVE)
+            AuditDataMasker.maskBySensitivity(
+                "plain",
+                AuditValueSensitivity.NON_SENSITIVE
+            )
         )
     }
 
@@ -28,21 +30,39 @@ class AuditDataMaskerTest {
     fun `maskBySensitivity full value mask hides non blank`() {
         assertEquals(
             DataMasker.LARGE_MASK,
-            AuditDataMasker.maskBySensitivity("secret-token", AuditValueSensitivity.FULL_VALUE_MASK)
+            AuditDataMasker.maskBySensitivity(
+                "secret-token",
+                AuditValueSensitivity.FULL_VALUE_MASK
+            )
         )
     }
 
     @Test
     fun `maskBySensitivity full value mask returns empty for blank strings`() {
-        assertEquals("", AuditDataMasker.maskBySensitivity("", AuditValueSensitivity.FULL_VALUE_MASK))
-        assertEquals("", AuditDataMasker.maskBySensitivity("   ", AuditValueSensitivity.FULL_VALUE_MASK))
+        assertEquals(
+            "",
+            AuditDataMasker.maskBySensitivity(
+                "",
+                AuditValueSensitivity.FULL_VALUE_MASK
+            )
+        )
+        assertEquals(
+            "",
+            AuditDataMasker.maskBySensitivity(
+                "   ",
+                AuditValueSensitivity.FULL_VALUE_MASK
+            )
+        )
     }
 
     @Test
     fun `maskBySensitivity partial keeps first and last`() {
         assertEquals(
             "a${DataMasker.LARGE_MASK}e",
-            AuditDataMasker.maskBySensitivity("abcde", AuditValueSensitivity.PARTIAL_VALUE_MASK)
+            AuditDataMasker.maskBySensitivity(
+                "abcde",
+                AuditValueSensitivity.PARTIAL_VALUE_MASK
+            )
         )
     }
 
@@ -50,7 +70,10 @@ class AuditDataMaskerTest {
     fun `maskBySensitivity email uses DataMasker rules`() {
         assertEquals(
             DataMasker.maskEmail("user@example.com"),
-            AuditDataMasker.maskBySensitivity("user@example.com", AuditValueSensitivity.EMAIL)
+            AuditDataMasker.maskBySensitivity(
+                "user@example.com",
+                AuditValueSensitivity.EMAIL
+            )
         )
     }
 
@@ -58,7 +81,10 @@ class AuditDataMaskerTest {
     fun `maskBySensitivity phone keeps last four digits`() {
         assertEquals(
             DataMasker.maskPhone("+1 (555) 123-4567"),
-            AuditDataMasker.maskBySensitivity("+1 (555) 123-4567", AuditValueSensitivity.PHONE_NUMBER)
+            AuditDataMasker.maskBySensitivity(
+                "+1 (555) 123-4567",
+                AuditValueSensitivity.PHONE_NUMBER
+            )
         )
     }
 
@@ -66,7 +92,10 @@ class AuditDataMaskerTest {
     fun `maskBySensitivity ip v4 masks tail octets`() {
         assertEquals(
             DataMasker.maskIpAddress("192.168.0.10"),
-            AuditDataMasker.maskBySensitivity("192.168.0.10", AuditValueSensitivity.IP_ADDRESS)
+            AuditDataMasker.maskBySensitivity(
+                "192.168.0.10",
+                AuditValueSensitivity.IP_ADDRESS
+            )
         )
     }
 
@@ -77,7 +106,10 @@ class AuditDataMaskerTest {
             resourceValueSensitivity = AuditValueSensitivity.FULL_VALUE_MASK
         )
         val masked = with(AuditDataMasker) { event.maskSensitiveData() }
-        assertEquals(DataMasker.LARGE_MASK, masked.resourceId)
+        assertEquals(
+            DataMasker.LARGE_MASK,
+            masked.resourceId
+        )
     }
 
     @Test
@@ -94,12 +126,20 @@ class AuditDataMaskerTest {
     fun `maskSensitiveData maps metadata values through key sensitivity`() {
         val code = "E_AUTH"
         val event = baseEvent().copy(
-            metadata = setOf(AuditEventMetadata(CommonAuditMetadataKey.ERROR_CODE, code))
+            metadata = setOf(
+                AuditEventMetadata(
+                    CommonAuditMetadataKey.ERROR_CODE,
+                    code
+                )
+            )
         )
         val masked = with(AuditDataMasker) { event.maskSensitiveData() }
         val meta = masked.metadata.single { it.key == CommonAuditMetadataKey.ERROR_CODE }
         assertEquals(
-            AuditDataMasker.maskBySensitivity(code, CommonAuditMetadataKey.ERROR_CODE.valueSensitivity),
+            AuditDataMasker.maskBySensitivity(
+                code,
+                CommonAuditMetadataKey.ERROR_CODE.valueSensitivity
+            ),
             meta.value
         )
     }
@@ -108,7 +148,10 @@ class AuditDataMaskerTest {
     fun `maskSensitiveData preserves empty metadata`() {
         val event = baseEvent().copy(metadata = emptySet())
         val masked = with(AuditDataMasker) { event.maskSensitiveData() }
-        assertEquals(emptySet<AuditEventMetadata>(), masked.metadata)
+        assertEquals(
+            emptySet<AuditEventMetadata>(),
+            masked.metadata
+        )
     }
 
     private fun baseEvent(): AuditEventInternal = createTestAuditEventInternal(

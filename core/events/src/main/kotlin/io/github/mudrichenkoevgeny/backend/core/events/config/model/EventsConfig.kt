@@ -12,7 +12,7 @@ import io.github.mudrichenkoevgeny.backend.core.events.subscriber.EventSubscribe
  * @param kafkaGroupId consumer group id for the subscriber.
  * @param kafkaClientId client id for producer/consumer.
  */
-data class EventsConfig(
+public data class EventsConfig(
     val eventsType: EventsType,
     val kafkaBootstrapServers: String,
     val kafkaGroupId: String,

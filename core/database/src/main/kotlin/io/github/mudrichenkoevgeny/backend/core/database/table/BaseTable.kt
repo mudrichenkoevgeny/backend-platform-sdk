@@ -1,8 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.core.database.table
 
+import org.jetbrains.exposed.v1.core.Column
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.dao.id.IdTable
 import org.jetbrains.exposed.v1.javatime.CurrentTimestamp
 import org.jetbrains.exposed.v1.javatime.timestamp
+import java.time.Instant
 import kotlin.uuid.Uuid
 
 /**
@@ -13,10 +16,12 @@ import kotlin.uuid.Uuid
  *
  * @param name table name in the database.
  */
-open class BaseTable(name: String) : IdTable<Uuid>(name) {
-    override val id = uuid("id").entityId()
-    override val primaryKey = PrimaryKey(id)
+public open class BaseTable(
+    name: String
+) : IdTable<Uuid>(name) {
+    override val id: Column<EntityID<Uuid>> = uuid("id").entityId()
+    override val primaryKey: PrimaryKey = PrimaryKey(id)
 
-    val createdAt = timestamp("created_at").defaultExpression(CurrentTimestamp)
-    val updatedAt = timestamp("updated_at").nullable()
+    public val createdAt: Column<Instant> = timestamp("created_at").defaultExpression(CurrentTimestamp)
+    public val updatedAt: Column<Instant?> = timestamp("updated_at").nullable()
 }

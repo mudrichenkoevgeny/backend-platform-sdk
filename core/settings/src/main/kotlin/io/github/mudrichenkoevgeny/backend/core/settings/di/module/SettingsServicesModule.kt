@@ -12,9 +12,8 @@ import javax.inject.Singleton
  * Binds [SystemSettingsService] to [SystemSettingsServiceImpl].
  */
 @Module
-interface SettingsServicesModule {
-
+public interface SettingsServicesModule {
     @Binds
     @Singleton
-    fun bindSystemSettingsService(systemSettingsServiceImpl: SystemSettingsServiceImpl): SystemSettingsService
+    public fun bindSystemSettingsService(systemSettingsServiceImpl: SystemSettingsServiceImpl): SystemSettingsService
 }

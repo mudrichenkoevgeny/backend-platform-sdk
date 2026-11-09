@@ -21,14 +21,14 @@ import javax.inject.Singleton
  * 5. [SelfManagementUnlockRouter] — handles account unlock flows.
  */
 @Singleton
-class ManagementAuthRouter @Inject constructor(
+public class ManagementAuthRouter @Inject constructor(
     private val managementAuthSettingsRouter: ManagementAuthSettingsRouter,
     private val selfManagementLoginRouter: SelfManagementLoginRouter,
     private val selfManagementRefreshTokenRouter: SelfManagementRefreshTokenRouter,
     private val selfManagementResetPasswordRouter: SelfManagementResetPasswordRouter,
     private val selfManagementUnlockRouter: SelfManagementUnlockRouter
 ) : BaseRouter {
-    override fun register(route: Route) {
+    public override fun register(route: Route) {
         managementAuthSettingsRouter.register(route)
         selfManagementLoginRouter.register(route)
         selfManagementRefreshTokenRouter.register(route)

@@ -9,7 +9,7 @@ import kotlin.time.Instant
 /**
  * Query parameters for self-service user sessions list endpoint.
  */
-data class SelfSessionListQueryParams(
+public data class SelfSessionListQueryParams(
     val listing: ListingQueryParams<UserSessionSortBy>,
     val sessionIds: List<String> = emptyList(),
     val identifier: String? = null,

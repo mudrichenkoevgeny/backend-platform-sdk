@@ -1,0 +1,15 @@
+pre-commit:
+  parallel: true
+  commands:
+    ktlint:
+      glob: "*.{kt,kts}"
+      run: ./gradlew ktlintCheck
+    detekt:
+      glob: "*.{kt,kts}"
+      run: ./gradlew detekt
+
+pre-push:
+  parallel: false
+  commands:
+    check:
+      run: ./gradlew check

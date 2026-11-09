@@ -18,11 +18,11 @@ import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 import org.jetbrains.exposed.v1.jdbc.upsert
-import java.time.Instant as JavaInstant
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.time.Instant as KotlinInstant
 import kotlin.uuid.Uuid
+import java.time.Instant as JavaInstant
+import kotlin.time.Instant as KotlinInstant
 
 /**
  * Default [UserTotpSettingsRepository] implementation backed by Exposed and [UserTotpSettingsTable].
@@ -31,29 +31,26 @@ import kotlin.uuid.Uuid
  * when database constraints are violated or expected row updates fail.
  */
 @Singleton
-class UserTotpSettingsRepositoryImpl @Inject constructor() : UserTotpSettingsRepository {
-
+public class UserTotpSettingsRepositoryImpl @Inject constructor() : UserTotpSettingsRepository {
     override suspend fun upsertUnconfirmedSettings(
         userId: UserId,
         encryptedSecret: EncryptedString
-    ): AppResult<UserTotpSettings> {
-        return try {
-            UserTotpSettingsTable.upsert(UserTotpSettingsTable.userId) { row ->
-                row[id] = Uuid.random()
-                row[UserTotpSettingsTable.userId] = userId.value
-                row[UserTotpSettingsTable.encryptedSecret] = encryptedSecret.value
-                row[isConfirmed] = false
-                row[encryptedRecoveryCodes] = null
-                row[lastUsedAt] = null
-                row[updatedAt] = JavaInstant.now()
-            }
-
-            getSettingsByUserId(userId).mapNotNullOrError(
-                CommonError.Database("Upsert failed for user id=${userId.value}")
-            )
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error upserting TOTP settings: ${e.message}"))
+    ): AppResult<UserTotpSettings> = try {
+        UserTotpSettingsTable.upsert(UserTotpSettingsTable.userId) { row ->
+            row[id] = Uuid.random()
+            row[UserTotpSettingsTable.userId] = userId.value
+            row[UserTotpSettingsTable.encryptedSecret] = encryptedSecret.value
+            row[isConfirmed] = false
+            row[encryptedRecoveryCodes] = null
+            row[lastUsedAt] = null
+            row[updatedAt] = JavaInstant.now()
         }
+
+        getSettingsByUserId(userId).mapNotNullOrError(
+            CommonError.Database("Upsert failed for user id=${userId.value}")
+        )
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error upserting TOTP settings: ${e.message}"))
     }
 
     override suspend fun confirmTotp(
@@ -91,15 +88,13 @@ class UserTotpSettingsRepositoryImpl @Inject constructor() : UserTotpSettingsRep
         lastUsedAt: UpdateField<KotlinInstant?>
     ): AppResult<UserTotpSettings> {
         val secretToSet = if (encryptedSecret is UpdateField.Set) {
-            encryptedSecret.value
-                ?: return AppResult.Error(CommonError.Database("Secret cannot be null"))
+            encryptedSecret.value ?: return AppResult.Error(CommonError.Database("Secret cannot be null"))
         } else {
             null
         }
 
         val confirmationToSet = if (isConfirmed is UpdateField.Set) {
-            isConfirmed.value
-                ?: return AppResult.Error(CommonError.Database("isConfirmed cannot be null"))
+            isConfirmed.value ?: return AppResult.Error(CommonError.Database("isConfirmed cannot be null"))
         } else {
             null
         }
@@ -142,26 +137,20 @@ class UserTotpSettingsRepositoryImpl @Inject constructor() : UserTotpSettingsRep
         }
     }
 
-    override suspend fun getSettingsByUserId(userId: UserId): AppResult<UserTotpSettings?> {
-        return try {
-            val row = UserTotpSettingsTable
-                .selectAll()
-                .where { UserTotpSettingsTable.userId eq userId.value }
-                .singleOrNull()
+    override suspend fun getSettingsByUserId(userId: UserId): AppResult<UserTotpSettings?> = try {
+        val row = UserTotpSettingsTable.selectAll().where { UserTotpSettingsTable.userId eq userId.value }
+            .singleOrNull()
 
-            AppResult.Success(row?.toUserTotpSettings())
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error retrieving TOTP settings: ${e.message}"))
-        }
+        AppResult.Success(row?.toUserTotpSettings())
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving TOTP settings: ${e.message}"))
     }
 
-    override suspend fun deleteSettings(userId: UserId): AppResult<Unit> {
-        return try {
-            UserTotpSettingsTable.deleteWhere { UserTotpSettingsTable.userId eq userId.value }
-            AppResult.Success(Unit)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error deleting TOTP settings: ${e.message}"))
-        }
+    override suspend fun deleteSettings(userId: UserId): AppResult<Unit> = try {
+        UserTotpSettingsTable.deleteWhere { UserTotpSettingsTable.userId eq userId.value }
+        AppResult.Success(Unit)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error deleting TOTP settings: ${e.message}"))
     }
 
     private fun ResultRow.toUserTotpSettings(): UserTotpSettings = UserTotpSettings(

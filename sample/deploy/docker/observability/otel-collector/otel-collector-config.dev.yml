@@ -7,7 +7,7 @@ receivers:
         endpoint: 0.0.0.0:4318
 
 exporters:
-  debug: {}
+  debug: { }
   prometheus:
     endpoint: "0.0.0.0:8888"
   otlp/jaeger:
@@ -24,11 +24,11 @@ service:
 
   pipelines:
     traces:
-      receivers: [otlp]
-      exporters: [debug, otlp/jaeger]
+      receivers: [ otlp ]
+      exporters: [ debug, otlp/jaeger ]
     metrics:
-      receivers: [otlp]
-      exporters: [debug, prometheus]
+      receivers: [ otlp ]
+      exporters: [ debug, prometheus ]
     logs:
       receivers: [ otlp ]
       exporters: [ debug ]

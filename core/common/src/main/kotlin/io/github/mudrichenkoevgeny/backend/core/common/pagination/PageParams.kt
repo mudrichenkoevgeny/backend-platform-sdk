@@ -5,7 +5,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
 /**
  * SQL-oriented pagination: 1-based [page] and non-negative [size], exposed as [limit]/[offset] for `LIMIT`/`OFFSET`.
  */
-data class PageParams(
+public data class PageParams(
     val page: Int = ListingDefaultValues.Pagination.PAGE_NUMBER,
     val size: Int = ListingDefaultValues.Pagination.PAGE_SIZE
 ) {
@@ -23,7 +23,10 @@ data class PageParams(
  * Number of pages for [totalCount] rows and [pageSize] per page; `0` when [pageSize] is not positive.
  * Matches foundation `PagedResult.totalPages` semantics.
  */
-fun getNumOfTotalPages(totalCount: Long, pageSize: Int): Long = if (pageSize <= 0) {
+public fun getNumOfTotalPages(
+    totalCount: Long,
+    pageSize: Int
+): Long = if (pageSize <= 0) {
     0L
 } else {
     (totalCount + pageSize - 1L) / pageSize

@@ -19,10 +19,9 @@ import javax.inject.Singleton
  * @param storageConfig Configuration parameters holding [ImgproxyConfig].
  */
 @Singleton
-class ImgproxyUrlBuilderImpl @Inject constructor(
+public class ImgproxyUrlBuilderImpl @Inject constructor(
     private val storageConfig: StorageConfig
 ) : ImgproxyUrlBuilder {
-
     override fun buildPresetUrls(
         bucket: String,
         key: String,
@@ -47,9 +46,7 @@ class ImgproxyUrlBuilderImpl @Inject constructor(
         return result
     }
 
-    private fun isSupportedMimeType(mimeType: String): Boolean {
-        return isRasterImage(mimeType) || isVectorSvg(mimeType)
-    }
+    private fun isSupportedMimeType(mimeType: String): Boolean = isRasterImage(mimeType) || isVectorSvg(mimeType)
 
     private fun getProcessingOptions(
         mimeType: String,
@@ -77,7 +74,9 @@ class ImgproxyUrlBuilderImpl @Inject constructor(
         processingOptions: String
     ): String {
         val s3SourceUrl = "$S3_SCHEME_PREFIX$bucket/$key"
-        val encodedSourceUrl = Base64.getUrlEncoder().withoutPadding().encodeToString(s3SourceUrl.toByteArray(Charsets.UTF_8))
+        val encodedSourceUrl = Base64.getUrlEncoder().withoutPadding().encodeToString(
+            s3SourceUrl.toByteArray(Charsets.UTF_8)
+        )
         val path = "/$processingOptions/$encodedSourceUrl"
 
         val signature = if (config.key.isNotBlank() && config.salt.isNotBlank()) {
@@ -90,7 +89,11 @@ class ImgproxyUrlBuilderImpl @Inject constructor(
         return "$baseUrl/$signature$path"
     }
 
-    private fun calculateSignature(path: String, keyHex: String, saltHex: String): String {
+    private fun calculateSignature(
+        path: String,
+        keyHex: String,
+        saltHex: String
+    ): String {
         val keyBytes = HexFormat.of().parseHex(keyHex)
         val saltBytes = HexFormat.of().parseHex(saltHex)
         val pathBytes = path.toByteArray(Charsets.UTF_8)
@@ -104,7 +107,7 @@ class ImgproxyUrlBuilderImpl @Inject constructor(
         return Base64.getUrlEncoder().withoutPadding().encodeToString(digest)
     }
 
-    companion object {
+    public companion object {
         private const val SVG_MIME_TYPE = "image/svg+xml"
         private const val SVG_FORMAT_OPTION = "fmt:png"
         private const val S3_SCHEME_PREFIX = "s3://"

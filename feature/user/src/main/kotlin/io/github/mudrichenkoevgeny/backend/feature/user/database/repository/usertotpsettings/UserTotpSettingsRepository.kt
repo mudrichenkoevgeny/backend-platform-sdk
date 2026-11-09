@@ -13,8 +13,7 @@ import kotlin.time.Instant
  * Manages the lifecycle of sensitive security data including encrypted secrets,
  * encrypted recovery codes, and verification state in the persistent storage.
  */
-interface UserTotpSettingsRepository {
-
+public interface UserTotpSettingsRepository {
     /**
      * Creates or updates unconfirmed TOTP settings for a user.
      * This is the entry point for the 2FA setup process where the secret is generated
@@ -24,7 +23,7 @@ interface UserTotpSettingsRepository {
      * @param encryptedSecret The TOTP secret key, encrypted for secure storage.
      * @return [AppResult.Success] containing the initiated [UserTotpSettings].
      */
-    suspend fun upsertUnconfirmedSettings(
+    public suspend fun upsertUnconfirmedSettings(
         userId: UserId,
         encryptedSecret: EncryptedString
     ): AppResult<UserTotpSettings>
@@ -37,7 +36,7 @@ interface UserTotpSettingsRepository {
      * @param encryptedRecoveryCodes A list of generated recovery codes, encrypted for storage.
      * @return [AppResult.Success] containing the confirmed [UserTotpSettings].
      */
-    suspend fun confirmTotp(
+    public suspend fun confirmTotp(
         userId: UserId,
         encryptedRecoveryCodes: List<EncryptedString>
     ): AppResult<UserTotpSettings>
@@ -52,7 +51,7 @@ interface UserTotpSettingsRepository {
      * @param lastUsedAt An update for the timestamp of the last successful OTP verification.
      * @return [AppResult.Success] with the updated [UserTotpSettings].
      */
-    suspend fun updateSettings(
+    public suspend fun updateSettings(
         userId: UserId,
         encryptedSecret: UpdateField<EncryptedString> = UpdateField.Ignore,
         isConfirmed: UpdateField<Boolean> = UpdateField.Ignore,
@@ -66,7 +65,7 @@ interface UserTotpSettingsRepository {
      * @param userId The unique identifier of the user.
      * @return [AppResult.Success] with [UserTotpSettings] if found, null otherwise.
      */
-    suspend fun getSettingsByUserId(userId: UserId): AppResult<UserTotpSettings?>
+    public suspend fun getSettingsByUserId(userId: UserId): AppResult<UserTotpSettings?>
 
     /**
      * Removes all TOTP-related settings for the specified user.
@@ -75,5 +74,5 @@ interface UserTotpSettingsRepository {
      * @param userId The unique identifier of the user.
      * @return [AppResult.Success] with [Unit] on successful deletion.
      */
-    suspend fun deleteSettings(userId: UserId): AppResult<Unit>
+    public suspend fun deleteSettings(userId: UserId): AppResult<Unit>
 }

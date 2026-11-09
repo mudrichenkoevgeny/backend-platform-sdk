@@ -16,10 +16,9 @@ import javax.inject.Singleton
  * @property storageManager Manager for storage file metadata and soft deletion.
  */
 @Singleton
-class DeleteFilesUseCase @Inject constructor(
+public class DeleteFilesUseCase @Inject constructor(
     private val storageManager: StorageManager
 ) {
-
     /**
      * Executes self-service batch file deletion.
      *
@@ -27,7 +26,7 @@ class DeleteFilesUseCase @Inject constructor(
      * @param authenticatedRequestContext Context containing the authenticated user's ID.
      * @return [AppResult.Success] on completion, or an error on failure.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         fileIds: List<FileId>,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {

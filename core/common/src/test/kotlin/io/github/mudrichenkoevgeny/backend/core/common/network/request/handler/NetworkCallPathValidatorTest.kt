@@ -10,16 +10,21 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 class NetworkCallPathValidatorTest {
-
     @Test
     fun `validatePathParameter returns mapped value when present and valid`() {
         val call = mockk<ApplicationCall> {
-            every { parameters } returns parametersOf("id", "42")
+            every { parameters } returns parametersOf(
+                "id",
+                "42"
+            )
         }
 
         val id: Int = call.validatePathParameter("id") { it.toInt() }
 
-        assertEquals(42, id)
+        assertEquals(
+            42,
+            id
+        )
     }
 
     @Test
@@ -32,20 +37,28 @@ class NetworkCallPathValidatorTest {
             call.validatePathParameter("id") { it.toInt() }
         }
 
-        assertEquals(CommonError.MissingRequiredParameter::class, ex.error::class)
+        assertEquals(
+            CommonError.MissingRequiredParameter::class,
+            ex.error::class
+        )
     }
 
     @Test
     fun `validatePathParameter throws InvalidParameterValue when mapper fails`() {
         val call = mockk<ApplicationCall> {
-            every { parameters } returns parametersOf("id", "not-int")
+            every { parameters } returns parametersOf(
+                "id",
+                "not-int"
+            )
         }
 
         val ex = assertThrows(RequestHandlingException::class.java) {
             call.validatePathParameter("id") { it.toInt() }
         }
 
-        assertEquals(CommonError.InvalidParameterValue::class, ex.error::class)
+        assertEquals(
+            CommonError.InvalidParameterValue::class,
+            ex.error::class
+        )
     }
 }
-

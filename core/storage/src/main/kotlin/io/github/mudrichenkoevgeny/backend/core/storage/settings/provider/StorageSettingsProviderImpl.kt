@@ -20,11 +20,10 @@ import javax.inject.Singleton
  * @property config Storage module configuration holding default values.
  */
 @Singleton
-class StorageSettingsProviderImpl @Inject constructor(
+public class StorageSettingsProviderImpl @Inject constructor(
     private val settingsService: SystemSettingsService,
     private val config: StorageConfig
 ) : StorageSettingsProvider {
-
     override suspend fun initialize(): AppResult<Unit> {
         val defaults = config.managementStorageSettings
         val defaultSettings = listOf(
@@ -77,36 +76,28 @@ class StorageSettingsProviderImpl @Inject constructor(
         return settingsService.registerDefaults(defaultSettings)
     }
 
-    override fun getManagementStorageSettings(): ManagementStorageSettings {
-        return ManagementStorageSettings(
-            minUploadSizeBytes = getMinUploadSizeBytes(),
-            maxUploadSizeBytes = getMaxUploadSizeBytes(),
-            totalStorageQuotaForOpenUserBytes = getTotalStorageQuotaForOpenUserBytes(),
-            totalStorageQuotaForManagementUserBytes = getTotalStorageQuotaForManagementUserBytes(),
-            presignedUrlExpirationSeconds = getPresignedUrlExpirationSeconds(),
-            maxPendingUploadsForOpenUser = getMaxPendingUploadsForOpenUser(),
-            maxPendingUploadsForManagementUser = getMaxPendingUploadsForManagementUser(),
-            isDeduplicationEnabled = getIsDeduplicationEnabled(),
-            deletedFilesCleanupIntervalSeconds = getDeletedFilesCleanupIntervalSeconds()
-        )
-    }
+    override fun getManagementStorageSettings(): ManagementStorageSettings = ManagementStorageSettings(
+        minUploadSizeBytes = getMinUploadSizeBytes(),
+        maxUploadSizeBytes = getMaxUploadSizeBytes(),
+        totalStorageQuotaForOpenUserBytes = getTotalStorageQuotaForOpenUserBytes(),
+        totalStorageQuotaForManagementUserBytes = getTotalStorageQuotaForManagementUserBytes(),
+        presignedUrlExpirationSeconds = getPresignedUrlExpirationSeconds(),
+        maxPendingUploadsForOpenUser = getMaxPendingUploadsForOpenUser(),
+        maxPendingUploadsForManagementUser = getMaxPendingUploadsForManagementUser(),
+        isDeduplicationEnabled = getIsDeduplicationEnabled(),
+        deletedFilesCleanupIntervalSeconds = getDeletedFilesCleanupIntervalSeconds()
+    )
 
-    override fun getOpenStorageSettings(): OpenStorageSettings {
-        return OpenStorageSettings(
-            minUploadSizeBytes = getMinUploadSizeBytes(),
-            maxUploadSizeBytes = getMaxUploadSizeBytes()
-        )
-    }
+    override fun getOpenStorageSettings(): OpenStorageSettings = OpenStorageSettings(
+        minUploadSizeBytes = getMinUploadSizeBytes(),
+        maxUploadSizeBytes = getMaxUploadSizeBytes()
+    )
 
-    override fun getMinUploadSizeBytes(): Long {
-        return settingsService.getLong(KEY_MIN_UPLOAD_SIZE_BYTES)
-            ?: config.managementStorageSettings.minUploadSizeBytes
-    }
+    override fun getMinUploadSizeBytes(): Long =
+        settingsService.getLong(KEY_MIN_UPLOAD_SIZE_BYTES) ?: config.managementStorageSettings.minUploadSizeBytes
 
-    override fun getMaxUploadSizeBytes(): Long {
-        return settingsService.getLong(KEY_MAX_UPLOAD_SIZE_BYTES)
-            ?: config.managementStorageSettings.maxUploadSizeBytes
-    }
+    override fun getMaxUploadSizeBytes(): Long =
+        settingsService.getLong(KEY_MAX_UPLOAD_SIZE_BYTES) ?: config.managementStorageSettings.maxUploadSizeBytes
 
     override fun getTotalStorageQuotaForOpenUserBytes(): Long? {
         val raw = settingsService.getString(KEY_TOTAL_STORAGE_QUOTA_FOR_OPEN_USER_BYTES)
@@ -124,30 +115,22 @@ class StorageSettingsProviderImpl @Inject constructor(
         return raw.toLongOrNull()
     }
 
-    override fun getPresignedUrlExpirationSeconds(): Int {
-        return settingsService.getInt(KEY_PRESIGNED_URL_EXPIRATION_SECONDS)
-            ?: config.managementStorageSettings.presignedUrlExpirationSeconds
-    }
+    override fun getPresignedUrlExpirationSeconds(): Int = settingsService.getInt(KEY_PRESIGNED_URL_EXPIRATION_SECONDS)
+        ?: config.managementStorageSettings.presignedUrlExpirationSeconds
 
-    override fun getMaxPendingUploadsForOpenUser(): Int {
-        return settingsService.getInt(KEY_MAX_PENDING_UPLOADS_FOR_OPEN_USER)
-            ?: config.managementStorageSettings.maxPendingUploadsForOpenUser
-    }
+    override fun getMaxPendingUploadsForOpenUser(): Int = settingsService.getInt(KEY_MAX_PENDING_UPLOADS_FOR_OPEN_USER)
+        ?: config.managementStorageSettings.maxPendingUploadsForOpenUser
 
-    override fun getMaxPendingUploadsForManagementUser(): Int {
-        return settingsService.getInt(KEY_MAX_PENDING_UPLOADS_FOR_MANAGEMENT_USER)
+    override fun getMaxPendingUploadsForManagementUser(): Int =
+        settingsService.getInt(KEY_MAX_PENDING_UPLOADS_FOR_MANAGEMENT_USER)
             ?: config.managementStorageSettings.maxPendingUploadsForManagementUser
-    }
 
-    override fun getIsDeduplicationEnabled(): Boolean {
-        return settingsService.getBoolean(KEY_IS_DEDUPLICATION_ENABLED)
-            ?: config.managementStorageSettings.isDeduplicationEnabled
-    }
+    override fun getIsDeduplicationEnabled(): Boolean = settingsService.getBoolean(KEY_IS_DEDUPLICATION_ENABLED)
+        ?: config.managementStorageSettings.isDeduplicationEnabled
 
-    override fun getDeletedFilesCleanupIntervalSeconds(): Int {
-        return settingsService.getInt(KEY_DELETED_FILES_CLEANUP_INTERVAL_SECONDS)
+    override fun getDeletedFilesCleanupIntervalSeconds(): Int =
+        settingsService.getInt(KEY_DELETED_FILES_CLEANUP_INTERVAL_SECONDS)
             ?: config.managementStorageSettings.deletedFilesCleanupIntervalSeconds
-    }
 
     override suspend fun updateManagementStorageSettings(
         managementStorageSettings: ManagementStorageSettings
@@ -207,15 +190,19 @@ class StorageSettingsProviderImpl @Inject constructor(
         return updateManagementStorageSettings(defaults).mapSuccess { defaults }
     }
 
-    companion object {
-        const val KEY_MIN_UPLOAD_SIZE_BYTES = "storage.min_upload_size_bytes"
-        const val KEY_MAX_UPLOAD_SIZE_BYTES = "storage.max_upload_size_bytes"
-        const val KEY_TOTAL_STORAGE_QUOTA_FOR_OPEN_USER_BYTES = "storage.total_storage_quota_for_open_user_bytes"
-        const val KEY_TOTAL_STORAGE_QUOTA_FOR_MANAGEMENT_USER_BYTES = "storage.total_storage_quota_for_management_user_bytes"
-        const val KEY_PRESIGNED_URL_EXPIRATION_SECONDS = "storage.presigned_url_expiration_seconds"
-        const val KEY_MAX_PENDING_UPLOADS_FOR_OPEN_USER = "storage.max_pending_uploads_for_open_user"
-        const val KEY_MAX_PENDING_UPLOADS_FOR_MANAGEMENT_USER = "storage.max_pending_uploads_for_management_user"
-        const val KEY_IS_DEDUPLICATION_ENABLED = "storage.is_deduplication_enabled"
-        const val KEY_DELETED_FILES_CLEANUP_INTERVAL_SECONDS = "storage.deleted_files_cleanup_interval_seconds"
+    public companion object {
+        public const val KEY_MIN_UPLOAD_SIZE_BYTES: String = "storage.min_upload_size_bytes"
+        public const val KEY_MAX_UPLOAD_SIZE_BYTES: String = "storage.max_upload_size_bytes"
+        public const val KEY_TOTAL_STORAGE_QUOTA_FOR_OPEN_USER_BYTES: String =
+            "storage.total_storage_quota_for_open_user_bytes"
+        public const val KEY_TOTAL_STORAGE_QUOTA_FOR_MANAGEMENT_USER_BYTES: String =
+            "storage.total_storage_quota_for_management_user_bytes"
+        public const val KEY_PRESIGNED_URL_EXPIRATION_SECONDS: String = "storage.presigned_url_expiration_seconds"
+        public const val KEY_MAX_PENDING_UPLOADS_FOR_OPEN_USER: String = "storage.max_pending_uploads_for_open_user"
+        public const val KEY_MAX_PENDING_UPLOADS_FOR_MANAGEMENT_USER: String =
+            "storage.max_pending_uploads_for_management_user"
+        public const val KEY_IS_DEDUPLICATION_ENABLED: String = "storage.is_deduplication_enabled"
+        public const val KEY_DELETED_FILES_CLEANUP_INTERVAL_SECONDS: String =
+            "storage.deleted_files_cleanup_interval_seconds"
     }
 }

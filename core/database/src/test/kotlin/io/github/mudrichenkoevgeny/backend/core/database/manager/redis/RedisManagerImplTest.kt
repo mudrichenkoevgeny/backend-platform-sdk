@@ -12,7 +12,6 @@ import io.lettuce.core.pubsub.api.async.RedisPubSubAsyncCommands
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
@@ -24,9 +23,7 @@ import org.junit.jupiter.api.Test
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class RedisManagerImplTest {
-
     private val redisClient = mockk<RedisClient>(relaxed = true)
     private val testScope = TestScope()
     private val connection = mockk<StatefulRedisConnection<String, String>>(relaxed = true)
@@ -46,7 +43,10 @@ class RedisManagerImplTest {
         every { pubSubConnection.async() } returns pubSubAsyncCommands
         every { pubSubConnection.isOpen } returns true
 
-        redisManager = RedisManagerImpl(redisClient, testScope)
+        redisManager = RedisManagerImpl(
+            redisClient,
+            testScope
+        )
     }
 
     @AfterEach
@@ -57,7 +57,11 @@ class RedisManagerImplTest {
     private fun <T> mockRedisFuture(value: T): RedisFuture<T> {
         val future = object : CompletableFuture<T>(), RedisFuture<T> {
             override fun getError(): String? = null
-            override fun await(timeout: Long, unit: TimeUnit): Boolean = true
+
+            override fun await(
+                timeout: Long,
+                unit: TimeUnit
+            ): Boolean = true
         }
         future.complete(value)
         return future
@@ -76,16 +80,32 @@ class RedisManagerImplTest {
             )
         } returns mockRedisFuture(expectedValue)
 
-        val result = redisManager.incrementWithExpiration("key", 10L)
+        val result = redisManager.incrementWithExpiration(
+            "key",
+            10L
+        )
 
-        assertEquals(AppResult.Success(expectedValue), result)
+        assertEquals(
+            AppResult.Success(expectedValue),
+            result
+        )
     }
 
     @Test
     fun `setWithExpiration returns success when command succeeds`() = runTest {
-        every { asyncCommands.setex(any<String>(), any<Long>(), any<String>()) } returns mockRedisFuture("OK")
+        every {
+            asyncCommands.setex(
+                any<String>(),
+                any<Long>(),
+                any<String>()
+            )
+        } returns mockRedisFuture("OK")
 
-        val result = redisManager.setWithExpiration("key", "value", 10L)
+        val result = redisManager.setWithExpiration(
+            "key",
+            "value",
+            10L
+        )
 
         assertTrue(result is AppResult.Success)
     }
@@ -96,7 +116,10 @@ class RedisManagerImplTest {
 
         val result = redisManager.get("key")
 
-        assertEquals(AppResult.Success("some_value"), result)
+        assertEquals(
+            AppResult.Success("some_value"),
+            result
+        )
     }
 
     @Test
@@ -105,7 +128,10 @@ class RedisManagerImplTest {
 
         val result = redisManager.exists("key")
 
-        assertEquals(AppResult.Success(true), result)
+        assertEquals(
+            AppResult.Success(true),
+            result
+        )
     }
 
     @Test
@@ -114,7 +140,10 @@ class RedisManagerImplTest {
 
         val result = redisManager.isAvailable()
 
-        assertEquals(AppSystemResult.Success(true), result)
+        assertEquals(
+            AppSystemResult.Success(true),
+            result
+        )
     }
 
     @Test

@@ -14,18 +14,16 @@ import javax.inject.Singleton
  * them to generic handlers.
  */
 @Singleton
-class UserWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
+public class UserWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
     override suspend fun handle(
         frame: SocketFrame,
         webSocketSessionContext: WebSocketSessionContext
-    ): WebSocketMessageHandlerResult {
-        return when (frame.type) {
-            UserWebSocketEventTypes.UNAUTHORIZED -> WebSocketMessageHandlerResult.Handled
-            UserWebSocketEventTypes.SESSION_DELETED -> WebSocketMessageHandlerResult.Handled
-            UserWebSocketEventTypes.OPEN_AUTH_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
-            UserWebSocketEventTypes.MANAGEMENT_AUTH_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
-            UserWebSocketEventTypes.USER_UPDATED -> WebSocketMessageHandlerResult.Handled
-            else -> WebSocketMessageHandlerResult.NotHandled
-        }
+    ): WebSocketMessageHandlerResult = when (frame.type) {
+        UserWebSocketEventTypes.UNAUTHORIZED -> WebSocketMessageHandlerResult.Handled
+        UserWebSocketEventTypes.SESSION_DELETED -> WebSocketMessageHandlerResult.Handled
+        UserWebSocketEventTypes.OPEN_AUTH_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
+        UserWebSocketEventTypes.MANAGEMENT_AUTH_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
+        UserWebSocketEventTypes.USER_UPDATED -> WebSocketMessageHandlerResult.Handled
+        else -> WebSocketMessageHandlerResult.NotHandled
     }
 }

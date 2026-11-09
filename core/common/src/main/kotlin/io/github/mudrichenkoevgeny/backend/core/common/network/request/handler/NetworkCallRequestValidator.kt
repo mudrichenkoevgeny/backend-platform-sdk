@@ -14,7 +14,7 @@ import io.ktor.server.request.receive
  * @throws ContentTransformationException if the JSON is malformed or types mismatch.
  * @throws RequestHandlingException if any field validation fails.
  */
-suspend inline fun <reified T : Any> ApplicationCall.validateRequest(): T {
+public suspend inline fun <reified T : Any> ApplicationCall.validateRequest(): T {
     val request = receive<T>()
     request.validateDto()
     return request

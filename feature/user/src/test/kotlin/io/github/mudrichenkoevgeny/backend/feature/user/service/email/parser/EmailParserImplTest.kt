@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class EmailParserImplTest {
-
     private val parser = EmailParserImpl()
 
     @Test
@@ -21,7 +20,10 @@ class EmailParserImplTest {
         assertNotNull(template)
         template as EmailTemplate
 
-        assertEquals("Verification Code", template.subject)
+        assertEquals(
+            "Verification Code",
+            template.subject
+        )
         assertTrue(template.body.contains("Your code: 123456"))
     }
 
@@ -29,14 +31,20 @@ class EmailParserImplTest {
     fun `getTemplate resolves Russian localized template when requested`() {
         val template = parser.getTemplate(
             key = KEY_LOGIN,
-            args = mapOf(ARG_DEVICE to "Pixel", ARG_IP to "10.0.0.1"),
+            args = mapOf(
+                ARG_DEVICE to "Pixel",
+                ARG_IP to "10.0.0.1"
+            ),
             locale = "ru"
         )
 
         assertNotNull(template)
         template as EmailTemplate
 
-        assertEquals("Успешный вход", template.subject)
+        assertEquals(
+            "Успешный вход",
+            template.subject
+        )
         assertTrue(template.body.contains("IP: 10.0.0.1"))
         assertTrue(template.body.contains("Pixel"))
     }

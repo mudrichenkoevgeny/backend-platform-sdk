@@ -11,8 +11,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to send login confirmation to phone.
+ */
 @Singleton
-class SendLoginConfirmationToPhoneUseCase @Inject constructor(
+public class SendLoginConfirmationToPhoneUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val otpService: OtpService,
     private val phoneService: PhoneService
@@ -35,7 +38,7 @@ class SendLoginConfirmationToPhoneUseCase @Inject constructor(
      * @param requestContext The context of the request, providing client and device metadata.
      * @return [AppResult] containing [OtpConfirmation] metadata (expiry, resend intervals).
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         phoneNumber: String,
         requestContext: RequestContext
     ): AppResult<OtpConfirmation> {

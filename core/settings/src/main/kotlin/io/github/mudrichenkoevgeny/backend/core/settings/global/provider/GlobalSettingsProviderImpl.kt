@@ -17,11 +17,10 @@ import javax.inject.Singleton
  * [GlobalSettingsProvider] implementation backed by [SystemSettingsService].
  */
 @Singleton
-class GlobalSettingsProviderImpl @Inject constructor(
+public class GlobalSettingsProviderImpl @Inject constructor(
     private val settingsService: SystemSettingsService,
     private val config: GlobalSettingsConfig
 ) : GlobalSettingsProvider {
-
     override suspend fun initialize(): AppResult<Unit> {
         val defaultSettings = listOf(
             SystemSetting(
@@ -63,56 +62,45 @@ class GlobalSettingsProviderImpl @Inject constructor(
         return settingsService.registerDefaults(defaultSettings)
     }
 
-    override fun getOpenGlobalSettings(): OpenGlobalSettings {
-        return OpenGlobalSettings(
-            privacyPolicyUrl = getPrivacyPolicyUrl(),
-            termsOfServiceUrl = getTermsOfServiceUrl(),
-            contactSupportEmail = getContactSupportEmail(),
-            minSupportedAppVersions = getMinSupportedAppVersions()
-        )
-    }
+    override fun getOpenGlobalSettings(): OpenGlobalSettings = OpenGlobalSettings(
+        privacyPolicyUrl = getPrivacyPolicyUrl(),
+        termsOfServiceUrl = getTermsOfServiceUrl(),
+        contactSupportEmail = getContactSupportEmail(),
+        minSupportedAppVersions = getMinSupportedAppVersions()
+    )
 
-    override fun getManagementGlobalSettings(): ManagementGlobalSettings {
-        return ManagementGlobalSettings(
-            privacyPolicyUrl = getPrivacyPolicyUrl(),
-            termsOfServiceUrl = getTermsOfServiceUrl(),
-            contactSupportEmail = getContactSupportEmail(),
-            minSupportedAppVersions = getMinSupportedAppVersions(),
-            isTracingEnabled = getIsTracingEnabled(),
-            isMetricsEnabled = getIsMetricsEnabled(),
-            isVerboseLoggingEnabled = getIsVerboseLoggingEnabled()
-        )
-    }
+    override fun getManagementGlobalSettings(): ManagementGlobalSettings = ManagementGlobalSettings(
+        privacyPolicyUrl = getPrivacyPolicyUrl(),
+        termsOfServiceUrl = getTermsOfServiceUrl(),
+        contactSupportEmail = getContactSupportEmail(),
+        minSupportedAppVersions = getMinSupportedAppVersions(),
+        isTracingEnabled = getIsTracingEnabled(),
+        isMetricsEnabled = getIsMetricsEnabled(),
+        isVerboseLoggingEnabled = getIsVerboseLoggingEnabled()
+    )
 
-    override fun getPrivacyPolicyUrl(): String? {
-        return settingsService.getString(KEY_PRIVACY_POLICY) ?: config.managementGlobalSettings.privacyPolicyUrl
-    }
+    override fun getPrivacyPolicyUrl(): String? =
+        settingsService.getString(KEY_PRIVACY_POLICY) ?: config.managementGlobalSettings.privacyPolicyUrl
 
-    override fun getTermsOfServiceUrl(): String? {
-        return settingsService.getString(KEY_TERMS_OF_SERVICE) ?: config.managementGlobalSettings.termsOfServiceUrl
-    }
+    override fun getTermsOfServiceUrl(): String? =
+        settingsService.getString(KEY_TERMS_OF_SERVICE) ?: config.managementGlobalSettings.termsOfServiceUrl
 
-    override fun getContactSupportEmail(): String? {
-        return settingsService.getString(KEY_SUPPORT_EMAIL) ?: config.managementGlobalSettings.contactSupportEmail
-    }
+    override fun getContactSupportEmail(): String? =
+        settingsService.getString(KEY_SUPPORT_EMAIL) ?: config.managementGlobalSettings.contactSupportEmail
 
-    override fun getMinSupportedAppVersions(): Map<ClientType, String> {
-        return settingsService.getJson(KEY_MIN_SUPPORTED_APP_VERSIONS) { json ->
+    override fun getMinSupportedAppVersions(): Map<ClientType, String> =
+        settingsService.getJson(KEY_MIN_SUPPORTED_APP_VERSIONS) { json ->
             FoundationJson.decodeFromString<Map<ClientType, String>>(json)
         } ?: config.managementGlobalSettings.minSupportedAppVersions
-    }
 
-    override fun getIsTracingEnabled(): Boolean {
-        return settingsService.getBoolean(KEY_IS_TRACING_ENABLED) ?: config.managementGlobalSettings.isTracingEnabled
-    }
+    override fun getIsTracingEnabled(): Boolean =
+        settingsService.getBoolean(KEY_IS_TRACING_ENABLED) ?: config.managementGlobalSettings.isTracingEnabled
 
-    override fun getIsMetricsEnabled(): Boolean {
-        return settingsService.getBoolean(KEY_IS_METRICS_ENABLED) ?: config.managementGlobalSettings.isMetricsEnabled
-    }
+    override fun getIsMetricsEnabled(): Boolean =
+        settingsService.getBoolean(KEY_IS_METRICS_ENABLED) ?: config.managementGlobalSettings.isMetricsEnabled
 
-    override fun getIsVerboseLoggingEnabled(): Boolean {
-        return settingsService.getBoolean(KEY_IS_VERBOSE_LOGGING_ENABLED) ?: config.managementGlobalSettings.isVerboseLoggingEnabled
-    }
+    override fun getIsVerboseLoggingEnabled(): Boolean = settingsService.getBoolean(KEY_IS_VERBOSE_LOGGING_ENABLED)
+        ?: config.managementGlobalSettings.isVerboseLoggingEnabled
 
     override suspend fun updateManagementGlobalSettings(
         managementGlobalSettings: ManagementGlobalSettings

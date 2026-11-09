@@ -21,7 +21,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
  * @property clientInfo Hardware, OS, and platform metadata extracted from request headers and enriched
  * during the client handshake sequence.
  */
-data class WebSocketSessionContext(
+public data class WebSocketSessionContext(
     val socketSessionId: String,
     val apiScope: ApiScope,
     val userId: UserId?,

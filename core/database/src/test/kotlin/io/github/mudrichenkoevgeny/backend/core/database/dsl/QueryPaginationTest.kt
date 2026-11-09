@@ -15,7 +15,6 @@ import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class QueryPaginationTest {
-
     private val dataSource = createTestDataSource("pagination")
 
     @BeforeAll

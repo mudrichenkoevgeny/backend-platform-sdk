@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
  * Feature routers compose this (e.g. `val listing: ListingQueryParams<MySortBy>`) and add
  * resource-specific filters in their own data classes.
  */
-data class ListingQueryParams<SortBy>(
+public data class ListingQueryParams<SortBy>(
     val pageParams: PageParams = PageParams(),
     val sortBy: SortBy,
     val sortOrder: SortOrder = SortOrder.DEFAULT

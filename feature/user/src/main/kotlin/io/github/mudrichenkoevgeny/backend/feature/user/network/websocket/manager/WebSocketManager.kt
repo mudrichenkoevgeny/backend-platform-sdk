@@ -13,8 +13,7 @@ import io.ktor.server.websocket.DefaultWebSocketServerSession
  * Coordinates socket registration, lifecycle tracking, and targeted frame dispatching across
  * API scopes, authenticated users, specific user sessions, and individual socket descriptors.
  */
-interface WebSocketManager {
-
+public interface WebSocketManager {
     /**
      * Registers a new [webSocketSession] within the manager and manages its lifecycle until closure.
      *
@@ -25,7 +24,7 @@ interface WebSocketManager {
      * @param userSessionId Optional [UserSessionId] tracking the persistent session backing the token.
      * @param userSessionExpiresAt Optional Unix epoch timestamp (in seconds/milliseconds) marking session expiry.
      */
-    suspend fun register(
+    public suspend fun register(
         webSocketSession: DefaultWebSocketServerSession,
         apiScope: ApiScope,
         userId: UserId?,
@@ -39,7 +38,7 @@ interface WebSocketManager {
      *
      * @param frame The envelope and payload to transmit.
      */
-    suspend fun sendMessageToAll(frame: SocketFrame)
+    public suspend fun sendMessageToAll(frame: SocketFrame)
 
     /**
      * Broadcasts a [SocketFrame] exclusively to sockets matching the specified [ApiScope].
@@ -49,7 +48,10 @@ interface WebSocketManager {
      * @param scope Target boundary ([ApiScope.OPEN] or [ApiScope.MANAGEMENT]).
      * @param frame The envelope and payload to transmit.
      */
-    suspend fun sendMessageToScope(scope: ApiScope, frame: SocketFrame)
+    public suspend fun sendMessageToScope(
+        scope: ApiScope,
+        frame: SocketFrame
+    )
 
     /**
      * Broadcasts a [SocketFrame] across all concurrent connections belonging to a specific [UserId].
@@ -57,7 +59,10 @@ interface WebSocketManager {
      * @param userId The recipient's user identifier.
      * @param frame The envelope and payload to transmit.
      */
-    suspend fun sendMessageToUser(userId: UserId, frame: SocketFrame)
+    public suspend fun sendMessageToUser(
+        userId: UserId,
+        frame: SocketFrame
+    )
 
     /**
      * Broadcasts a [SocketFrame] to all connections mapped to an active [UserSessionId].
@@ -65,7 +70,10 @@ interface WebSocketManager {
      * @param userSessionId Identifier of the specific login session.
      * @param frame The envelope and payload to transmit.
      */
-    suspend fun sendMessageToUserSession(userSessionId: UserSessionId, frame: SocketFrame)
+    public suspend fun sendMessageToUserSession(
+        userSessionId: UserSessionId,
+        frame: SocketFrame
+    )
 
     /**
      * Sends a [SocketFrame] to a single connection identified by its internal [socketId].
@@ -73,12 +81,15 @@ interface WebSocketManager {
      * @param socketId The unique connection session ID.
      * @param frame The envelope and payload to transmit.
      */
-    suspend fun sendMessageToSocket(socketId: String, frame: SocketFrame)
+    public suspend fun sendMessageToSocket(
+        socketId: String,
+        frame: SocketFrame
+    )
 
     /**
      * Initiates an orderly shutdown and disconnection of a socket identified by [socketId].
      *
      * @param socketId The unique connection session ID to terminate.
      */
-    suspend fun disconnectSocket(socketId: String)
+    public suspend fun disconnectSocket(socketId: String)
 }

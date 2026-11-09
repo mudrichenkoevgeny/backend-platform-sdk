@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test
  * and returns null for unhandled codes.
  */
 class SecurityErrorParserTest {
-
     private val parser = SecurityErrorParser()
     private val stringsEn = SecurityModuleStrings(locale = "en")
     private val stringsRu = SecurityModuleStrings(locale = "ru")
@@ -30,9 +29,18 @@ class SecurityErrorParserTest {
             locale = "en"
         )
         val nonNullResponse = checkNotNull(response)
-        assertEquals(errorId.asHexDashString(), nonNullResponse.id)
-        assertEquals(SecurityErrorCodes.TOTP_ALREADY_ENABLED, nonNullResponse.code)
-        assertEquals(stringsEn.errors.totpAlreadyEnabled, nonNullResponse.message)
+        assertEquals(
+            errorId.asHexDashString(),
+            nonNullResponse.id
+        )
+        assertEquals(
+            SecurityErrorCodes.TOTP_ALREADY_ENABLED,
+            nonNullResponse.code
+        )
+        assertEquals(
+            stringsEn.errors.totpAlreadyEnabled,
+            nonNullResponse.message
+        )
     }
 
     @Test
@@ -44,14 +52,20 @@ class SecurityErrorParserTest {
             locale = "ru"
         )
         val nonNullResponse = checkNotNull(response)
-        assertEquals(stringsRu.errors.totpAlreadyEnabled, nonNullResponse.message)
+        assertEquals(
+            stringsRu.errors.totpAlreadyEnabled,
+            nonNullResponse.message
+        )
     }
 
     @Test
     fun `getApiErrorResponse returns null for unhandled error code`() {
         val appError = createTestAppError(code = "UNKNOWN_NON_SECURITY_CODE")
 
-        val response = parser.getApiErrorResponse(appError, "en")
+        val response = parser.getApiErrorResponse(
+            appError,
+            "en"
+        )
 
         assertNull(response)
     }

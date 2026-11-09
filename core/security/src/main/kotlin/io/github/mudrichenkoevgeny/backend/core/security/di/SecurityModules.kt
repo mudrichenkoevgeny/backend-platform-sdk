@@ -5,12 +5,12 @@ import io.github.mudrichenkoevgeny.backend.core.security.di.module.AesCryptorMod
 import io.github.mudrichenkoevgeny.backend.core.security.di.module.PasswordHasherModule
 import io.github.mudrichenkoevgeny.backend.core.security.di.module.PasswordPolicyValidatorModule
 import io.github.mudrichenkoevgeny.backend.core.security.di.module.RateLimiterModule
-import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityConfigModule
-import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecuritySettingsProviderModule
-import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityAuditErrorParserModule
-import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityServicesModule
-import io.github.mudrichenkoevgeny.backend.core.security.di.module.TotpCryptoProcessorModule
 import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityAppErrorParserModule
+import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityAuditErrorParserModule
+import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityConfigModule
+import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityServicesModule
+import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecuritySettingsProviderModule
+import io.github.mudrichenkoevgeny.backend.core.security.di.module.TotpCryptoProcessorModule
 
 /**
  * Dagger aggregation module for the `core/security` package.
@@ -40,4 +40,4 @@ import io.github.mudrichenkoevgeny.backend.core.security.di.module.SecurityAppEr
         SecurityAppErrorParserModule::class
     ]
 )
-interface SecurityModules
+public interface SecurityModules

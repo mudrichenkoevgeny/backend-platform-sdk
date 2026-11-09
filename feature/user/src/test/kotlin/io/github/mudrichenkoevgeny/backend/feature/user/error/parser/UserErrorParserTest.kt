@@ -22,7 +22,6 @@ import kotlin.time.Instant
  * - Returns null for non-user error codes to delegate to the next parser in the chain.
  */
 class UserErrorParserTest {
-
     private val parser = UserErrorParser()
     private val stringsEn = UserModuleStrings(locale = "en")
     private val stringsRu = UserModuleStrings(locale = "ru")
@@ -37,9 +36,18 @@ class UserErrorParserTest {
             locale = "en"
         )
         val nonNullResponse = checkNotNull(response)
-        assertEquals(errorId.asHexDashString(), nonNullResponse.id)
-        assertEquals(UserErrorCodes.USER_NOT_FOUND, nonNullResponse.code)
-        assertEquals(stringsEn.errors.notFound, nonNullResponse.message)
+        assertEquals(
+            errorId.asHexDashString(),
+            nonNullResponse.id
+        )
+        assertEquals(
+            UserErrorCodes.USER_NOT_FOUND,
+            nonNullResponse.code
+        )
+        assertEquals(
+            stringsEn.errors.notFound,
+            nonNullResponse.message
+        )
     }
 
     @Test
@@ -51,7 +59,10 @@ class UserErrorParserTest {
             locale = "ru"
         )
         val nonNullResponse = checkNotNull(response)
-        assertEquals(stringsRu.errors.notFound, nonNullResponse.message)
+        assertEquals(
+            stringsRu.errors.notFound,
+            nonNullResponse.message
+        )
     }
 
     @Test
@@ -63,20 +74,38 @@ class UserErrorParserTest {
             temporaryLockoutUntil = Instant.fromEpochMilliseconds(lockoutUntilEpoch)
         )
 
-        val response = parser.getApiErrorResponse(appError, "en")
+        val response = parser.getApiErrorResponse(
+            appError,
+            "en"
+        )
         val nonNullResponse = checkNotNull(response)
 
-        assertEquals(appError.errorId.asHexDashString(), nonNullResponse.id)
-        assertEquals(UserErrorCodes.USER_LOCKED, nonNullResponse.code)
-        assertEquals(stringsEn.errors.locked(formattedDate), nonNullResponse.message)
-        assertEquals(lockoutUntilEpoch.toString(), nonNullResponse.args[UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL])
+        assertEquals(
+            appError.errorId.asHexDashString(),
+            nonNullResponse.id
+        )
+        assertEquals(
+            UserErrorCodes.USER_LOCKED,
+            nonNullResponse.code
+        )
+        assertEquals(
+            stringsEn.errors.locked(formattedDate),
+            nonNullResponse.message
+        )
+        assertEquals(
+            lockoutUntilEpoch.toString(),
+            nonNullResponse.args[UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL]
+        )
     }
 
     @Test
     fun `getApiErrorResponse returns null when code is not handled by UserErrorParser`() {
         val appError = createTestAppError(code = "COMMON_UNKNOWN_CODE")
 
-        val response = parser.getApiErrorResponse(appError, "en")
+        val response = parser.getApiErrorResponse(
+            appError,
+            "en"
+        )
 
         assertNull(response)
     }

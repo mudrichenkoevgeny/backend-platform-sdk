@@ -24,7 +24,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.mod
  * @return A formatted Markdown string containing the description followed by
  * standardized Auth and Security blocks.
  */
-fun getFormattedDescription(
+public fun getFormattedDescription(
     description: String,
     allowedRoles: Set<String>,
     allowedAccountStatuses: Set<String>,
@@ -65,14 +65,23 @@ fun getFormattedDescription(
         append("\n${SwaggerDocConstants.REQUIRED_PERMISSIONS_LABEL} $permissionsText")
 
         if (hasAuthorityRequirement) {
-            append("\n${SwaggerDocConstants.AUTHORITY_LEVEL_LABEL} ${SwaggerDocConstants.AUTHORITY_REQUIREMENT_TEXT}")
+            append(
+                "\n${SwaggerDocConstants.AUTHORITY_LEVEL_LABEL} " +
+                    SwaggerDocConstants.AUTHORITY_REQUIREMENT_TEXT
+            )
         }
     }.toString()
 
     val securitySection = when (securityType) {
-        SecurityRequirementType.SENSITIVE_STEP_UP -> "\n\n${SwaggerDocConstants.SECURITY_STEP_UP_TEXT}"
-        SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED -> "\n\n${SwaggerDocConstants.SECURITY_TOTP_REQUIRED_TEXT}"
-        SecurityRequirementType.SENSITIVE_LOGIN_CHALLENGE -> "\n\n${SwaggerDocConstants.SECURITY_LOGIN_CHALLENGE_TEXT}"
+        SecurityRequirementType.SENSITIVE_STEP_UP ->
+            "\n\n${SwaggerDocConstants.SECURITY_STEP_UP_TEXT}"
+
+        SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED ->
+            "\n\n${SwaggerDocConstants.SECURITY_TOTP_REQUIRED_TEXT}"
+
+        SecurityRequirementType.SENSITIVE_LOGIN_CHALLENGE ->
+            "\n\n${SwaggerDocConstants.SECURITY_LOGIN_CHALLENGE_TEXT}"
+
         SecurityRequirementType.NONE -> ""
     }
 

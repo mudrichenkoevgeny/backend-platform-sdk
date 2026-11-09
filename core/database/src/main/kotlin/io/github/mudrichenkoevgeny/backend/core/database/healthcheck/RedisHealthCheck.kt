@@ -16,10 +16,9 @@ import javax.inject.Singleton
  * Severity is [HealthCheckSeverity.CRITICAL].
  */
 @Singleton
-class RedisHealthCheck @Inject constructor(
+public class RedisHealthCheck @Inject constructor(
     private val redisManager: RedisManager
 ) : HealthCheck {
-
     override val severity: HealthCheckSeverity = HealthCheckSeverity.CRITICAL
 
     override suspend fun check(): AppSystemResult<Unit> {

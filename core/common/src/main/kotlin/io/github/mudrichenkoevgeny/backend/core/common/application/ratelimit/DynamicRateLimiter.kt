@@ -13,7 +13,7 @@ import kotlin.time.Duration.Companion.seconds
  * @param getMaxRequestsPerPeriod supplier function returning the maximum allowed requests per period
  * @param getRateLimitPeriodSeconds supplier function returning the rate limit period in seconds
  */
-class DynamicRateLimiter(
+public class DynamicRateLimiter(
     private val getMaxRequestsPerPeriod: () -> Int,
     private val getRateLimitPeriodSeconds: () -> Int
 ) {
@@ -34,7 +34,7 @@ class DynamicRateLimiter(
      * @param key subject identifier (e.g. client IP address or user ID)
      * @return [RateLimiter] configured with the current rate limits
      */
-    fun getLimiterForKey(key: Any): RateLimiter {
+    public fun getLimiterForKey(key: Any): RateLimiter {
         val newLimit = getMaxRequestsPerPeriod()
         val newPeriod = getRateLimitPeriodSeconds()
 

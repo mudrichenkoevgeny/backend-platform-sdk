@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class EnvReaderExtensionsTest {
-
     private val reader = mockk<EnvReader>()
 
     @Test
@@ -18,7 +17,14 @@ class EnvReaderExtensionsTest {
 
         val result = reader.getStringList("KEY")
 
-        assertEquals(listOf("a", "b", "c"), result)
+        assertEquals(
+            listOf(
+                "a",
+                "b",
+                "c"
+            ),
+            result
+        )
     }
 
     @Test
@@ -31,15 +37,22 @@ class EnvReaderExtensionsTest {
     }
 
     @Serializable
-    data class SecretPayload(val value: String)
+    data class SecretPayload(
+        val value: String
+    )
 
     @Test
     fun `readJsonSecret decodes json secret`() {
         every { reader.readSecret("secret.json") } returns """{"value":"ok"}"""
 
-        val payload: SecretPayload = reader.readJsonSecret("secret.json", FoundationJson)
+        val payload: SecretPayload = reader.readJsonSecret(
+            "secret.json",
+            FoundationJson
+        )
 
-        assertEquals(SecretPayload("ok"), payload)
+        assertEquals(
+            SecretPayload("ok"),
+            payload
+        )
     }
 }
-

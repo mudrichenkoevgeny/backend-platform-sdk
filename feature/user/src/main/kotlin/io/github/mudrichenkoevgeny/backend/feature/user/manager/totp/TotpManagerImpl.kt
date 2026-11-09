@@ -1,7 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.totp
 
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.combine
 import io.github.mudrichenkoevgeny.backend.core.common.result.flatMapSuccess
@@ -14,6 +13,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityErr
 import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.TotpCryptoProcessor
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usertotpsettings.UserTotpSettingsRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.model.totp.UserTotpSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
@@ -30,39 +30,37 @@ import kotlin.time.Instant
  * and [UserRepository] within [dbQuery] blocks to ensure atomic activation and deactivation.
  */
 @Singleton
-class TotpManagerImpl @Inject constructor(
+public class TotpManagerImpl @Inject constructor(
     private val userTotpSettingsRepository: UserTotpSettingsRepository,
     private val userRepository: UserRepository,
     private val aesCryptor: AesCryptor,
     private val totpCryptoProcessor: TotpCryptoProcessor
 ) : TotpManager {
-
     override suspend fun initiateTotpSetup(
         userId: UserId,
         encryptedSecret: EncryptedString
     ): AppResult<UserTotpSettings> = dbQuery {
-        userTotpSettingsRepository.upsertUnconfirmedSettings(userId, encryptedSecret)
+        userTotpSettingsRepository.upsertUnconfirmedSettings(
+            userId,
+            encryptedSecret
+        )
     }
 
     override suspend fun confirmTotp(
         userId: UserId,
         decryptedRecoveryCodes: List<DecryptedString>
     ): AppResult<Unit> = dbQuery {
-        decryptedRecoveryCodes
-            .mapToResult { aesCryptor.encrypt(it) }
-            .flatMapSuccess { encryptedCodes ->
-                userTotpSettingsRepository.confirmTotp(
-                    userId = userId,
-                    encryptedRecoveryCodes = encryptedCodes
-                )
-            }
-            .flatMapSuccess {
-                userRepository.updateUser(
-                    userId = userId,
-                    updateUserParams = UpdateUserParams(isTotpEnabled = UpdateField.Set(true))
-                )
-            }
-            .mapSuccess { }
+        decryptedRecoveryCodes.mapToResult { aesCryptor.encrypt(it) }.flatMapSuccess { encryptedCodes ->
+            userTotpSettingsRepository.confirmTotp(
+                userId = userId,
+                encryptedRecoveryCodes = encryptedCodes
+            )
+        }.flatMapSuccess {
+            userRepository.updateUser(
+                userId = userId,
+                updateUserParams = UpdateUserParams(isTotpEnabled = UpdateField.Set(true))
+            )
+        }.mapSuccess { }
     }
 
     override suspend fun disableTotp(userId: UserId): AppResult<Unit> = dbQuery {
@@ -92,23 +90,23 @@ class TotpManagerImpl @Inject constructor(
         ).mapSuccess { }
     }
 
-    override suspend fun verifyTotp(userId: UserId, code: String): AppResult<Unit> = dbQuery {
-        userTotpSettingsRepository.getSettingsByUserId(userId)
-            .mapNotNullOrError(SecurityError.TotpNotEnabled())
+    override suspend fun verifyTotp(
+        userId: UserId,
+        code: String
+    ): AppResult<Unit> = dbQuery {
+        userTotpSettingsRepository.getSettingsByUserId(userId).mapNotNullOrError(SecurityError.TotpNotEnabled())
             .flatMapSuccess { settings ->
                 if (settings.isConfirmed) {
                     AppResult.Success(settings)
                 } else {
                     AppResult.Error(SecurityError.TotpNotEnabled())
                 }
-            }
-            .flatMapSuccess { totpSettings ->
+            }.flatMapSuccess { totpSettings ->
                 totpCryptoProcessor.isCodeValid(
                     code = code,
                     encryptedSecret = totpSettings.encryptedSecret
                 )
-            }
-            .flatMapSuccess { isValid ->
+            }.flatMapSuccess { isValid ->
                 if (isValid) {
                     AppResult.Success(Unit)
                 } else {
@@ -117,19 +115,21 @@ class TotpManagerImpl @Inject constructor(
             }
     }
 
-    override suspend fun verifyTotpRecoveryCode(userId: UserId, code: String): AppResult<Unit> = dbQuery {
-        userTotpSettingsRepository.getSettingsByUserId(userId)
-            .mapNotNullOrError(SecurityError.TotpNotEnabled())
+    override suspend fun verifyTotpRecoveryCode(
+        userId: UserId,
+        code: String
+    ): AppResult<Unit> = dbQuery {
+        userTotpSettingsRepository.getSettingsByUserId(userId).mapNotNullOrError(SecurityError.TotpNotEnabled())
             .flatMapSuccess { settings ->
                 if (settings.isConfirmed) {
                     AppResult.Success(settings)
                 } else {
                     AppResult.Error(SecurityError.TotpNotEnabled())
                 }
-            }
-            .flatMapSuccess { settings ->
-                val recoveryCodes = settings.encryptedRecoveryCodes
-                    ?: return@flatMapSuccess AppResult.Error(SecurityError.InvalidTotpCode())
+            }.flatMapSuccess { settings ->
+                val recoveryCodes = settings.encryptedRecoveryCodes ?: return@flatMapSuccess AppResult.Error(
+                    SecurityError.InvalidTotpCode()
+                )
 
                 var matchedEncryptedCode: EncryptedString? = null
 
@@ -153,25 +153,20 @@ class TotpManagerImpl @Inject constructor(
             }
     }
 
-    override suspend fun getSettings(
-        userId: UserId
-    ): AppResult<UserTotpSettings?> = dbQuery {
+    override suspend fun getSettings(userId: UserId): AppResult<UserTotpSettings?> = dbQuery {
         userTotpSettingsRepository.getSettingsByUserId(userId)
     }
 
     override suspend fun getDecryptedRecoveryCodes(userId: UserId): AppResult<List<DecryptedString>> = dbQuery {
-        userTotpSettingsRepository.getSettingsByUserId(userId)
-            .mapNotNullOrError(SecurityError.TotpNotEnabled())
+        userTotpSettingsRepository.getSettingsByUserId(userId).mapNotNullOrError(SecurityError.TotpNotEnabled())
             .flatMapSuccess { settings ->
                 if (!settings.isConfirmed || settings.encryptedRecoveryCodes == null) {
                     return@flatMapSuccess AppResult.Error(SecurityError.TotpNotEnabled())
                 }
 
-                settings.encryptedRecoveryCodes
-                    .map { encryptedRecoveryCode ->
-                        aesCryptor.decrypt(encryptedRecoveryCode)
-                    }
-                    .combine()
+                settings.encryptedRecoveryCodes.map { encryptedRecoveryCode ->
+                    aesCryptor.decrypt(encryptedRecoveryCode)
+                }.combine()
             }
     }
 
@@ -179,20 +174,17 @@ class TotpManagerImpl @Inject constructor(
         userId: UserId,
         decryptedRecoveryCodes: List<DecryptedString>
     ): AppResult<List<DecryptedString>> = dbQuery {
-        decryptedRecoveryCodes
-            .mapToResult { decryptedRecoveryCode ->
-                aesCryptor.encrypt(decryptedRecoveryCode)
-            }
-            .flatMapSuccess { encryptedCodes ->
-                userTotpSettingsRepository.updateSettings(
-                    userId = userId,
-                    encryptedRecoveryCodes = UpdateField.Set(encryptedCodes)
-                )
-            }
-            .flatMapSuccess { settings ->
-                settings.encryptedRecoveryCodes?.mapToResult { encryptedCode ->
-                    aesCryptor.decrypt(encryptedCode)
-                } ?: AppResult.Success(emptyList())
-            }
+        decryptedRecoveryCodes.mapToResult { decryptedRecoveryCode ->
+            aesCryptor.encrypt(decryptedRecoveryCode)
+        }.flatMapSuccess { encryptedCodes ->
+            userTotpSettingsRepository.updateSettings(
+                userId = userId,
+                encryptedRecoveryCodes = UpdateField.Set(encryptedCodes)
+            )
+        }.flatMapSuccess { settings ->
+            settings.encryptedRecoveryCodes?.mapToResult { encryptedCode ->
+                aesCryptor.decrypt(encryptedCode)
+            } ?: AppResult.Success(emptyList())
+        }
     }
 }

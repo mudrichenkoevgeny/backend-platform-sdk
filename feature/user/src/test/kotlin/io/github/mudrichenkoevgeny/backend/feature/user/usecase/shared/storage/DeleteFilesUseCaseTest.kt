@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DeleteFilesUseCaseTest {
-
     private val storageManager = mockk<StorageManager>()
     private val useCase = DeleteFilesUseCase(storageManager)
 
@@ -22,14 +21,28 @@ class DeleteFilesUseCaseTest {
     private val currentUserId = context.userId
     private val fileId1 = FileId.generate()
     private val fileId2 = FileId.generate()
-    private val fileIds = listOf(fileId1, fileId2)
+    private val fileIds = listOf(
+        fileId1,
+        fileId2
+    )
 
     @Test
     fun `returns success immediately when fileIds list is empty`() = runTest {
-        val result = useCase(emptyList(), context)
+        val result = useCase(
+            emptyList(),
+            context
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
-        coVerify(exactly = 0) { storageManager.deleteSelfStorageFilesBatch(any(), any()) }
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
+        coVerify(exactly = 0) {
+            storageManager.deleteSelfStorageFilesBatch(
+                any(),
+                any()
+            )
+        }
     }
 
     @Test
@@ -41,9 +54,15 @@ class DeleteFilesUseCaseTest {
             )
         } returns AppResult.Success(Unit)
 
-        val result = useCase(fileIds, context)
+        val result = useCase(
+            fileIds,
+            context
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
         coVerify(exactly = 1) {
             storageManager.deleteSelfStorageFilesBatch(
                 ownerUserId = currentUserId.asHexDashString(),
@@ -63,7 +82,10 @@ class DeleteFilesUseCaseTest {
             )
         } returns AppResult.Error(expectedError)
 
-        val result = useCase(fileIds, context)
+        val result = useCase(
+            fileIds,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error == expectedError)
     }

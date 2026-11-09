@@ -7,8 +7,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to get management auth settings.
+ */
 @Singleton
-class GetManagementAuthSettingsUseCase @Inject constructor(
+public class GetManagementAuthSettingsUseCase @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider
 ) {
     /**
@@ -26,7 +29,6 @@ class GetManagementAuthSettingsUseCase @Inject constructor(
      *
      * @return [AppResult] containing the [ManagementAuthSettings].
      */
-    operator fun invoke(): AppResult<ManagementAuthSettings> {
-        return AppResult.Success(authSettingsProvider.getManagementAuthSettings())
-    }
+    public operator fun invoke(): AppResult<ManagementAuthSettings> =
+        AppResult.Success(authSettingsProvider.getManagementAuthSettings())
 }

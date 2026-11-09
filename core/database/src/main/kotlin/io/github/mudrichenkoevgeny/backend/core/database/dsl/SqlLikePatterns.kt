@@ -13,10 +13,23 @@ import org.jetbrains.exposed.v1.core.LikePattern
  * @param needle Inner fragment without surrounding `%`.
  * @param escapeChar SQL `LIKE` escape character; must match the escape semantics of [LikePattern] for your dialect.
  */
-fun substringSqlLikePattern(needle: String, escapeChar: Char = '\\'): LikePattern {
+public fun substringSqlLikePattern(
+    needle: String,
+    escapeChar: Char = '\\'
+): LikePattern {
     val escaped = needle
-        .replace("\\", "\\\\")
-        .replace("%", "\\%")
-        .replace("_", "\\_")
-    return LikePattern("%$escaped%", escapeChar)
+        .replace(
+            "\\",
+            "\\\\"
+        ).replace(
+            "%",
+            "\\%"
+        ).replace(
+            "_",
+            "\\_"
+        )
+    return LikePattern(
+        "%$escaped%",
+        escapeChar
+    )
 }

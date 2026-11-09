@@ -10,8 +10,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
  * Verifies if the session security level is sufficient for sensitive operations
  * based on the time of the last successful MFA re-authentication.
  */
-interface AuthenticationChallengeService {
-
+public interface AuthenticationChallengeService {
     /**
      * Verifies that the session has a fresh multifactor confirmation.
      * * If the session is considered "stale" based on [UserInternal.role] policies,
@@ -22,7 +21,7 @@ interface AuthenticationChallengeService {
      * @return [AppResult.Success] if the session is still within the validity window,
      * or [AppResult.Error] (typically [SecurityError.MfaConfirmationRequired]) if a step-up is required.
      */
-    suspend fun ensureSessionConfirmed(
+    public suspend fun ensureSessionConfirmed(
         userInternal: UserInternal,
         userSession: UserSessionInternal,
         requireTotp: Boolean = false

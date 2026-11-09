@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ManagementGetIdentifiersUseCaseTest {
-
     private val userManager = mockk<UserManager>()
     private val identifierManager = mockk<IdentifierManager>()
 
@@ -67,7 +66,10 @@ class ManagementGetIdentifiersUseCaseTest {
             authenticatedRequestContext = context
         )
 
-        assertEquals(AppResult.Success(pagedResult), result)
+        assertEquals(
+            AppResult.Success(pagedResult),
+            result
+        )
     }
 
     @Test

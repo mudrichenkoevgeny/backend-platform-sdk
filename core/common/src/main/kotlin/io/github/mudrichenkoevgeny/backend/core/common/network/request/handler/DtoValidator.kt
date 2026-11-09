@@ -16,7 +16,7 @@ import kotlin.reflect.full.memberProperties
  *
  * @throws RequestHandlingException if any validation rule is violated, containing the corresponding [CommonError].
  */
-fun Any.validateDto() {
+public fun Any.validateDto() {
     val kClass = this::class
 
     for (property in kClass.memberProperties) {

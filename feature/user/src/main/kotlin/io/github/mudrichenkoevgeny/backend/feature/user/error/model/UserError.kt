@@ -18,7 +18,7 @@ import kotlin.time.Instant
  * Uses [publicArgs] for client-visible data; [secretArgs] (e.g. [UserId]) for logs only.
  * Each variant has a stable [code] for i18n and a unique [errorId] for correlation.
  */
-sealed class UserError(
+public sealed class UserError(
     override val errorId: ErrorId,
     override val code: String,
     override val publicArgs: Map<String, Any>? = null,
@@ -26,11 +26,10 @@ sealed class UserError(
     override val httpStatusCode: HttpStatusCode,
     override val appErrorSeverity: AppErrorSeverity
 ) : AppError {
-
     /**
      * Access token is missing, malformed, or signature invalid.
      */
-    class InvalidAccessToken : UserError(
+    public class InvalidAccessToken : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_ACCESS_TOKEN,
         httpStatusCode = HttpStatusCode.Unauthorized,
@@ -40,7 +39,7 @@ sealed class UserError(
     /**
      * Access token has expired; client should refresh or re-authenticate.
      */
-    class AccessTokenExpired : UserError(
+    public class AccessTokenExpired : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.ACCESS_TOKEN_EXPIRED,
         httpStatusCode = HttpStatusCode.Unauthorized,
@@ -50,7 +49,7 @@ sealed class UserError(
     /**
      * Refresh token is missing or invalid.
      */
-    class InvalidRefreshToken : UserError(
+    public class InvalidRefreshToken : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_REFRESH_TOKEN,
         httpStatusCode = HttpStatusCode.Unauthorized,
@@ -60,7 +59,7 @@ sealed class UserError(
     /**
      * Session is invalid or no longer exists (e.g. logged out elsewhere).
      */
-    class InvalidSession : UserError(
+    public class InvalidSession : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_SESSION,
         httpStatusCode = HttpStatusCode.Unauthorized,
@@ -72,8 +71,8 @@ sealed class UserError(
      *
      * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
      */
-    class UserBanned(
-        val userId: UserId? = null
+    public class UserBanned(
+        public val userId: UserId? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_BANNED,
@@ -91,10 +90,10 @@ sealed class UserError(
      * @param lockoutType Category of account lockout; sent in [publicArgs].
      * @param temporaryLockoutUntil Optional timestamp when temporary lockout expires; sent in [publicArgs].
      */
-    class UserLocked(
-        val userId: UserId? = null,
-        val lockoutType: AccountLockoutType,
-        val temporaryLockoutUntil: Instant? = null
+    public class UserLocked(
+        public val userId: UserId? = null,
+        public val lockoutType: AccountLockoutType,
+        public val temporaryLockoutUntil: Instant? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_LOCKED,
@@ -102,9 +101,15 @@ sealed class UserError(
             mapOf(UserErrorArgs.USER_ID to userId.asHexDashString())
         },
         publicArgs = buildMap {
-            put(UserErrorArgs.ACCOUNT_LOCKOUT_TYPE, lockoutType.value)
+            put(
+                UserErrorArgs.ACCOUNT_LOCKOUT_TYPE,
+                lockoutType.value
+            )
             temporaryLockoutUntil?.let {
-                put(UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL, it.toEpochMilliseconds().toString())
+                put(
+                    UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL,
+                    it.toEpochMilliseconds().toString()
+                )
             }
         },
         httpStatusCode = HttpStatusCode.Forbidden,
@@ -116,8 +121,8 @@ sealed class UserError(
      *
      * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
      */
-    class UserReadOnly(
-        val userId: UserId? = null
+    public class UserReadOnly(
+        public val userId: UserId? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_READ_ONLY,
@@ -131,8 +136,8 @@ sealed class UserError(
      *
      * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
      */
-    class UserSecurityHold(
-        val userId: UserId? = null
+    public class UserSecurityHold(
+        public val userId: UserId? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_SECURITY_HOLD,
@@ -146,8 +151,8 @@ sealed class UserError(
      *
      * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
      */
-    class UserPendingDeletion(
-        val userId: UserId? = null
+    public class UserPendingDeletion(
+        public val userId: UserId? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_PENDING_DELETION,
@@ -161,8 +166,8 @@ sealed class UserError(
      *
      * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
      */
-    class UserForbidden(
-        val userId: UserId? = null
+    public class UserForbidden(
+        public val userId: UserId? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_FORBIDDEN,
@@ -176,8 +181,8 @@ sealed class UserError(
      *
      * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
      */
-    class UserRoleNotAllowed(
-        val userId: UserId? = null
+    public class UserRoleNotAllowed(
+        public val userId: UserId? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_ROLE_NOT_ALLOWED,
@@ -191,8 +196,8 @@ sealed class UserError(
      *
      * @param userId Optional user id; stored in [secretArgs] for logging, not sent to the client.
      */
-    class UserMissingPermissions(
-        val userId: UserId? = null
+    public class UserMissingPermissions(
+        public val userId: UserId? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_MISSING_PERMISSIONS,
@@ -206,8 +211,8 @@ sealed class UserError(
      *
      * @param userId Optional user id; stored in [secretArgs] for logging.
      */
-    class UserIllegalAccountStatus(
-        val userId: UserId? = null
+    public class UserIllegalAccountStatus(
+        public val userId: UserId? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_ILLEGAL_ACCOUNT_STATUS,
@@ -221,8 +226,8 @@ sealed class UserError(
      *
      * @param userId Optional user id; stored in [secretArgs] for logging.
      */
-    class UserInsufficientAuthorityLevel(
-        val userId: UserId? = null
+    public class UserInsufficientAuthorityLevel(
+        public val userId: UserId? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_INSUFFICIENT_AUTHORITY_LEVEL,
@@ -236,8 +241,8 @@ sealed class UserError(
      *
      * @param userId Optional user id that was looked up; stored in [secretArgs] for logging, not sent to the client.
      */
-    class UserNotFound(
-        val userId: UserId? = null
+    public class UserNotFound(
+        public val userId: UserId? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_NOT_FOUND,
@@ -249,7 +254,7 @@ sealed class UserError(
     /**
      * Login failed: email or password incorrect (or account not found for email).
      */
-    class InvalidCredentials : UserError(
+    public class InvalidCredentials : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_CREDENTIALS,
         httpStatusCode = HttpStatusCode.NotFound,
@@ -259,7 +264,7 @@ sealed class UserError(
     /**
      * Cannot remove this sign-in method (e.g. last identifier, or policy forbids it).
      */
-    class CannotDeleteUserIdentifier : UserError(
+    public class CannotDeleteUserIdentifier : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.CAN_NOT_DELETE_USER_IDENTIFIER,
         httpStatusCode = HttpStatusCode.Conflict,
@@ -269,7 +274,7 @@ sealed class UserError(
     /**
      * Cannot add this sign-in method (e.g. already linked elsewhere, or provider error).
      */
-    class CannotCreateUserIdentifier : UserError(
+    public class CannotCreateUserIdentifier : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.CAN_NOT_CREATE_USER_IDENTIFIER,
         httpStatusCode = HttpStatusCode.Conflict,
@@ -282,9 +287,9 @@ sealed class UserError(
      * @param maxNumberOfIdentifiers The limit allowed for the provider.
      * @param userAuthProvider The provider that reached its limit.
      */
-    class UserIdentifierLimitReached(
-        maxNumberOfIdentifiers: Int,
-        userAuthProvider: UserAuthProvider
+    public class UserIdentifierLimitReached(
+        public val maxNumberOfIdentifiers: Int,
+        public val userAuthProvider: UserAuthProvider
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_IDENTIFIER_LIMIT_REACHED,
@@ -301,8 +306,8 @@ sealed class UserError(
      *
      * @param maxNumberOfIdentifiers The total overall limit.
      */
-    class TotalUserIdentifiersLimitReached(
-        maxNumberOfIdentifiers: Int
+    public class TotalUserIdentifiersLimitReached(
+        public val maxNumberOfIdentifiers: Int
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.TOTAL_USER_IDENTIFIERS_LIMIT_REACHED,
@@ -316,7 +321,7 @@ sealed class UserError(
     /**
      * Current password is incorrect (e.g. when changing password).
      */
-    class WrongPassword : UserError(
+    public class WrongPassword : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.WRONG_PASSWORD,
         httpStatusCode = HttpStatusCode.Forbidden,
@@ -326,7 +331,7 @@ sealed class UserError(
     /**
      * Email/phone verification or reset code is wrong or expired.
      */
-    class WrongConfirmationCode : UserError(
+    public class WrongConfirmationCode : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.WRONG_CONFIRMATION_CODE,
         httpStatusCode = HttpStatusCode.UnprocessableEntity,
@@ -338,8 +343,8 @@ sealed class UserError(
      *
      * @param message Cause of the linkage failure; stored in [secretArgs] for logging.
      */
-    class ExternalIdentifierLinkageFailed(
-        message: String? = null
+    public class ExternalIdentifierLinkageFailed(
+        public val message: String? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.EXTERNAL_IDENTIFIER_LINKAGE_FAILED,
@@ -351,7 +356,7 @@ sealed class UserError(
     /**
      * User registration is currently disabled.
      */
-    class RegistrationDisabled : UserError(
+    public class RegistrationDisabled : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.REGISTRATION_DISABLED,
         httpStatusCode = HttpStatusCode.Forbidden,
@@ -361,7 +366,7 @@ sealed class UserError(
     /**
      * Self-service account unlock is currently disabled by security policy.
      */
-    class SelfServiceUnlockDisabled : UserError(
+    public class SelfServiceUnlockDisabled : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.SELF_SERVICE_UNLOCK_DISABLED,
         httpStatusCode = HttpStatusCode.Forbidden,
@@ -371,7 +376,7 @@ sealed class UserError(
     /**
      * The registration, login, or email linkage attempt was rejected because the email address or domain is not permitted.
      */
-    class EmailNotAllowed : UserError(
+    public class EmailNotAllowed : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.EMAIL_NOT_ALLOWED,
         httpStatusCode = HttpStatusCode.Forbidden,
@@ -383,8 +388,8 @@ sealed class UserError(
      *
      * @param userId Optional user id; stored in [secretArgs] for logging.
      */
-    class PasswordSetupRequired(
-        val userId: UserId? = null
+    public class PasswordSetupRequired(
+        public val userId: UserId? = null
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.PASSWORD_SETUP_REQUIRED,
@@ -396,7 +401,7 @@ sealed class UserError(
     /**
      * Operation failed because the specified identifier type does not support password credentials.
      */
-    class UserIdentifierPasswordNotSupported : UserError(
+    public class UserIdentifierPasswordNotSupported : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_IDENTIFIER_PASSWORD_NOT_SUPPORTED,
         httpStatusCode = HttpStatusCode.UnprocessableEntity,
@@ -406,7 +411,7 @@ sealed class UserError(
     /**
      * Operation failed because no password credential is set on the specified identifier record.
      */
-    class UserIdentifierPasswordNotSet : UserError(
+    public class UserIdentifierPasswordNotSet : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.USER_IDENTIFIER_PASSWORD_NOT_SET,
         httpStatusCode = HttpStatusCode.UnprocessableEntity,
@@ -416,8 +421,8 @@ sealed class UserError(
     /**
      * The requested nickname is already taken by another user.
      */
-    class NicknameAlreadyTaken(
-        val nickname: String
+    public class NicknameAlreadyTaken(
+        public val nickname: String
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.NICKNAME_ALREADY_TAKEN,
@@ -429,7 +434,7 @@ sealed class UserError(
     /**
      * Modifying the nickname is disabled by system configuration.
      */
-    class NicknameChangeDisabled : UserError(
+    public class NicknameChangeDisabled : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.NICKNAME_CHANGE_DISABLED,
         httpStatusCode = HttpStatusCode.Forbidden,
@@ -439,8 +444,8 @@ sealed class UserError(
     /**
      * The provided nickname character length is below the required minimum.
      */
-    class NicknameTooShort(
-        val minLength: Int
+    public class NicknameTooShort(
+        public val minLength: Int
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.NICKNAME_TOO_SHORT,
@@ -452,8 +457,8 @@ sealed class UserError(
     /**
      * The provided nickname character length exceeds the allowed maximum.
      */
-    class NicknameTooLong(
-        val maxLength: Int
+    public class NicknameTooLong(
+        public val maxLength: Int
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.NICKNAME_TOO_LONG,
@@ -465,7 +470,7 @@ sealed class UserError(
     /**
      * The provided nickname contains unsupported or illegal characters.
      */
-    class InvalidNicknameCharacters : UserError(
+    public class InvalidNicknameCharacters : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_NICKNAME_CHARACTERS,
         httpStatusCode = HttpStatusCode.UnprocessableEntity,
@@ -475,8 +480,8 @@ sealed class UserError(
     /**
      * The provided display name character length is below the required minimum.
      */
-    class DisplayNameTooShort(
-        val minLength: Int
+    public class DisplayNameTooShort(
+        public val minLength: Int
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.DISPLAY_NAME_TOO_SHORT,
@@ -488,8 +493,8 @@ sealed class UserError(
     /**
      * The provided display name character length exceeds the allowed maximum.
      */
-    class DisplayNameTooLong(
-        val maxLength: Int
+    public class DisplayNameTooLong(
+        public val maxLength: Int
     ) : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.DISPLAY_NAME_TOO_LONG,
@@ -501,7 +506,7 @@ sealed class UserError(
     /**
      * The provided display name contains illegal control characters or line breaks.
      */
-    class InvalidDisplayNameCharacters : UserError(
+    public class InvalidDisplayNameCharacters : UserError(
         errorId = ErrorId.generate(),
         code = UserErrorCodes.INVALID_DISPLAY_NAME_CHARACTERS,
         httpStatusCode = HttpStatusCode.UnprocessableEntity,

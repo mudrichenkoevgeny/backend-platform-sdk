@@ -26,15 +26,15 @@ import javax.inject.Singleton
  * Public configuration routes providing systemic metadata for the user feature.
  *
  * Registered routes:
- * 1. [OpenUserConfigurationRoutes.GET_OPEN_USER_CONFIGURATION] — retrieves a unified object containing global, security, and authentication configurations via [GetOpenUserConfigurationUseCase].
+ * 1. [OpenUserConfigurationRoutes.GET_OPEN_USER_CONFIGURATION] — retrieves a unified object containing global,
+ * security, and authentication configurations via [GetOpenUserConfigurationUseCase].
  */
 @Singleton
-class OpenUserConfigurationRouter @Inject constructor(
+public class OpenUserConfigurationRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val getOpenUserConfigurationUseCase: GetOpenUserConfigurationUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         registerGetUserConfigurationRoute(route)
     }
@@ -45,7 +45,12 @@ class OpenUserConfigurationRouter @Inject constructor(
 
         route.get(
             path = OpenUserConfigurationRoutes.GET_OPEN_USER_CONFIGURATION,
-            builder = { getUserConfigurationDocs(allowedRoles, allowedAccountStatuses) },
+            builder = {
+                getUserConfigurationDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
             body = { getUserConfiguration() }
         )
     }
@@ -76,15 +81,20 @@ class OpenUserConfigurationRouter @Inject constructor(
     private suspend fun RoutingContext.getUserConfiguration() {
         val result = getOpenUserConfigurationUseCase()
 
-        call.respondResult(result, appLogger, appErrorParser) { userConfiguration ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userConfiguration ->
             userConfiguration.toOpenUserConfigurationPayload()
         }
     }
 
-    companion object {
-        const val GET_USER_CONFIGURATION_ROUTE_SUMMARY = "Get all user feature configuration"
-        const val GET_USER_CONFIGURATION_ROUTE_DESCRIPTION = "Returns combined global, security, and auth settings for the user feature."
-        const val GET_USER_CONFIGURATION_ROUTE_OPERATION_ID = "openGetUserConfiguration"
-        const val GET_USER_CONFIGURATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Combined user configuration data"
+    public companion object {
+        private const val GET_USER_CONFIGURATION_ROUTE_SUMMARY = "Get all user feature configuration"
+        private const val GET_USER_CONFIGURATION_ROUTE_DESCRIPTION =
+            "Returns combined global, security, and auth settings for the user feature."
+        private const val GET_USER_CONFIGURATION_ROUTE_OPERATION_ID = "openGetUserConfiguration"
+        private const val GET_USER_CONFIGURATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Combined user configuration data"
     }
 }

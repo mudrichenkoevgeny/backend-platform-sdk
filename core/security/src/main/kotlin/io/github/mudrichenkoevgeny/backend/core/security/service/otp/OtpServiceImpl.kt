@@ -4,8 +4,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.pow
@@ -23,17 +23,19 @@ import kotlin.math.pow
  * - Provides optional deletion upon successful verification.
  */
 @Singleton
-class OtpServiceImpl @Inject constructor(
+public class OtpServiceImpl @Inject constructor(
     private val redisManager: RedisManager,
     private val securitySettingsProvider: SecuritySettingsProvider
 ) : OtpService {
-
     override suspend fun getOtp(
         identifier: String,
         type: OtpVerificationType
     ): AppResult<OtpConfirmationData> {
         val otpConfirmation = securitySettingsProvider.getOtpConfirmation()
-        val key = buildKey(identifier, type)
+        val key = buildKey(
+            identifier,
+            type
+        )
 
         val savedCodeResult = redisManager.get(key)
         val savedCode = when (savedCodeResult) {
@@ -67,16 +69,17 @@ class OtpServiceImpl @Inject constructor(
         val end = 10.0.pow(otpConfirmation.numberOfSymbols).toInt() - 1
         val code = (start..end).random().toString()
 
-        return redisManager.setWithExpiration(
-            key = key,
-            value = code,
-            expirationSeconds = otpConfirmation.expirationSeconds.toLong()
-        ).mapSuccess {
-            OtpConfirmationData(
-                otpConfirmation = otpConfirmation,
-                code = code
-            )
-        }
+        return redisManager
+            .setWithExpiration(
+                key = key,
+                value = code,
+                expirationSeconds = otpConfirmation.expirationSeconds.toLong()
+            ).mapSuccess {
+                OtpConfirmationData(
+                    otpConfirmation = otpConfirmation,
+                    code = code
+                )
+            }
     }
 
     override suspend fun verifyOtp(
@@ -85,7 +88,10 @@ class OtpServiceImpl @Inject constructor(
         code: String,
         deleteOnSuccess: Boolean
     ): AppResult<Boolean> {
-        val key = buildKey(identifier, type)
+        val key = buildKey(
+            identifier,
+            type
+        )
         val savedCodeResult = redisManager.get(key)
 
         val savedCode = when (savedCodeResult) {
@@ -104,7 +110,8 @@ class OtpServiceImpl @Inject constructor(
         return AppResult.Success(true)
     }
 
-    private fun buildKey(identifier: String, type: OtpVerificationType): String {
-        return "otp:${type.value.lowercase()}:$identifier"
-    }
+    private fun buildKey(
+        identifier: String,
+        type: OtpVerificationType
+    ): String = "otp:${type.value.lowercase()}:$identifier"
 }

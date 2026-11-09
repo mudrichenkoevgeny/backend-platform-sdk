@@ -23,17 +23,18 @@ import io.ktor.server.routing.RoutingResolveContext
  * }
  * ```
  */
-fun Route.onPort(port: Int, build: Route.() -> Unit): Route {
+public fun Route.onPort(
+    port: Int,
+    build: Route.() -> Unit
+): Route {
     val routeWithPort = createChild(object : RouteSelector() {
         override suspend fun evaluate(
             context: RoutingResolveContext,
             segmentIndex: Int
-        ): RouteSelectorEvaluation {
-            return if (context.call.request.local.localPort == port) {
-                RouteSelectorEvaluation.Constant
-            } else {
-                RouteSelectorEvaluation.Failed
-            }
+        ): RouteSelectorEvaluation = if (context.call.request.local.localPort == port) {
+            RouteSelectorEvaluation.Constant
+        } else {
+            RouteSelectorEvaluation.Failed
         }
 
         override fun toString(): String = ""

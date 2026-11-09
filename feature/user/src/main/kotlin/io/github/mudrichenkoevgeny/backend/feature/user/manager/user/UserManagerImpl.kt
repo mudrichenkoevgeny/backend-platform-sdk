@@ -34,13 +34,12 @@ import kotlin.time.Instant
  * When a specific user id is requested but not found, returns [UserError.UserNotFound].
  */
 @Singleton
-class UserManagerImpl @Inject constructor(
+public class UserManagerImpl @Inject constructor(
     private val userRepository: UserRepository,
     private val authSettingsProvider: AuthSettingsProvider,
     private val lockoutManager: LockoutManager,
     private val storageManager: StorageManager
 ) : UserManager {
-
     override suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?> = dbQuery {
         val userResult = userRepository.getUserInternalById(userId)
         val user = when (userResult) {
@@ -117,15 +116,15 @@ class UserManagerImpl @Inject constructor(
         var statusOnRestoreUpdate: UpdateField<UserAccountStatus> = UpdateField.Ignore
         var scheduledDeletionUpdate: UpdateField<Instant> = UpdateField.Ignore
 
-        if (targetAccountStatus == UserAccountStatus.PENDING_DELETION
-            && user.accountStatus != UserAccountStatus.PENDING_DELETION
+        if (targetAccountStatus == UserAccountStatus.PENDING_DELETION &&
+            user.accountStatus != UserAccountStatus.PENDING_DELETION
         ) {
             statusUpdate = UpdateField.Set(UserAccountStatus.PENDING_DELETION)
             statusOnRestoreUpdate = UpdateField.Set(user.accountStatus)
             scheduledDeletionUpdate = UpdateField.Set(getScheduledPermanentDeletionAt())
-        } else if (user.accountStatus == UserAccountStatus.PENDING_DELETION
-            && targetAccountStatus != null
-            && targetAccountStatus != UserAccountStatus.PENDING_DELETION
+        } else if (user.accountStatus == UserAccountStatus.PENDING_DELETION &&
+            targetAccountStatus != null &&
+            targetAccountStatus != UserAccountStatus.PENDING_DELETION
         ) {
             statusUpdate = UpdateField.Ignore
             statusOnRestoreUpdate = UpdateField.Set(targetAccountStatus)
@@ -199,6 +198,7 @@ class UserManagerImpl @Inject constructor(
                     totalPages = pagedResult.data.totalPages
                 )
             }
+
             is AppResult.Error -> return@dbQuery pagedResult
         }
 
@@ -375,7 +375,6 @@ class UserManagerImpl @Inject constructor(
         return UserRoleAccessFilter(allowedUserRoles = allowedUserRoles)
     }
 
-    private fun getScheduledPermanentDeletionAt(): Instant {
-        return Clock.System.now() + authSettingsProvider.getAccountDeletionGracePeriodSeconds().seconds
-    }
+    private fun getScheduledPermanentDeletionAt(): Instant =
+        Clock.System.now() + authSettingsProvider.getAccountDeletionGracePeriodSeconds().seconds
 }

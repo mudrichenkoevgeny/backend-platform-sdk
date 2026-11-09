@@ -22,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class UserUpdateValidatorTest {
-
     private val nicknameValidator = mockk<NicknameValidator>()
     private val displayNameValidator = mockk<DisplayNameValidator>()
     private val userManager = mockk<UserManager>()
@@ -49,9 +48,15 @@ class UserUpdateValidatorTest {
 
     @Test
     fun `returns Success when no nickname or display name updates provided`() = runTest {
-        val result = validator.validate(targetUser, UpdateUserParams())
+        val result = validator.validate(
+            targetUser,
+            UpdateUserParams()
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
     }
 
     @Test
@@ -68,7 +73,10 @@ class UserUpdateValidatorTest {
         } returns NicknameValidatorResult.Fail(UserErrorCodes.NICKNAME_CHANGE_DISABLED)
 
         val params = UpdateUserParams(nickname = UpdateField.Set(newNickname))
-        val result = validator.validate(targetUser, params)
+        val result = validator.validate(
+            targetUser,
+            params
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.NicknameChangeDisabled)
     }
@@ -87,7 +95,10 @@ class UserUpdateValidatorTest {
         } returns NicknameValidatorResult.Fail(UserErrorCodes.NICKNAME_TOO_SHORT)
 
         val params = UpdateUserParams(nickname = UpdateField.Set(newNickname))
-        val result = validator.validate(targetUser, params)
+        val result = validator.validate(
+            targetUser,
+            params
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.NicknameTooShort)
     }
@@ -106,29 +117,36 @@ class UserUpdateValidatorTest {
         } returns NicknameValidatorResult.Fail(UserErrorCodes.NICKNAME_TOO_LONG)
 
         val params = UpdateUserParams(nickname = UpdateField.Set(newNickname))
-        val result = validator.validate(targetUser, params)
+        val result = validator.validate(
+            targetUser,
+            params
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.NicknameTooLong)
     }
 
     @Test
-    fun `returns Error InvalidNicknameCharacters when nickname validator fails with INVALID_NICKNAME_CHARACTERS`() = runTest {
-        val newNickname = "invalid@nick"
-        coEvery {
-            nicknameValidator.validate(
-                nickname = newNickname,
-                minLength = 3,
-                maxLength = 20,
-                isNicknameChangeAllowed = true,
-                isNicknameChanging = any()
+    fun `returns Error InvalidNicknameCharacters when nickname validator fails with INVALID_NICKNAME_CHARACTERS`() =
+        runTest {
+            val newNickname = "invalid@nick"
+            coEvery {
+                nicknameValidator.validate(
+                    nickname = newNickname,
+                    minLength = 3,
+                    maxLength = 20,
+                    isNicknameChangeAllowed = true,
+                    isNicknameChanging = any()
+                )
+            } returns NicknameValidatorResult.Fail(UserErrorCodes.INVALID_NICKNAME_CHARACTERS)
+
+            val params = UpdateUserParams(nickname = UpdateField.Set(newNickname))
+            val result = validator.validate(
+                targetUser,
+                params
             )
-        } returns NicknameValidatorResult.Fail(UserErrorCodes.INVALID_NICKNAME_CHARACTERS)
 
-        val params = UpdateUserParams(nickname = UpdateField.Set(newNickname))
-        val result = validator.validate(targetUser, params)
-
-        assertTrue(result is AppResult.Error && result.error is UserError.InvalidNicknameCharacters)
-    }
+            assertTrue(result is AppResult.Error && result.error is UserError.InvalidNicknameCharacters)
+        }
 
     @Test
     fun `returns Error NicknameAlreadyTaken when nickname is taken by another user`() = runTest {
@@ -147,7 +165,10 @@ class UserUpdateValidatorTest {
         coEvery { userManager.getUserInternalByNickname(newNickname) } returns AppResult.Success(otherUser)
 
         val params = UpdateUserParams(nickname = UpdateField.Set(newNickname))
-        val result = validator.validate(targetUser, params)
+        val result = validator.validate(
+            targetUser,
+            params
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.NicknameAlreadyTaken)
     }
@@ -164,7 +185,10 @@ class UserUpdateValidatorTest {
         } returns DisplayNameValidatorResult.Fail(UserErrorCodes.DISPLAY_NAME_TOO_SHORT)
 
         val params = UpdateUserParams(displayName = UpdateField.Set(newDisplayName))
-        val result = validator.validate(targetUser, params)
+        val result = validator.validate(
+            targetUser,
+            params
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.DisplayNameTooShort)
     }
@@ -181,13 +205,16 @@ class UserUpdateValidatorTest {
         } returns DisplayNameValidatorResult.Fail(UserErrorCodes.DISPLAY_NAME_TOO_LONG)
 
         val params = UpdateUserParams(displayName = UpdateField.Set(newDisplayName))
-        val result = validator.validate(targetUser, params)
+        val result = validator.validate(
+            targetUser,
+            params
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.DisplayNameTooLong)
     }
 
     @Test
-    fun `returns Error InvalidDisplayNameCharacters when display name validator fails with INVALID_DISPLAY_NAME_CHARACTERS`() = runTest {
+    fun `returns InvalidDisplayNameCharacters when display name validator fails`() = runTest {
         val newDisplayName = "invalid_name_\u0000"
         coEvery {
             displayNameValidator.validate(
@@ -198,7 +225,10 @@ class UserUpdateValidatorTest {
         } returns DisplayNameValidatorResult.Fail(UserErrorCodes.INVALID_DISPLAY_NAME_CHARACTERS)
 
         val params = UpdateUserParams(displayName = UpdateField.Set(newDisplayName))
-        val result = validator.validate(targetUser, params)
+        val result = validator.validate(
+            targetUser,
+            params
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.InvalidDisplayNameCharacters)
     }
@@ -230,8 +260,14 @@ class UserUpdateValidatorTest {
             nickname = UpdateField.Set(newNickname),
             displayName = UpdateField.Set(newDisplayName)
         )
-        val result = validator.validate(targetUser, params)
+        val result = validator.validate(
+            targetUser,
+            params
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
     }
 }

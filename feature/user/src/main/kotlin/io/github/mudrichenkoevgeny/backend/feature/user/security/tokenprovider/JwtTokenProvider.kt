@@ -35,11 +35,10 @@ import kotlin.time.Instant
  * Refresh tokens are delegated to [RefreshTokenProvider].
  */
 @Singleton
-class JwtTokenProvider @Inject constructor(
+public class JwtTokenProvider @Inject constructor(
     userConfig: UserConfig,
     private val refreshTokenProvider: RefreshTokenProvider
 ) : TokenProvider {
-
     private val key = Keys.hmacShaKeyFor(userConfig.jwtSecret.toByteArray())
 
     override fun generateAccessToken(
@@ -49,44 +48,29 @@ class JwtTokenProvider @Inject constructor(
         identifierId: UserIdentifierId,
         issuedAt: Instant,
         expiration: Instant
-    ): AppResult<AccessToken> {
-        return try {
-            val accessToken = Jwts.builder()
-                .withUserIdSubject(userId)
-                .withSessionIdSubject(sessionId)
-                .withIdentifierIdClaim(identifierId)
-                .withUserRoleSubject(userRole)
-                .issuedAt(Date.from(issuedAt.toJavaInstant()))
-                .expiration(Date.from(expiration.toJavaInstant()))
-                .signWith(key)
-                .compact()
+    ): AppResult<AccessToken> = try {
+        val accessToken = Jwts.builder().withUserIdSubject(userId).withSessionIdSubject(sessionId)
+            .withIdentifierIdClaim(identifierId).withUserRoleSubject(userRole)
+            .issuedAt(Date.from(issuedAt.toJavaInstant())).expiration(Date.from(expiration.toJavaInstant()))
+            .signWith(key).compact()
 
-            AppResult.Success(AccessToken(accessToken))
-        } catch (_: Exception) {
-            AppResult.Error(UserError.InvalidAccessToken())
-        }
+        AppResult.Success(AccessToken(accessToken))
+    } catch (_: Exception) {
+        AppResult.Error(UserError.InvalidAccessToken())
     }
 
-    override fun verifyAccessToken(accessToken: AccessToken): AppResult<UserId> {
-        return try {
-            val claims = Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(accessToken.value)
+    override fun verifyAccessToken(accessToken: AccessToken): AppResult<UserId> = try {
+        val claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(accessToken.value)
 
-            claims.getUserIdFromPayload()
-        } catch (_: ExpiredJwtException) {
-            AppResult.Error(UserError.AccessTokenExpired())
-        } catch (_: Exception) {
-            AppResult.Error(UserError.InvalidAccessToken())
-        }
+        claims.getUserIdFromPayload()
+    } catch (_: ExpiredJwtException) {
+        AppResult.Error(UserError.AccessTokenExpired())
+    } catch (_: Exception) {
+        AppResult.Error(UserError.InvalidAccessToken())
     }
 
-    override fun generateRefreshToken(): AppResult<RefreshToken> {
-        return refreshTokenProvider.getRefreshToken()
-    }
+    override fun generateRefreshToken(): AppResult<RefreshToken> = refreshTokenProvider.getRefreshToken()
 
-    override fun getRefreshTokenHash(refreshToken: RefreshToken): AppResult<RefreshTokenHash> {
-        return refreshTokenProvider.getRefreshTokenHash(refreshToken)
-    }
+    override fun getRefreshTokenHash(refreshToken: RefreshToken): AppResult<RefreshTokenHash> =
+        refreshTokenProvider.getRefreshTokenHash(refreshToken)
 }

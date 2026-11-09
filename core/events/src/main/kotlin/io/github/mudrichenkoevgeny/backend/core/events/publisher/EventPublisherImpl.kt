@@ -25,21 +25,38 @@ import kotlin.coroutines.resumeWithException
  * in a suspend function via [suspendCancellableCoroutine] with cancellation support.
  */
 @Singleton
-class EventPublisherImpl @Inject constructor(
+public class EventPublisherImpl @Inject constructor(
     private val eventsConfig: EventsConfig,
     private val appLogger: AppLogger
 ) : EventPublisher {
-
     private val json = FoundationJson
 
     private val producer: KafkaProducer<String, String> by lazy {
         val props = Properties().apply {
-            put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, eventsConfig.kafkaBootstrapServers)
-            put(ProducerConfig.CLIENT_ID_CONFIG, eventsConfig.kafkaClientId)
-            put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java.name)
-            put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer::class.java.name)
-            put(ProducerConfig.ACKS_CONFIG, "all")
-            put(ProducerConfig.RETRIES_CONFIG, 3)
+            put(
+                ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
+                eventsConfig.kafkaBootstrapServers
+            )
+            put(
+                ProducerConfig.CLIENT_ID_CONFIG,
+                eventsConfig.kafkaClientId
+            )
+            put(
+                ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                StringSerializer::class.java.name
+            )
+            put(
+                ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                StringSerializer::class.java.name
+            )
+            put(
+                ProducerConfig.ACKS_CONFIG,
+                "all"
+            )
+            put(
+                ProducerConfig.RETRIES_CONFIG,
+                3
+            )
         }
         KafkaProducer<String, String>(props)
     }
@@ -51,7 +68,10 @@ class EventPublisherImpl @Inject constructor(
         metadata: Map<String, String>
     ) {
         val jsonPayload = try {
-            json.encodeToString(serializer, event)
+            json.encodeToString(
+                serializer,
+                event
+            )
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -60,8 +80,16 @@ class EventPublisherImpl @Inject constructor(
         }
 
         val record = try {
-            ProducerRecord<String, String>(topic, jsonPayload).apply {
-                metadata.forEach { (k, v) -> headers().add(k, v.toByteArray()) }
+            ProducerRecord<String, String>(
+                topic,
+                jsonPayload
+            ).apply {
+                metadata.forEach { (k, v) ->
+                    headers().add(
+                        k,
+                        v.toByteArray()
+                    )
+                }
             }
         } catch (e: CancellationException) {
             throw e

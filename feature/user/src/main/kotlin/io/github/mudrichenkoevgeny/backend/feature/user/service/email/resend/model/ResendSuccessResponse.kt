@@ -6,6 +6,6 @@ import kotlinx.serialization.Serializable
  * Resend API success payload for email send.
  */
 @Serializable
-data class ResendSuccessResponse(
+public data class ResendSuccessResponse(
     val id: String
 )

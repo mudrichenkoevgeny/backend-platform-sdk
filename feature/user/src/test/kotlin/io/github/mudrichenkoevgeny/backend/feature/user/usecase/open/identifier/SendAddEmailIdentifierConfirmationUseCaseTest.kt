@@ -5,9 +5,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirmationData
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
@@ -17,6 +14,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailServi
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -28,7 +28,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SendAddEmailIdentifierConfirmationUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val emailRestrictionPolicyValidator = EmailRestrictionPolicyValidator()
@@ -62,31 +61,59 @@ class SendAddEmailIdentifierConfirmationUseCaseTest {
         )
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_EMAIL, TEST_EMAIL)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.SEND_OTP_EMAIL,
+                TEST_EMAIL
+            )
         } returns AppResult.Success(Unit)
 
         coEvery {
-            identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.EMAIL, TEST_EMAIL)
+            identifierManager.getUserIdentifierInternalByProvider(
+                UserAuthProvider.EMAIL,
+                TEST_EMAIL
+            )
         } returns AppResult.Success(null)
 
         coEvery {
-            otpService.getOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_VERIFICATION)
+            otpService.getOtp(
+                TEST_EMAIL,
+                UserOtpVerificationType.EMAIL_VERIFICATION
+            )
         } returns AppResult.Success(otpData)
 
         coEvery {
-            emailService.sendVerificationCode(TEST_EMAIL, TEST_CODE, clientInfo.clientDeviceInfo.language)
+            emailService.sendVerificationCode(
+                TEST_EMAIL,
+                TEST_CODE,
+                clientInfo.clientDeviceInfo.language
+            )
         } returns AppResult.Success(Unit)
 
-        val result = useCase(TEST_EMAIL, context)
+        val result = useCase(
+            TEST_EMAIL,
+            context
+        )
 
-        assertEquals(AppResult.Success(otpConfirmation), result)
+        assertEquals(
+            AppResult.Success(otpConfirmation),
+            result
+        )
 
         coVerify(exactly = 1) {
-            emailService.sendVerificationCode(any(), any(), any())
+            emailService.sendVerificationCode(
+                any(),
+                any(),
+                any()
+            )
         }
 
         coVerify(exactly = 0) {
-            emailService.sendAlreadyRegisteredEmail(any(), any(), any(), any())
+            emailService.sendAlreadyRegisteredEmail(
+                any(),
+                any(),
+                any(),
+                any()
+            )
         }
     }
 
@@ -99,13 +126,26 @@ class SendAddEmailIdentifierConfirmationUseCaseTest {
             code = TEST_CODE
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
 
         coEvery {
-            identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.EMAIL, TEST_EMAIL)
+            identifierManager.getUserIdentifierInternalByProvider(
+                UserAuthProvider.EMAIL,
+                TEST_EMAIL
+            )
         } returns AppResult.Success(identifier)
 
-        coEvery { otpService.getOtp(any(), any()) } returns AppResult.Success(otpData)
+        coEvery {
+            otpService.getOtp(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(otpData)
 
         coEvery {
             emailService.sendAlreadyRegisteredEmail(
@@ -116,16 +156,31 @@ class SendAddEmailIdentifierConfirmationUseCaseTest {
             )
         } returns AppResult.Success(Unit)
 
-        val result = useCase(TEST_EMAIL, context)
+        val result = useCase(
+            TEST_EMAIL,
+            context
+        )
 
-        assertEquals(AppResult.Success(otpConfirmation), result)
+        assertEquals(
+            AppResult.Success(otpConfirmation),
+            result
+        )
 
         coVerify(exactly = 1) {
-            emailService.sendAlreadyRegisteredEmail(any(), any(), any(), any())
+            emailService.sendAlreadyRegisteredEmail(
+                any(),
+                any(),
+                any(),
+                any()
+            )
         }
 
         coVerify(exactly = 0) {
-            emailService.sendVerificationCode(any(), any(), any())
+            emailService.sendVerificationCode(
+                any(),
+                any(),
+                any()
+            )
         }
     }
 
@@ -134,20 +189,37 @@ class SendAddEmailIdentifierConfirmationUseCaseTest {
         val error = CommonError.Unknown()
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_EMAIL, TEST_EMAIL)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.SEND_OTP_EMAIL,
+                TEST_EMAIL
+            )
         } returns AppResult.Error(error)
 
-        val result = useCase(TEST_EMAIL, context)
+        val result = useCase(
+            TEST_EMAIL,
+            context
+        )
 
-        assertEquals(AppResult.Error(error), result)
+        assertEquals(
+            AppResult.Error(error),
+            result
+        )
 
-        coVerify(exactly = 0) { otpService.getOtp(any(), any()) }
+        coVerify(exactly = 0) {
+            otpService.getOtp(
+                any(),
+                any()
+            )
+        }
     }
 
     @Test
     fun `returns error when email is not allowed by restriction policy`() = runTest {
         coEvery {
-            rateLimiter.checkRateLimit(any(), any())
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
         } returns AppResult.Success(Unit)
 
         every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy(
@@ -155,7 +227,10 @@ class SendAddEmailIdentifierConfirmationUseCaseTest {
             blacklist = listOf("@tempmail.com")
         )
 
-        val result = useCase("user@tempmail.com", context)
+        val result = useCase(
+            "user@tempmail.com",
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.EmailNotAllowed)

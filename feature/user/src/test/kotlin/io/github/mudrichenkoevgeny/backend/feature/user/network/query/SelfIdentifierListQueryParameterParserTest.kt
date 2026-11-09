@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.testing.contract.assertEx
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserIdentifierFilterValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserIdentifierSortBy
+import io.ktor.http.Parameters
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.ApplicationRequest
 import io.mockk.every
@@ -22,7 +23,6 @@ private const val GOOGLE_PROVIDER = "google"
 private const val INVALID_PROVIDER = "unknown"
 
 class SelfIdentifierListQueryParameterParserTest {
-
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()
     private val filterNames = UserIdentifierFilterValues
@@ -33,7 +33,7 @@ class SelfIdentifierListQueryParameterParserTest {
     }
 
     @Test
-    fun `parseSelfIdentifiersListQueryParams should extract and parse all wire keys defined in UserIdentifierFilterValues`() {
+    fun `parseSelfIdentifiersListQueryParams parses all wire keys defined in UserIdentifierFilterValues`() {
         assertExhaustiveFilterKeysParsed(
             filterKeysClass = UserIdentifierFilterValues::class,
             sampleValueProvider = ::getSampleValidValueForIdentifierFilterKey,
@@ -48,13 +48,18 @@ class SelfIdentifierListQueryParameterParserTest {
             wireValueExtractor = { sortByEntry -> sortByEntry.value },
             parseFunction = { mockCall -> mockCall.parseSelfIdentifiersListQueryParams() },
             assertSortByFunction = { parsedQueryParams, expectedSortBy ->
-                assertEquals(expectedSortBy, parsedQueryParams.listing.sortBy)
+                assertEquals(
+                    expectedSortBy,
+                    parsedQueryParams.listing.sortBy
+                )
             }
         )
     }
 
     private fun getSampleValidValueForIdentifierFilterKey(key: String): String = when {
-        key == filterNames.USER_AUTH_PROVIDER || key == filterNames.EXCLUDE_USER_AUTH_PROVIDER -> UserAuthProvider.GOOGLE.value
+        key == filterNames.USER_AUTH_PROVIDER || key == filterNames.EXCLUDE_USER_AUTH_PROVIDER ->
+            UserAuthProvider.GOOGLE.value
+
         key == filterNames.USER_ID || key == filterNames.IDENTIFIER_ID -> "00000000-0000-0000-0000-000000000001"
         key.endsWith("_from") || key.endsWith("_to") -> "2026-01-01T00:00:00Z"
         key.startsWith("is_") -> "true"
@@ -72,9 +77,18 @@ class SelfIdentifierListQueryParameterParserTest {
 
         val result = call.parseSelfIdentifiersListQueryParams()
 
-        assertEquals(UserAuthProvider.GOOGLE, result.userAuthProviders.first())
-        assertEquals(TEST_IDENTIFIER, result.identifier)
-        assertEquals(UserIdentifierSortBy.DEFAULT, result.listing.sortBy)
+        assertEquals(
+            UserAuthProvider.GOOGLE,
+            result.userAuthProviders.first()
+        )
+        assertEquals(
+            TEST_IDENTIFIER,
+            result.identifier
+        )
+        assertEquals(
+            UserIdentifierSortBy.DEFAULT,
+            result.listing.sortBy
+        )
     }
 
     @Test
@@ -85,7 +99,10 @@ class SelfIdentifierListQueryParameterParserTest {
 
         assertTrue(result.userAuthProviders.isEmpty())
         assertTrue(result.identifier == null)
-        assertEquals(UserIdentifierSortBy.DEFAULT, result.listing.sortBy)
+        assertEquals(
+            UserIdentifierSortBy.DEFAULT,
+            result.listing.sortBy
+        )
     }
 
     @Test
@@ -101,12 +118,20 @@ class SelfIdentifierListQueryParameterParserTest {
         }
 
         val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.USER_AUTH_PROVIDER, error.parameterName)
+        assertEquals(
+            filterNames.USER_AUTH_PROVIDER,
+            error.parameterName
+        )
     }
 
     private fun setupMockParameters(params: Map<String, List<String>>) {
-        val parameters = io.ktor.http.Parameters.build {
-            params.forEach { (key, values) -> appendAll(key, values) }
+        val parameters = Parameters.build {
+            params.forEach { (key, values) ->
+                appendAll(
+                    key,
+                    values
+                )
+            }
         }
         every { request.queryParameters } returns parameters
     }

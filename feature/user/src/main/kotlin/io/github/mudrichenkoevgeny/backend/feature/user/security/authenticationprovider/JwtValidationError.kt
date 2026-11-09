@@ -9,19 +9,21 @@ import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
  * This type is stored as an authentication principal when validation fails and is later
  * mapped to an [AppError] in the authentication challenge.
  */
-sealed class JwtValidationError {
+public sealed class JwtValidationError {
     /** Token is missing, malformed, or signature invalid. */
-    object InvalidToken : JwtValidationError()
+    public object InvalidToken : JwtValidationError()
+
     /** Token is well-formed but expired. */
-    object TokenExpired : JwtValidationError()
+    public object TokenExpired : JwtValidationError()
+
     /** Token is valid, but the referenced user does not exist. */
-    object UserNotFound : JwtValidationError()
+    public object UserNotFound : JwtValidationError()
 }
 
 /**
  * Maps a JWT validation failure to a public [AppError] suitable for HTTP responses.
  */
-fun JwtValidationError.toAppError(): AppError = when (this) {
+public fun JwtValidationError.toAppError(): AppError = when (this) {
     JwtValidationError.InvalidToken -> UserError.InvalidAccessToken()
     JwtValidationError.TokenExpired -> UserError.AccessTokenExpired()
     JwtValidationError.UserNotFound -> UserError.UserNotFound()

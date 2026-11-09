@@ -1,29 +1,26 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier
 
-import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
-import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
-import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionRequirement
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
+import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
+import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementIdentifierListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfIdentifierListQueryParams
-import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierSummary
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserIdentifierSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
@@ -43,12 +40,11 @@ import kotlin.time.Clock
  * [IdentifierPermissionCode].
  */
 @Singleton
-class IdentifierManagerImpl @Inject constructor(
+public class IdentifierManagerImpl @Inject constructor(
     private val passwordHasher: PasswordHasher,
     private val userManager: UserManager,
     private val userIdentifierRepository: UserIdentifierRepository
-): IdentifierManager {
-
+) : IdentifierManager {
     override suspend fun getUserIdentifierInternalByProvider(
         userAuthProvider: UserAuthProvider,
         identifier: String
@@ -106,8 +102,13 @@ class IdentifierManagerImpl @Inject constructor(
 
                         when (permissionRequirement) {
                             PermissionRequirement.UNMASKED -> AppResult.Success(userIdentifierPrivate)
-                            PermissionRequirement.MASKED -> AppResult.Success(userIdentifierPrivate.maskSensitiveData())
-                            PermissionRequirement.FORBIDDEN -> AppResult.Error(UserError.UserMissingPermissions(managementUserId))
+                            PermissionRequirement.MASKED -> AppResult.Success(
+                                userIdentifierPrivate.maskSensitiveData()
+                            )
+
+                            PermissionRequirement.FORBIDDEN -> AppResult.Error(
+                                UserError.UserMissingPermissions(managementUserId)
+                            )
                         }
                     }
                 }
@@ -145,7 +146,7 @@ class IdentifierManagerImpl @Inject constructor(
                 identifier = identifier,
                 externalProviderDisplayName = externalProviderDisplayName
             )
-            
+
             val displayName = when (displayNameResult) {
                 is AppResult.Success -> displayNameResult.data
                 is AppResult.Error -> return@dbQuery displayNameResult
@@ -229,7 +230,12 @@ class IdentifierManagerImpl @Inject constructor(
                     }
 
                     val summary = internal.toUserIdentifierSummary()
-                    when (determinePermissionRequirement(targetRole, managementUserPermissionCodes)) {
+                    when (
+                        determinePermissionRequirement(
+                            targetRole,
+                            managementUserPermissionCodes
+                        )
+                    ) {
                         PermissionRequirement.UNMASKED -> summary
                         PermissionRequirement.MASKED -> summary.maskSensitiveData()
                         PermissionRequirement.FORBIDDEN -> null
@@ -276,10 +282,12 @@ class IdentifierManagerImpl @Inject constructor(
                 masked = IdentifierPermissionCode.IDENTIFIER_GET_OF_USER_MASKED,
                 unmasked = IdentifierPermissionCode.IDENTIFIER_GET_OF_USER_UNMASKED
             )
+
             UserRole.STAFF -> PermissionSet(
                 masked = IdentifierPermissionCode.IDENTIFIER_GET_OF_STAFF_MASKED,
                 unmasked = IdentifierPermissionCode.IDENTIFIER_GET_OF_STAFF_UNMASKED
             )
+
             UserRole.ADMIN -> null
         } ?: return PermissionRequirement.FORBIDDEN
 
@@ -329,18 +337,16 @@ class IdentifierManagerImpl @Inject constructor(
         userAuthProvider: UserAuthProvider,
         identifier: String,
         externalProviderDisplayName: String?
-    ): AppResult<String> {
-        return when (userAuthProvider) {
-            UserAuthProvider.EMAIL, UserAuthProvider.PHONE -> AppResult.Success(identifier)
-            else -> {
-                if (!externalProviderDisplayName.isNullOrBlank()) {
-                    AppResult.Success(externalProviderDisplayName)
-                } else {
-                    generateUniqueFallbackDisplayName(
-                        userId = userId,
-                        userAuthProvider = userAuthProvider
-                    )
-                }
+    ): AppResult<String> = when (userAuthProvider) {
+        UserAuthProvider.EMAIL, UserAuthProvider.PHONE -> AppResult.Success(identifier)
+        else -> {
+            if (!externalProviderDisplayName.isNullOrBlank()) {
+                AppResult.Success(externalProviderDisplayName)
+            } else {
+                generateUniqueFallbackDisplayName(
+                    userId = userId,
+                    userAuthProvider = userAuthProvider
+                )
             }
         }
     }

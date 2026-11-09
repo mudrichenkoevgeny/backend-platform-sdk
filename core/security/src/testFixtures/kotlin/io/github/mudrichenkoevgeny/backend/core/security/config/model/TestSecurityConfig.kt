@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.security.config.model
 
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.ManagementSecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
 
 fun createTestSecurityConfig(
     authRealm: String = "test-realm",

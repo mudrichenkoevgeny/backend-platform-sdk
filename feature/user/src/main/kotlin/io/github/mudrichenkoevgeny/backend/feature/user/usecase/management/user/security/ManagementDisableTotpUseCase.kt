@@ -27,8 +27,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permiss
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to disable TOTP.
+ */
 @Singleton
-class ManagementDisableTotpUseCase @Inject constructor(
+public class ManagementDisableTotpUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -62,7 +65,7 @@ class ManagementDisableTotpUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] indicating success or the specific [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         userId: UserId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
@@ -121,8 +124,7 @@ class ManagementDisableTotpUseCase @Inject constructor(
             )
         }
 
-        val targetUserResult = userManager.getUserInternalById(userId)
-            .mapNotNullOrError(UserError.UserNotFound(userId))
+        val targetUserResult = userManager.getUserInternalById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
 
         val targetUser = when (targetUserResult) {
             is AppResult.Success -> targetUserResult.data

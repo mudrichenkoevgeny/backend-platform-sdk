@@ -13,15 +13,13 @@ import javax.inject.Singleton
  * marks them as handled. All other frames are ignored so they can be processed by other handlers.
  */
 @Singleton
-class SecurityWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
+public class SecurityWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
     override suspend fun handle(
         frame: SocketFrame,
         webSocketSessionContext: WebSocketSessionContext
-    ): WebSocketMessageHandlerResult {
-        return when (frame.type) {
-            SecurityWebSocketEventTypes.OPEN_SECURITY_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
-            SecurityWebSocketEventTypes.MANAGEMENT_SECURITY_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
-            else -> WebSocketMessageHandlerResult.NotHandled
-        }
+    ): WebSocketMessageHandlerResult = when (frame.type) {
+        SecurityWebSocketEventTypes.OPEN_SECURITY_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
+        SecurityWebSocketEventTypes.MANAGEMENT_SECURITY_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
+        else -> WebSocketMessageHandlerResult.NotHandled
     }
 }

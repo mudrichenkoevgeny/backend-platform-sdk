@@ -17,12 +17,14 @@ import org.junit.jupiter.api.Test
  * requires a spec named "api" generated from OpenAPI-annotated routes, which are not present in this module.
  */
 class SwaggerRouteTest {
-
     @Test
     fun `setupSwaggerEndpoints registers routes without throwing`() = testApplication {
         application {
             install(OpenApi) {
-                info { title = "Test"; version = "1.0" }
+                info {
+                    title = "Test"
+                    version = "1.0"
+                }
                 server { url = "http://localhost" }
                 outputFormat = OutputFormat.JSON
             }
@@ -36,7 +38,10 @@ class SwaggerRouteTest {
     fun `setupSwaggerEndpoints serves Swagger UI at SWAGGER_UI_PATH`() = testApplication {
         application {
             install(OpenApi) {
-                info { title = "Test"; version = "1.0" }
+                info {
+                    title = "Test"
+                    version = "1.0"
+                }
                 server { url = "http://localhost" }
                 outputFormat = OutputFormat.JSON
             }
@@ -44,7 +49,10 @@ class SwaggerRouteTest {
                 setupSwaggerEndpoints()
             }
         }
-        val response = client.get("/${SwaggerConfig.SWAGGER_UI_PATH}")
-        assertEquals(HttpStatusCode.OK, response.status)
+        val response = client.get(urlString = "/" + SwaggerConfig.SWAGGER_UI_PATH)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 }

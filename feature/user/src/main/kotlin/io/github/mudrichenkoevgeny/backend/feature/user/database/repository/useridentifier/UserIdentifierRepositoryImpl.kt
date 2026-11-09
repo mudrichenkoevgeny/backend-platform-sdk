@@ -44,18 +44,17 @@ import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.select
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
-import java.time.Instant as JavaInstant
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.time.Instant as KotlinInstant
 import kotlin.uuid.Uuid
+import java.time.Instant as JavaInstant
+import kotlin.time.Instant as KotlinInstant
 
 /**
  * Default [UserIdentifierRepository] implementation backed by Exposed and [UserIdentifiersTable].
  */
 @Singleton
-class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierRepository {
-
+public class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierRepository {
     override suspend fun createUserIdentifier(
         userIdentifier: UserIdentifierInternal
     ): AppResult<UserIdentifierInternal> {
@@ -76,7 +75,7 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
                 return AppResult.Error(
                     CommonError.Database(
                         "UserIdentifier creation failed for userId=${userIdentifier.userId.value}, " +
-                                "userAuthProvider=${userIdentifier.userAuthProvider}"
+                            "userAuthProvider=${userIdentifier.userAuthProvider}"
                     )
                 )
             }
@@ -89,12 +88,9 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         }
     }
 
-    override suspend fun deleteUserIdentifier(
-        userIdentifierId: UserIdentifierId
-    ): AppResult<Unit> {
+    override suspend fun deleteUserIdentifier(userIdentifierId: UserIdentifierId): AppResult<Unit> {
         return try {
-            val deletedRows = UserIdentifiersTable
-                .deleteWhere { UserIdentifiersTable.id eq userIdentifierId.value }
+            val deletedRows = UserIdentifiersTable.deleteWhere { UserIdentifiersTable.id eq userIdentifierId.value }
 
             if (deletedRows == 0) {
                 return AppResult.Error(
@@ -149,183 +145,160 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
 
     override suspend fun getUserIdentifierInternalById(
         userIdentifierId: UserIdentifierId
-    ): AppResult<UserIdentifierInternal?> {
-        return try {
-            AppResult.Success(
-                getIdentifierResultRow(userIdentifierId)?.toUserIdentifierInternal()
-            )
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(
-                CommonError.Database("Error retrieving user identifier by id: ${e.message}")
-            )
-        }
+    ): AppResult<UserIdentifierInternal?> = try {
+        AppResult.Success(
+            getIdentifierResultRow(userIdentifierId)?.toUserIdentifierInternal()
+        )
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(
+            CommonError.Database("Error retrieving user identifier by id: ${e.message}")
+        )
     }
 
-    private fun getIdentifierResultRow(
-        userIdentifierId: UserIdentifierId
-    ): ResultRow? = UserIdentifiersTable
-        .selectAll()
-        .where { UserIdentifiersTable.id eq userIdentifierId.value }
-        .limit(1)
-        .singleOrNull()
+    private fun getIdentifierResultRow(userIdentifierId: UserIdentifierId): ResultRow? =
+        UserIdentifiersTable.selectAll().where { UserIdentifiersTable.id eq userIdentifierId.value }.limit(1)
+            .singleOrNull()
 
     override suspend fun getUserIdentifiersListByUserId(
         userId: UserId,
         userAuthProvider: UserAuthProvider?
-    ): AppResult<List<UserIdentifierInternal>> {
-        return try {
-            var query = UserIdentifiersTable
-                .selectAll()
-                .where { UserIdentifiersTable.userId eq userId.value }
+    ): AppResult<List<UserIdentifierInternal>> = try {
+        var query = UserIdentifiersTable.selectAll().where { UserIdentifiersTable.userId eq userId.value }
 
-            if (userAuthProvider != null) {
-                query = query.andWhere {
-                    UserIdentifiersTable.userAuthProvider eq userAuthProvider
-                }
+        if (userAuthProvider != null) {
+            query = query.andWhere {
+                UserIdentifiersTable.userAuthProvider eq userAuthProvider
             }
-
-            val userIdentifiers = query.map { it.toUserIdentifierInternal() }
-
-            AppResult.Success(userIdentifiers)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(
-                CommonError.Database("Error retrieving user identifiers by user id: ${e.message}")
-            )
         }
+
+        val userIdentifiers = query.map { it.toUserIdentifierInternal() }
+
+        AppResult.Success(userIdentifiers)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(
+            CommonError.Database("Error retrieving user identifiers by user id: ${e.message}")
+        )
     }
 
     override suspend fun getUserIdentifierInternalByProvider(
         userAuthProvider: UserAuthProvider,
         identifier: String
-    ): AppResult<UserIdentifierInternal?> {
-        return try {
-            AppResult.Success(
-                getUserIdentifierByProviderResultRow(
-                    userAuthProvider,
-                    identifier
-                )?.toUserIdentifierInternal()
-            )
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(
-                CommonError.Database("Error retrieving user identifier by provider: ${e.message}")
-            )
-        }
+    ): AppResult<UserIdentifierInternal?> = try {
+        AppResult.Success(
+            getUserIdentifierByProviderResultRow(
+                userAuthProvider,
+                identifier
+            )?.toUserIdentifierInternal()
+        )
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(
+            CommonError.Database("Error retrieving user identifier by provider: ${e.message}")
+        )
     }
 
     private fun getUserIdentifierByProviderResultRow(
         userAuthProvider: UserAuthProvider,
         identifier: String
-    ): ResultRow? = UserIdentifiersTable
-        .selectAll()
-        .where {
-            (UserIdentifiersTable.identifier eq identifier) and
-                    (UserIdentifiersTable.userAuthProvider eq userAuthProvider)
-        }
-        .limit(1)
-        .singleOrNull()
+    ): ResultRow? = UserIdentifiersTable.selectAll().where {
+        (UserIdentifiersTable.identifier eq identifier) and (UserIdentifiersTable.userAuthProvider eq userAuthProvider)
+    }.limit(1).singleOrNull()
 
     override suspend fun getUserIdentifiersPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter,
         queryParams: ManagementIdentifierListQueryParams
-    ): AppResult<PagedResult<UserIdentifierInternal>> {
-        return try {
-            var query = UserIdentifiersTable.selectAll()
+    ): AppResult<PagedResult<UserIdentifierInternal>> = try {
+        var query = UserIdentifiersTable.selectAll()
 
-            query = query.andWhere {
-                val allowedRoleConditions = accessFilter.allowedUserRoles
-                    .map { allowedRole -> UsersTable.role eq allowedRole }
+        query = query.andWhere {
+            val allowedRoleConditions =
+                accessFilter.allowedUserRoles.map { allowedRole -> UsersTable.role eq allowedRole }
 
-                val allowedRolesPredicate = allowedRoleConditions
-                    .reduceOrNull { acc, condition -> acc or condition }
-                    ?: Op.FALSE
+            val allowedRolesPredicate = allowedRoleConditions.reduceOrNull { acc, condition -> acc or condition }
+                ?: Op.FALSE
 
-                val allowedUsersSubQuery = UsersTable
-                    .select(UsersTable.id)
-                    .where { allowedRolesPredicate }
+            val allowedUsersSubQuery = UsersTable.select(UsersTable.id).where { allowedRolesPredicate }
 
-                UserIdentifiersTable.userId inSubQuery allowedUsersSubQuery
-            }
-
-            if (queryParams.userIds.isNotEmpty()) {
-                val userEntityIds = queryParams.userIds.mapNotNull { idStr ->
-                    runCatching {
-                        EntityID(Uuid.parse(idStr), UsersTable)
-                    }.getOrNull()
-                }
-                if (userEntityIds.isNotEmpty()) {
-                    query = query.andWhere {
-                        UserIdentifiersTable.userId inList userEntityIds
-                    }
-                }
-            }
-
-            query = query.applyCommonFilters(
-                identifierIds = queryParams.identifierIds,
-                userAuthProviders = queryParams.userAuthProviders,
-                excludeUserAuthProviders = queryParams.excludeUserAuthProviders,
-                identifier = queryParams.identifier,
-                displayName = queryParams.displayName,
-                externalProviderEmail = queryParams.externalProviderEmail,
-                isExternalProviderEmailSet = queryParams.isExternalProviderEmailSet,
-                createdAtFrom = queryParams.createdAtFrom,
-                createdAtTo = queryParams.createdAtTo,
-                updatedAtFrom = queryParams.updatedAtFrom,
-                updatedAtTo = queryParams.updatedAtTo,
-                isUpdatedAtSet = queryParams.isUpdatedAtSet,
-                searchQuery = queryParams.searchQuery
-            )
-
-            executeUserIdentifiersPagedQuery(
-                query = query,
-                pageNumber = queryParams.listing.pageParams.page,
-                pageSize = queryParams.listing.pageParams.size,
-                sortBy = queryParams.listing.sortBy,
-                sortOrder = queryParams.listing.sortOrder
-            )
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(
-                CommonError.Database("Error executing user identifiers paged query: ${e.message}")
-            )
+            UserIdentifiersTable.userId inSubQuery allowedUsersSubQuery
         }
+
+        if (queryParams.userIds.isNotEmpty()) {
+            val userEntityIds = queryParams.userIds.mapNotNull { idStr ->
+                runCatching {
+                    EntityID(
+                        Uuid.parse(idStr),
+                        UsersTable
+                    )
+                }.getOrNull()
+            }
+            if (userEntityIds.isNotEmpty()) {
+                query = query.andWhere {
+                    UserIdentifiersTable.userId inList userEntityIds
+                }
+            }
+        }
+
+        query = query.applyCommonFilters(
+            identifierIds = queryParams.identifierIds,
+            userAuthProviders = queryParams.userAuthProviders,
+            excludeUserAuthProviders = queryParams.excludeUserAuthProviders,
+            identifier = queryParams.identifier,
+            displayName = queryParams.displayName,
+            externalProviderEmail = queryParams.externalProviderEmail,
+            isExternalProviderEmailSet = queryParams.isExternalProviderEmailSet,
+            createdAtFrom = queryParams.createdAtFrom,
+            createdAtTo = queryParams.createdAtTo,
+            updatedAtFrom = queryParams.updatedAtFrom,
+            updatedAtTo = queryParams.updatedAtTo,
+            isUpdatedAtSet = queryParams.isUpdatedAtSet,
+            searchQuery = queryParams.searchQuery
+        )
+
+        executeUserIdentifiersPagedQuery(
+            query = query,
+            pageNumber = queryParams.listing.pageParams.page,
+            pageSize = queryParams.listing.pageParams.size,
+            sortBy = queryParams.listing.sortBy,
+            sortOrder = queryParams.listing.sortOrder
+        )
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(
+            CommonError.Database("Error executing user identifiers paged query: ${e.message}")
+        )
     }
 
     override suspend fun getUserIdentifiersPageByUserId(
         userId: UserId,
         queryParams: SelfIdentifierListQueryParams
-    ): AppResult<PagedResult<UserIdentifierInternal>> {
-        return try {
-            var query = UserIdentifiersTable
-                .selectAll()
-                .where { UserIdentifiersTable.userId eq userId.value }
+    ): AppResult<PagedResult<UserIdentifierInternal>> = try {
+        var query = UserIdentifiersTable.selectAll().where { UserIdentifiersTable.userId eq userId.value }
 
-            query = query.applyCommonFilters(
-                identifierIds = queryParams.identifierIds,
-                userAuthProviders = queryParams.userAuthProviders,
-                excludeUserAuthProviders = queryParams.excludeUserAuthProviders,
-                identifier = queryParams.identifier,
-                displayName = queryParams.displayName,
-                externalProviderEmail = queryParams.externalProviderEmail,
-                isExternalProviderEmailSet = queryParams.isExternalProviderEmailSet,
-                createdAtFrom = queryParams.createdAtFrom,
-                createdAtTo = queryParams.createdAtTo,
-                updatedAtFrom = queryParams.updatedAtFrom,
-                updatedAtTo = queryParams.updatedAtTo,
-                isUpdatedAtSet = queryParams.isUpdatedAtSet,
-                searchQuery = queryParams.searchQuery
-            )
+        query = query.applyCommonFilters(
+            identifierIds = queryParams.identifierIds,
+            userAuthProviders = queryParams.userAuthProviders,
+            excludeUserAuthProviders = queryParams.excludeUserAuthProviders,
+            identifier = queryParams.identifier,
+            displayName = queryParams.displayName,
+            externalProviderEmail = queryParams.externalProviderEmail,
+            isExternalProviderEmailSet = queryParams.isExternalProviderEmailSet,
+            createdAtFrom = queryParams.createdAtFrom,
+            createdAtTo = queryParams.createdAtTo,
+            updatedAtFrom = queryParams.updatedAtFrom,
+            updatedAtTo = queryParams.updatedAtTo,
+            isUpdatedAtSet = queryParams.isUpdatedAtSet,
+            searchQuery = queryParams.searchQuery
+        )
 
-            executeUserIdentifiersPagedQuery(
-                query = query,
-                pageNumber = queryParams.listing.pageParams.page,
-                pageSize = queryParams.listing.pageParams.size,
-                sortBy = queryParams.listing.sortBy,
-                sortOrder = queryParams.listing.sortOrder
-            )
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(
-                CommonError.Database("Error executing self user identifiers paged query: ${e.message}")
-            )
-        }
+        executeUserIdentifiersPagedQuery(
+            query = query,
+            pageNumber = queryParams.listing.pageParams.page,
+            pageSize = queryParams.listing.pageParams.size,
+            sortBy = queryParams.listing.sortBy,
+            sortOrder = queryParams.listing.sortOrder
+        )
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(
+            CommonError.Database("Error executing self user identifiers paged query: ${e.message}")
+        )
     }
 
     private fun Query.applyCommonFilters(
@@ -348,7 +321,10 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         if (identifierIds.isNotEmpty()) {
             val entityIds = identifierIds.mapNotNull { idStr ->
                 runCatching {
-                    EntityID(Uuid.parse(idStr), UserIdentifiersTable)
+                    EntityID(
+                        Uuid.parse(idStr),
+                        UserIdentifiersTable
+                    )
                 }.getOrNull()
             }
             if (entityIds.isNotEmpty()) {
@@ -379,8 +355,7 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         }
         if (!externalProviderEmail.isNullOrBlank()) {
             query = query.andWhere {
-                UserIdentifiersTable.externalProviderEmail.lowerCase() eq
-                        externalProviderEmail.lowercase()
+                UserIdentifiersTable.externalProviderEmail.lowerCase() eq externalProviderEmail.lowercase()
             }
         }
         if (isExternalProviderEmailSet == true) {
@@ -405,8 +380,8 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
             val pattern = substringSqlLikePattern(searchQuery.lowercase())
             query = query.andWhere {
                 (UserIdentifiersTable.identifier.lowerCase() like pattern) or
-                        (UserIdentifiersTable.displayName.lowerCase() like pattern) or
-                        (UserIdentifiersTable.externalProviderEmail.lowerCase() like pattern)
+                    (UserIdentifiersTable.displayName.lowerCase() like pattern) or
+                    (UserIdentifiersTable.externalProviderEmail.lowerCase() like pattern)
             }
         }
 
@@ -421,7 +396,10 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         sortOrder: SortOrder
     ): AppResult<PagedResult<UserIdentifierInternal>> {
         val totalCount = query.count()
-        val totalPages = getNumOfTotalPages(totalCount, pageSize)
+        val totalPages = getNumOfTotalPages(
+            totalCount,
+            pageSize
+        )
 
         val sortColumn = when (sortBy) {
             UserIdentifierSortBy.CREATED_AT -> UserIdentifiersTable.createdAt
@@ -430,11 +408,12 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
             UserIdentifierSortBy.DISPLAY_NAME -> UserIdentifiersTable.displayName
         }
 
-        val pageParams = PageParams(page = pageNumber, size = pageSize)
+        val pageParams = PageParams(
+            page = pageNumber,
+            size = pageSize
+        )
 
-        val items = query
-            .orderBy(sortColumn to sortOrder.toExposedSortOrder())
-            .applyPagination(pageParams)
+        val items = query.orderBy(sortColumn to sortOrder.toExposedSortOrder()).applyPagination(pageParams)
             .map { it.toUserIdentifierInternal() }
 
         return AppResult.Success(
@@ -448,18 +427,17 @@ class UserIdentifierRepositoryImpl @Inject constructor() : UserIdentifierReposit
         )
     }
 
-    private fun ResultRow.toUserIdentifierInternal(): UserIdentifierInternal =
-        UserIdentifierInternal(
-            id = UserIdentifierId(this[UserIdentifiersTable.id].value),
-            userId = UserId(this[UserIdentifiersTable.userId].value),
-            userAuthProvider = this[UserIdentifiersTable.userAuthProvider],
-            identifier = this[UserIdentifiersTable.identifier],
-            displayName = this[UserIdentifiersTable.displayName],
-            externalProviderEmail = this[UserIdentifiersTable.externalProviderEmail],
-            passwordHash = this[UserIdentifiersTable.passwordHash]?.let { passwordHash ->
-                PasswordHash(passwordHash)
-            },
-            createdAt = this[UserIdentifiersTable.createdAt].toKotlinInstant(),
-            updatedAt = this[UserIdentifiersTable.updatedAt]?.toKotlinInstant()
-        )
+    private fun ResultRow.toUserIdentifierInternal(): UserIdentifierInternal = UserIdentifierInternal(
+        id = UserIdentifierId(this[UserIdentifiersTable.id].value),
+        userId = UserId(this[UserIdentifiersTable.userId].value),
+        userAuthProvider = this[UserIdentifiersTable.userAuthProvider],
+        identifier = this[UserIdentifiersTable.identifier],
+        displayName = this[UserIdentifiersTable.displayName],
+        externalProviderEmail = this[UserIdentifiersTable.externalProviderEmail],
+        passwordHash = this[UserIdentifiersTable.passwordHash]?.let { passwordHash ->
+            PasswordHash(passwordHash)
+        },
+        createdAt = this[UserIdentifiersTable.createdAt].toKotlinInstant(),
+        updatedAt = this[UserIdentifiersTable.updatedAt]?.toKotlinInstant()
+    )
 }

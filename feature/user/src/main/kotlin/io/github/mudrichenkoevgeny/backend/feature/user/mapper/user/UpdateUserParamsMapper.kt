@@ -26,33 +26,32 @@ import kotlin.time.Instant
  * @return [UpdateUserParams] domain model containing mapped [UpdateField] values.
  * @throws [RequestHandlingException] if any present non-null string field cannot be parsed into its domain representation.
  */
-fun ManagementUpdateUserRequest.toUpdateUserParams(): UpdateUserParams {
-    return UpdateUserParams(
-        accountStatus = accountStatus.validateAndMap(UserApiFields.ACCOUNT_STATUS) { accountStatus ->
-            UserAccountStatus.fromValueOrNull(accountStatus)
-        },
-        authorityLevel = authorityLevel.toUpdateField(),
-        permissions = permissionCodes.validateAndMap(UserApiFields.PERMISSION_CODES) { set ->
-            set.mapToSet { PermissionCode(it) }
-        },
-        lockoutType = lockoutType.validateAndMap(UserApiFields.ACCOUNT_LOCKOUT_TYPE) { lockoutType ->
-            AccountLockoutType.fromValueOrNull(lockoutType)
-        },
-        temporaryLockoutUntil = temporaryLockoutUntil
-            .validateAndMap(UserApiFields.TEMPORARY_LOCKOUT_UNTIL) { temporaryLockoutUntil ->
-                Instant.fromEpochMilliseconds(temporaryLockoutUntil)
-            },
-        storageConfiguration = storageConfiguration.toUpdateField(),
-        nickname = nickname.toUpdateField(),
-        displayName = displayName.toUpdateField(),
-        avatarFileId = avatarFileId.validateAndMap(UserApiFields.AVATAR_FILE_ID) { avatarFileId ->
-            avatarFileId.toFileIdOrNull()
-        },
-        birthdate = birthdate.validateAndMap(UserApiFields.BIRTHDATE) { birthdate ->
-            Instant.fromEpochMilliseconds(birthdate)
-        }
-    )
-}
+public fun ManagementUpdateUserRequest.toUpdateUserParams(): UpdateUserParams = UpdateUserParams(
+    accountStatus = accountStatus.validateAndMap(UserApiFields.ACCOUNT_STATUS) { accountStatus ->
+        UserAccountStatus.fromValueOrNull(accountStatus)
+    },
+    authorityLevel = authorityLevel.toUpdateField(),
+    permissions = permissionCodes.validateAndMap(UserApiFields.PERMISSION_CODES) { set ->
+        set.mapToSet { PermissionCode(it) }
+    },
+    lockoutType = lockoutType.validateAndMap(UserApiFields.ACCOUNT_LOCKOUT_TYPE) { lockoutType ->
+        AccountLockoutType.fromValueOrNull(lockoutType)
+    },
+    temporaryLockoutUntil = temporaryLockoutUntil.validateAndMap(
+        UserApiFields.TEMPORARY_LOCKOUT_UNTIL
+    ) { temporaryLockoutUntil ->
+        Instant.fromEpochMilliseconds(temporaryLockoutUntil)
+    },
+    storageConfiguration = storageConfiguration.toUpdateField(),
+    nickname = nickname.toUpdateField(),
+    displayName = displayName.toUpdateField(),
+    avatarFileId = avatarFileId.validateAndMap(UserApiFields.AVATAR_FILE_ID) { avatarFileId ->
+        avatarFileId.toFileIdOrNull()
+    },
+    birthdate = birthdate.validateAndMap(UserApiFields.BIRTHDATE) { birthdate ->
+        Instant.fromEpochMilliseconds(birthdate)
+    }
+)
 
 /**
  * Converts a [SelfUpdateUserRequest] DTO into a domain-layer [UpdateUserParams] holder.
@@ -63,15 +62,13 @@ fun ManagementUpdateUserRequest.toUpdateUserParams(): UpdateUserParams {
  * @return [UpdateUserParams] domain model containing mapped [UpdateField] values.
  * @throws [RequestHandlingException] if any present non-null string field cannot be parsed into its domain representation.
  */
-fun SelfUpdateUserRequest.toUpdateUserParams(): UpdateUserParams {
-    return UpdateUserParams(
-        nickname = nickname.toUpdateField(),
-        displayName = displayName.toUpdateField(),
-        avatarFileId = avatarFileId.validateAndMap(UserApiFields.AVATAR_FILE_ID) { avatarFileId ->
-            avatarFileId.toFileIdOrNull()
-        },
-        birthdate = birthdate.validateAndMap(UserApiFields.BIRTHDATE) { birthdate ->
-            Instant.fromEpochMilliseconds(birthdate)
-        }
-    )
-}
+public fun SelfUpdateUserRequest.toUpdateUserParams(): UpdateUserParams = UpdateUserParams(
+    nickname = nickname.toUpdateField(),
+    displayName = displayName.toUpdateField(),
+    avatarFileId = avatarFileId.validateAndMap(UserApiFields.AVATAR_FILE_ID) { avatarFileId ->
+        avatarFileId.toFileIdOrNull()
+    },
+    birthdate = birthdate.validateAndMap(UserApiFields.BIRTHDATE) { birthdate ->
+        Instant.fromEpochMilliseconds(birthdate)
+    }
+)

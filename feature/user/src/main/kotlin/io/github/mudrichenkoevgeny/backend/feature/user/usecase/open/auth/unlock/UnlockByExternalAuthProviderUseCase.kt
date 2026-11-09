@@ -5,11 +5,11 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
-import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
@@ -28,8 +28,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to unlock user account using an external auth provider token.
+ */
 @Singleton
-class UnlockByExternalAuthProviderUseCase @Inject constructor(
+public class UnlockByExternalAuthProviderUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -62,7 +65,7 @@ class UnlockByExternalAuthProviderUseCase @Inject constructor(
      * @param requestContext Request context containing client details.
      * @return [AppResult.Success] with [Unit] upon successful unlock, or an error.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         authProvider: UserAuthProvider,
         token: String,
         requestContext: RequestContext,
@@ -114,6 +117,7 @@ class UnlockByExternalAuthProviderUseCase @Inject constructor(
                 error = verificationResult.error,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> verificationResult.data
         }
 
@@ -147,7 +151,10 @@ class UnlockByExternalAuthProviderUseCase @Inject constructor(
             )
         }
 
-        val validateResult = user.validateAccessEligibility(allowedRoles, allowedAccountStatuses)
+        val validateResult = user.validateAccessEligibility(
+            allowedRoles,
+            allowedAccountStatuses
+        )
         if (validateResult is AppResult.Error) {
             return handleError(
                 error = validateResult.error,
@@ -171,6 +178,7 @@ class UnlockByExternalAuthProviderUseCase @Inject constructor(
                 error = unlockResult.error,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> {
                 logAudit(
                     status = AuditStatus.SUCCESS,

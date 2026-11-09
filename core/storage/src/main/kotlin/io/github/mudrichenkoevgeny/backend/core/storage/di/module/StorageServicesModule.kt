@@ -17,17 +17,16 @@ import javax.inject.Singleton
  * and [StorageSettingsProviderImpl] to [StorageSettingsProvider].
  */
 @Module
-interface StorageServicesModule {
+public interface StorageServicesModule {
+    @Binds
+    @Singleton
+    public fun bindStorageSettingsProvider(impl: StorageSettingsProviderImpl): StorageSettingsProvider
 
     @Binds
     @Singleton
-    fun bindStorageSettingsProvider(impl: StorageSettingsProviderImpl): StorageSettingsProvider
+    public fun bindStorageService(impl: S3StorageService): StorageService
 
     @Binds
     @Singleton
-    fun bindStorageService(impl: S3StorageService): StorageService
-
-    @Binds
-    @Singleton
-    fun bindImgproxyUrlBuilder(impl: ImgproxyUrlBuilderImpl): ImgproxyUrlBuilder
+    public fun bindImgproxyUrlBuilder(impl: ImgproxyUrlBuilderImpl): ImgproxyUrlBuilder
 }

@@ -20,7 +20,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.s
  * @param managementStorageSettings default platform-wide storage settings parsed from configuration/env.
  * @param imgproxyConfig optional imgproxy service configuration for generating media previews and thumbnails.
  */
-data class StorageConfig(
+public data class StorageConfig(
     val s3Endpoint: String,
     val s3Region: String,
     val s3AccessKey: String,

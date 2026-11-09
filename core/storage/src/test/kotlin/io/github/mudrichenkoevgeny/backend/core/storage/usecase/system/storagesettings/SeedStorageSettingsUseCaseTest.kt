@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SeedStorageSettingsUseCaseTest {
-
     private val storageSettingsProvider = mockk<StorageSettingsProvider>()
     private lateinit var useCase: SeedStorageSettingsUseCase
 
@@ -39,7 +38,10 @@ class SeedStorageSettingsUseCaseTest {
 
         val result = useCase()
 
-        assertEquals(expectedError, result)
+        assertEquals(
+            expectedError,
+            result
+        )
         coVerify(exactly = 1) { storageSettingsProvider.initialize() }
     }
 }

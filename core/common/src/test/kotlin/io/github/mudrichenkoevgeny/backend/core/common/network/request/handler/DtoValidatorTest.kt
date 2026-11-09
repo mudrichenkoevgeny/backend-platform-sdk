@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 class DtoValidatorTest {
-
     @Test
     fun `validateDto does nothing when no validation annotations`() {
         TestNoAnnotationsDto("x").validateDto()
@@ -20,7 +19,10 @@ class DtoValidatorTest {
             TestRequiredDto(null).validateDto()
         }
         val error = ex.error as CommonError.MissingRequiredField
-        assertEquals("field", error.fieldName)
+        assertEquals(
+            "field",
+            error.fieldName
+        )
     }
 
     @Test
@@ -29,7 +31,10 @@ class DtoValidatorTest {
             TestSerialNameDto(null).validateDto()
         }
         val error = ex.error as CommonError.MissingRequiredField
-        assertEquals("wire_name", error.fieldName)
+        assertEquals(
+            "wire_name",
+            error.fieldName
+        )
     }
 
     @Test
@@ -38,17 +43,25 @@ class DtoValidatorTest {
             TestNotBlankDto("   ").validateDto()
         }
         val error = ex.error as CommonError.BlankStringField
-        assertEquals("text", error.fieldName)
+        assertEquals(
+            "text",
+            error.fieldName
+        )
     }
 
     @Test
     fun `validateDto throws BlankStringField when value not string`() {
-        data class WrongTypeDto(@NotBlankStringField val count: Int)
+        data class WrongTypeDto(
+            @NotBlankStringField val count: Int
+        )
 
         val ex = assertThrows(RequestHandlingException::class.java) {
             WrongTypeDto(1).validateDto()
         }
-        assertEquals(CommonError.BlankStringField::class, ex.error::class)
+        assertEquals(
+            CommonError.BlankStringField::class,
+            ex.error::class
+        )
     }
 
     @Test
@@ -57,17 +70,25 @@ class DtoValidatorTest {
             TestNotEmptyDto(emptyList()).validateDto()
         }
         val error = ex.error as CommonError.EmptyCollectionField
-        assertEquals("items", error.fieldName)
+        assertEquals(
+            "items",
+            error.fieldName
+        )
     }
 
     @Test
     fun `validateDto throws EmptyCollectionField when value not collection`() {
-        data class WrongTypeDto(@NotEmptyCollectionField val text: String)
+        data class WrongTypeDto(
+            @NotEmptyCollectionField val text: String
+        )
 
         val ex = assertThrows(RequestHandlingException::class.java) {
             WrongTypeDto("x").validateDto()
         }
-        assertEquals(CommonError.EmptyCollectionField::class, ex.error::class)
+        assertEquals(
+            CommonError.EmptyCollectionField::class,
+            ex.error::class
+        )
     }
 
     @Test

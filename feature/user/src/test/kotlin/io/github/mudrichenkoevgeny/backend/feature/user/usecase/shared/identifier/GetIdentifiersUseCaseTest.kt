@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class GetIdentifiersUseCaseTest {
-
     private val userManager = mockk<UserManager>()
     private val identifierManager = mockk<IdentifierManager>()
 
@@ -42,7 +41,10 @@ class GetIdentifiersUseCaseTest {
     @Test
     fun `successfully returns paginated identifiers`() = runTest {
         val context = createTestAuthenticatedRequestContext()
-        val userInternal = createTestUserInternal(id = context.userId, accountStatus = UserAccountStatus.ACTIVE)
+        val userInternal = createTestUserInternal(
+            id = context.userId,
+            accountStatus = UserAccountStatus.ACTIVE
+        )
         val pagedResult = createTestPagedResult<UserIdentifierSummary>()
 
         coEvery {
@@ -61,13 +63,19 @@ class GetIdentifiersUseCaseTest {
             authenticatedRequestContext = context
         )
 
-        assertEquals(AppResult.Success(pagedResult), result)
+        assertEquals(
+            AppResult.Success(pagedResult),
+            result
+        )
     }
 
     @Test
     fun `returns error when account status is not allowed`() = runTest {
         val context = createTestAuthenticatedRequestContext()
-        val userInternal = createTestUserInternal(id = context.userId, accountStatus = UserAccountStatus.PENDING_DELETION)
+        val userInternal = createTestUserInternal(
+            id = context.userId,
+            accountStatus = UserAccountStatus.PENDING_DELETION
+        )
 
         coEvery { userManager.getUserInternalById(context.userId) } returns AppResult.Success(userInternal)
 
@@ -79,13 +87,19 @@ class GetIdentifiersUseCaseTest {
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
         assertTrue(error is UserError.UserForbidden)
-        assertEquals(context.userId, (error as UserError.UserForbidden).userId)
+        assertEquals(
+            context.userId,
+            (error as UserError.UserForbidden).userId
+        )
     }
 
     @Test
     fun `returns success when account status is READ_ONLY`() = runTest {
         val context = createTestAuthenticatedRequestContext()
-        val userInternal = createTestUserInternal(id = context.userId, accountStatus = UserAccountStatus.READ_ONLY)
+        val userInternal = createTestUserInternal(
+            id = context.userId,
+            accountStatus = UserAccountStatus.READ_ONLY
+        )
         val pagedResult = createTestPagedResult<UserIdentifierSummary>()
 
         coEvery { userManager.getUserInternalById(context.userId) } returns AppResult.Success(userInternal)

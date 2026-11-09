@@ -12,25 +12,25 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChalleng
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
@@ -48,7 +48,7 @@ import kotlin.time.Clock
  * and account status enforcement (e.g., banning/holds).
  */
 @Singleton
-class AuthManagerImpl @Inject constructor(
+public class AuthManagerImpl @Inject constructor(
     private val userManager: UserManager,
     private val identifierManager: IdentifierManager,
     private val sessionManager: SessionManager,
@@ -59,7 +59,6 @@ class AuthManagerImpl @Inject constructor(
     private val userLockoutService: UserLockoutService,
     private val mfaService: MfaService
 ) : AuthManager {
-
     override suspend fun authenticateOrCreateUser(
         clientInfo: ClientInfo,
         userAuthProvider: UserAuthProvider,
@@ -129,7 +128,10 @@ class AuthManagerImpl @Inject constructor(
         }
 
         val checkLockoutResult = userLockoutService.checkLockout(
-            identifiers = listOf(identifier, userId.asHexDashString()),
+            identifiers = listOf(
+                identifier,
+                userId.asHexDashString()
+            ),
             userId = userId
         )
         if (checkLockoutResult is AppResult.Error) {
@@ -470,7 +472,10 @@ class AuthManagerImpl @Inject constructor(
             }
             if (!isPasswordValid) {
                 val recordFailedAttemptResult = userLockoutService.recordFailedAttempt(
-                    identifiers = listOf(userIdentifierInternal.identifier, userId.asHexDashString()),
+                    identifiers = listOf(
+                        userIdentifierInternal.identifier,
+                        userId.asHexDashString()
+                    ),
                     type = LockoutAttemptType.PASSWORD,
                     userId = userId
                 )
@@ -480,7 +485,10 @@ class AuthManagerImpl @Inject constructor(
                 }
             } else {
                 userLockoutService.clearLockout(
-                    identifiers = listOf(userIdentifierInternal.identifier, userId.asHexDashString())
+                    identifiers = listOf(
+                        userIdentifierInternal.identifier,
+                        userId.asHexDashString()
+                    )
                 )
                 AppResult.Success(userIdentifierInternal)
             }
@@ -494,7 +502,10 @@ class AuthManagerImpl @Inject constructor(
         clientInfo: ClientInfo,
         existingUser: UserInternal? = null,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
-        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY),
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        ),
         bypassTotp: Boolean = false
     ): AppResult<AuthData> {
         val user = if (existingUser != null && existingUser.id == userIdentifier.userId) {
@@ -509,7 +520,10 @@ class AuthManagerImpl @Inject constructor(
             }
         }
 
-        val validateResult = user.validateAccessEligibility(allowedRoles, allowedAccountStatuses)
+        val validateResult = user.validateAccessEligibility(
+            allowedRoles,
+            allowedAccountStatuses
+        )
         if (validateResult is AppResult.Error) {
             return AppResult.Error(validateResult.error)
         }
@@ -526,6 +540,7 @@ class AuthManagerImpl @Inject constructor(
                 is AppResult.Success -> AppResult.Error(
                     SecurityError.MfaConfirmationRequired(mfaToken = mfaResult.data.token)
                 )
+
                 is AppResult.Error -> AppResult.Error(mfaResult.error)
             }
         }
@@ -617,7 +632,10 @@ class AuthManagerImpl @Inject constructor(
         )
     }
 
-    fun checkCanAddNewIdentifier(
+    /**
+     * Checks whether a new identifier with [newIdentifierUserAuthProvider] can be added to [currentUserIdentifiers].
+     */
+    public fun checkCanAddNewIdentifier(
         newIdentifierUserAuthProvider: UserAuthProvider,
         currentUserIdentifiers: List<UserIdentifierInternal>
     ): AppResult<Unit> {
@@ -633,8 +651,8 @@ class AuthManagerImpl @Inject constructor(
         val maxNumberOfIdentifiersForProvider = when (newIdentifierUserAuthProvider) {
             UserAuthProvider.EMAIL -> authSettingsProvider.getMaxEmailIdentifiers()
             UserAuthProvider.PHONE -> authSettingsProvider.getMaxPhoneIdentifiers()
-            UserAuthProvider.GOOGLE,
-            UserAuthProvider.APPLE -> authSettingsProvider.getMaxIdentifiersPerExternalProvider()
+            UserAuthProvider.GOOGLE, UserAuthProvider.APPLE ->
+                authSettingsProvider.getMaxIdentifiersPerExternalProvider()
         }
 
         val currentNumberOfIdentifiersForProvider = currentUserIdentifiers.count {

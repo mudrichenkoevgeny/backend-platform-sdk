@@ -10,7 +10,7 @@ import javax.inject.Singleton
  * Exposes application name and version through the [AppInfo] contract used by SDK modules.
  */
 @Singleton
-class SampleAppInfo @Inject constructor() : AppInfo {
+public class SampleAppInfo @Inject constructor() : AppInfo {
     override val version: String = "1.0.0"
     override val appName: String = "Backend-platform-sdk Sample"
 }

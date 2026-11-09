@@ -9,8 +9,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.c
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to retrieve public user configuration snapshot.
+ */
 @Singleton
-class GetOpenUserConfigurationUseCase @Inject constructor(
+public class GetOpenUserConfigurationUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider,
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val storageSettingsProvider: StorageSettingsProvider,
@@ -29,14 +32,12 @@ class GetOpenUserConfigurationUseCase @Inject constructor(
      *
      * @return [AppResult.Success] containing the aggregated [OpenUserConfiguration].
      */
-    operator fun invoke(): AppResult<OpenUserConfiguration> {
-        return AppResult.Success(
-            OpenUserConfiguration(
-                openGlobalSettings = globalSettingsProvider.getOpenGlobalSettings(),
-                openSecuritySettings = securitySettingsProvider.getOpenSecuritySettings(),
-                openStorageSettings = storageSettingsProvider.getOpenStorageSettings(),
-                openAuthSettings = authSettingsProvider.getOpenAuthSettings()
-            )
+    public operator fun invoke(): AppResult<OpenUserConfiguration> = AppResult.Success(
+        OpenUserConfiguration(
+            openGlobalSettings = globalSettingsProvider.getOpenGlobalSettings(),
+            openSecuritySettings = securitySettingsProvider.getOpenSecuritySettings(),
+            openStorageSettings = storageSettingsProvider.getOpenStorageSettings(),
+            openAuthSettings = authSettingsProvider.getOpenAuthSettings()
         )
-    }
+    )
 }

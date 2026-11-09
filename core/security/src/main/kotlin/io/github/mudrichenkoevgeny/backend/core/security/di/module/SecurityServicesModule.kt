@@ -17,17 +17,16 @@ import javax.inject.Singleton
  * sensitive operations across the application.
  */
 @Module
-interface SecurityServicesModule {
+public interface SecurityServicesModule {
+    @Binds
+    @Singleton
+    public fun bindOtpService(otpServiceImpl: OtpServiceImpl): OtpService
 
     @Binds
     @Singleton
-    fun bindOtpService(otpServiceImpl: OtpServiceImpl): OtpService
+    public fun bindMfaService(mfaServiceImpl: MfaServiceImpl): MfaService
 
     @Binds
     @Singleton
-    fun bindMfaService(mfaServiceImpl: MfaServiceImpl): MfaService
-
-    @Binds
-    @Singleton
-    fun bindLockoutManager(lockoutManagerImpl: LockoutManagerImpl): LockoutManager
+    public fun bindLockoutManager(lockoutManagerImpl: LockoutManagerImpl): LockoutManager
 }

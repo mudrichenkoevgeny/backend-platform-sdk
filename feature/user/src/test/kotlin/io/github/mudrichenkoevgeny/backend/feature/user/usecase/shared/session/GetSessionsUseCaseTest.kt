@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class GetSessionsUseCaseTest {
-
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
 
@@ -45,7 +44,10 @@ class GetSessionsUseCaseTest {
 
     @Test
     fun `successfully returns paged sessions when user is active`() = runTest {
-        val userInternal = createTestUserInternal(id = userId, accountStatus = UserAccountStatus.ACTIVE)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            accountStatus = UserAccountStatus.ACTIVE
+        )
         val pagedResult = createTestPagedResult<UserSessionSummary>()
 
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
@@ -61,12 +63,18 @@ class GetSessionsUseCaseTest {
             authenticatedRequestContext = context
         )
 
-        assertEquals(AppResult.Success(pagedResult), result)
+        assertEquals(
+            AppResult.Success(pagedResult),
+            result
+        )
     }
 
     @Test
     fun `returns forbidden error when account status is not allowed`() = runTest {
-        val userInternal = createTestUserInternal(id = userId, accountStatus = UserAccountStatus.PENDING_DELETION)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            accountStatus = UserAccountStatus.PENDING_DELETION
+        )
 
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
@@ -89,6 +97,9 @@ class GetSessionsUseCaseTest {
             authenticatedRequestContext = context
         )
 
-        assertEquals(AppResult.Error(error), result)
+        assertEquals(
+            AppResult.Error(error),
+            result
+        )
     }
 }

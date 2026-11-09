@@ -18,7 +18,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
  * @param sessionId authenticated session identifier extracted from JWT.
  * @param clientInfo structured information about the calling client.
  */
-data class AuthenticatedRequestContext(
+public data class AuthenticatedRequestContext(
     val traceId: String?,
     val userId: UserId,
     val userRole: UserRole,

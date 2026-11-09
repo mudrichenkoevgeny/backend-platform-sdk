@@ -19,10 +19,10 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthent
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.ScheduleUserDeletionUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.GetUserUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.RestoreUserUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.ScheduleUserDeletionUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.UpdateSelfUserUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.GetUserUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
@@ -31,10 +31,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toA
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.SelfUpdateUserRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.SelfUpdateUserRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.open.user.OpenUserRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
@@ -59,10 +59,11 @@ import javax.inject.Singleton
  * Registered routes:
  * 1. [OpenUserRoutes.GET_USER] — retrieves profile and account details via [GetUserUseCase].
  * 2. [OpenUserRoutes.SCHEDULE_DELETION] — initiates the account removal process via [ScheduleUserDeletionUseCase].
- * 3. [OpenUserRoutes.RESTORE_USER] — cancels a pending deletion and reactivates the account via [RestoreUserUseCase].
+ * 3. [OpenUserRoutes.RESTORE_USER] — cancels a pending deletion and reactivates the account via
+ * [RestoreUserUseCase].
  */
 @Singleton
-class OpenUserRouter @Inject constructor(
+public class OpenUserRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -88,8 +89,18 @@ class OpenUserRouter @Inject constructor(
 
         route.get(
             path = OpenUserRoutes.GET_USER,
-            builder = { getUserDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getUser(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getUserDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getUser(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -101,8 +112,18 @@ class OpenUserRouter @Inject constructor(
 
         route.delete(
             path = OpenUserRoutes.SCHEDULE_DELETION,
-            builder = { scheduleDeletionDocs(allowedRoles, allowedAccountStatuses) },
-            body = { scheduleDeletion(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                scheduleDeletionDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                scheduleDeletion(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -112,8 +133,18 @@ class OpenUserRouter @Inject constructor(
 
         route.post(
             path = OpenUserRoutes.RESTORE_USER,
-            builder = { restoreUserDocs(allowedRoles, allowedAccountStatuses) },
-            body = { restoreUser(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                restoreUserDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                restoreUser(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -123,8 +154,18 @@ class OpenUserRouter @Inject constructor(
 
         route.patch(
             path = OpenUserRoutes.UPDATE_USER,
-            builder = { updateUserDocs(allowedRoles, allowedAccountStatuses) },
-            body = { updateUser(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                updateUserDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                updateUser(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -164,7 +205,11 @@ class OpenUserRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -172,7 +217,11 @@ class OpenUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userPrivate ->
             userPrivate.toUserPrivatePayload()
         }
     }
@@ -218,7 +267,11 @@ class OpenUserRouter @Inject constructor(
                 actionType = UserAuditActionType.SELF_SCHEDULE_USER_DELETION,
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -226,7 +279,11 @@ class OpenUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userPrivate ->
             userPrivate.toUserPrivatePayload()
         }
     }
@@ -272,7 +329,11 @@ class OpenUserRouter @Inject constructor(
                 actionType = UserAuditActionType.SELF_RESTORE_USER,
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -280,7 +341,11 @@ class OpenUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userPrivate ->
             userPrivate.toUserPrivatePayload()
         }
     }
@@ -330,7 +395,11 @@ class OpenUserRouter @Inject constructor(
                 actionType = UserAuditActionType.SELF_UPDATE_USER,
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -342,7 +411,11 @@ class OpenUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userPrivate ->
             userPrivate.toUserPrivatePayload()
         }
     }
@@ -368,25 +441,28 @@ class OpenUserRouter @Inject constructor(
         )
     }
 
-    companion object {
-        const val GET_USER_ROUTE_SUMMARY = "Get current user"
-        const val GET_USER_ROUTE_DESCRIPTION = "Returns information about the currently authenticated user."
-        const val GET_USER_ROUTE_OPERATION_ID = "openGetUser"
-        const val GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User data retrieved successfully"
+    public companion object {
+        private const val GET_USER_ROUTE_SUMMARY = "Get current user"
+        private const val GET_USER_ROUTE_DESCRIPTION = "Returns information about the currently authenticated user."
+        private const val GET_USER_ROUTE_OPERATION_ID = "openGetUser"
+        private const val GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User data retrieved successfully"
 
-        const val SCHEDULE_DELETION_ROUTE_SUMMARY = "Schedule account deletion"
-        const val SCHEDULE_DELETION_ROUTE_DESCRIPTION = "Schedules the currently authenticated user account for permanent deletion."
-        const val SCHEDULE_DELETION_ROUTE_OPERATION_ID = "openScheduleUserDeletion"
-        const val SCHEDULE_DELETION_ROUTE_RESPONSE_OK_DESCRIPTION = "User account scheduled for deletion"
+        private const val SCHEDULE_DELETION_ROUTE_SUMMARY = "Schedule account deletion"
+        private const val SCHEDULE_DELETION_ROUTE_DESCRIPTION =
+            "Schedules the currently authenticated user account for permanent deletion."
+        private const val SCHEDULE_DELETION_ROUTE_OPERATION_ID = "openScheduleUserDeletion"
+        private const val SCHEDULE_DELETION_ROUTE_RESPONSE_OK_DESCRIPTION = "User account scheduled for deletion"
 
-        const val RESTORE_USER_ROUTE_SUMMARY = "Restore user account"
-        const val RESTORE_USER_ROUTE_DESCRIPTION = "Restores an account that was previously scheduled for deletion."
-        const val RESTORE_USER_ROUTE_OPERATION_ID = "openRestoreUser"
-        const val RESTORE_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User account restored successfully"
+        private const val RESTORE_USER_ROUTE_SUMMARY = "Restore user account"
+        private const val RESTORE_USER_ROUTE_DESCRIPTION =
+            "Restores an account that was previously scheduled for deletion."
+        private const val RESTORE_USER_ROUTE_OPERATION_ID = "openRestoreUser"
+        private const val RESTORE_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User account restored successfully"
 
-        const val UPDATE_USER_ROUTE_SUMMARY = "Update current user profile"
-        const val UPDATE_USER_ROUTE_DESCRIPTION = "Partially updates details and profile fields of the currently authenticated user."
-        const val UPDATE_USER_ROUTE_OPERATION_ID = "openUpdateUser"
-        const val UPDATE_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "Updated user profile data."
+        private const val UPDATE_USER_ROUTE_SUMMARY = "Update current user profile"
+        private const val UPDATE_USER_ROUTE_DESCRIPTION =
+            "Partially updates details and profile fields of the currently authenticated user."
+        private const val UPDATE_USER_ROUTE_OPERATION_ID = "openUpdateUser"
+        private const val UPDATE_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "Updated user profile data."
     }
 }

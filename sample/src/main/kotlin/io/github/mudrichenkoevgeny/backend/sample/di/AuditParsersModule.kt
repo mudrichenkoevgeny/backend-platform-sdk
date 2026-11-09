@@ -2,11 +2,11 @@ package io.github.mudrichenkoevgeny.backend.sample.di
 
 import dagger.Module
 import dagger.Provides
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.audit.resource.CommonAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CommonAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CompositeAuditMetadataKeyParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CompositeAuditResourceTypeParser
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.audit.resource.CommonAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.action.SecurityAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.resource.SecurityAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.audit.action.SettingsAuditActionType
@@ -27,35 +27,34 @@ import javax.inject.Singleton
  * entry here.
  */
 @Module
-class AuditParsersModule {
-
+public class AuditParsersModule {
     @Provides
     @Singleton
-    fun provideCompositeAuditResourceTypeParser() = CompositeAuditResourceTypeParser(
-        listOf(
-            CommonAuditResourceType::fromValueOrNull,
-            SettingsAuditResourceType::fromValueOrNull,
-            SecurityAuditResourceType::fromValueOrNull,
-            StorageAuditResourceType::fromValueOrNull,
-            UserAuditResourceType::fromValueOrNull
-        )
-    )
-
-    @Provides
-    @Singleton
-    fun provideCompositeAuditActionTypeParser(): CompositeAuditActionTypeParser =
-        CompositeAuditActionTypeParser(
+    public fun provideCompositeAuditResourceTypeParser(): CompositeAuditResourceTypeParser =
+        CompositeAuditResourceTypeParser(
             listOf(
-                SettingsAuditActionType::fromValueOrNull,
-                SecurityAuditActionType::fromValueOrNull,
-                StorageAuditActionType::fromValueOrNull,
-                UserAuditActionType::fromValueOrNull
+                CommonAuditResourceType::fromValueOrNull,
+                SettingsAuditResourceType::fromValueOrNull,
+                SecurityAuditResourceType::fromValueOrNull,
+                StorageAuditResourceType::fromValueOrNull,
+                UserAuditResourceType::fromValueOrNull
             )
         )
 
     @Provides
     @Singleton
-    fun provideCompositeAuditMetadataKeyParser(): CompositeAuditMetadataKeyParser =
+    public fun provideCompositeAuditActionTypeParser(): CompositeAuditActionTypeParser = CompositeAuditActionTypeParser(
+        listOf(
+            SettingsAuditActionType::fromValueOrNull,
+            SecurityAuditActionType::fromValueOrNull,
+            StorageAuditActionType::fromValueOrNull,
+            UserAuditActionType::fromValueOrNull
+        )
+    )
+
+    @Provides
+    @Singleton
+    public fun provideCompositeAuditMetadataKeyParser(): CompositeAuditMetadataKeyParser =
         CompositeAuditMetadataKeyParser(
             listOf(
                 CommonAuditMetadataKey::fromValueOrNull,

@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.sample.lifecycle
 import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
 import io.github.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManager
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
+import io.github.mudrichenkoevgeny.backend.sample.lifecycle.AppShutdownHookImpl.Companion.TIMEOUT_MS
 import io.ktor.server.engine.EmbeddedServer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
@@ -18,41 +19,46 @@ import kotlin.time.Duration.Companion.milliseconds
  * database and Redis resources.
  */
 @Singleton
-class AppShutdownHookImpl @Inject constructor(
+@Suppress("ProhibitPrintln")
+public class AppShutdownHookImpl @Inject constructor(
     private val databaseManager: DatabaseManager,
     private val redisManager: RedisManager,
     private val auditService: AuditService,
     private val shutdownHookRegistrar: ShutdownHookRegistrar
 ) : AppShutdownHook {
-
     /**
      * Registers a JVM shutdown hook that attempts a graceful stop.
      *
      * The shutdown sequence is best-effort and bounded by [TIMEOUT_MS].
      */
-    override fun register(server: EmbeddedServer<*, *>) {
-        shutdownHookRegistrar.addShutdownHook(Thread {
-            runBlocking {
-                try {
-                    server.stop(GRACE_PERIOD_MS, TIMEOUT_MS)
+    public override fun register(server: EmbeddedServer<*, *>) {
+        shutdownHookRegistrar.addShutdownHook(
+            Thread {
+                runBlocking {
+                    try {
+                        server.stop(
+                            GRACE_PERIOD_MS,
+                            TIMEOUT_MS
+                        )
 
-                    withTimeoutOrNull(TIMEOUT_MS.milliseconds) {
-                        auditService.awaitAll()
+                        withTimeoutOrNull(TIMEOUT_MS.milliseconds) {
+                            auditService.awaitAll()
+                        }
+
+                        databaseManager.shutdown()
+                        redisManager.shutdown()
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        println("Error during shutdown: ${e.message}")
+                        e.printStackTrace()
                     }
-
-                    databaseManager.shutdown()
-                    redisManager.shutdown()
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    println("Error during shutdown: ${e.message}")
-                    e.printStackTrace()
                 }
             }
-        })
+        )
     }
 
-    companion object {
+    private companion object {
         private const val GRACE_PERIOD_MS = 3000L
         private const val TIMEOUT_MS = 5000L
     }

@@ -1,21 +1,14 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.user
 
-import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
-import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserStorageConfigurationPayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import kotlin.time.Instant
 
 /**
@@ -24,16 +17,14 @@ import kotlin.time.Instant
  * Provides a higher-level API over persistence for creating, updating, and loading users.
  * Handles role-based visibility and administrative boundaries for management operations.
  */
-interface UserManager {
+public interface UserManager {
     /**
      * Loads a user by their ID as an internal domain model.
      *
      * @param userId The unique identifier of the user.
      * @return [AppResult.Success] with [UserInternal] when found, null when missing, or an error.
      */
-    suspend fun getUserInternalById(
-        userId: UserId
-    ): AppResult<UserInternal?>
+    public suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?>
 
     /**
      * Creates a new user entity.
@@ -44,7 +35,7 @@ interface UserManager {
      * @param permissions Explicit permission codes assigned to the new user.
      * @return [AppResult.Success] with the created [UserInternal] or an error.
      */
-    suspend fun createUser(
+    public suspend fun createUser(
         role: UserRole,
         accountStatus: UserAccountStatus,
         authorityLevel: Int,
@@ -67,7 +58,7 @@ interface UserManager {
      * @param nickname Optional nickname if a new user is created.
      * @return [AppResult.Success] with the loaded or created [UserInternal], or an error.
      */
-    suspend fun getOrCreateUser(
+    public suspend fun getOrCreateUser(
         userId: UserId? = null,
         role: UserRole = UserRole.USER,
         accountStatus: UserAccountStatus = UserAccountStatus.ACTIVE,
@@ -86,7 +77,7 @@ interface UserManager {
      * @param updateUserParams The structured update parameters holder.
      * @return [AppResult.Success] with the updated [UserInternal], null if user not found, or an error.
      */
-    suspend fun updateUser(
+    public suspend fun updateUser(
         user: UserInternal,
         updateUserParams: UpdateUserParams
     ): AppResult<UserInternal?>
@@ -102,7 +93,7 @@ interface UserManager {
      * @param managementUserPermissionCodes Permissions used to derive access boundaries.
      * @return [AppResult.Success] with [UserInternal] if accessible, null if not found, or an error.
      */
-    suspend fun getUserInternal(
+    public suspend fun getUserInternal(
         userId: UserId,
         managementUserId: UserId,
         managementUserPermissionCodes: Set<PermissionCode>
@@ -114,7 +105,7 @@ interface UserManager {
      * @param nickname user nickname string.
      * @return [AppResult.Success] with [UserInternal] if found, null if missing, or an error.
      */
-    suspend fun getUserInternalByNickname(nickname: String): AppResult<UserInternal?>
+    public suspend fun getUserInternalByNickname(nickname: String): AppResult<UserInternal?>
 
     /**
      * Returns a paginated list of internal user models visible to the caller based on management scope.
@@ -133,7 +124,7 @@ interface UserManager {
      * @param accountLockoutTypes Filter by account lockout types.
      * @return [AppResult.Success] with a [PagedResult] of [UserInternal] or an error.
      */
-    suspend fun getUsersInternalPage(
+    public suspend fun getUsersInternalPage(
         managementUserPermissionCodes: Set<PermissionCode>,
         queryParams: UserListQueryParams
     ): AppResult<PagedResult<UserInternal>>
@@ -145,7 +136,7 @@ interface UserManager {
      * @param newStatus The account status to set after restoration.
      * @return [AppResult.Success] with the restored [UserInternal] or an error.
      */
-    suspend fun restoreUser(
+    public suspend fun restoreUser(
         userId: UserId,
         newStatus: UserAccountStatus
     ): AppResult<UserInternal>
@@ -159,7 +150,7 @@ interface UserManager {
      * @param currentStatus The current status of the user before scheduling.
      * @return [AppResult.Success] with the updated [UserInternal] or an error.
      */
-    suspend fun scheduleUserDeletion(
+    public suspend fun scheduleUserDeletion(
         userId: UserId,
         currentStatus: UserAccountStatus
     ): AppResult<UserInternal>
@@ -172,9 +163,7 @@ interface UserManager {
      * @param userId The ID of the user to delete.
      * @return [AppResult.Success] containing [Unit] or an error.
      */
-    suspend fun deleteUser(
-        userId: UserId
-    ): AppResult<Unit>
+    public suspend fun deleteUser(userId: UserId): AppResult<Unit>
 
     /**
      * Unlocks a temporarily locked user account.
@@ -183,7 +172,7 @@ interface UserManager {
      * @param clearLockoutForIdentifiers Optional list of identifiers (e.g., email, phone) to clear from lockout cache.
      * @return [AppResult.Success] with the updated [UserInternal] or an error.
      */
-    suspend fun unlockUserAccount(
+    public suspend fun unlockUserAccount(
         userId: UserId,
         clearLockoutForIdentifiers: List<String> = emptyList()
     ): AppResult<UserInternal>
@@ -195,7 +184,7 @@ interface UserManager {
      * @param temporaryLockoutUntil The timestamp when lockout expires.
      * @return [AppResult.Success] with the updated [UserInternal] or an error.
      */
-    suspend fun lockUserAccount(
+    public suspend fun lockUserAccount(
         userId: UserId,
         temporaryLockoutUntil: Instant
     ): AppResult<UserInternal>
@@ -206,9 +195,7 @@ interface UserManager {
      * @param userId The ID of the user to lock indefinitely.
      * @return [AppResult.Success] with the updated [UserInternal] or an error.
      */
-    suspend fun lockUserAccountIndefinitely(
-        userId: UserId
-    ): AppResult<UserInternal>
+    public suspend fun lockUserAccountIndefinitely(userId: UserId): AppResult<UserInternal>
 
     /**
      * Identifies and removes users whose scheduled permanent deletion timestamp has passed.
@@ -217,7 +204,7 @@ interface UserManager {
      *
      * @return [AppResult.Success] with the count of deleted rows or an error.
      */
-    suspend fun deleteUsersDueForPermanentDeletion(): AppResult<Int>
+    public suspend fun deleteUsersDueForPermanentDeletion(): AppResult<Int>
 
     /**
      * Identifies and unlocks user accounts whose temporary lockout timestamp has passed.
@@ -226,5 +213,5 @@ interface UserManager {
      *
      * @return [AppResult.Success] with the count of unlocked accounts or an error.
      */
-    suspend fun unlockExpiredAccountLockouts(): AppResult<Int>
+    public suspend fun unlockExpiredAccountLockouts(): AppResult<Int>
 }

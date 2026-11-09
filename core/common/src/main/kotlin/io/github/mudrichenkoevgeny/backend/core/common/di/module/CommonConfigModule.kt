@@ -1,18 +1,18 @@
 package io.github.mudrichenkoevgeny.backend.core.common.di.module
 
+import dagger.Binds
+import dagger.Module
+import dagger.Provides
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.factory.CommonConfigFactory
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.factory.CommonConfigFactoryImpl
 import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.CommonConfig
 import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathResolver
+import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathResolverConfig
+import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathResolverConfigHolder
 import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathResolverImpl
 import io.github.mudrichenkoevgeny.backend.core.common.config.swagger.factory.SwaggerConfigFactory
 import io.github.mudrichenkoevgeny.backend.core.common.config.swagger.factory.SwaggerConfigFactoryImpl
 import io.github.mudrichenkoevgeny.backend.core.common.config.swagger.model.SwaggerConfig
-import dagger.Binds
-import dagger.Module
-import dagger.Provides
-import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathResolverConfig
-import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathResolverConfigHolder
 import javax.inject.Singleton
 
 /**
@@ -27,41 +27,32 @@ import javax.inject.Singleton
  * different sources of configuration.
  */
 @Module
-interface CommonConfigModule {
+public interface CommonConfigModule {
+    @Binds
+    @Singleton
+    public fun bindPathResolver(pathResolverImpl: PathResolverImpl): PathResolver
 
     @Binds
     @Singleton
-    fun bindPathResolver(pathResolverImpl: PathResolverImpl): PathResolver
+    public fun bindCommonConfigFactory(commonConfigFactoryImpl: CommonConfigFactoryImpl): CommonConfigFactory
 
     @Binds
     @Singleton
-    fun bindCommonConfigFactory(commonConfigFactoryImpl: CommonConfigFactoryImpl): CommonConfigFactory
+    public fun bindSwaggerConfigFactory(swaggerConfigFactoryImpl: SwaggerConfigFactoryImpl): SwaggerConfigFactory
 
-    @Binds
-    @Singleton
-    fun bindSwaggerConfigFactory(swaggerConfigFactoryImpl: SwaggerConfigFactoryImpl): SwaggerConfigFactory
-
-    companion object {
+    public companion object {
         @Provides
         @Singleton
-        fun providePathResolverConfig(): PathResolverConfig {
-            return PathResolverConfigHolder.get()
-        }
+        public fun providePathResolverConfig(): PathResolverConfig = PathResolverConfigHolder.get()
 
         @Provides
         @Singleton
-        fun provideCommonConfig(
-            commonConfigFactory: CommonConfigFactory
-        ): CommonConfig {
-            return commonConfigFactory.create()
-        }
+        public fun provideCommonConfig(commonConfigFactory: CommonConfigFactory): CommonConfig =
+            commonConfigFactory.create()
 
         @Provides
         @Singleton
-        fun provideSwaggerConfig(
-            swaggerConfigFactory: SwaggerConfigFactory
-        ): SwaggerConfig {
-            return swaggerConfigFactory.create()
-        }
+        public fun provideSwaggerConfig(swaggerConfigFactory: SwaggerConfigFactory): SwaggerConfig =
+            swaggerConfigFactory.create()
     }
 }

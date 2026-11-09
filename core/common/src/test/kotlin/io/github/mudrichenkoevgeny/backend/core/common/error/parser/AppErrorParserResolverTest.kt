@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test
  * [CommonErrorParser] when no specific parser handles the error.
  */
 class AppErrorParserResolverTest {
-
     private val commonParser = CommonErrorParser()
     private val specificParser1 = mockk<AppErrorSpecificParser>()
     private val specificParser2 = mockk<AppErrorSpecificParser>()

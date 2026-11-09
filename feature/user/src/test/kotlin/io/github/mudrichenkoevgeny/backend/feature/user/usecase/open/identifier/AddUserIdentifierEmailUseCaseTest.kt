@@ -8,10 +8,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
@@ -28,6 +24,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.emailrestriction.createTestEmailRestrictionPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -39,13 +39,15 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class AddUserIdentifierEmailUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val emailRestrictionPolicyValidator = EmailRestrictionPolicyValidator()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
     private val authManager = mockk<AuthManager>()
@@ -76,12 +78,18 @@ class AddUserIdentifierEmailUseCaseTest {
     fun `successfully adds email identifier`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val sessionInternal = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
+        val sessionInternal = createTestUserSessionInternal(
+            id = context.sessionId,
+            userId = context.userId
+        )
         val identifierId = UserIdentifierId.generate()
         val identifier = createTestUserIdentifierPrivate(id = identifierId)
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.USER_IDENTIFIER_ADD, any())
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.USER_IDENTIFIER_ADD,
+                any()
+            )
         } returns AppResult.Success(Unit)
 
         coEvery {
@@ -93,24 +101,42 @@ class AddUserIdentifierEmailUseCaseTest {
         } returns AppResult.Success(sessionInternal)
 
         coEvery {
-            authenticationChallengeService.ensureSessionConfirmed(userInternal, sessionInternal)
+            authenticationChallengeService.ensureSessionConfirmed(
+                userInternal,
+                sessionInternal
+            )
         } returns AppResult.Success(Unit)
 
         every { validatePasswordUseCase(TEST_PASSWORD) } returns AppResult.Success(Unit)
 
         coEvery {
-            otpService.verifyOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_VERIFICATION, TEST_CODE)
+            otpService.verifyOtp(
+                TEST_EMAIL,
+                UserOtpVerificationType.EMAIL_VERIFICATION,
+                TEST_CODE
+            )
         } returns AppResult.Success(true)
 
         coEvery {
             authManager.createIdentifierForAuthorizedUser(
-                context.userId, UserAuthProvider.EMAIL, TEST_EMAIL, TEST_PASSWORD
+                context.userId,
+                UserAuthProvider.EMAIL,
+                TEST_EMAIL,
+                TEST_PASSWORD
             )
         } returns AppResult.Success(identifier)
 
-        val result = useCase(TEST_EMAIL, TEST_PASSWORD, TEST_CODE, context)
+        val result = useCase(
+            TEST_EMAIL,
+            TEST_PASSWORD,
+            TEST_CODE,
+            context
+        )
 
-        assertEquals(AppResult.Success(identifier), result)
+        assertEquals(
+            AppResult.Success(identifier),
+            result
+        )
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorId = context.userId.asHexDashString(),
@@ -129,18 +155,34 @@ class AddUserIdentifierEmailUseCaseTest {
     fun `returns error when session confirmation fails`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val sessionInternal = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
+        val sessionInternal = createTestUserSessionInternal(
+            id = context.sessionId,
+            userId = context.userId
+        )
         val error = CommonError.Internal(Throwable())
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(sessionInternal)
 
         coEvery {
-            authenticationChallengeService.ensureSessionConfirmed(any(), any())
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any()
+            )
         } returns AppResult.Error(error)
 
-        val result = useCase(TEST_EMAIL, TEST_PASSWORD, TEST_CODE, context)
+        val result = useCase(
+            TEST_EMAIL,
+            TEST_PASSWORD,
+            TEST_CODE,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {
@@ -164,10 +206,18 @@ class AddUserIdentifierEmailUseCaseTest {
         val error = UserError.InvalidCredentials()
 
         coEvery {
-            rateLimiter.checkRateLimit(any(), any())
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
         } returns AppResult.Error(error)
 
-        val result = useCase(TEST_EMAIL, TEST_PASSWORD, TEST_CODE, context)
+        val result = useCase(
+            TEST_EMAIL,
+            TEST_PASSWORD,
+            TEST_CODE,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 0) { userManager.getUserInternalById(any()) }
@@ -178,7 +228,10 @@ class AddUserIdentifierEmailUseCaseTest {
         val context = createTestAuthenticatedRequestContext()
 
         coEvery {
-            rateLimiter.checkRateLimit(any(), any())
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
         } returns AppResult.Success(Unit)
 
         every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy(
@@ -186,7 +239,12 @@ class AddUserIdentifierEmailUseCaseTest {
             blacklist = listOf("@tempmail.com")
         )
 
-        val result = useCase("user@tempmail.com", TEST_PASSWORD, TEST_CODE, context)
+        val result = useCase(
+            "user@tempmail.com",
+            TEST_PASSWORD,
+            TEST_CODE,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.EmailNotAllowed)

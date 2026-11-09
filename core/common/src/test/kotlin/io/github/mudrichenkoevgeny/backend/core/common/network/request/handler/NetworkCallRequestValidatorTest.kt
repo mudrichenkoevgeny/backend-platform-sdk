@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 class NetworkCallRequestValidatorTest {
-
     @Serializable
     data class TestRequest(
         @SerialName("required_field") @RequiredField val requiredField: String?,
@@ -28,48 +27,75 @@ class NetworkCallRequestValidatorTest {
 
     @Test
     fun `validateRequest throws RequestHandlingException when required field is null`() {
-        val request = TestRequest(null, "ok", listOf("item"))
+        val request = TestRequest(
+            null,
+            "ok",
+            listOf("item")
+        )
         coEvery { call.receive<TestRequest>() } returns request
 
         val exception = assertThrows(RequestHandlingException::class.java) {
             runBlocking { call.validateRequest<TestRequest>() }
         }
         val error = exception.error as CommonError.MissingRequiredField
-        assertEquals("required_field", error.fieldName)
+        assertEquals(
+            "required_field",
+            error.fieldName
+        )
     }
 
     @Test
     fun `validateRequest throws RequestHandlingException when not blank string is blank`() {
-        val request = TestRequest("present", "   ", listOf("item"))
+        val request = TestRequest(
+            "present",
+            "   ",
+            listOf("item")
+        )
         coEvery { call.receive<TestRequest>() } returns request
 
         val exception = assertThrows(RequestHandlingException::class.java) {
             runBlocking { call.validateRequest<TestRequest>() }
         }
         val error = exception.error as CommonError.BlankStringField
-        assertEquals("not_blank_field", error.fieldName)
+        assertEquals(
+            "not_blank_field",
+            error.fieldName
+        )
     }
 
     @Test
     fun `validateRequest throws RequestHandlingException when not empty collection is empty`() {
-        val request = TestRequest("present", "ok", emptyList())
+        val request = TestRequest(
+            "present",
+            "ok",
+            emptyList()
+        )
         coEvery { call.receive<TestRequest>() } returns request
 
         val exception = assertThrows(RequestHandlingException::class.java) {
             runBlocking { call.validateRequest<TestRequest>() }
         }
         val error = exception.error as CommonError.EmptyCollectionField
-        assertEquals("not_empty_list", error.fieldName)
+        assertEquals(
+            "not_empty_list",
+            error.fieldName
+        )
     }
 
     @Test
     fun `validateRequest returns request when all fields are valid`() {
-        val request = TestRequest("present", "ok", listOf("item"))
+        val request = TestRequest(
+            "present",
+            "ok",
+            listOf("item")
+        )
         coEvery { call.receive<TestRequest>() } returns request
 
         val result = runBlocking { call.validateRequest<TestRequest>() }
 
-        assertEquals(request, result)
+        assertEquals(
+            request,
+            result
+        )
     }
 }
-

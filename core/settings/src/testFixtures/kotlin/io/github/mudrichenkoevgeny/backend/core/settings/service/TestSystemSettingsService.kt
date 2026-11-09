@@ -30,25 +30,51 @@ class TestSystemSettingsService(
     override suspend fun initialize(): AppResult<Unit> = AppResult.Success(Unit)
 
     override suspend fun registerDefaults(settings: List<SystemSetting>): AppResult<Unit> {
-        settings.forEach { registerDefaultCalls += RegisterDefaultCall(it.key, it.value, it.type) }
+        settings.forEach {
+            registerDefaultCalls += RegisterDefaultCall(
+                it.key,
+                it.value,
+                it.type
+            )
+        }
         return AppResult.Success(Unit)
     }
 
-    override suspend fun registerDefault(key: String, value: String, type: SettingType): AppResult<Unit> {
-        registerDefaultCalls += RegisterDefaultCall(key, value, type)
+    override suspend fun registerDefault(
+        key: String,
+        value: String,
+        type: SettingType
+    ): AppResult<Unit> {
+        registerDefaultCalls += RegisterDefaultCall(
+            key,
+            value,
+            type
+        )
         return AppResult.Success(Unit)
     }
 
     override fun getString(key: String): String? = stringByKey[key]
+
     override fun getLong(key: String): Long? = null
+
     override fun getInt(key: String): Int? = null
+
     override fun getDouble(key: String): Double? = null
+
     override fun getBoolean(key: String): Boolean? = booleanByKey[key]
-    override fun <T> getJson(key: String, deserializer: (String) -> T): T? = null
+
+    override fun <T> getJson(
+        key: String,
+        deserializer: (String) -> T
+    ): T? = null
 
     override suspend fun updateSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>> {
         settings.forEach {
-            updateSettingCalls += UpdateSettingCall(it.key, it.value, it.type)
+            updateSettingCalls += UpdateSettingCall(
+                it.key,
+                it.value,
+                it.type
+            )
             if (it.key == failUpdateForKey && failUpdateError != null) {
                 return AppResult.Error(failUpdateError)
             }
@@ -61,7 +87,11 @@ class TestSystemSettingsService(
         value: String,
         type: SettingType
     ): AppResult<SystemSetting> {
-        updateSettingCalls += UpdateSettingCall(key, value, type)
+        updateSettingCalls += UpdateSettingCall(
+            key,
+            value,
+            type
+        )
         if (key == failUpdateForKey && failUpdateError != null) {
             return AppResult.Error(failUpdateError)
         }

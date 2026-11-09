@@ -5,12 +5,11 @@ import io.github.mudrichenkoevgeny.backend.core.storage.config.model.StorageConf
 /**
  * Factory that builds [StorageConfig] from environment or other configuration source.
  */
-interface StorageConfigFactory {
-
+public interface StorageConfigFactory {
     /**
      * Creates the storage module configuration.
      *
      * @return [StorageConfig] with the selected backend type and backend-specific settings.
      */
-    fun create(): StorageConfig
+    public fun create(): StorageConfig
 }

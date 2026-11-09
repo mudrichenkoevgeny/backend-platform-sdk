@@ -16,10 +16,9 @@ import kotlin.time.Clock
  * Default [AuditLogger]: builds an [AuditEventInternal] and forwards it to [AuditService.log].
  */
 @Singleton
-class AuditLoggerImpl @Inject constructor(
+public class AuditLoggerImpl @Inject constructor(
     private val auditService: AuditService
 ) : AuditLogger {
-
     override fun log(
         actorId: String?,
         actorType: AuditActorType,

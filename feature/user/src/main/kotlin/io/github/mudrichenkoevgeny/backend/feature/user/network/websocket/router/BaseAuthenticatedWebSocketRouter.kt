@@ -29,55 +29,60 @@ import io.ktor.websocket.close
  * @param path The URL path on which the WebSocket endpoint will listen.
  * @param apiScope Target audience boundary ([ApiScope.OPEN] or [ApiScope.MANAGEMENT]).
  */
-abstract class BaseAuthenticatedWebSocketRouter(
+public abstract class BaseAuthenticatedWebSocketRouter(
     private val webSocketManager: WebSocketManager,
     private val path: String,
     private val apiScope: ApiScope
 ) : BaseRouter {
-
-    override fun register(route: Route) {
+    public override fun register(route: Route) {
         val isAuthenticationOptional = true
         val cleanPath = path.trim('/')
 
-        route.route(cleanPath) {
-            authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION, optional = isAuthenticationOptional) {
-                webSocket {
-                    val principal = call.getJWTPrincipal()
+        route.route(
+            path = cleanPath,
+            build = {
+                authenticate(
+                    JwtAuthSpecs.AUTHENTICATE_CONFIGURATION,
+                    optional = isAuthenticationOptional
+                ) {
+                    webSocket(handler = {
+                        val principal = call.getJWTPrincipal()
 
-                    val userIdResult = principal?.getUserIdForWebSocket(isOptional = isAuthenticationOptional)
-                        ?: if (isAuthenticationOptional) {
-                            AppResult.Success(null)
-                        } else {
-                            AppResult.Error(UserError.InvalidAccessToken())
-                        }
+                        val userIdResult = principal?.getUserIdForWebSocket(isOptional = isAuthenticationOptional)
+                            ?: if (isAuthenticationOptional) {
+                                AppResult.Success(null)
+                            } else {
+                                AppResult.Error(UserError.InvalidAccessToken())
+                            }
 
-                    val userId = when (userIdResult) {
-                        is AppResult.Success -> userIdResult.data
-                        is AppResult.Error -> {
-                            close(
-                                CloseReason(
-                                    code = CloseReason.Codes.CANNOT_ACCEPT,
-                                    message = UserWebSocketCloseReasons.AUTH_FAILED
+                        val userId = when (userIdResult) {
+                            is AppResult.Success -> userIdResult.data
+                            is AppResult.Error -> {
+                                close(
+                                    CloseReason(
+                                        code = CloseReason.Codes.CANNOT_ACCEPT,
+                                        message = UserWebSocketCloseReasons.AUTH_FAILED
+                                    )
                                 )
-                            )
-                            return@webSocket
+                                return@webSocket
+                            }
                         }
-                    }
 
-                    val userRole = principal?.getUserRole()
-                    val userSessionId = principal?.getSessionId()
-                    val userSessionExpiresAt = principal?.getExpiresAt()
+                        val userRole = principal?.getUserRole()
+                        val userSessionId = principal?.getSessionId()
+                        val userSessionExpiresAt = principal?.getExpiresAt()
 
-                    webSocketManager.register(
-                        webSocketSession = this,
-                        apiScope = apiScope,
-                        userId = userId,
-                        userRole = userRole,
-                        userSessionId = userSessionId,
-                        userSessionExpiresAt = userSessionExpiresAt
-                    )
+                        webSocketManager.register(
+                            webSocketSession = this,
+                            apiScope = apiScope,
+                            userId = userId,
+                            userRole = userRole,
+                            userSessionId = userSessionId,
+                            userSessionExpiresAt = userSessionExpiresAt
+                        )
+                    })
                 }
             }
-        }
+        )
     }
 }

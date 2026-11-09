@@ -10,9 +10,8 @@ import javax.inject.Singleton
  * Binds the auth settings provider used by routes/use cases to resolve runtime auth configuration.
  */
 @Module
-interface AuthSettingsProviderModule {
-
+public interface AuthSettingsProviderModule {
     @Binds
     @Singleton
-    fun bindAuthSettingsProvider(authSettingsProviderImpl: AuthSettingsProviderImpl): AuthSettingsProvider
+    public fun bindAuthSettingsProvider(authSettingsProviderImpl: AuthSettingsProviderImpl): AuthSettingsProvider
 }

@@ -11,17 +11,22 @@ import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 
 abstract class BaseRouterTest {
-
     protected val authProvider = TestAuthenticationProvider()
     protected val appLogger = mockk<AppLogger>(relaxed = true)
     protected val appErrorParser = mockk<AppErrorParser>(relaxed = true)
 
     @BeforeEach
     fun baseSetUp() {
-        clearMocks(appErrorParser, appLogger)
+        clearMocks(
+            appErrorParser,
+            appLogger
+        )
 
         every {
-            appErrorParser.getApiErrorResponse(any<AppError>(), any<String>())
+            appErrorParser.getApiErrorResponse(
+                any<AppError>(),
+                any<String>()
+            )
         } answers {
             val error = it.invocation.args[0] as AppError
             ApiErrorResponse(

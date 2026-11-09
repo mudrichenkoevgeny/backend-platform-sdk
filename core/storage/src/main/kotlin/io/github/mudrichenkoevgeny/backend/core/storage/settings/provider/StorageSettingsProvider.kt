@@ -7,73 +7,72 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.s
 /**
  * Provider contract for accessing and managing persisted storage configuration settings.
  */
-interface StorageSettingsProvider {
-
+public interface StorageSettingsProvider {
     /**
      * Seeds initial default settings from configuration into system settings storage.
      *
      * @return [AppResult.Success] on completion.
      */
-    suspend fun initialize(): AppResult<Unit>
+    public suspend fun initialize(): AppResult<Unit>
 
     /**
      * Returns the current effective management storage settings.
      *
      * @return [ManagementStorageSettings] snapshot.
      */
-    fun getManagementStorageSettings(): ManagementStorageSettings
+    public fun getManagementStorageSettings(): ManagementStorageSettings
 
     /**
      * Returns the current effective open storage settings.
      *
      * @return [OpenStorageSettings] snapshot.
      */
-    fun getOpenStorageSettings(): OpenStorageSettings
+    public fun getOpenStorageSettings(): OpenStorageSettings
 
     /**
      * Returns the minimum permitted file upload size in bytes.
      */
-    fun getMinUploadSizeBytes(): Long
+    public fun getMinUploadSizeBytes(): Long
 
     /**
      * Returns the maximum permitted single file upload size in bytes.
      */
-    fun getMaxUploadSizeBytes(): Long
+    public fun getMaxUploadSizeBytes(): Long
 
     /**
      * Returns the cumulative storage quota in bytes for regular open users.
      */
-    fun getTotalStorageQuotaForOpenUserBytes(): Long?
+    public fun getTotalStorageQuotaForOpenUserBytes(): Long?
 
     /**
      * Returns the cumulative storage quota in bytes for staff/management users.
      */
-    fun getTotalStorageQuotaForManagementUserBytes(): Long?
+    public fun getTotalStorageQuotaForManagementUserBytes(): Long?
 
     /**
      * Returns the presigned URL expiration duration in seconds.
      */
-    fun getPresignedUrlExpirationSeconds(): Int
+    public fun getPresignedUrlExpirationSeconds(): Int
 
     /**
      * Returns the maximum allowed concurrent unfinalized upload sessions for open users.
      */
-    fun getMaxPendingUploadsForOpenUser(): Int
+    public fun getMaxPendingUploadsForOpenUser(): Int
 
     /**
      * Returns the maximum allowed concurrent unfinalized upload sessions for management users.
      */
-    fun getMaxPendingUploadsForManagementUser(): Int
+    public fun getMaxPendingUploadsForManagementUser(): Int
 
     /**
      * Returns whether Content-Addressable Storage (CAS) file deduplication is enabled.
      */
-    fun getIsDeduplicationEnabled(): Boolean
+    public fun getIsDeduplicationEnabled(): Boolean
 
     /**
      * Returns the interval in seconds for background cleanup of deleted files.
      */
-    fun getDeletedFilesCleanupIntervalSeconds(): Int
+    public fun getDeletedFilesCleanupIntervalSeconds(): Int
 
     /**
      * Updates platform-wide management storage settings.
@@ -81,7 +80,7 @@ interface StorageSettingsProvider {
      * @param managementStorageSettings New [ManagementStorageSettings] to persist.
      * @return [AppResult.Success] on completion.
      */
-    suspend fun updateManagementStorageSettings(
+    public suspend fun updateManagementStorageSettings(
         managementStorageSettings: ManagementStorageSettings
     ): AppResult<Unit>
 
@@ -90,5 +89,5 @@ interface StorageSettingsProvider {
      *
      * @return [AppResult.Success] containing default [ManagementStorageSettings].
      */
-    suspend fun resetManagementStorageSettings(): AppResult<ManagementStorageSettings>
+    public suspend fun resetManagementStorageSettings(): AppResult<ManagementStorageSettings>
 }

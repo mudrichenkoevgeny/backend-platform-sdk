@@ -7,8 +7,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.storage.settings.GetOpenStorageSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.route.StorageSwaggerTags
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.storage.settings.GetOpenStorageSettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.mapper.storagesettings.toOpenStorageSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.model.storagesettings.OpenStorageSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.route.open.OpenStorageSettingsRoutes
@@ -29,12 +29,11 @@ import javax.inject.Singleton
  * 1. [OpenStorageSettingsRoutes.GET_OPEN_STORAGE_SETTINGS] — retrieves storage settings via [GetOpenStorageSettingsUseCase].
  */
 @Singleton
-class OpenStorageSettingsRouter @Inject constructor(
+public class OpenStorageSettingsRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val getOpenStorageSettingsUseCase: GetOpenStorageSettingsUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         registerGetStorageSettingsRoute(route)
     }
@@ -45,7 +44,12 @@ class OpenStorageSettingsRouter @Inject constructor(
 
         route.get(
             path = OpenStorageSettingsRoutes.GET_OPEN_STORAGE_SETTINGS,
-            builder = { getStorageSettingsDocs(allowedRoles, allowedAccountStatuses) },
+            builder = {
+                getStorageSettingsDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
             body = { getStorageSettings() }
         )
     }
@@ -76,15 +80,19 @@ class OpenStorageSettingsRouter @Inject constructor(
     private suspend fun RoutingContext.getStorageSettings() {
         val result = getOpenStorageSettingsUseCase()
 
-        call.respondResult(result, appLogger, appErrorParser) { storageSettings ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { storageSettings ->
             storageSettings.toOpenStorageSettingsPayload()
         }
     }
 
-    companion object {
-        const val GET_STORAGE_SETTINGS_ROUTE_SUMMARY = "Get storage settings"
-        const val GET_STORAGE_SETTINGS_ROUTE_DESCRIPTION = "Returns public storage file upload limits."
-        const val GET_STORAGE_SETTINGS_ROUTE_OPERATION_ID = "openGetStorageSettings"
-        const val GET_STORAGE_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Public storage settings data"
+    public companion object {
+        private const val GET_STORAGE_SETTINGS_ROUTE_SUMMARY = "Get storage settings"
+        private const val GET_STORAGE_SETTINGS_ROUTE_DESCRIPTION = "Returns public storage file upload limits."
+        private const val GET_STORAGE_SETTINGS_ROUTE_OPERATION_ID = "openGetStorageSettings"
+        private const val GET_STORAGE_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Public storage settings data"
     }
 }

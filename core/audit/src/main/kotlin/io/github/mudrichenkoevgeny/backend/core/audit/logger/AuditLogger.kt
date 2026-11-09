@@ -11,12 +11,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 /**
  * Thin application API for **writing** audit events through [AuditService].
  */
-interface AuditLogger {
-
+public interface AuditLogger {
     /**
      * Schedules a single audit record for background persistence.
      */
-    fun log(
+    public fun log(
         actorId: String? = null,
         actorType: AuditActorType,
         actorUserRole: String? = null,

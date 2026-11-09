@@ -7,7 +7,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.emailrestriction.EmailRestrictionPolicy
 
 class TestAuthSettingsProvider : AuthSettingsProvider {
-
     var initializeCalled: Boolean = false
     var initializeResult: AppResult<Unit> = AppResult.Success(Unit)
 
@@ -51,41 +50,52 @@ class TestAuthSettingsProvider : AuthSettingsProvider {
         return initializeResult
     }
 
-    override fun getManagementAuthSettings(): ManagementAuthSettings {
-        return currentManagementAuthSettings ?: error("currentManagementAuthSettings is not set")
-    }
+    override fun getManagementAuthSettings(): ManagementAuthSettings =
+        currentManagementAuthSettings ?: error("currentManagementAuthSettings is not set")
 
-    override fun getOpenAuthSettings(): OpenAuthSettings {
-        return currentOpenAuthSettings ?: error("currentOpenAuthSettings is not set")
-    }
+    override fun getOpenAuthSettings(): OpenAuthSettings =
+        currentOpenAuthSettings ?: error("currentOpenAuthSettings is not set")
 
-    override fun getAvailableAuthProviders(): AvailableAuthProviders {
-        return currentAvailableAuthProviders ?: error("currentAvailableAuthProviders is not set")
-    }
+    override fun getAvailableAuthProviders(): AvailableAuthProviders =
+        currentAvailableAuthProviders ?: error("currentAvailableAuthProviders is not set")
 
     override fun getMaxTotalIdentifiers(): Int = configuredMaxTotalIdentifiers
+
     override fun getMaxEmailIdentifiers(): Int = configuredMaxEmailIdentifiers
+
     override fun getMaxPhoneIdentifiers(): Int = configuredMaxPhoneIdentifiers
+
     override fun getMaxIdentifiersPerExternalProvider(): Int = configuredMaxIdentifiersPerExternalProvider
+
     override fun getMaxActiveSessionsForOpenUser(): Int = configuredMaxActiveSessionsForOpenUser
+
     override fun getMaxActiveSessionsForManagementUser(): Int = configuredMaxActiveSessionsForManagementUser
+
     override fun getAccessTokenExpirationSeconds(): Int = configuredAccessTokenExpirationSeconds
+
     override fun getRefreshTokenExpirationSeconds(): Int = configuredRefreshTokenExpirationSeconds
+
     override fun getAccountDeletionGracePeriodSeconds(): Int = configuredAccountDeletionGracePeriodSeconds
+
     override fun getAccountDeletionCheckIntervalSeconds(): Int = configuredAccountDeletionCheckIntervalSeconds
+
     override fun getIsRegistrationEnabled(): Boolean = configuredIsRegistrationEnabled
+
     override fun getOpenEmailRestrictionPolicy(): EmailRestrictionPolicy = currentOpenEmailRestrictionPolicy
+
     override fun getManagementEmailRestrictionPolicy(): EmailRestrictionPolicy = currentManagementEmailRestrictionPolicy
 
     override fun getUserNicknameMinLength(): Int = 3
+
     override fun getUserNicknameMaxLength(): Int = 30
+
     override fun getUserDisplayNameMinLength(): Int = 2
+
     override fun getUserDisplayNameMaxLength(): Int = 50
+
     override fun getIsUserNicknameChangeAllowed(): Boolean = true
 
-    override suspend fun updateManagementAuthSettings(
-        managementAuthSettings: ManagementAuthSettings
-    ): AppResult<Unit> {
+    override suspend fun updateManagementAuthSettings(managementAuthSettings: ManagementAuthSettings): AppResult<Unit> {
         updateManagementAuthSettingsCalled = true
         lastUpdatedManagementAuthSettings = managementAuthSettings
         return updateManagementAuthSettingsResult
@@ -93,8 +103,7 @@ class TestAuthSettingsProvider : AuthSettingsProvider {
 
     override suspend fun resetManagementAuthSettings(): AppResult<ManagementAuthSettings> {
         resetManagementAuthSettingsCalled = true
-        return resetManagementAuthSettingsResult
-            ?: currentManagementAuthSettings?.let { AppResult.Success(it) }
-            ?: error("resetManagementAuthSettingsResult or currentManagementAuthSettings must be set")
+        return resetManagementAuthSettingsResult ?: currentManagementAuthSettings?.let { AppResult.Success(it) }
+        ?: error("resetManagementAuthSettingsResult or currentManagementAuthSettings must be set")
     }
 }

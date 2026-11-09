@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.localization.Co
  * Templates are addressed by a stable key (e.g. `verification_code`) and selected using the requested locale.
  * Implementations may provide locale fallback (language-only or default locale) and may cache templates for speed.
  */
-interface EmailParser {
+public interface EmailParser {
     /**
      * Returns the [EmailTemplate] for [key] and [locale], with optional placeholder replacement.
      *
@@ -19,9 +19,13 @@ interface EmailParser {
      * @param args optional placeholder values
      * @param locale requested locale string (e.g. [CommonLocales.ENGLISH], [CommonLocales.RUSSIAN], `en-US`)
      */
-    fun getTemplate(key: String, args: Map<String, Any>?, locale: String): EmailTemplate?
+    public fun getTemplate(
+        key: String,
+        args: Map<String, Any>?,
+        locale: String
+    ): EmailTemplate?
 
-    companion object {
-        const val UNKNOWN_VALUE_FALLBACK = "—"
+    public companion object {
+        public const val UNKNOWN_VALUE_FALLBACK: String = "—"
     }
 }

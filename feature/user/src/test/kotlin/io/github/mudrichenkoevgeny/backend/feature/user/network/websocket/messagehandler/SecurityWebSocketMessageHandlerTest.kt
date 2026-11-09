@@ -9,11 +9,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SecurityWebSocketMessageHandlerTest {
-
-    private companion object {
-        private const val SOCKET_SESSION_ID = "s"
-    }
-
     @Test
     fun `handle returns Handled for security settings updated event types`() {
         val handler = SecurityWebSocketMessageHandler()
@@ -23,7 +18,12 @@ class SecurityWebSocketMessageHandlerTest {
         )
 
         eventTypes.forEach { type ->
-            val frame = SocketFrame(type = type, payload = null, metadata = emptyMap(), timestamp = 0L)
+            val frame = SocketFrame(
+                type = type,
+                payload = null,
+                metadata = emptyMap(),
+                timestamp = 0L
+            )
 
             val result = runBlocking {
                 handler.handle(
@@ -46,7 +46,12 @@ class SecurityWebSocketMessageHandlerTest {
     @Test
     fun `handle returns NotHandled for unknown type`() {
         val handler = SecurityWebSocketMessageHandler()
-        val frame = SocketFrame(type = "unknown", payload = null, metadata = emptyMap(), timestamp = 0L)
+        val frame = SocketFrame(
+            type = "unknown",
+            payload = null,
+            metadata = emptyMap(),
+            timestamp = 0L
+        )
 
         val result = runBlocking {
             handler.handle(
@@ -63,5 +68,9 @@ class SecurityWebSocketMessageHandlerTest {
         }
 
         assertTrue(result is WebSocketMessageHandlerResult.NotHandled)
+    }
+
+    private companion object {
+        private const val SOCKET_SESSION_ID = "s"
     }
 }

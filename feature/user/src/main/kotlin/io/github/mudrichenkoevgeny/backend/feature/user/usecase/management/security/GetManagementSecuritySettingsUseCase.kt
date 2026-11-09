@@ -6,8 +6,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to get security settings.
+ */
 @Singleton
-class GetManagementSecuritySettingsUseCase @Inject constructor(
+public class GetManagementSecuritySettingsUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider
 ) {
     /**
@@ -24,7 +27,6 @@ class GetManagementSecuritySettingsUseCase @Inject constructor(
      *
      * @return [AppResult] containing the [ManagementSecuritySettings].
      */
-    operator fun invoke(): AppResult<ManagementSecuritySettings> {
-        return AppResult.Success(securitySettingsProvider.getManagementSecuritySettings())
-    }
+    public operator fun invoke(): AppResult<ManagementSecuritySettings> =
+        AppResult.Success(securitySettingsProvider.getManagementSecuritySettings())
 }

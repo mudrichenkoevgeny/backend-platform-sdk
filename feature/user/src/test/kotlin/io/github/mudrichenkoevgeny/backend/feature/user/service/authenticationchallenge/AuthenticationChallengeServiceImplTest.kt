@@ -2,22 +2,17 @@ package io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationc
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
-import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.createTestMfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.client.createTestClientInfo
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -28,9 +23,9 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 class AuthenticationChallengeServiceImplTest {
-
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val mfaService = mockk<MfaService>()
     private val service = AuthenticationChallengeServiceImpl(securitySettingsProvider, mfaService)
@@ -42,7 +37,8 @@ class AuthenticationChallengeServiceImplTest {
     @BeforeEach
     fun setup() {
         coEvery { securitySettingsProvider.getRecentAuthenticationValidityInSeconds() } returns validityUser
-        coEvery { securitySettingsProvider.getRecentAuthenticationValidityInSecondsForManagement() } returns validityManager
+        coEvery { securitySettingsProvider.getRecentAuthenticationValidityInSecondsForManagement() } returns
+            validityManager
     }
 
     @Test
@@ -117,15 +113,16 @@ class AuthenticationChallengeServiceImplTest {
     }
 
     @Test
-    fun `should return TotpNotEnabled error when requireTotp is true and user does not have totp enabled`() = runBlocking {
-        val userInternal = createUserInternal(UserRole.USER, isTotpEnabled = false)
-        val session = createUserSession(lastReauthenticatedAt = null)
+    fun `should return TotpNotEnabled error when requireTotp is true and user does not have totp enabled`() =
+        runBlocking {
+            val userInternal = createUserInternal(UserRole.USER, isTotpEnabled = false)
+            val session = createUserSession(lastReauthenticatedAt = null)
 
-        val result = service.ensureSessionConfirmed(userInternal, session, requireTotp = true)
+            val result = service.ensureSessionConfirmed(userInternal, session, requireTotp = true)
 
-        assertTrue(result is AppResult.Error)
-        assertTrue((result as AppResult.Error).error is SecurityError.TotpNotEnabled)
-    }
+            assertTrue(result is AppResult.Error)
+            assertTrue((result as AppResult.Error).error is SecurityError.TotpNotEnabled)
+        }
 
     private fun createUserInternal(
         role: UserRole,
@@ -140,7 +137,7 @@ class AuthenticationChallengeServiceImplTest {
     )
 
     private fun createUserSession(
-        lastReauthenticatedAt: kotlin.time.Instant?,
+        lastReauthenticatedAt: Instant?,
         userId: UserId = UserId.generate(),
         sessionId: UserSessionId = UserSessionId.generate(),
         identifierId: UserIdentifierId = UserIdentifierId.generate()

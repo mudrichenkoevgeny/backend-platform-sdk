@@ -41,7 +41,7 @@ import kotlin.uuid.Uuid
  * with [SecurityWebSocketEventTypes.OPEN_SECURITY_SETTINGS_UPDATED] and [SecurityWebSocketEventTypes.MANAGEMENT_SECURITY_SETTINGS_UPDATED] frames.
  */
 @Singleton
-class UpdateSecuritySettingsUseCase @Inject constructor(
+public class UpdateSecuritySettingsUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -71,7 +71,7 @@ class UpdateSecuritySettingsUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] indicating success or the specific [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         managementSecuritySettings: ManagementSecuritySettings,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<ManagementSecuritySettings> {
@@ -89,6 +89,7 @@ class UpdateSecuritySettingsUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 
@@ -120,7 +121,9 @@ class UpdateSecuritySettingsUseCase @Inject constructor(
             )
         }
 
-        val updateSecuritySettingsResult = securitySettingsProvider.updateManagementSecuritySettings(managementSecuritySettings)
+        val updateSecuritySettingsResult = securitySettingsProvider.updateManagementSecuritySettings(
+            managementSecuritySettings
+        )
 
         if (updateSecuritySettingsResult is AppResult.Error) {
             return handleError(
@@ -140,7 +143,8 @@ class UpdateSecuritySettingsUseCase @Inject constructor(
 
         val timestamp = System.currentTimeMillis()
 
-        val openSecuritySettingsPayload = securitySettingsProvider.getOpenSecuritySettings().toOpenSecuritySettingsPayload()
+        val openSecuritySettingsPayload = securitySettingsProvider.getOpenSecuritySettings()
+            .toOpenSecuritySettingsPayload()
         webSocketManager.sendMessageToScope(
             scope = ApiScope.OPEN,
             frame = SocketFrame(
@@ -155,7 +159,8 @@ class UpdateSecuritySettingsUseCase @Inject constructor(
             )
         )
 
-        val managementSecuritySettingsPayload = securitySettingsProvider.getManagementSecuritySettings().toManagementSecuritySettingsPayload()
+        val managementSecuritySettingsPayload = securitySettingsProvider.getManagementSecuritySettings()
+            .toManagementSecuritySettingsPayload()
         webSocketManager.sendMessageToScope(
             scope = ApiScope.MANAGEMENT,
             frame = SocketFrame(

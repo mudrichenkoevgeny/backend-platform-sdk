@@ -12,7 +12,6 @@ import org.junit.jupiter.api.assertThrows
 import java.util.Base64
 
 class AesCryptorImplTest {
-
     private val validSecret = Base64.getEncoder().encodeToString(ByteArray(32) { 1.toByte() })
     private val securityConfig = createTestSecurityConfig(totpEncryptionSecret = validSecret)
 
@@ -41,7 +40,10 @@ class AesCryptorImplTest {
         assertTrue(decryptResult is AppResult.Success)
         val decryptedOutput = (decryptResult as AppResult.Success).data
 
-        assertEquals(originalText, decryptedOutput.value)
+        assertEquals(
+            originalText,
+            decryptedOutput.value
+        )
     }
 
     @Test
@@ -51,7 +53,10 @@ class AesCryptorImplTest {
         val result1 = (cryptor.encrypt(input) as AppResult.Success).data
         val result2 = (cryptor.encrypt(input) as AppResult.Success).data
 
-        assertNotEquals(result1.value, result2.value)
+        assertNotEquals(
+            result1.value,
+            result2.value
+        )
     }
 
     @Test

@@ -7,9 +7,8 @@ import javax.inject.Singleton
  * Production [ShutdownHookRegistrar] backed by [Runtime.getRuntime].
  */
 @Singleton
-class RuntimeShutdownHookRegistrar @Inject constructor() : ShutdownHookRegistrar {
+public class RuntimeShutdownHookRegistrar @Inject constructor() : ShutdownHookRegistrar {
     override fun addShutdownHook(hook: Thread) {
         Runtime.getRuntime().addShutdownHook(hook)
     }
 }
-

@@ -15,7 +15,7 @@ import javax.inject.Inject
  * - verifies critical health checks
  * - warms up Redis and telemetry (blocking) before accepting traffic
  */
-class AppBootstrap @Inject constructor(
+public class AppBootstrap @Inject constructor(
     private val databaseManager: DatabaseManager,
     private val redisManager: RedisManager,
     private val healthCheckManager: HealthCheckerManager,
@@ -24,7 +24,7 @@ class AppBootstrap @Inject constructor(
     /**
      * Initializes infrastructure required for the sample application runtime.
      */
-    fun initialize() {
+    public fun initialize() {
         databaseManager.create()
         healthCheckManager.verifyCriticalHealth()
 

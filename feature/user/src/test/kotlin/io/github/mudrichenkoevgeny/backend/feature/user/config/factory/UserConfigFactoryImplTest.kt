@@ -11,19 +11,6 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class UserConfigFactoryImplTest {
-
-    private companion object {
-        private const val JWT_SECRET = "jwt-secret"
-        private const val ADMIN_JSON = """{"admins":[{"email":"admin@example.com","password":"pass"}]}"""
-        private const val GOOGLE_ID = "google-client-id"
-        private const val AUTH_PRIMARY = "GOOGLE"
-        private const val AUTH_SECONDARY = "EMAIL"
-        private const val U_KEY = "u-key"
-        private const val U_URL = "https://unione"
-        private const val R_KEY = "r-key"
-        private const val R_URL = "https://resend"
-    }
-
     private val envReader = mockk<EnvReader>()
     private val factory = UserConfigFactoryImpl(envReader)
 
@@ -41,23 +28,50 @@ class UserConfigFactoryImplTest {
 
         val config = factory.create()
 
-        assertEquals(JWT_SECRET, config.jwtSecret)
-        assertEquals(1, config.adminAccountsList.size)
-        assertEquals("admin@example.com", config.adminAccountsList.first().email)
-        assertEquals(GOOGLE_ID, config.googleWebClientId)
+        assertEquals(
+            JWT_SECRET,
+            config.jwtSecret
+        )
+        assertEquals(
+            1,
+            config.adminAccountsList.size
+        )
+        assertEquals(
+            "admin@example.com",
+            config.adminAccountsList.first().email
+        )
+        assertEquals(
+            GOOGLE_ID,
+            config.googleWebClientId
+        )
         assertNull(config.uniOneConfig)
         assertNull(config.resendConfig)
 
         val auth = config.managementAuthSettings
-        assertEquals(listOf(UserAuthProvider.GOOGLE), auth.availableAuthProviders.primary)
-        assertEquals(listOf(UserAuthProvider.EMAIL), auth.availableAuthProviders.secondary)
-        assertEquals(3600, auth.accountDeletionGracePeriodSeconds)
-        assertEquals(600, auth.accountDeletionCheckIntervalSeconds)
+        assertEquals(
+            listOf(UserAuthProvider.GOOGLE),
+            auth.availableAuthProviders.primary
+        )
+        assertEquals(
+            listOf(UserAuthProvider.EMAIL),
+            auth.availableAuthProviders.secondary
+        )
+        assertEquals(
+            3600,
+            auth.accountDeletionGracePeriodSeconds
+        )
+        assertEquals(
+            600,
+            auth.accountDeletionCheckIntervalSeconds
+        )
     }
 
     @Test
     fun `create builds UniOne and Resend configs when all values present`() {
-        stubBaseEnv(primary = AUTH_PRIMARY, secondary = "")
+        stubBaseEnv(
+            primary = AUTH_PRIMARY,
+            secondary = ""
+        )
 
         every { envReader.getByKey(UserEnvKeys.GOOGLE_WEB_CLIENT_ID) } returns GOOGLE_ID
 
@@ -78,15 +92,30 @@ class UserConfigFactoryImplTest {
         val config = factory.create()
 
         assertNotNull(config.uniOneConfig)
-        assertEquals(U_KEY, config.uniOneConfig?.apiKey)
-        assertEquals(U_URL, config.uniOneConfig?.url)
+        assertEquals(
+            U_KEY,
+            config.uniOneConfig?.apiKey
+        )
+        assertEquals(
+            U_URL,
+            config.uniOneConfig?.url
+        )
 
         assertNotNull(config.resendConfig)
-        assertEquals(R_KEY, config.resendConfig?.apiKey)
-        assertEquals(R_URL, config.resendConfig?.url)
+        assertEquals(
+            R_KEY,
+            config.resendConfig?.apiKey
+        )
+        assertEquals(
+            R_URL,
+            config.resendConfig?.url
+        )
     }
 
-    private fun stubBaseEnv(primary: String, secondary: String) {
+    private fun stubBaseEnv(
+        primary: String,
+        secondary: String
+    ) {
         every { envReader.getByKey(UserEnvKeys.JWT_SECRET_FILE) } returns "jwt.secret"
         every { envReader.readSecret("jwt.secret") } returns JWT_SECRET
 
@@ -120,5 +149,17 @@ class UserConfigFactoryImplTest {
         every { envReader.getByKeyOrNull(UserEnvKeys.EMAIL_BLACKLIST_MANAGEMENT) } returns null
         every { envReader.getByKeyOrNull(UserEnvKeys.IS_EMAIL_WHITELIST_ENABLED_MANAGEMENT) } returns null
         every { envReader.getByKeyOrNull(UserEnvKeys.EMAIL_WHITELIST_MANAGEMENT) } returns null
+    }
+
+    private companion object {
+        private const val JWT_SECRET = "jwt-secret"
+        private const val ADMIN_JSON = """{"admins":[{"email":"admin@example.com","password":"pass"}]}"""
+        private const val GOOGLE_ID = "google-client-id"
+        private const val AUTH_PRIMARY = "GOOGLE"
+        private const val AUTH_SECONDARY = "EMAIL"
+        private const val U_KEY = "u-key"
+        private const val U_URL = "https://unione"
+        private const val R_KEY = "r-key"
+        private const val R_URL = "https://resend"
     }
 }

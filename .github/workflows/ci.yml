@@ -1,0 +1,24 @@
+name: CI / Build & Validate
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  validate-and-test:
+    name: Build, Lint & Test (JVM)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Environment & Toolchains
+        uses: ./.github/actions/setup-env
+
+      - name: Run Build, Detekt, Ktlint & Unit Tests
+        run: ./gradlew check
+
+      - name: Verify Binary Compatibility API Dumps
+        run: ./gradlew apiCheck

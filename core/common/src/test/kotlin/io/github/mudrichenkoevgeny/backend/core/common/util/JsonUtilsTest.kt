@@ -10,31 +10,64 @@ import org.junit.jupiter.api.Test
 import kotlin.uuid.Uuid
 
 class JsonUtilsTest {
-
     @Test
     fun `toElement converts primitives and uuid`() {
-        assertEquals(JsonNull, JsonConverter.toElement(null))
-        assertEquals(JsonPrimitive("str"), JsonConverter.toElement("str"))
-        assertEquals(JsonPrimitive(1), JsonConverter.toElement(1))
-        assertEquals(JsonPrimitive(true), JsonConverter.toElement(true))
+        assertEquals(
+            JsonNull,
+            JsonConverter.toElement(null)
+        )
+        assertEquals(
+            JsonPrimitive("str"),
+            JsonConverter.toElement("str")
+        )
+        assertEquals(
+            JsonPrimitive(1),
+            JsonConverter.toElement(1)
+        )
+        assertEquals(
+            JsonPrimitive(true),
+            JsonConverter.toElement(true)
+        )
 
         val uuid = Uuid.random()
         val uuidElement = JsonConverter.toElement(uuid)
         assertTrue(uuidElement is JsonPrimitive)
-        assertEquals(uuid.toHexDashString(), (uuidElement as JsonPrimitive).content)
+        assertEquals(
+            uuid.toHexDashString(),
+            (uuidElement as JsonPrimitive).content
+        )
     }
 
     @Test
     fun `toElement converts collections and maps`() {
-        val listElement = JsonConverter.toElement(listOf(1, 2))
+        val listElement = JsonConverter.toElement(
+            listOf(
+                1,
+                2
+            )
+        )
         assertTrue(listElement is JsonArray)
-        assertEquals(2, (listElement as JsonArray).size)
+        assertEquals(
+            2,
+            (listElement as JsonArray).size
+        )
 
-        val mapElement = JsonConverter.toElement(mapOf("a" to 1, "b" to "x"))
+        val mapElement = JsonConverter.toElement(
+            mapOf(
+                "a" to 1,
+                "b" to "x"
+            )
+        )
         assertTrue(mapElement is JsonObject)
         val jsonObject = mapElement as JsonObject
-        assertEquals(JsonPrimitive(1), jsonObject["a"])
-        assertEquals(JsonPrimitive("x"), jsonObject["b"])
+        assertEquals(
+            JsonPrimitive(1),
+            jsonObject["a"]
+        )
+        assertEquals(
+            JsonPrimitive("x"),
+            jsonObject["b"]
+        )
     }
 
     @Test
@@ -47,7 +80,10 @@ class JsonUtilsTest {
         val list = result["list"] as JsonArray
         val nestedMap = list[0] as JsonObject
 
-        assertEquals(JsonPrimitive(1), nestedMap["id"])
+        assertEquals(
+            JsonPrimitive(1),
+            nestedMap["id"]
+        )
     }
 
     @Test
@@ -55,7 +91,10 @@ class JsonUtilsTest {
         val existing = JsonPrimitive("already_json")
         val result = JsonConverter.toElement(existing)
 
-        assertEquals(existing, result)
+        assertEquals(
+            existing,
+            result
+        )
     }
 
     @Test
@@ -63,7 +102,10 @@ class JsonUtilsTest {
         val source = mapOf("key" to 100)
         val result = JsonConverter.toJsonObject(source)
 
-        assertEquals(JsonPrimitive(100), result["key"])
+        assertEquals(
+            JsonPrimitive(100),
+            result["key"]
+        )
     }
 
     @Test
@@ -76,9 +118,24 @@ class JsonUtilsTest {
 
         val result = source.toJsonElementMap()
 
-        assertEquals(2, result.size)
-        assertEquals(setOf("a", "c"), result.keys)
-        assertEquals(JsonPrimitive(1), result["a"])
-        assertEquals(JsonPrimitive("str"), result["c"])
+        assertEquals(
+            2,
+            result.size
+        )
+        assertEquals(
+            setOf(
+                "a",
+                "c"
+            ),
+            result.keys
+        )
+        assertEquals(
+            JsonPrimitive(1),
+            result["a"]
+        )
+        assertEquals(
+            JsonPrimitive("str"),
+            result["c"]
+        )
     }
 }

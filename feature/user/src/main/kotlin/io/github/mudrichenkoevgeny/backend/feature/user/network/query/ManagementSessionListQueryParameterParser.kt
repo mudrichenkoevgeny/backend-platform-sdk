@@ -2,9 +2,9 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.query
 
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.firstNonBlankQueryValue
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseBooleanQueryOrNull
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseTimestampQueryOrNull
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseValidatedQueryList
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementSessionListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
@@ -17,7 +17,7 @@ import kotlin.uuid.Uuid
 /**
  * Parses user session management list query parameters with strict validation.
  */
-fun ApplicationCall.parseManagementSessionsListQueryParams(): ManagementSessionListQueryParams {
+public fun ApplicationCall.parseManagementSessionsListQueryParams(): ManagementSessionListQueryParams {
     val filterNames = UserSessionFilterValues
 
     return ManagementSessionListQueryParams(
@@ -27,15 +27,33 @@ fun ApplicationCall.parseManagementSessionsListQueryParams(): ManagementSessionL
         ),
         sessionIds = parseValidatedQueryList(filterNames.SESSION_ID) { Uuid.parseOrNull(it)?.toString() },
         userIds = parseValidatedQueryList(filterNames.USER_ID) { Uuid.parseOrNull(it)?.toString() },
-        userRoles = parseValidatedQueryList(filterNames.USER_ROLE, UserRole::fromValueOrNull),
-        excludeUserRoles = parseValidatedQueryList(filterNames.EXCLUDE_USER_ROLE, UserRole::fromValueOrNull),
+        userRoles = parseValidatedQueryList(
+            filterNames.USER_ROLE,
+            UserRole::fromValueOrNull
+        ),
+        excludeUserRoles = parseValidatedQueryList(
+            filterNames.EXCLUDE_USER_ROLE,
+            UserRole::fromValueOrNull
+        ),
         identifier = firstNonBlankQueryValue(filterNames.IDENTIFIER),
         identifierIds = parseValidatedQueryList(filterNames.IDENTIFIER_ID) { Uuid.parseOrNull(it)?.toString() },
         identifierDisplayName = firstNonBlankQueryValue(filterNames.IDENTIFIER_DISPLAY_NAME),
-        identifierAuthProviders = parseValidatedQueryList(filterNames.IDENTIFIER_AUTH_PROVIDER, UserAuthProvider::fromValueOrNull),
-        excludeIdentifierAuthProviders = parseValidatedQueryList(filterNames.EXCLUDE_IDENTIFIER_AUTH_PROVIDER, UserAuthProvider::fromValueOrNull),
-        clientTypes = parseValidatedQueryList(filterNames.CLIENT_TYPE, ClientType::fromValueOrNull),
-        excludeClientTypes = parseValidatedQueryList(filterNames.EXCLUDE_CLIENT_TYPE, ClientType::fromValueOrNull),
+        identifierAuthProviders = parseValidatedQueryList(
+            filterNames.IDENTIFIER_AUTH_PROVIDER,
+            UserAuthProvider::fromValueOrNull
+        ),
+        excludeIdentifierAuthProviders = parseValidatedQueryList(
+            filterNames.EXCLUDE_IDENTIFIER_AUTH_PROVIDER,
+            UserAuthProvider::fromValueOrNull
+        ),
+        clientTypes = parseValidatedQueryList(
+            filterNames.CLIENT_TYPE,
+            ClientType::fromValueOrNull
+        ),
+        excludeClientTypes = parseValidatedQueryList(
+            filterNames.EXCLUDE_CLIENT_TYPE,
+            ClientType::fromValueOrNull
+        ),
         isClientTypeSet = parseBooleanQueryOrNull(filterNames.IS_CLIENT_TYPE_SET),
         deviceId = firstNonBlankQueryValue(filterNames.DEVICE_ID),
         isDeviceIdSet = parseBooleanQueryOrNull(filterNames.IS_DEVICE_ID_SET),

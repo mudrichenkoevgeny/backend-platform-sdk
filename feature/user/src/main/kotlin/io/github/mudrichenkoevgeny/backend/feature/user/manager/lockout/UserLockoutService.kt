@@ -13,8 +13,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
  * Coordinates tracking limits with [LockoutManager] and persisting lockout states on user
  * entities via [UserManager].
  */
-interface UserLockoutService {
-
+public interface UserLockoutService {
     /**
      * Checks if the given identifier is currently locked out.
      *
@@ -22,7 +21,7 @@ interface UserLockoutService {
      * @param userId Optional user ID to persist lockout state in storage if locked out.
      * @return [AppResult.Success] if clear, or [AppResult.Error] with [UserError.UserLocked] if locked out.
      */
-    suspend fun checkLockout(
+    public suspend fun checkLockout(
         identifier: String,
         userId: UserId? = null
     ): AppResult<Unit>
@@ -34,7 +33,7 @@ interface UserLockoutService {
      * @param userId Optional user ID to persist lockout state in storage if locked out.
      * @return [AppResult.Success] if clear, or [AppResult.Error] with [UserError.UserLocked] if locked out.
      */
-    suspend fun checkLockout(
+    public suspend fun checkLockout(
         identifiers: List<String>,
         userId: UserId? = null
     ): AppResult<Unit>
@@ -47,7 +46,7 @@ interface UserLockoutService {
      * @param userId Optional user ID to persist lockout state in storage if a lockout is triggered.
      * @return [AppResult.Success] if no lockout was triggered, or [AppResult.Error] with [UserError.UserLocked] if lockout triggered.
      */
-    suspend fun recordFailedAttempt(
+    public suspend fun recordFailedAttempt(
         identifier: String,
         type: LockoutAttemptType,
         userId: UserId? = null
@@ -61,7 +60,7 @@ interface UserLockoutService {
      * @param userId Optional user ID to persist lockout state in storage if a lockout is triggered.
      * @return [AppResult.Success] if no lockout was triggered, or [AppResult.Error] with [UserError.UserLocked] if lockout triggered.
      */
-    suspend fun recordFailedAttempt(
+    public suspend fun recordFailedAttempt(
         identifiers: List<String>,
         type: LockoutAttemptType,
         userId: UserId? = null
@@ -73,7 +72,5 @@ interface UserLockoutService {
      * @param identifiers List of unique key strings to clear from lockout tracking (e.g., login email, phone number, or user ID UUID string).
      * @return [AppResult.Success] upon clearing.
      */
-    suspend fun clearLockout(
-        identifiers: List<String>
-    ): AppResult<Unit>
+    public suspend fun clearLockout(identifiers: List<String>): AppResult<Unit>
 }

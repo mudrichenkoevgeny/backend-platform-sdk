@@ -15,7 +15,7 @@ import io.ktor.http.HttpStatusCode
  * Uses [publicArgs] for client-visible data; [secretArgs] for internal logs only.
  * Each variant has a stable [code] for i18n and a unique [errorId] for correlation.
  */
-sealed class StorageError(
+public sealed class StorageError(
     override val errorId: ErrorId,
     override val code: String,
     override val publicArgs: Map<String, Any>? = null,
@@ -23,7 +23,6 @@ sealed class StorageError(
     override val httpStatusCode: HttpStatusCode,
     override val appErrorSeverity: AppErrorSeverity
 ) : AppError {
-
     /**
      * File size exceeds the maximum permitted limit for its category or system policy.
      *
@@ -32,7 +31,7 @@ sealed class StorageError(
      * @param category Optional storage category identifier.
      * @param fileName Optional original file name.
      */
-    class FileSizeExceedsLimit(
+    public class FileSizeExceedsLimit(
         fileSizeBytes: Long,
         maxFileSizeBytes: Long,
         category: String? = null,
@@ -41,10 +40,26 @@ sealed class StorageError(
         errorId = ErrorId.generate(),
         code = StorageErrorCodes.FILE_SIZE_EXCEEDS_LIMIT,
         publicArgs = buildMap {
-            put(StorageErrorArgs.FILE_SIZE_BYTES, fileSizeBytes.toString())
-            put(StorageErrorArgs.MAX_FILE_SIZE_BYTES, maxFileSizeBytes.toString())
-            category?.let { put(StorageErrorArgs.CATEGORY, it) }
-            fileName?.let { put(StorageErrorArgs.FILE_NAME, it) }
+            put(
+                StorageErrorArgs.FILE_SIZE_BYTES,
+                fileSizeBytes.toString()
+            )
+            put(
+                StorageErrorArgs.MAX_FILE_SIZE_BYTES,
+                maxFileSizeBytes.toString()
+            )
+            category?.let {
+                put(
+                    StorageErrorArgs.CATEGORY,
+                    it
+                )
+            }
+            fileName?.let {
+                put(
+                    StorageErrorArgs.FILE_NAME,
+                    it
+                )
+            }
         },
         httpStatusCode = HttpStatusCode.BadRequest,
         appErrorSeverity = AppErrorSeverity.LOW
@@ -58,7 +73,7 @@ sealed class StorageError(
      * @param category Optional storage category identifier.
      * @param fileName Optional original file name.
      */
-    class FileSizeBelowMinimum(
+    public class FileSizeBelowMinimum(
         fileSizeBytes: Long,
         minFileSizeBytes: Long,
         category: String? = null,
@@ -67,10 +82,26 @@ sealed class StorageError(
         errorId = ErrorId.generate(),
         code = StorageErrorCodes.FILE_SIZE_BELOW_MINIMUM,
         publicArgs = buildMap {
-            put(StorageErrorArgs.FILE_SIZE_BYTES, fileSizeBytes.toString())
-            put(StorageErrorArgs.MIN_FILE_SIZE_BYTES, minFileSizeBytes.toString())
-            category?.let { put(StorageErrorArgs.CATEGORY, it) }
-            fileName?.let { put(StorageErrorArgs.FILE_NAME, it) }
+            put(
+                StorageErrorArgs.FILE_SIZE_BYTES,
+                fileSizeBytes.toString()
+            )
+            put(
+                StorageErrorArgs.MIN_FILE_SIZE_BYTES,
+                minFileSizeBytes.toString()
+            )
+            category?.let {
+                put(
+                    StorageErrorArgs.CATEGORY,
+                    it
+                )
+            }
+            fileName?.let {
+                put(
+                    StorageErrorArgs.FILE_NAME,
+                    it
+                )
+            }
         },
         httpStatusCode = HttpStatusCode.BadRequest,
         appErrorSeverity = AppErrorSeverity.LOW
@@ -83,7 +114,7 @@ sealed class StorageError(
      * @param category Optional storage category identifier.
      * @param fileName Optional original file name.
      */
-    class UnsupportedMimeType(
+    public class UnsupportedMimeType(
         mimeType: String,
         category: String? = null,
         fileName: String? = null
@@ -91,9 +122,22 @@ sealed class StorageError(
         errorId = ErrorId.generate(),
         code = StorageErrorCodes.UNSUPPORTED_MIME_TYPE,
         publicArgs = buildMap {
-            put(StorageErrorArgs.MIME_TYPE, mimeType)
-            category?.let { put(StorageErrorArgs.CATEGORY, it) }
-            fileName?.let { put(StorageErrorArgs.FILE_NAME, it) }
+            put(
+                StorageErrorArgs.MIME_TYPE,
+                mimeType
+            )
+            category?.let {
+                put(
+                    StorageErrorArgs.CATEGORY,
+                    it
+                )
+            }
+            fileName?.let {
+                put(
+                    StorageErrorArgs.FILE_NAME,
+                    it
+                )
+            }
         },
         httpStatusCode = HttpStatusCode.UnprocessableEntity,
         appErrorSeverity = AppErrorSeverity.LOW
@@ -104,7 +148,7 @@ sealed class StorageError(
      *
      * @param category Provided category string.
      */
-    class UnsupportedStorageCategory(
+    public class UnsupportedStorageCategory(
         category: String
     ) : StorageError(
         errorId = ErrorId.generate(),
@@ -122,7 +166,7 @@ sealed class StorageError(
      * @param quotaBytes Maximum permitted cumulative storage quota.
      * @param usedBytes Currently used storage size in bytes.
      */
-    class StorageQuotaExceeded(
+    public class StorageQuotaExceeded(
         quotaBytes: Long,
         usedBytes: Long
     ) : StorageError(
@@ -141,7 +185,7 @@ sealed class StorageError(
      *
      * @param maxPendingUploads Maximum permitted active upload sessions.
      */
-    class TooManyPendingUploads(
+    public class TooManyPendingUploads(
         maxPendingUploads: Int
     ) : StorageError(
         errorId = ErrorId.generate(),
@@ -156,29 +200,31 @@ sealed class StorageError(
     /**
      * Presigned upload URL has expired.
      */
-    class PresignedUrlExpired : StorageError(
-        errorId = ErrorId.generate(),
-        code = StorageErrorCodes.PRESIGNED_URL_EXPIRED,
-        httpStatusCode = HttpStatusCode.Gone,
-        appErrorSeverity = AppErrorSeverity.LOW
-    )
+    public class PresignedUrlExpired :
+        StorageError(
+            errorId = ErrorId.generate(),
+            code = StorageErrorCodes.PRESIGNED_URL_EXPIRED,
+            httpStatusCode = HttpStatusCode.Gone,
+            appErrorSeverity = AppErrorSeverity.LOW
+        )
 
     /**
      * Upload session token or signature is invalid.
      */
-    class InvalidUploadToken : StorageError(
-        errorId = ErrorId.generate(),
-        code = StorageErrorCodes.INVALID_UPLOAD_TOKEN,
-        httpStatusCode = HttpStatusCode.Unauthorized,
-        appErrorSeverity = AppErrorSeverity.LOW
-    )
+    public class InvalidUploadToken :
+        StorageError(
+            errorId = ErrorId.generate(),
+            code = StorageErrorCodes.INVALID_UPLOAD_TOKEN,
+            httpStatusCode = HttpStatusCode.Unauthorized,
+            appErrorSeverity = AppErrorSeverity.LOW
+        )
 
     /**
      * Upload session or presigned URL has already been completed.
      *
      * @param fileId Target file ID.
      */
-    class UploadAlreadyCompleted(
+    public class UploadAlreadyCompleted(
         fileId: FileId
     ) : StorageError(
         errorId = ErrorId.generate(),
@@ -196,15 +242,25 @@ sealed class StorageError(
      * @param fileId Optional target file ID.
      * @param message Optional verification error message.
      */
-    class StorageUploadFailed(
+    public class StorageUploadFailed(
         fileId: FileId? = null,
         message: String? = null
     ) : StorageError(
         errorId = ErrorId.generate(),
         code = StorageErrorCodes.STORAGE_UPLOAD_FAILED,
         secretArgs = buildMap {
-            fileId?.let { put(StorageErrorArgs.FILE_ID, it.asHexDashString()) }
-            message?.let { put(CommonErrorArgs.MESSAGE, it) }
+            fileId?.let {
+                put(
+                    StorageErrorArgs.FILE_ID,
+                    it.asHexDashString()
+                )
+            }
+            message?.let {
+                put(
+                    CommonErrorArgs.MESSAGE,
+                    it
+                )
+            }
         },
         httpStatusCode = HttpStatusCode.UnprocessableEntity,
         appErrorSeverity = AppErrorSeverity.MEDIUM
@@ -215,7 +271,7 @@ sealed class StorageError(
      *
      * @param fileId Optional target file ID.
      */
-    class FileNotFound(
+    public class FileNotFound(
         fileId: FileId? = null
     ) : StorageError(
         errorId = ErrorId.generate(),
@@ -232,7 +288,7 @@ sealed class StorageError(
      *
      * @param fileId Target file ID.
      */
-    class FileNotReady(
+    public class FileNotReady(
         fileId: FileId
     ) : StorageError(
         errorId = ErrorId.generate(),
@@ -249,7 +305,7 @@ sealed class StorageError(
      *
      * @param fileId Target file ID.
      */
-    class FileAlreadyExists(
+    public class FileAlreadyExists(
         fileId: FileId
     ) : StorageError(
         errorId = ErrorId.generate(),
@@ -266,7 +322,7 @@ sealed class StorageError(
      *
      * @param fileId Target file ID.
      */
-    class FileDeleteFailed(
+    public class FileDeleteFailed(
         fileId: FileId
     ) : StorageError(
         errorId = ErrorId.generate(),

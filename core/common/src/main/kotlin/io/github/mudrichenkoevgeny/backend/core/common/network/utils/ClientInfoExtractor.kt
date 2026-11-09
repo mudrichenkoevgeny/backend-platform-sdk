@@ -13,22 +13,20 @@ import io.ktor.server.request.userAgent
 /**
  * Extracts a [ClientInfo] from this [ApplicationCall] using standard and shared headers.
  */
-fun ApplicationCall.extractClientInfo(): ClientInfo {
-    return ClientInfo(
-        clientDeviceInfo = ClientDeviceInfo(
-            deviceId = request.headers[CommonHttpHeaders.DEVICE_ID_HEADER_NAME]?.toClientDeviceIdOrNull(),
-            deviceName = request.headers[CommonHttpHeaders.DEVICE_NAME_HEADER_NAME],
-            clientType = request.headers[CommonHttpHeaders.CLIENT_TYPE_HEADER_NAME]?.let { clientType ->
-                ClientType.fromValueOrNull(clientType)
-            },
-            language = ClientDeviceInfo.parsePrimaryLanguage(request.headers[HttpHeaders.AcceptLanguage]),
-            appVersion = request.headers[CommonHttpHeaders.APP_VERSION_HEADER_NAME],
-            operationSystemVersion = request.headers[CommonHttpHeaders.OPERATION_SYSTEM_VERSION_HEADER_NAME]
-        ),
-        userAgent = request.userAgent(),
-        ipAddress = request.local.remoteHost,
-        host = request.host(),
-        origin = request.headers[HttpHeaders.Origin],
-        apiVersion = request.headers[CommonHttpHeaders.API_VERSION_HEADER_NAME]
-    )
-}
+public fun ApplicationCall.extractClientInfo(): ClientInfo = ClientInfo(
+    clientDeviceInfo = ClientDeviceInfo(
+        deviceId = request.headers[CommonHttpHeaders.DEVICE_ID_HEADER_NAME]?.toClientDeviceIdOrNull(),
+        deviceName = request.headers[CommonHttpHeaders.DEVICE_NAME_HEADER_NAME],
+        clientType = request.headers[CommonHttpHeaders.CLIENT_TYPE_HEADER_NAME]?.let { clientType ->
+            ClientType.fromValueOrNull(clientType)
+        },
+        language = ClientDeviceInfo.parsePrimaryLanguage(request.headers[HttpHeaders.AcceptLanguage]),
+        appVersion = request.headers[CommonHttpHeaders.APP_VERSION_HEADER_NAME],
+        operationSystemVersion = request.headers[CommonHttpHeaders.OPERATION_SYSTEM_VERSION_HEADER_NAME]
+    ),
+    userAgent = request.userAgent(),
+    ipAddress = request.local.remoteHost,
+    host = request.host(),
+    origin = request.headers[HttpHeaders.Origin],
+    apiVersion = request.headers[CommonHttpHeaders.API_VERSION_HEADER_NAME]
+)

@@ -9,6 +9,9 @@ import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityCo
  * The default implementation ([SecurityConfigFactoryImpl]) reads from the environment via
  * [EnvReader] and converts values into strongly typed configuration.
  */
-interface SecurityConfigFactory {
-    fun create(): SecurityConfig
+public interface SecurityConfigFactory {
+    /**
+     * Creates a new [SecurityConfig] instance.
+     */
+    public fun create(): SecurityConfig
 }

@@ -5,8 +5,11 @@ import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.Secur
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to seed initial system security settings and defaults.
+ */
 @Singleton
-class SeedSecuritySettingsUseCase @Inject constructor(
+public class SeedSecuritySettingsUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider
 ) {
     /**
@@ -22,5 +25,5 @@ class SeedSecuritySettingsUseCase @Inject constructor(
      *
      * @return [AppResult] indicating whether the initialization was successful.
      */
-    suspend operator fun invoke(): AppResult<Unit> = securitySettingsProvider.initialize()
+    public suspend operator fun invoke(): AppResult<Unit> = securitySettingsProvider.initialize()
 }

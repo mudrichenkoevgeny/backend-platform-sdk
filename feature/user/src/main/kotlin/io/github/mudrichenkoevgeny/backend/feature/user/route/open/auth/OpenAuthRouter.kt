@@ -23,7 +23,7 @@ import javax.inject.Singleton
  * 6. Self-service account unlock flows ([OpenUnlockRouter]).
  */
 @Singleton
-class OpenAuthRouter @Inject constructor(
+public class OpenAuthRouter @Inject constructor(
     private val openRefreshTokenRouter: OpenRefreshTokenRouter,
     private val openLoginRouter: OpenLoginRouter,
     private val openRegistrationRouter: OpenRegistrationRouter,
@@ -31,7 +31,7 @@ class OpenAuthRouter @Inject constructor(
     private val openAuthSettingsRouter: OpenAuthSettingsRouter,
     private val openUnlockRouter: OpenUnlockRouter
 ) : BaseRouter {
-    override fun register(route: Route) {
+    public override fun register(route: Route) {
         openRefreshTokenRouter.register(route)
         openLoginRouter.register(route)
         openRegistrationRouter.register(route)

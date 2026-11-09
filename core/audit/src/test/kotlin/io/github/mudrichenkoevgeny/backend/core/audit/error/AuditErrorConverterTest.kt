@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AuditErrorConverterTest {
-
     private val stubParser = TestAuditErrorParser(
         targetErrorCode = "special_error",
         resultStatus = AuditStatus.DENIED
@@ -26,7 +25,10 @@ class AuditErrorConverterTest {
 
         val result = converter.convert(error)
 
-        assertEquals(AuditStatus.DENIED, result.status)
+        assertEquals(
+            AuditStatus.DENIED,
+            result.status
+        )
     }
 
     @Test
@@ -35,7 +37,10 @@ class AuditErrorConverterTest {
 
         val result = converter.convert(error)
 
-        assertEquals(AuditStatus.FAILED, result.status)
+        assertEquals(
+            AuditStatus.FAILED,
+            result.status
+        )
         assertTrue(result.metadata.any { it.value == error.code })
     }
 }

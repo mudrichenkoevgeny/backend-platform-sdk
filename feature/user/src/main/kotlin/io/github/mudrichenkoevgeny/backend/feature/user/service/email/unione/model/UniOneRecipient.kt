@@ -6,4 +6,6 @@ import kotlinx.serialization.Serializable
  * UniOne recipient payload.
  */
 @Serializable
-data class UniOneRecipient(val email: String)
+public data class UniOneRecipient(
+    val email: String
+)

@@ -29,12 +29,11 @@ import javax.inject.Singleton
  * 1. [OpenSecuritySettingsRoutes.GET_OPEN_SECURITY_SETTINGS] — retrieves security settings via [GetOpenSecuritySettingsUseCase].
  */
 @Singleton
-class OpenSecuritySettingsRouter @Inject constructor(
+public class OpenSecuritySettingsRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val getOpenSecuritySettingsUseCase: GetOpenSecuritySettingsUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         registerGetSecuritySettingsRoute(route)
     }
@@ -45,7 +44,12 @@ class OpenSecuritySettingsRouter @Inject constructor(
 
         route.get(
             path = OpenSecuritySettingsRoutes.GET_OPEN_SECURITY_SETTINGS,
-            builder = { getSecuritySettingsDocs(allowedRoles, allowedAccountStatuses) },
+            builder = {
+                getSecuritySettingsDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
             body = { getSecuritySettings() }
         )
     }
@@ -76,15 +80,19 @@ class OpenSecuritySettingsRouter @Inject constructor(
     private suspend fun RoutingContext.getSecuritySettings() {
         val result = getOpenSecuritySettingsUseCase()
 
-        call.respondResult(result, appLogger, appErrorParser) { securitySettings ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { securitySettings ->
             securitySettings.toOpenSecuritySettingsPayload()
         }
     }
 
-    companion object {
-        const val GET_SECURITY_SETTINGS_ROUTE_SUMMARY = "Get security settings"
-        const val GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION = "Returns security settings."
-        const val GET_SECURITY_SETTINGS_ROUTE_OPERATION_ID = "openGetSecuritySettings"
-        const val GET_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Security settings data"
+    public companion object {
+        private const val GET_SECURITY_SETTINGS_ROUTE_SUMMARY = "Get security settings"
+        private const val GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION = "Returns security settings."
+        private const val GET_SECURITY_SETTINGS_ROUTE_OPERATION_ID = "openGetSecuritySettings"
+        private const val GET_SECURITY_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Security settings data"
     }
 }

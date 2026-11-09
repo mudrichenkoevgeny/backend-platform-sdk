@@ -12,11 +12,11 @@ import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByExternalAuthProviderUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByPhoneUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.SendUnlockConfirmationToEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.SendUnlockConfirmationToPhoneUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.UnlockByEmailUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByExternalAuthProviderUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByPhoneUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.otpconfirmation.toOtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.otpconfirmation.OtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
@@ -43,12 +43,14 @@ import javax.inject.Singleton
  * Registered routes:
  * 1. [OpenUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION] — triggers delivery of an unlock verification code to email via [SendUnlockConfirmationToEmailUseCase].
  * 2. [OpenUnlockRoutes.UNLOCK_BY_EMAIL] — unlocks account using email confirmation code via [UnlockByEmailUseCase].
- * 3. [OpenUnlockRoutes.SEND_UNLOCK_PHONE_CONFIRMATION] — triggers delivery of an unlock verification code to phone via [SendUnlockConfirmationToPhoneUseCase].
+ * 3. [OpenUnlockRoutes.SEND_UNLOCK_PHONE_CONFIRMATION] — triggers delivery of an unlock verification code to phone via
+ * [SendUnlockConfirmationToPhoneUseCase].
  * 4. [OpenUnlockRoutes.UNLOCK_BY_PHONE] — unlocks account using phone confirmation code via [UnlockByPhoneUseCase].
- * 5. [OpenUnlockRoutes.UNLOCK_BY_EXTERNAL_PROVIDER] — unlocks account using external provider token via [UnlockByExternalAuthProviderUseCase].
+ * 5. [OpenUnlockRoutes.UNLOCK_BY_EXTERNAL_PROVIDER] — unlocks account using external provider token via
+ * [UnlockByExternalAuthProviderUseCase].
  */
 @Singleton
-class OpenUnlockRouter @Inject constructor(
+public class OpenUnlockRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val sendUnlockConfirmationToEmailUseCase: SendUnlockConfirmationToEmailUseCase,
@@ -57,7 +59,6 @@ class OpenUnlockRouter @Inject constructor(
     private val unlockByPhoneUseCase: UnlockByPhoneUseCase,
     private val unlockByExternalAuthProviderUseCase: UnlockByExternalAuthProviderUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         registerSendUnlockEmailConfirmationRoute(route)
         registerUnlockByEmailRoute(route)
@@ -68,56 +69,126 @@ class OpenUnlockRouter @Inject constructor(
 
     private fun registerSendUnlockEmailConfirmationRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION,
-            builder = { sendUnlockEmailConfirmationDocs(allowedRoles, allowedAccountStatuses) },
-            body = { sendUnlockEmailConfirmation(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                sendUnlockEmailConfirmationDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                sendUnlockEmailConfirmation(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerUnlockByEmailRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenUnlockRoutes.UNLOCK_BY_EMAIL,
-            builder = { unlockByEmailDocs(allowedRoles, allowedAccountStatuses) },
-            body = { unlockByEmail(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                unlockByEmailDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                unlockByEmail(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerSendUnlockPhoneConfirmationRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenUnlockRoutes.SEND_UNLOCK_PHONE_CONFIRMATION,
-            builder = { sendUnlockPhoneConfirmationDocs(allowedRoles, allowedAccountStatuses) },
-            body = { sendUnlockPhoneConfirmation(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                sendUnlockPhoneConfirmationDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                sendUnlockPhoneConfirmation(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerUnlockByPhoneRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenUnlockRoutes.UNLOCK_BY_PHONE,
-            builder = { unlockByPhoneDocs(allowedRoles, allowedAccountStatuses) },
-            body = { unlockByPhone(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                unlockByPhoneDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                unlockByPhone(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerUnlockByExternalProviderRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenUnlockRoutes.UNLOCK_BY_EXTERNAL_PROVIDER,
-            builder = { unlockByExternalProviderDocs(allowedRoles, allowedAccountStatuses) },
-            body = { unlockByExternalProvider(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                unlockByExternalProviderDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                unlockByExternalProvider(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -156,7 +227,11 @@ class OpenUnlockRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { otpConfirmation ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { otpConfirmation ->
             otpConfirmation.toOtpConfirmationPayload()
         }
     }
@@ -196,7 +271,12 @@ class OpenUnlockRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser, successStatus = HttpStatusCode.OK)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser,
+            successStatus = HttpStatusCode.OK
+        )
     }
 
     private fun RouteConfig.sendUnlockPhoneConfirmationDocs(
@@ -234,7 +314,11 @@ class OpenUnlockRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { otpConfirmation ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { otpConfirmation ->
             otpConfirmation.toOtpConfirmationPayload()
         }
     }
@@ -274,7 +358,12 @@ class OpenUnlockRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser, successStatus = HttpStatusCode.OK)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser,
+            successStatus = HttpStatusCode.OK
+        )
     }
 
     private fun RouteConfig.unlockByExternalProviderDocs(
@@ -304,12 +393,11 @@ class OpenUnlockRouter @Inject constructor(
     ) {
         val request = call.validateRequest<UnlockByExternalAuthProviderRequest>()
 
-        val authProvider = UserAuthProvider.fromValueOrNull(request.authProvider)
-            ?: throw RequestHandlingException(
-                CommonError.InvalidFieldValue(
-                    fieldName = UserApiFields.AUTH_PROVIDER
-                )
+        val authProvider = UserAuthProvider.fromValueOrNull(request.authProvider) ?: throw RequestHandlingException(
+            CommonError.InvalidFieldValue(
+                fieldName = UserApiFields.AUTH_PROVIDER
             )
+        )
 
         val result = unlockByExternalAuthProviderUseCase(
             authProvider = authProvider,
@@ -319,30 +407,40 @@ class OpenUnlockRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser, successStatus = HttpStatusCode.OK)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser,
+            successStatus = HttpStatusCode.OK
+        )
     }
 
-    companion object {
-        const val SEND_UNLOCK_EMAIL_CONFIRMATION_SUMMARY = "Send unlock confirmation code to email"
-        const val SEND_UNLOCK_EMAIL_CONFIRMATION_DESCRIPTION = "Sends a verification code to the email to unlock a locked account."
-        const val SEND_UNLOCK_EMAIL_CONFIRMATION_OPERATION_ID = "openSendUnlockConfirmationToEmail"
+    public companion object {
+        private const val SEND_UNLOCK_EMAIL_CONFIRMATION_SUMMARY = "Send unlock confirmation code to email"
+        private const val SEND_UNLOCK_EMAIL_CONFIRMATION_DESCRIPTION =
+            "Sends a verification code to the email to unlock a locked account."
+        private const val SEND_UNLOCK_EMAIL_CONFIRMATION_OPERATION_ID = "openSendUnlockConfirmationToEmail"
 
-        const val UNLOCK_BY_EMAIL_SUMMARY = "Unlock account by email confirmation code"
-        const val UNLOCK_BY_EMAIL_DESCRIPTION = "Unlocks a temporarily locked user account using email confirmation code."
-        const val UNLOCK_BY_EMAIL_OPERATION_ID = "openUnlockByEmail"
+        private const val UNLOCK_BY_EMAIL_SUMMARY = "Unlock account by email confirmation code"
+        private const val UNLOCK_BY_EMAIL_DESCRIPTION =
+            "Unlocks a temporarily locked user account using email confirmation code."
+        private const val UNLOCK_BY_EMAIL_OPERATION_ID = "openUnlockByEmail"
 
-        const val SEND_UNLOCK_PHONE_CONFIRMATION_SUMMARY = "Send unlock confirmation code to phone"
-        const val SEND_UNLOCK_PHONE_CONFIRMATION_DESCRIPTION = "Sends a verification code to the phone to unlock a locked account."
-        const val SEND_UNLOCK_PHONE_CONFIRMATION_OPERATION_ID = "openSendUnlockConfirmationToPhone"
+        private const val SEND_UNLOCK_PHONE_CONFIRMATION_SUMMARY = "Send unlock confirmation code to phone"
+        private const val SEND_UNLOCK_PHONE_CONFIRMATION_DESCRIPTION =
+            "Sends a verification code to the phone to unlock a locked account."
+        private const val SEND_UNLOCK_PHONE_CONFIRMATION_OPERATION_ID = "openSendUnlockConfirmationToPhone"
 
-        const val UNLOCK_BY_PHONE_SUMMARY = "Unlock account by phone confirmation code"
-        const val UNLOCK_BY_PHONE_DESCRIPTION = "Unlocks a temporarily locked user account using phone confirmation code."
-        const val UNLOCK_BY_PHONE_OPERATION_ID = "openUnlockByPhone"
+        private const val UNLOCK_BY_PHONE_SUMMARY = "Unlock account by phone confirmation code"
+        private const val UNLOCK_BY_PHONE_DESCRIPTION =
+            "Unlocks a temporarily locked user account using phone confirmation code."
+        private const val UNLOCK_BY_PHONE_OPERATION_ID = "openUnlockByPhone"
 
-        const val UNLOCK_BY_EXTERNAL_PROVIDER_SUMMARY = "Unlock account by external auth provider"
-        const val UNLOCK_BY_EXTERNAL_PROVIDER_DESCRIPTION = "Unlocks a temporarily locked user account using external provider token."
-        const val UNLOCK_BY_EXTERNAL_PROVIDER_OPERATION_ID = "openUnlockByExternalProvider"
+        private const val UNLOCK_BY_EXTERNAL_PROVIDER_SUMMARY = "Unlock account by external auth provider"
+        private const val UNLOCK_BY_EXTERNAL_PROVIDER_DESCRIPTION =
+            "Unlocks a temporarily locked user account using external provider token."
+        private const val UNLOCK_BY_EXTERNAL_PROVIDER_OPERATION_ID = "openUnlockByExternalProvider"
 
-        const val OK_RESPONSE_DESCRIPTION = "Success."
+        private const val OK_RESPONSE_DESCRIPTION = "Success."
     }
 }

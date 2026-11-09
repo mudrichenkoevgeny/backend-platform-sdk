@@ -32,25 +32,22 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.toUserIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserSummaryPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserSummaryPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.ManagementUpdateUserRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.create.CreateByEmailRequest
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.ManagementUpdateUserRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.users.ManagementUsersRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
@@ -68,14 +65,17 @@ import javax.inject.Singleton
  * Management HTTP routes for administrative user account operations.
  *
  * Registered routes:
- * 1. [ManagementUsersRoutes.GET_USER] — retrieves detailed information for a specific user via [ManagementGetUserUseCase].
- * 2. [ManagementUsersRoutes.GET_USERS] — retrieves a paginated and filtered list of users via [ManagementGetUsersUseCase].
- * 3. [ManagementUsersRoutes.CREATE_USER] — creates a new user account with administrative overrides via [ManagementCreateUserUseCase].
+ * 1. [ManagementUsersRoutes.GET_USER] — retrieves detailed information for a specific user via
+ * [ManagementGetUserUseCase].
+ * 2. [ManagementUsersRoutes.GET_USERS] — retrieves a paginated and filtered list of users via
+ * [ManagementGetUsersUseCase].
+ * 3. [ManagementUsersRoutes.CREATE_USER] — creates a new user account with administrative overrides via
+ * [ManagementCreateUserUseCase].
  * 4. [ManagementUsersRoutes.UPDATE_USER] — performs partial updates on user status, authority, or permissions via [ManagementUpdateUserUseCase].
  * 5. [ManagementUsersRoutes.DELETE_USER] — administratively removes a user account via [ManagementDeleteUserUseCase].
  */
 @Singleton
-class ManagementUserRouter @Inject constructor(
+public class ManagementUserRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -87,7 +87,6 @@ class ManagementUserRouter @Inject constructor(
     private val managementUpdateUserUseCase: ManagementUpdateUserUseCase,
     private val managementDeleteUserUseCase: ManagementDeleteUserUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetUserRoute(this)
@@ -99,57 +98,128 @@ class ManagementUserRouter @Inject constructor(
     }
 
     private fun registerGetUserRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = ManagementUsersRoutes.GET_USER,
-            builder = { getUserDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getUser(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getUserDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getUser(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerGetUsersRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = ManagementUsersRoutes.GET_USERS,
-            builder = { getUsersDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getUsers(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getUsersDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getUsers(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerCreateUserRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.post(
             path = ManagementUsersRoutes.CREATE_USER,
-            builder = { createUserDocs(allowedRoles, allowedAccountStatuses) },
-            body = { createUser(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                createUserDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                createUser(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerUpdateUserRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.patch(
             path = ManagementUsersRoutes.UPDATE_USER,
-            builder = { updateUserDocs(allowedRoles, allowedAccountStatuses) },
-            body = { updateUser(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                updateUserDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                updateUser(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerDeleteUserRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
             path = ManagementUsersRoutes.DELETE_USER,
-            builder = { deleteUserDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteUser(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteUserDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteUser(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -189,7 +259,11 @@ class ManagementUserRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -202,7 +276,11 @@ class ManagementUserRouter @Inject constructor(
             userId = userId,
             authenticatedRequestContext = authenticatedRequestContext
         )
-        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userPrivate ->
             userPrivate.toUserPrivatePayload()
         }
     }
@@ -238,7 +316,11 @@ class ManagementUserRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -250,7 +332,11 @@ class ManagementUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { pagedUsers ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { pagedUsers ->
             pagedUsers.mapItems { userSummary -> userSummary.toUserSummaryPayload() }
         }
     }
@@ -297,7 +383,11 @@ class ManagementUserRouter @Inject constructor(
                 actionType = UserAuditActionType.MANAGEMENT_CREATE_USER,
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -309,7 +399,11 @@ class ManagementUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userInternal: UserInternal ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userInternal: UserInternal ->
             userInternal.toUserPrivate().toUserPrivatePayload()
         }
     }
@@ -364,7 +458,11 @@ class ManagementUserRouter @Inject constructor(
                 resourceId = userId.asHexDashString(),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -376,7 +474,11 @@ class ManagementUserRouter @Inject constructor(
             updateUserParams = updateUserParams,
             authenticatedRequestContext = authenticatedRequestContext
         )
-        call.respondResult(result, appLogger, appErrorParser) { userPrivate: UserPrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userPrivate: UserPrivate ->
             userPrivate.toUserPrivatePayload()
         }
     }
@@ -429,7 +531,11 @@ class ManagementUserRouter @Inject constructor(
                 resourceId = userId.asHexDashString(),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -438,7 +544,11 @@ class ManagementUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun logErrorToAudit(
@@ -462,33 +572,34 @@ class ManagementUserRouter @Inject constructor(
         )
     }
 
-    companion object {
-        const val GET_USER_ROUTE_SUMMARY = "Get user details"
-        const val GET_USER_ROUTE_DESCRIPTION = "Retrieves information for a specific user."
-        const val GET_USER_ROUTE_OPERATION_ID = "managementGetUser"
-        const val GET_USER_ROUTE_PATH_USER_ID_DESCRIPTION = "The ID of the user to retrieve."
-        const val GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User details retrieved successfully"
+    public companion object {
+        private const val GET_USER_ROUTE_SUMMARY = "Get user details"
+        private const val GET_USER_ROUTE_DESCRIPTION = "Retrieves information for a specific user."
+        private const val GET_USER_ROUTE_OPERATION_ID = "managementGetUser"
+        private const val GET_USER_ROUTE_PATH_USER_ID_DESCRIPTION = "The ID of the user to retrieve."
+        private const val GET_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User details retrieved successfully"
 
-        const val GET_USERS_ROUTE_SUMMARY = "List users"
-        const val GET_USERS_ROUTE_DESCRIPTION = "Retrieves a paginated and filtered list of users."
-        const val GET_USERS_ROUTE_OPERATION_ID = "managementGetUsers"
-        const val GET_USERS_ROUTE_RESPONSE_OK_DESCRIPTION = "List of users retrieved successfully"
+        private const val GET_USERS_ROUTE_SUMMARY = "List users"
+        private const val GET_USERS_ROUTE_DESCRIPTION = "Retrieves a paginated and filtered list of users."
+        private const val GET_USERS_ROUTE_OPERATION_ID = "managementGetUsers"
+        private const val GET_USERS_ROUTE_RESPONSE_OK_DESCRIPTION = "List of users retrieved successfully"
 
-        const val CREATE_USER_ROUTE_SUMMARY = "Create user"
-        const val CREATE_USER_ROUTE_DESCRIPTION = "Creates a new user account with specified attributes."
-        const val CREATE_USER_ROUTE_OPERATION_ID = "managementCreateUser"
-        const val CREATE_USER_ROUTE_RESPONSE_CREATED_DESCRIPTION = "User account created successfully"
+        private const val CREATE_USER_ROUTE_SUMMARY = "Create user"
+        private const val CREATE_USER_ROUTE_DESCRIPTION = "Creates a new user account with specified attributes."
+        private const val CREATE_USER_ROUTE_OPERATION_ID = "managementCreateUser"
+        private const val CREATE_USER_ROUTE_RESPONSE_CREATED_DESCRIPTION = "User account created successfully"
 
-        const val UPDATE_USER_ROUTE_SUMMARY = "Update user"
-        const val UPDATE_USER_ROUTE_DESCRIPTION = "Performs partial updates on user status, authority, or permissions."
-        const val UPDATE_USER_ROUTE_OPERATION_ID = "managementUpdateUser"
-        const val UPDATE_USER_ROUTE_PATH_USER_ID_DESCRIPTION = "The ID of the user to update."
-        const val UPDATE_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User account updated successfully"
+        private const val UPDATE_USER_ROUTE_SUMMARY = "Update user"
+        private const val UPDATE_USER_ROUTE_DESCRIPTION =
+            "Performs partial updates on user status, authority, or permissions."
+        private const val UPDATE_USER_ROUTE_OPERATION_ID = "managementUpdateUser"
+        private const val UPDATE_USER_ROUTE_PATH_USER_ID_DESCRIPTION = "The ID of the user to update."
+        private const val UPDATE_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User account updated successfully"
 
-        const val DELETE_USER_ROUTE_SUMMARY = "Delete user"
-        const val DELETE_USER_ROUTE_DESCRIPTION = "Permanently deletes a user account immediately."
-        const val DELETE_USER_ROUTE_OPERATION_ID = "managementDeleteUser"
-        const val DELETE_USER_ROUTE_PATH_USER_ID_DESCRIPTION = "The ID of the user to delete."
-        const val DELETE_USER_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "User account deleted successfully"
+        private const val DELETE_USER_ROUTE_SUMMARY = "Delete user"
+        private const val DELETE_USER_ROUTE_DESCRIPTION = "Permanently deletes a user account immediately."
+        private const val DELETE_USER_ROUTE_OPERATION_ID = "managementDeleteUser"
+        private const val DELETE_USER_ROUTE_PATH_USER_ID_DESCRIPTION = "The ID of the user to delete."
+        private const val DELETE_USER_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "User account deleted successfully"
     }
 }

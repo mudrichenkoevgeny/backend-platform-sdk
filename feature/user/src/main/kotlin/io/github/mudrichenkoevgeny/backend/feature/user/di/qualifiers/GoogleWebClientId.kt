@@ -7,4 +7,4 @@ import javax.inject.Qualifier
 /**
  * Qualifier for the Google web client id value used by Google token verification.
  */
-annotation class GoogleWebClientId
+public annotation class GoogleWebClientId

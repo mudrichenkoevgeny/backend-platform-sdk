@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.settings.manager
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.settings.database.repository.SystemSettingRepository
+import io.github.mudrichenkoevgeny.backend.core.settings.database.repository.SystemSettingsRepository
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SettingType
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import io.mockk.coEvery
@@ -13,22 +13,34 @@ import org.junit.jupiter.api.Test
 import kotlin.uuid.Uuid
 
 class SystemSettingsManagerImplTest {
-
-    private val repository = mockk<SystemSettingRepository>()
+    private val repository = mockk<SystemSettingsRepository>()
     private val manager = SystemSettingsManagerImpl(repository)
 
     @Test
     fun `saveSettings delegates to repository`() = runBlocking {
         val settings = listOf(
-            SystemSetting(Uuid.random(), "k1", "v1", SettingType.STRING),
-            SystemSetting(Uuid.random(), "k2", "v2", SettingType.STRING)
+            SystemSetting(
+                Uuid.random(),
+                "k1",
+                "v1",
+                SettingType.STRING
+            ),
+            SystemSetting(
+                Uuid.random(),
+                "k2",
+                "v2",
+                SettingType.STRING
+            )
         )
         coEvery { repository.saveSettings(settings) } returns AppResult.Success(settings)
 
         val result = manager.saveSettings(settings)
 
         assertTrue(result is AppResult.Success)
-        assertEquals(settings, (result as AppResult.Success).data)
+        assertEquals(
+            settings,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
@@ -44,7 +56,10 @@ class SystemSettingsManagerImplTest {
         val result = manager.saveSetting(setting)
 
         assertTrue(result is AppResult.Success)
-        assertEquals(setting, (result as AppResult.Success).data)
+        assertEquals(
+            setting,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
@@ -61,21 +76,37 @@ class SystemSettingsManagerImplTest {
         val result = manager.getSettingByKey(key)
 
         assertTrue(result is AppResult.Success)
-        assertEquals(setting, (result as AppResult.Success).data)
+        assertEquals(
+            setting,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
     fun `getAllSettings delegates to repository`() = runBlocking {
         val settings = listOf(
-            SystemSetting(Uuid.random(), "k1", "v1", SettingType.STRING),
-            SystemSetting(Uuid.random(), "k2", "v2", SettingType.STRING)
+            SystemSetting(
+                Uuid.random(),
+                "k1",
+                "v1",
+                SettingType.STRING
+            ),
+            SystemSetting(
+                Uuid.random(),
+                "k2",
+                "v2",
+                SettingType.STRING
+            )
         )
         coEvery { repository.getAllSettings() } returns AppResult.Success(settings)
 
         val result = manager.getAllSettings()
 
         assertTrue(result is AppResult.Success)
-        assertEquals(settings, (result as AppResult.Success).data)
+        assertEquals(
+            settings,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test

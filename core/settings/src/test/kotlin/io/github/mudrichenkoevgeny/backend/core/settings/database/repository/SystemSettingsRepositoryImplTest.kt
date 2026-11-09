@@ -17,10 +17,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SystemSettingRepositoryImplTest {
-
+class SystemSettingsRepositoryImplTest {
     private val dataSource = createTestDataSource("settings_repo")
-    private lateinit var repository: SystemSettingRepository
+    private lateinit var repository: SystemSettingsRepository
 
     @BeforeAll
     fun setup() {
@@ -30,7 +29,7 @@ class SystemSettingRepositoryImplTest {
                 SchemaUtils.create(SystemSettingsTable)
             }
         }
-        repository = SystemSettingRepositoryImpl()
+        repository = SystemSettingsRepositoryImpl()
     }
 
     @Test
@@ -47,9 +46,18 @@ class SystemSettingRepositoryImplTest {
 
         val success = result as AppResult.Success
         val data = checkNotNull(success.data)
-        assertEquals(setting.key, data.key)
-        assertEquals(setting.value, data.value)
-        assertEquals(setting.type, data.type)
+        assertEquals(
+            setting.key,
+            data.key
+        )
+        assertEquals(
+            setting.value,
+            data.value
+        )
+        assertEquals(
+            setting.type,
+            data.type
+        )
     }
 
     @Test
@@ -61,7 +69,10 @@ class SystemSettingRepositoryImplTest {
             type = SettingType.BOOLEAN,
             description = "Initial status"
         )
-        val settingV2 = settingV1.copy(value = "true", description = "Updated status")
+        val settingV2 = settingV1.copy(
+            value = "true",
+            description = "Updated status"
+        )
 
         suspendTransaction { repository.saveSetting(settingV1) }
         suspendTransaction { repository.saveSetting(settingV2) }
@@ -70,11 +81,20 @@ class SystemSettingRepositoryImplTest {
         val success = result as AppResult.Success
         val data = checkNotNull(success.data)
 
-        assertEquals("true", data.value)
-        assertEquals("Updated status", data.description)
+        assertEquals(
+            "true",
+            data.value
+        )
+        assertEquals(
+            "Updated status",
+            data.description
+        )
 
         val allSettings = suspendTransaction { repository.getAllSettings() } as AppResult.Success
-        assertEquals(1, allSettings.data.count { it.key == key })
+        assertEquals(
+            1,
+            allSettings.data.count { it.key == key }
+        )
     }
 
     @Test
@@ -98,7 +118,14 @@ class SystemSettingRepositoryImplTest {
             type = SettingType.STRING
         )
 
-        val saveResult = suspendTransaction { repository.saveSettings(listOf(s1, s2)) }
+        val saveResult = suspendTransaction {
+            repository.saveSettings(
+                listOf(
+                    s1,
+                    s2
+                )
+            )
+        }
         assertTrue(saveResult is AppResult.Success)
 
         val check1 = suspendTransaction { repository.getSettingByKey("batch.key.1") } as AppResult.Success
@@ -106,8 +133,14 @@ class SystemSettingRepositoryImplTest {
 
         val data1 = checkNotNull(check1.data)
         val data2 = checkNotNull(check2.data)
-        assertEquals("val1", data1.value)
-        assertEquals("val2", data2.value)
+        assertEquals(
+            "val1",
+            data1.value
+        )
+        assertEquals(
+            "val2",
+            data2.value
+        )
     }
 
     @Test

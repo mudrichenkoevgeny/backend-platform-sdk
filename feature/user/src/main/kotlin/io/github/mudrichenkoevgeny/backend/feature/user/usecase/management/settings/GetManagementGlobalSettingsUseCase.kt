@@ -6,8 +6,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to get global settings.
+ */
 @Singleton
-class GetManagementGlobalSettingsUseCase @Inject constructor(
+public class GetManagementGlobalSettingsUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider
 ) {
     /**
@@ -24,7 +27,6 @@ class GetManagementGlobalSettingsUseCase @Inject constructor(
      *
      * @return [AppResult] containing the [ManagementGlobalSettings].
      */
-    operator fun invoke(): AppResult<ManagementGlobalSettings> {
-        return AppResult.Success(globalSettingsProvider.getManagementGlobalSettings())
-    }
+    public operator fun invoke(): AppResult<ManagementGlobalSettings> =
+        AppResult.Success(globalSettingsProvider.getManagementGlobalSettings())
 }

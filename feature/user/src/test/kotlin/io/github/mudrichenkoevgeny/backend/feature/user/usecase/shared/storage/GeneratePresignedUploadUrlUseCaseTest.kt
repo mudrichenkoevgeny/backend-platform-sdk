@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Clock
 
 class GeneratePresignedUploadUrlUseCaseTest {
-
     private val userManager = mockk<UserManager>()
     private val storageManager = mockk<StorageManager>()
 
@@ -42,7 +41,10 @@ class GeneratePresignedUploadUrlUseCaseTest {
 
     @Test
     fun `successfully generates presigned upload url`() = runTest {
-        val user = createTestUserInternal(id = currentUserId, role = UserRole.USER)
+        val user = createTestUserInternal(
+            id = currentUserId,
+            role = UserRole.USER
+        )
 
         coEvery { userManager.getUserInternalById(currentUserId) } returns AppResult.Success(user)
         coEvery {
@@ -71,7 +73,10 @@ class GeneratePresignedUploadUrlUseCaseTest {
             authenticatedRequestContext = context
         )
 
-        assertEquals(AppResult.Success(presignedUrl), result)
+        assertEquals(
+            AppResult.Success(presignedUrl),
+            result
+        )
     }
 
     @Test
@@ -93,7 +98,10 @@ class GeneratePresignedUploadUrlUseCaseTest {
 
     @Test
     fun `identifies management user role correctly when initiating upload`() = runTest {
-        val adminUser = createTestUserInternal(id = currentUserId, role = UserRole.ADMIN)
+        val adminUser = createTestUserInternal(
+            id = currentUserId,
+            role = UserRole.ADMIN
+        )
 
         coEvery { userManager.getUserInternalById(currentUserId) } returns AppResult.Success(adminUser)
         coEvery {
@@ -122,6 +130,9 @@ class GeneratePresignedUploadUrlUseCaseTest {
             authenticatedRequestContext = context
         )
 
-        assertEquals(AppResult.Success(presignedUrl), result)
+        assertEquals(
+            AppResult.Success(presignedUrl),
+            result
+        )
     }
 }

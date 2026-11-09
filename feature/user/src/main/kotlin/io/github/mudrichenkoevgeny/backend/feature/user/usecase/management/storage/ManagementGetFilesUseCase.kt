@@ -23,11 +23,10 @@ import javax.inject.Singleton
  * @property userManager Manager for retrieving user account status and permissions.
  */
 @Singleton
-class ManagementGetFilesUseCase @Inject constructor(
+public class ManagementGetFilesUseCase @Inject constructor(
     private val storageManager: StorageManager,
     private val userManager: UserManager
 ) {
-
     /**
      * Retrieves a paginated list of all storage files across the platform for administrative inspection.
      *
@@ -35,7 +34,7 @@ class ManagementGetFilesUseCase @Inject constructor(
      * @param queryParams Structured filter and pagination parameters ([ManagementStorageFileListQueryParams]).
      * @return [AppResult] with [PagedResult] of [StorageFileSummary].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext,
         queryParams: ManagementStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileSummary>> {

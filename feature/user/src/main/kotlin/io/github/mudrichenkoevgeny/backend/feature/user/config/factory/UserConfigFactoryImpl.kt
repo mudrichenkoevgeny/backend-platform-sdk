@@ -3,9 +3,9 @@ package io.github.mudrichenkoevgeny.backend.feature.user.config.factory
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.getStringList
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.readJsonSecret
-import io.github.mudrichenkoevgeny.backend.feature.user.config.seed.AdminList
 import io.github.mudrichenkoevgeny.backend.feature.user.config.envkeys.UserEnvKeys
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
+import io.github.mudrichenkoevgeny.backend.feature.user.config.seed.AdminList
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.resend.model.ResendConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.model.UniOneConfig
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
@@ -25,58 +25,62 @@ import javax.inject.Singleton
  * - builds email provider configs ([UniOneConfig], [ResendConfig]) when required values are present
  */
 @Singleton
-class UserConfigFactoryImpl @Inject constructor(
+public class UserConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader
 ) : UserConfigFactory {
-
     override fun create(): UserConfig {
-        // secret files
         val jwtSecretFile = envReader.getByKey(UserEnvKeys.JWT_SECRET_FILE)
         val adminAccountsJsonFile = envReader.getByKey(UserEnvKeys.ADMIN_ACCOUNTS_JSON_SECRET_FILE)
 
-        // env
         val jwtSecret = envReader.readSecret(jwtSecretFile)
         val adminList: AdminList = envReader.readJsonSecret(adminAccountsJsonFile)
 
-        val availablePrimaryAuthProviders = envReader
-            .getStringList(UserEnvKeys.AVAILABLE_AUTH_PROVIDERS_PRIMARY)
+        val availablePrimaryAuthProviders = envReader.getStringList(UserEnvKeys.AVAILABLE_AUTH_PROVIDERS_PRIMARY)
             .mapNotNull { UserAuthProvider.fromValueOrNull(it) }
-        val availableSecondaryAuthProviders = envReader
-            .getStringList(UserEnvKeys.AVAILABLE_AUTH_PROVIDERS_SECONDARY)
+        val availableSecondaryAuthProviders = envReader.getStringList(UserEnvKeys.AVAILABLE_AUTH_PROVIDERS_SECONDARY)
             .mapNotNull { UserAuthProvider.fromValueOrNull(it) }
         val maxTotalIdentifiers = envReader.getByKey(UserEnvKeys.MAX_TOTAL_IDENTIFIERS).toInt()
         val maxEmailIdentifiers = envReader.getByKey(UserEnvKeys.MAX_EMAIL_IDENTIFIERS).toInt()
         val maxPhoneIdentifiers = envReader.getByKey(UserEnvKeys.MAX_PHONE_IDENTIFIERS).toInt()
-        val maxIdentifiersPerExternalProvider = envReader.getByKey(UserEnvKeys.MAX_IDENTIFIERS_PER_EXTERNAL_PROVIDER).toInt()
+        val maxIdentifiersPerExternalProvider = envReader.getByKey(
+            UserEnvKeys.MAX_IDENTIFIERS_PER_EXTERNAL_PROVIDER
+        ).toInt()
         val userNicknameMinLength = envReader.getByKey(UserEnvKeys.USER_NICKNAME_MIN_LENGTH).toInt()
         val userNicknameMaxLength = envReader.getByKey(UserEnvKeys.USER_NICKNAME_MAX_LENGTH).toInt()
         val userDisplayNameMinLength = envReader.getByKey(UserEnvKeys.USER_DISPLAY_NAME_MIN_LENGTH).toInt()
         val userDisplayNameMaxLength = envReader.getByKey(UserEnvKeys.USER_DISPLAY_NAME_MAX_LENGTH).toInt()
-        val isUserNicknameChangeAllowed = envReader.getByKey(UserEnvKeys.IS_USER_NICKNAME_CHANGE_ALLOWED).toBoolean()
+        val isUserNicknameChangeAllowed = envReader.getByKey(
+            UserEnvKeys.IS_USER_NICKNAME_CHANGE_ALLOWED
+        ).toBoolean()
         val maxActiveSessionsForOpenUser = envReader.getByKey(UserEnvKeys.MAX_ACTIVE_SESSIONS_FOR_OPEN_USER).toInt()
-        val maxActiveSessionsForManagementUser = envReader.getByKey(UserEnvKeys.MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER).toInt()
+        val maxActiveSessionsForManagementUser = envReader.getByKey(
+            UserEnvKeys.MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER
+        ).toInt()
         val accessTokenExpirationSeconds = envReader.getByKey(UserEnvKeys.ACCESS_TOKEN_EXPIRATION_SECONDS).toInt()
         val refreshTokenExpirationSeconds = envReader.getByKey(UserEnvKeys.REFRESH_TOKEN_EXPIRATION_SECONDS).toInt()
-        val accountDeletionGracePeriodSeconds = envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_GRACE_PERIOD_SECONDS).toInt()
-        val accountDeletionCheckIntervalSeconds = envReader.getByKey(UserEnvKeys.ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS).toInt()
-        val isRegistrationEnabled = envReader.getByKeyOrNull(UserEnvKeys.IS_REGISTRATION_ENABLED)?.toBooleanStrictOrNull() ?: true
+        val accountDeletionGracePeriodSeconds = envReader.getByKey(
+            UserEnvKeys.ACCOUNT_DELETION_GRACE_PERIOD_SECONDS
+        ).toInt()
+        val accountDeletionCheckIntervalSeconds = envReader.getByKey(
+            UserEnvKeys.ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS
+        ).toInt()
+        val isRegistrationEnabled = envReader.getByKeyOrNull(UserEnvKeys.IS_REGISTRATION_ENABLED)
+            ?.toBooleanStrictOrNull() ?: true
 
-        val isOpenEmailBlacklistEnabled = envReader
-            .getByKeyOrNull(UserEnvKeys.IS_EMAIL_BLACKLIST_ENABLED_OPEN)
+        val isOpenEmailBlacklistEnabled = envReader.getByKeyOrNull(UserEnvKeys.IS_EMAIL_BLACKLIST_ENABLED_OPEN)
             ?.toBooleanStrictOrNull() ?: false
         val openEmailBlacklist = envReader.getStringList(UserEnvKeys.EMAIL_BLACKLIST_OPEN)
-        val isOpenEmailWhitelistEnabled = envReader
-            .getByKeyOrNull(UserEnvKeys.IS_EMAIL_WHITELIST_ENABLED_OPEN)
+        val isOpenEmailWhitelistEnabled = envReader.getByKeyOrNull(UserEnvKeys.IS_EMAIL_WHITELIST_ENABLED_OPEN)
             ?.toBooleanStrictOrNull() ?: false
         val openEmailWhitelist = envReader.getStringList(UserEnvKeys.EMAIL_WHITELIST_OPEN)
 
-        val isManagementEmailBlacklistEnabled = envReader
-            .getByKeyOrNull(UserEnvKeys.IS_EMAIL_BLACKLIST_ENABLED_MANAGEMENT)
-            ?.toBooleanStrictOrNull() ?: false
+        val isManagementEmailBlacklistEnabled = envReader.getByKeyOrNull(
+            UserEnvKeys.IS_EMAIL_BLACKLIST_ENABLED_MANAGEMENT
+        )?.toBooleanStrictOrNull() ?: false
         val managementEmailBlacklist = envReader.getStringList(UserEnvKeys.EMAIL_BLACKLIST_MANAGEMENT)
-        val isManagementEmailWhitelistEnabled = envReader
-            .getByKeyOrNull(UserEnvKeys.IS_EMAIL_WHITELIST_ENABLED_MANAGEMENT)
-            ?.toBooleanStrictOrNull() ?: false
+        val isManagementEmailWhitelistEnabled = envReader.getByKeyOrNull(
+            UserEnvKeys.IS_EMAIL_WHITELIST_ENABLED_MANAGEMENT
+        )?.toBooleanStrictOrNull() ?: false
         val managementEmailWhitelist = envReader.getStringList(UserEnvKeys.EMAIL_WHITELIST_MANAGEMENT)
 
         val managementAuthSettings = ManagementAuthSettings(
@@ -114,10 +118,8 @@ class UserConfigFactoryImpl @Inject constructor(
             )
         )
 
-        // Auth Service Google
         val googleWebClientId = envReader.getByKey(UserEnvKeys.GOOGLE_WEB_CLIENT_ID)
 
-        // Email Service Unione
         val uniOneApiKeyFile = envReader.getByKeyOrNull(UserEnvKeys.UNIONE_API_KEY_FILE)
         val uniOneConfig = if (!uniOneApiKeyFile.isNullOrBlank()) {
             val uniOneApiKey = envReader.readSecret(uniOneApiKeyFile)
@@ -133,7 +135,6 @@ class UserConfigFactoryImpl @Inject constructor(
             null
         }
 
-        // Email Service Resend
         val resendApiKeyFile = envReader.getByKeyOrNull(UserEnvKeys.RESEND_API_KEY_FILE)
         val resendConfig = if (!resendApiKeyFile.isNullOrBlank()) {
             ResendConfig.createOrNull(

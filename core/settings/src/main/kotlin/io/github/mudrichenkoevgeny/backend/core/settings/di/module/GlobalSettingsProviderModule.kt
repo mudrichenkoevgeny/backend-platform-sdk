@@ -12,9 +12,10 @@ import javax.inject.Singleton
  * Binds [GlobalSettingsProvider] to [GlobalSettingsProviderImpl].
  */
 @Module
-interface GlobalSettingsProviderModule {
-
+public interface GlobalSettingsProviderModule {
     @Binds
     @Singleton
-    fun bindGlobalSettingsProvider(globalSettingsProviderImpl: GlobalSettingsProviderImpl): GlobalSettingsProvider
+    public fun bindGlobalSettingsProvider(
+        globalSettingsProviderImpl: GlobalSettingsProviderImpl
+    ): GlobalSettingsProvider
 }

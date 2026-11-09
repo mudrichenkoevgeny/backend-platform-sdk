@@ -6,10 +6,10 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 /**
  * Parser that extracts audit-specific information from application errors.
  */
-interface AuditErrorParser {
+public interface AuditErrorParser {
     /**
      * Attempts to map an [AppError] to [AuditErrorLogData].
      * Returns null if the error is not handled by this parser.
      */
-    fun parse(error: AppError): AuditErrorLogData?
+    public fun parse(error: AppError): AuditErrorLogData?
 }

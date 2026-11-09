@@ -1,10 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.core.observability.metrics.route
 
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
+import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
 import io.ktor.http.ContentType
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.RoutingContext
 
 /**
  * Registers the Prometheus metrics scrape endpoint on this [Route].
@@ -14,21 +16,27 @@ import io.ktor.server.routing.Route
  *
  * @param telemetryProvider supplies the [TelemetryProvider.prometheusMeterRegistry] to scrape.
  */
-fun Route.installMetricsEndpoint(telemetryProvider: TelemetryProvider) {
+public fun Route.installMetricsEndpoint(telemetryProvider: TelemetryProvider) {
     get(
         path = MetricsRoutes.METRICS,
-        builder = {
-            hidden = true
-        },
-        body = {
-            call.respondText(telemetryProvider.prometheusMeterRegistry.scrape(), ContentType.Text.Plain)
-        }
+        builder = { configureMetricsOpenApi() },
+        body = { handleMetrics(telemetryProvider) }
+    )
+}
+
+private fun RouteConfig.configureMetricsOpenApi() {
+    hidden = true
+}
+
+private suspend fun RoutingContext.handleMetrics(telemetryProvider: TelemetryProvider) {
+    call.respondText(
+        telemetryProvider.prometheusMeterRegistry.scrape(),
+        ContentType.Text.Plain
     )
 }
 
 /** Path constants for metrics HTTP routes. */
-object MetricsRoutes {
-
+public object MetricsRoutes {
     /** Path of the Prometheus scrape endpoint (e.g. `/metrics`). */
-    const val METRICS = "/metrics"
+    public const val METRICS: String = "/metrics"
 }

@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers
 
-import javax.inject.Qualifier
 import org.slf4j.Logger
+import javax.inject.Qualifier
 
 /**
  * Qualifier for the business-purpose [Logger].
@@ -11,4 +11,4 @@ import org.slf4j.Logger
  */
 @Qualifier
 @Retention(AnnotationRetention.RUNTIME)
-annotation class BusinessLogger
+public annotation class BusinessLogger

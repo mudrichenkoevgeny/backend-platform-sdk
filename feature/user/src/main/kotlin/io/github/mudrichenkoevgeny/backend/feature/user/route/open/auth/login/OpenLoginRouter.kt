@@ -4,29 +4,26 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.for
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.model.SecurityRequirementType
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
-import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
-import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
+import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
+import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
-import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.mapper.auth.toLoginByExternalAuthProviderParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.LoginByExternalAuthProviderUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.LoginByPhoneUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.SendLoginConfirmationToPhoneUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByTotpRecoveryCodeUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByTotpUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.SendLoginConfirmationToPhoneUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.otpconfirmation.toOtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.otpconfirmation.OtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.verifytotp.VerifyTotpPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.data.toAuthDataPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiFields
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.data.AuthDataPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByExternalAuthProviderRequest
@@ -47,13 +44,16 @@ import javax.inject.Singleton
  * Registered routes:
  * 1. [OpenLoginRoutes.LOGIN_BY_EMAIL] — authenticates via email/password using [LoginByEmailUseCase].
  * 2. [OpenLoginRoutes.LOGIN_BY_PHONE] — authenticates via phone/OTP using [LoginByPhoneUseCase].
- * 3. [OpenLoginRoutes.LOGIN_BY_EXTERNAL_AUTH_PROVIDER] — authenticates via OAuth/External tokens using [LoginByExternalAuthProviderUseCase].
- * 4. [OpenLoginRoutes.SEND_LOGIN_CONFIRMATION_TO_PHONE] — triggers OTP delivery to phone via [SendLoginConfirmationToPhoneUseCase].
+ * 3. [OpenLoginRoutes.LOGIN_BY_EXTERNAL_AUTH_PROVIDER] — authenticates via OAuth/External tokens using
+ * [LoginByExternalAuthProviderUseCase].
+ * 4. [OpenLoginRoutes.SEND_LOGIN_CONFIRMATION_TO_PHONE] — triggers OTP delivery to phone via
+ * [SendLoginConfirmationToPhoneUseCase].
  * 5. [OpenLoginRoutes.LOGIN_BY_TOTP] — completes MFA login with a TOTP code using [LoginByTotpUseCase].
- * 6. [OpenLoginRoutes.LOGIN_BY_TOTP_RECOVERY_CODE] — completes MFA login with a backup code using [LoginByTotpRecoveryCodeUseCase].
+ * 6. [OpenLoginRoutes.LOGIN_BY_TOTP_RECOVERY_CODE] — completes MFA login with a backup code using
+ * [LoginByTotpRecoveryCodeUseCase].
  */
 @Singleton
-class OpenLoginRouter @Inject constructor(
+public class OpenLoginRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val loginByEmailUseCase: LoginByEmailUseCase,
@@ -63,7 +63,6 @@ class OpenLoginRouter @Inject constructor(
     private val loginByTotpUseCase: LoginByTotpUseCase,
     private val loginByTotpRecoveryCodeUseCase: LoginByTotpRecoveryCodeUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         registerLoginByEmailRoute(route)
         registerLoginByPhoneRoute(route)
@@ -75,7 +74,11 @@ class OpenLoginRouter @Inject constructor(
 
     private fun registerLoginByEmailRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenLoginRoutes.LOGIN_BY_EMAIL,
@@ -86,7 +89,11 @@ class OpenLoginRouter @Inject constructor(
 
     private fun registerLoginByPhoneRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenLoginRoutes.LOGIN_BY_PHONE,
@@ -97,7 +104,11 @@ class OpenLoginRouter @Inject constructor(
 
     private fun registerLoginByExternalAuthProviderRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenLoginRoutes.LOGIN_BY_EXTERNAL_AUTH_PROVIDER,
@@ -108,7 +119,11 @@ class OpenLoginRouter @Inject constructor(
 
     private fun registerSendLoginConfirmationToPhoneRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenLoginRoutes.SEND_LOGIN_CONFIRMATION_TO_PHONE,
@@ -119,7 +134,11 @@ class OpenLoginRouter @Inject constructor(
 
     private fun registerLoginByTotpRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenLoginRoutes.LOGIN_BY_TOTP,
@@ -130,7 +149,11 @@ class OpenLoginRouter @Inject constructor(
 
     private fun registerLoginByTotpRecoveryCodeRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenLoginRoutes.LOGIN_BY_TOTP_RECOVERY_CODE,
@@ -380,33 +403,36 @@ class OpenLoginRouter @Inject constructor(
         }
     }
 
-    companion object {
-        const val LOGIN_BY_EMAIL_ROUTE_SUMMARY = "Login by email"
-        const val LOGIN_BY_EMAIL_ROUTE_DESCRIPTION = "Authenticates a user using email and password."
-        const val LOGIN_BY_EMAIL_ROUTE_OPERATION_ID = "openLoginByEmail"
+    public companion object {
+        private const val LOGIN_BY_EMAIL_ROUTE_SUMMARY = "Login by email"
+        private const val LOGIN_BY_EMAIL_ROUTE_DESCRIPTION = "Authenticates a user using email and password."
+        private const val LOGIN_BY_EMAIL_ROUTE_OPERATION_ID = "openLoginByEmail"
 
-        const val LOGIN_BY_PHONE_ROUTE_SUMMARY = "Login by phone"
-        const val LOGIN_BY_PHONE_ROUTE_DESCRIPTION = "Authenticates a user using phone number and confirmation code."
-        const val LOGIN_BY_PHONE_ROUTE_OPERATION_ID = "openLoginByPhone"
+        private const val LOGIN_BY_PHONE_ROUTE_SUMMARY = "Login by phone"
+        private const val LOGIN_BY_PHONE_ROUTE_DESCRIPTION =
+            "Authenticates a user using phone number and confirmation code."
+        private const val LOGIN_BY_PHONE_ROUTE_OPERATION_ID = "openLoginByPhone"
 
-        const val LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_SUMMARY = "Login via external auth provider"
-        const val LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_DESCRIPTION = "Authenticates a user using an external " +
-                "authentication provider token."
-        const val LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_OPERATION_ID = "openLoginByExternalAuthProvider"
+        private const val LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_SUMMARY = "Login via external auth provider"
+        private const val LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_DESCRIPTION =
+            "Authenticates a user using an external authentication provider token."
+        private const val LOGIN_BY_EXTERNAL_AUTH_PROVIDER_ROUTE_OPERATION_ID = "openLoginByExternalAuthProvider"
 
-        const val LOGIN_BY_TOTP_ROUTE_SUMMARY = "Login by TOTP"
-        const val LOGIN_BY_TOTP_ROUTE_DESCRIPTION = "Finalizes the login process by providing a TOTP code."
-        const val LOGIN_BY_TOTP_ROUTE_OPERATION_ID = "openLoginByTotp"
+        private const val LOGIN_BY_TOTP_ROUTE_SUMMARY = "Login by TOTP"
+        private const val LOGIN_BY_TOTP_ROUTE_DESCRIPTION = "Finalizes the login process by providing a TOTP code."
+        private const val LOGIN_BY_TOTP_ROUTE_OPERATION_ID = "openLoginByTotp"
 
-        const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_SUMMARY = "Login by totp recovery code"
-        const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_DESCRIPTION = "Finalizes the login process by providing a recovery code."
-        const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_OPERATION_ID = "openLoginByTotpRecoveryCode"
+        private const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_SUMMARY = "Login by totp recovery code"
+        private const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_DESCRIPTION =
+            "Finalizes the login process by providing a recovery code."
+        private const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_OPERATION_ID = "openLoginByTotpRecoveryCode"
 
-        const val LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. User authenticated."
+        private const val LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. User authenticated."
 
-        const val SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_SUMMARY = "Send login confirmation code to phone"
-        const val SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_DESCRIPTION = "Sends a verification code to the phone number for login/registration purposes."
-        const val SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_OPERATION_ID = "openSendLoginConfirmationToPhone"
-        const val SEND_LOGIN_CONFIRMATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Verification code sent."
+        private const val SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_SUMMARY = "Send login confirmation code to phone"
+        private const val SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_DESCRIPTION =
+            "Sends a verification code to the phone number for login/registration purposes."
+        private const val SEND_LOGIN_CONFIRMATION_TO_PHONE_ROUTE_OPERATION_ID = "openSendLoginConfirmationToPhone"
+        private const val SEND_LOGIN_CONFIRMATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Verification code sent."
     }
 }

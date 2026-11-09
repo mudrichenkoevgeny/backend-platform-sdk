@@ -58,13 +58,14 @@ import javax.inject.Singleton
  * Registered routes:
  * 1. [OpenStorageRoutes.GET_FILES] — retrieves user's paged file list via [GetFilesUseCase].
  * 2. [OpenStorageRoutes.GET_FILE] — retrieves specific file payload via [GetFileUseCase].
- * 3. [OpenStorageRoutes.POST_PRESIGNED_UPLOAD_URL] — generates presigned S3 upload URL via [GeneratePresignedUploadUrlUseCase].
+ * 3. [OpenStorageRoutes.POST_PRESIGNED_UPLOAD_URL] — generates presigned S3 upload URL via
+ * [GeneratePresignedUploadUrlUseCase].
  * 4. [OpenStorageRoutes.CONFIRM_UPLOAD] — finalizes upload session via [ConfirmUploadUseCase].
  * 5. [OpenStorageRoutes.DELETE_FILE] — deletes user file via [DeleteFileUseCase].
  * 6. [OpenStorageRoutes.DELETE_FILES_BATCH] — deletes multiple user files in batch via [DeleteFilesUseCase].
  */
 @Singleton
-class OpenStorageRouter @Inject constructor(
+public class OpenStorageRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val getFilesUseCase: GetFilesUseCase,
     private val getFileUseCase: GetFileUseCase,
@@ -75,7 +76,6 @@ class OpenStorageRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser
 ) : BaseRouter {
-
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetFilesRoute(this)
@@ -89,12 +89,25 @@ class OpenStorageRouter @Inject constructor(
 
     private fun registerGetFilesRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = OpenStorageRoutes.GET_FILES,
-            builder = { getFilesDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getFiles(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getFilesDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getFiles(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -135,7 +148,11 @@ class OpenStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -144,19 +161,36 @@ class OpenStorageRouter @Inject constructor(
             queryParams = queryParams
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { pagedFiles ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { pagedFiles ->
             pagedFiles.mapItems { storageFileSummary -> storageFileSummary.toStorageFileSummaryPayload() }
         }
     }
 
     private fun registerGetFileRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = OpenStorageRoutes.GET_FILE,
-            builder = { getFileDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getFile(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getFileDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getFile(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -206,7 +240,11 @@ class OpenStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -215,7 +253,11 @@ class OpenStorageRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { storageFilePrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { storageFilePrivate ->
             storageFilePrivate.toStorageFilePrivatePayload()
         }
     }
@@ -226,8 +268,18 @@ class OpenStorageRouter @Inject constructor(
 
         route.post(
             path = OpenStorageRoutes.POST_PRESIGNED_UPLOAD_URL,
-            builder = { postPresignedUrlDocs(allowedRoles, allowedAccountStatuses) },
-            body = { postPresignedUrl(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                postPresignedUrlDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                postPresignedUrl(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -267,16 +319,19 @@ class OpenStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
-        val storageCategory = StorageCategory.fromValueOrNull(request.category)
-            ?: throw RequestHandlingException(
-                CommonError.InvalidFieldValue(
-                    fieldName = StorageApiFields.CATEGORY
-                )
+        val storageCategory = StorageCategory.fromValueOrNull(request.category) ?: throw RequestHandlingException(
+            CommonError.InvalidFieldValue(
+                fieldName = StorageApiFields.CATEGORY
             )
+        )
 
         val storageFileVisibility = StorageFileVisibility.fromValueOrNull(request.visibility)
             ?: throw RequestHandlingException(
@@ -294,7 +349,11 @@ class OpenStorageRouter @Inject constructor(
             targetScope = request.targetScope,
             authenticatedRequestContext = authenticatedRequestContext
         )
-        call.respondResult(result, appLogger, appErrorParser) { presignedUrl ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { presignedUrl ->
             presignedUrl.toPresignedUrlPayload()
         }
     }
@@ -305,8 +364,18 @@ class OpenStorageRouter @Inject constructor(
 
         route.post(
             path = OpenStorageRoutes.CONFIRM_UPLOAD,
-            builder = { confirmUploadDocs(allowedRoles, allowedAccountStatuses) },
-            body = { confirmUpload(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                confirmUploadDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                confirmUpload(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -347,7 +416,11 @@ class OpenStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -356,7 +429,11 @@ class OpenStorageRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { storageFilePrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { storageFilePrivate ->
             storageFilePrivate.toStorageFilePrivatePayload()
         }
     }
@@ -367,8 +444,18 @@ class OpenStorageRouter @Inject constructor(
 
         route.delete(
             path = OpenStorageRoutes.DELETE_FILE,
-            builder = { deleteFileDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteFile(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteFileDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteFile(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -417,7 +504,11 @@ class OpenStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -426,7 +517,11 @@ class OpenStorageRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun registerDeleteFilesBatchRoute(route: Route) {
@@ -435,8 +530,18 @@ class OpenStorageRouter @Inject constructor(
 
         route.post(
             path = OpenStorageRoutes.DELETE_FILES_BATCH,
-            builder = { deleteFilesBatchDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteFilesBatch(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteFilesBatchDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteFilesBatch(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -480,7 +585,11 @@ class OpenStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -493,40 +602,51 @@ class OpenStorageRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
-    companion object {
-        const val GET_FILES_ROUTE_SUMMARY = "List storage files"
-        const val GET_FILES_ROUTE_DESCRIPTION = "Retrieves a paged list of summary storage files uploaded by the current authenticated user."
-        const val GET_FILES_ROUTE_OPERATION_ID = "openGetStorageFiles"
-        const val GET_FILES_ROUTE_RESPONSE_OK_DESCRIPTION = "Storage files retrieved successfully"
+    public companion object {
+        private const val GET_FILES_ROUTE_SUMMARY = "List storage files"
+        private const val GET_FILES_ROUTE_DESCRIPTION =
+            "Retrieves a paged list of summary storage files uploaded by the current authenticated user."
+        private const val GET_FILES_ROUTE_OPERATION_ID = "openGetStorageFiles"
+        private const val GET_FILES_ROUTE_RESPONSE_OK_DESCRIPTION = "Storage files retrieved successfully"
 
-        const val GET_FILE_ROUTE_SUMMARY = "Get storage file"
-        const val GET_FILE_ROUTE_DESCRIPTION = "Retrieves detailed private view of a specific file uploaded by the current authenticated user."
-        const val GET_FILE_ROUTE_OPERATION_ID = "openGetStorageFile"
-        const val GET_FILE_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to retrieve."
-        const val GET_FILE_ROUTE_RESPONSE_OK_DESCRIPTION = "Storage file retrieved successfully"
+        private const val GET_FILE_ROUTE_SUMMARY = "Get storage file"
+        private const val GET_FILE_ROUTE_DESCRIPTION =
+            "Retrieves detailed private view of a specific file uploaded by the current authenticated user."
+        private const val GET_FILE_ROUTE_OPERATION_ID = "openGetStorageFile"
+        private const val GET_FILE_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to retrieve."
+        private const val GET_FILE_ROUTE_RESPONSE_OK_DESCRIPTION = "Storage file retrieved successfully"
 
-        const val POST_PRESIGNED_URL_ROUTE_SUMMARY = "Request upload presigned URL"
-        const val POST_PRESIGNED_URL_ROUTE_DESCRIPTION = "Requests a short-lived presigned S3 PUT URL for direct client binary upload."
-        const val POST_PRESIGNED_URL_ROUTE_OPERATION_ID = "postOpenPresignedUrl"
-        const val POST_PRESIGNED_URL_ROUTE_RESPONSE_OK_DESCRIPTION = "Presigned URL payload"
+        private const val POST_PRESIGNED_URL_ROUTE_SUMMARY = "Request upload presigned URL"
+        private const val POST_PRESIGNED_URL_ROUTE_DESCRIPTION =
+            "Requests a short-lived presigned S3 PUT URL for direct client binary upload."
+        private const val POST_PRESIGNED_URL_ROUTE_OPERATION_ID = "postOpenPresignedUrl"
+        private const val POST_PRESIGNED_URL_ROUTE_RESPONSE_OK_DESCRIPTION = "Presigned URL payload"
 
-        const val CONFIRM_UPLOAD_ROUTE_SUMMARY = "Confirm file upload"
-        const val CONFIRM_UPLOAD_ROUTE_DESCRIPTION = "Finalizes upload session after binary upload to S3 completes."
-        const val CONFIRM_UPLOAD_ROUTE_OPERATION_ID = "postOpenConfirmUpload"
-        const val CONFIRM_UPLOAD_ROUTE_RESPONSE_OK_DESCRIPTION = "Confirmed file record payload"
+        private const val CONFIRM_UPLOAD_ROUTE_SUMMARY = "Confirm file upload"
+        private const val CONFIRM_UPLOAD_ROUTE_DESCRIPTION =
+            "Finalizes upload session after binary upload to S3 completes."
+        private const val CONFIRM_UPLOAD_ROUTE_OPERATION_ID = "postOpenConfirmUpload"
+        private const val CONFIRM_UPLOAD_ROUTE_RESPONSE_OK_DESCRIPTION = "Confirmed file record payload"
 
-        const val DELETE_FILE_ROUTE_SUMMARY = "Delete storage file"
-        const val DELETE_FILE_ROUTE_DESCRIPTION = "Deletes a specific file uploaded by the current authenticated user."
-        const val DELETE_FILE_ROUTE_OPERATION_ID = "openDeleteStorageFile"
-        const val DELETE_FILE_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to delete."
-        const val DELETE_FILE_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Storage file deleted successfully"
+        private const val DELETE_FILE_ROUTE_SUMMARY = "Delete storage file"
+        private const val DELETE_FILE_ROUTE_DESCRIPTION =
+            "Deletes a specific file uploaded by the current authenticated user."
+        private const val DELETE_FILE_ROUTE_OPERATION_ID = "openDeleteStorageFile"
+        private const val DELETE_FILE_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to delete."
+        private const val DELETE_FILE_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Storage file deleted successfully"
 
-        const val DELETE_FILES_BATCH_ROUTE_SUMMARY = "Delete multiple storage files"
-        const val DELETE_FILES_BATCH_ROUTE_DESCRIPTION = "Deletes multiple specific files uploaded by the current authenticated user in a single batch operation."
-        const val DELETE_FILES_BATCH_ROUTE_OPERATION_ID = "openDeleteStorageFilesBatch"
-        const val DELETE_FILES_BATCH_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Storage files deleted successfully"
+        private const val DELETE_FILES_BATCH_ROUTE_SUMMARY = "Delete multiple storage files"
+        private const val DELETE_FILES_BATCH_ROUTE_DESCRIPTION =
+            "Deletes multiple specific files uploaded by the current authenticated user in a single batch operation."
+        private const val DELETE_FILES_BATCH_ROUTE_OPERATION_ID = "openDeleteStorageFilesBatch"
+        private const val DELETE_FILES_BATCH_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
+            "Storage files deleted successfully"
     }
 }

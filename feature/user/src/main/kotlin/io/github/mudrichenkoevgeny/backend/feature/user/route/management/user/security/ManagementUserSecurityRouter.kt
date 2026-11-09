@@ -46,7 +46,7 @@ import javax.inject.Singleton
  * 1. [ManagementUsersSecurityRoutes.DISABLE_TOTP] — administratively disables Two-Factor Authentication (TOTP) for a specified user via [ManagementDisableTotpUseCase].
  */
 @Singleton
-class ManagementUserSecurityRouter @Inject constructor(
+public class ManagementUserSecurityRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -54,7 +54,6 @@ class ManagementUserSecurityRouter @Inject constructor(
     private val auditErrorConverter: AuditErrorConverter,
     private val managementDisableTotpUseCase: ManagementDisableTotpUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerDisableTotpRoute(this)
@@ -62,13 +61,26 @@ class ManagementUserSecurityRouter @Inject constructor(
     }
 
     private fun registerDisableTotpRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
             path = ManagementUsersSecurityRoutes.DISABLE_TOTP,
-            builder = { disableTotpDocs(allowedRoles, allowedAccountStatuses) },
-            body = { disableTotp(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                disableTotpDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                disableTotp(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -120,7 +132,11 @@ class ManagementUserSecurityRouter @Inject constructor(
                 resourceId = userId.asHexDashString(),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -129,7 +145,11 @@ class ManagementUserSecurityRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun logErrorToAudit(
@@ -153,11 +173,11 @@ class ManagementUserSecurityRouter @Inject constructor(
         )
     }
 
-    companion object {
-        const val DISABLE_TOTP_ROUTE_SUMMARY = "Disable user TOTP (management)"
-        const val DISABLE_TOTP_ROUTE_DESCRIPTION = "Administratively disables TOTP (2FA) for a specific user."
-        const val DISABLE_TOTP_ROUTE_OPERATION_ID = "disableManagementUserTotp"
-        const val DISABLE_TOTP_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
-        const val DISABLE_TOTP_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "TOTP disabled successfully."
+    public companion object {
+        private const val DISABLE_TOTP_ROUTE_SUMMARY = "Disable user TOTP (management)"
+        private const val DISABLE_TOTP_ROUTE_DESCRIPTION = "Administratively disables TOTP (2FA) for a specific user."
+        private const val DISABLE_TOTP_ROUTE_OPERATION_ID = "disableManagementUserTotp"
+        private const val DISABLE_TOTP_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
+        private const val DISABLE_TOTP_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "TOTP disabled successfully."
     }
 }

@@ -5,10 +5,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.swagger.model.Swag
 /**
  * Factory for producing [SwaggerConfig] instances.
  */
-interface SwaggerConfigFactory {
-
+public interface SwaggerConfigFactory {
     /**
      * Creates a new snapshot of the current Swagger configuration.
      */
-    fun create(): SwaggerConfig
+    public fun create(): SwaggerConfig
 }

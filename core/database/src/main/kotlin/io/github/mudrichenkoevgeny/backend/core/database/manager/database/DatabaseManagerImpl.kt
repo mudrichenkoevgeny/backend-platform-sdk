@@ -17,26 +17,26 @@ import javax.sql.DataSource
  * [shutdown] closes the DataSource if it is [AutoCloseable].
  */
 @Singleton
-class DatabaseManagerImpl @Inject constructor(
+public class DatabaseManagerImpl @Inject constructor(
     private val dataSource: DataSource,
     private val databaseMigrator: DatabaseMigrator,
     private val databaseConfig: DatabaseConfig,
     private val appLogger: AppLogger
-): DatabaseManager {
+) : DatabaseManager {
+    override fun create(): Database = try {
+        val database = Database.connect(dataSource)
 
-    override fun create(): Database {
-        return try {
-            val database = Database.connect(dataSource)
-
-            if (databaseConfig.isMigrationEnabled) {
-                databaseMigrator.migrate(dataSource, databaseConfig.migrationPaths)
-            }
-
-            database
-        } catch (e: Exception) {
-            appLogger.logError(CommonError.Internal(e))
-            throw e
+        if (databaseConfig.isMigrationEnabled) {
+            databaseMigrator.migrate(
+                dataSource,
+                databaseConfig.migrationPaths
+            )
         }
+
+        database
+    } catch (e: Exception) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
     }
 
     override fun shutdown() {

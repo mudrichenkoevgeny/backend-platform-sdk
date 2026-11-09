@@ -28,71 +28,100 @@ import io.ktor.server.auth.principal
  * - shared parsing helpers used by both HTTP and WebSocket flows.
  */
 
-/** JJWT builder **/
-fun JwtBuilder.withUserIdSubject(userId: UserId): JwtBuilder {
-    return this.subject(userId.asHexDashString())
-}
+public fun JwtBuilder.withUserIdSubject(userId: UserId): JwtBuilder = this.subject(userId.asHexDashString())
 
-fun JwtBuilder.withSessionIdSubject(sessionId: UserSessionId): JwtBuilder {
-    return this.claim(UserTokenClaims.SESSION_ID, sessionId.asHexDashString())
-}
+/**
+ * Adds a session ID claim to the JWT payload.
+ *
+ * @param sessionId The session ID to include.
+ * @return The updated [JwtBuilder].
+ */
+public fun JwtBuilder.withSessionIdSubject(sessionId: UserSessionId): JwtBuilder = this.claim(
+    UserTokenClaims.SESSION_ID,
+    sessionId.asHexDashString()
+)
 
-fun JwtBuilder.withIdentifierIdClaim(identifierId: UserIdentifierId): JwtBuilder {
-    return this.claim(UserTokenClaims.IDENTIFIER_ID, identifierId.asHexDashString())
-}
+/**
+ * Adds an identifier ID claim to the JWT payload.
+ *
+ * @param identifierId The identifier ID to include.
+ * @return The updated [JwtBuilder].
+ */
+public fun JwtBuilder.withIdentifierIdClaim(identifierId: UserIdentifierId): JwtBuilder = this.claim(
+    UserTokenClaims.IDENTIFIER_ID,
+    identifierId.asHexDashString()
+)
 
-fun JwtBuilder.withUserRoleSubject(userRole: UserRole): JwtBuilder {
-    return this.claim(UserTokenClaims.USER_ROLE, userRole.value)
-}
+/**
+ * Adds a user role claim to the JWT payload.
+ *
+ * @param userRole The user role to include.
+ * @return The updated [JwtBuilder].
+ */
+public fun JwtBuilder.withUserRoleSubject(userRole: UserRole): JwtBuilder = this.claim(
+    UserTokenClaims.USER_ROLE,
+    userRole.value
+)
 
-/** JWTCredential **/
 /**
  * Extracts a user id from the token subject.
  *
  * @throws JWTDecodeException when the subject is missing or cannot be parsed as a user id
  */
-fun JWTCredential.getUserIdFromCredential(): UserId {
-    return payload.subject?.toUserIdOrNull()
-        ?: throw JWTDecodeException("Invalid or missing subject")
-}
+public fun JWTCredential.getUserIdFromCredential(): UserId =
+    payload.subject?.toUserIdOrNull() ?: throw JWTDecodeException("Invalid or missing subject")
 
 /**
  * Extracts an optional user session id from a token claim.
  *
  * @return parsed session id, or `null` when claim is missing or invalid
  */
-fun JWTCredential.getSessionIdFromCredential(): UserSessionId? {
-    val sessionId = this.getClaim(UserTokenClaims.SESSION_ID, String::class)
-        ?: return null
+public fun JWTCredential.getSessionIdFromCredential(): UserSessionId? {
+    val sessionId = this.getClaim(
+        UserTokenClaims.SESSION_ID,
+        String::class
+    ) ?: return null
     return sessionId.toUserSessionIdOrNull()
 }
 
-fun JWTCredential.getIdentifierIdFromCredential(): UserIdentifierId? {
-    val identifierId = this.getClaim(UserTokenClaims.IDENTIFIER_ID, String::class)
-        ?: return null
+/**
+ * Extracts an optional user identifier ID from a token claim.
+ *
+ * @return parsed identifier ID, or `null` when claim is missing or invalid
+ */
+public fun JWTCredential.getIdentifierIdFromCredential(): UserIdentifierId? {
+    val identifierId = this.getClaim(
+        UserTokenClaims.IDENTIFIER_ID,
+        String::class
+    ) ?: return null
     return identifierId.toUserIdentifierIdOrNull()
 }
 
-/** JWTPrincipal **/
 /**
  * Returns the current call JWT principal, when Ktor authentication has been applied.
  */
-fun ApplicationCall.getJWTPrincipal(): JWTPrincipal? {
-    return this.principal<JWTPrincipal>()
-}
+public fun ApplicationCall.getJWTPrincipal(): JWTPrincipal? = this.principal<JWTPrincipal>()
 
 /**
  * Reads a user id from the principal subject.
  *
  * @return parsed user id or `null` if missing/invalid
  */
-fun JWTPrincipal.getUserId(): UserId? {
+public fun JWTPrincipal.getUserId(): UserId? {
     val subject = this.payload.subject
     return subject?.toUserIdOrNull()
 }
 
-fun JWTPrincipal.getUserRole(): UserRole? {
-    val userRole = this.getClaim(UserTokenClaims.USER_ROLE, String::class)
+/**
+ * Reads a user role from the principal claim.
+ *
+ * @return parsed user role or `null` if missing/invalid
+ */
+public fun JWTPrincipal.getUserRole(): UserRole? {
+    val userRole = this.getClaim(
+        UserTokenClaims.USER_ROLE,
+        String::class
+    )
     return userRole?.let { userRole -> UserRole.fromValueOrNull(userRole) }
 }
 
@@ -101,25 +130,32 @@ fun JWTPrincipal.getUserRole(): UserRole? {
  *
  * @return parsed session id or `null` if missing/invalid
  */
-fun JWTPrincipal.getSessionId(): UserSessionId? {
-    val sessionId = this.getClaim(UserTokenClaims.SESSION_ID, String::class)
-        ?: return null
+public fun JWTPrincipal.getSessionId(): UserSessionId? {
+    val sessionId = this.getClaim(
+        UserTokenClaims.SESSION_ID,
+        String::class
+    ) ?: return null
     return sessionId.toUserSessionIdOrNull()
 }
 
-fun JWTPrincipal.getIdentifierId(): UserIdentifierId? {
-    val identifierId = this.getClaim(UserTokenClaims.IDENTIFIER_ID, String::class)
-        ?: return null
+/**
+ * Reads a user identifier id from the principal claim.
+ *
+ * @return parsed identifier id or `null` if missing/invalid
+ */
+public fun JWTPrincipal.getIdentifierId(): UserIdentifierId? {
+    val identifierId = this.getClaim(
+        UserTokenClaims.IDENTIFIER_ID,
+        String::class
+    ) ?: return null
     return identifierId.toUserIdentifierIdOrNull()
 }
 
-/** UserId, UserSessionId **/
 /**
  * Extracts a required user id from the JWT subject of the current call.
  */
-fun ApplicationCall.getUserIdFromPayload(): AppResult<UserId> {
-    val principal = this.getJWTPrincipal()
-        ?: return AppResult.Error(UserError.InvalidAccessToken())
+public fun ApplicationCall.getUserIdFromPayload(): AppResult<UserId> {
+    val principal = this.getJWTPrincipal() ?: return AppResult.Error(UserError.InvalidAccessToken())
 
     return getUserIdFromSubject(principal.payload.subject)
 }
@@ -127,14 +163,12 @@ fun ApplicationCall.getUserIdFromPayload(): AppResult<UserId> {
 /**
  * Extracts a required user id from the JWT subject of parsed signed claims.
  */
-fun Jws<Claims>.getUserIdFromPayload(): AppResult<UserId> {
-    return getUserIdFromSubject(this.payload.subject)
-}
+public fun Jws<Claims>.getUserIdFromPayload(): AppResult<UserId> = getUserIdFromSubject(this.payload.subject)
 
 /**
  * Parses [subject] into a [UserId] and maps invalid inputs to [UserError.InvalidAccessToken].
  */
-fun getUserIdFromSubject(subject: String?): AppResult<UserId> {
+public fun getUserIdFromSubject(subject: String?): AppResult<UserId> {
     val invalidAccessTokenErrorResult = AppResult.Error(UserError.InvalidAccessToken())
 
     if (subject.isNullOrBlank()) {
@@ -152,7 +186,7 @@ fun getUserIdFromSubject(subject: String?): AppResult<UserId> {
  * When [isOptional] is true, missing/invalid user id is allowed and results in `null`.
  * Otherwise, missing/invalid id results in [UserError.InvalidAccessToken].
  */
-fun JWTPrincipal.getUserIdForWebSocket(isOptional: Boolean = false): AppResult<UserId?> {
+public fun JWTPrincipal.getUserIdForWebSocket(isOptional: Boolean = false): AppResult<UserId?> {
     val userId = this.getUserId()
 
     return if (userId != null) {
@@ -169,6 +203,4 @@ fun JWTPrincipal.getUserIdForWebSocket(isOptional: Boolean = false): AppResult<U
 /**
  * Returns the token expiration instant as epoch millis.
  */
-fun JWTPrincipal.getExpiresAt(): Long? {
-    return this.payload.expiresAt?.time
-}
+public fun JWTPrincipal.getExpiresAt(): Long? = this.payload.expiresAt?.time

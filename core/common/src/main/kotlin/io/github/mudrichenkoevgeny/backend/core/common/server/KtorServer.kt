@@ -20,7 +20,7 @@ import io.ktor.util.logging.KtorSimpleLogger
  *   - main API connector (`ktorServerHost` : `ktorServerPort`)
  *   - management/monitoring connector (`ktorServerHost` : `ktorManagementPort`)
  */
-object KtorServer {
+public object KtorServer {
     private const val KTOR_DEFAULT_LOGGER = "io.ktor.server.Application"
 
     /**
@@ -29,7 +29,7 @@ object KtorServer {
      * @param commonConfig configuration with host and ports for main and management connectors
      * @param applicationModule Ktor application module to install into the server environment
      */
-    fun create(
+    public fun create(
         commonConfig: CommonConfig,
         applicationModule: Application.() -> Unit
     ): EmbeddedServer<*, *> {
@@ -41,15 +41,22 @@ object KtorServer {
             module(applicationModule)
         }
 
-        return embeddedServer(Netty, rootConfig) {
-            connectors.add(EngineConnectorBuilder().apply {
-                host = commonConfig.ktorServerHost
-                port = commonConfig.ktorServerPort
-            })
-            connectors.add(EngineConnectorBuilder().apply {
-                host = commonConfig.ktorServerHost
-                port = commonConfig.ktorManagementPort
-            })
+        return embeddedServer(
+            Netty,
+            rootConfig
+        ) {
+            connectors.add(
+                EngineConnectorBuilder().apply {
+                    host = commonConfig.ktorServerHost
+                    port = commonConfig.ktorServerPort
+                }
+            )
+            connectors.add(
+                EngineConnectorBuilder().apply {
+                    host = commonConfig.ktorServerHost
+                    port = commonConfig.ktorManagementPort
+                }
+            )
             shutdownGracePeriod = commonConfig.ktorShutdownGracePeriodMs
             shutdownTimeout = commonConfig.ktorShutdownTimeoutMs
         }

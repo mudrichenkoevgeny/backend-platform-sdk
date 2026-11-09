@@ -25,96 +25,117 @@ import kotlin.math.pow
  * Supports a ±1 time-step validation window and recovery code generation.
  */
 @Singleton
-class TotpCryptoProcessorImpl @Inject constructor(
+public class TotpCryptoProcessorImpl @Inject constructor(
     private val aesCryptor: AesCryptor,
     private val securityConfig: SecurityConfig
 ) : TotpCryptoProcessor {
-
     private val secureRandom = SecureRandom()
     private val issuer: String get() = securityConfig.authRealm
 
-    override fun generateNewSecret(accountName: String): AppResult<GeneratedTotpSecret> {
-        return try {
-            val bytes = ByteArray(SECRET_SIZE_BYTES)
-            secureRandom.nextBytes(bytes)
-            val decryptedSecret = DecryptedString(Base32.encode(bytes))
-            val otpAuthUrl = buildOtpAuthUrl(accountName, decryptedSecret)
+    override fun generateNewSecret(accountName: String): AppResult<GeneratedTotpSecret> = try {
+        val bytes = ByteArray(SECRET_SIZE_BYTES)
+        secureRandom.nextBytes(bytes)
+        val decryptedSecret = DecryptedString(Base32.encode(bytes))
+        val otpAuthUrl = buildOtpAuthUrl(
+            accountName,
+            decryptedSecret
+        )
 
-            aesCryptor.encrypt(decryptedSecret).mapSuccess { encryptedSecret ->
-                GeneratedTotpSecret(
-                    decryptedSecret = decryptedSecret,
-                    encryptedSecret = encryptedSecret,
-                    otpAuthUrl = otpAuthUrl
-                )
-            }
-        } catch (e: Exception) {
-            AppResult.Error(CommonError.Internal(e))
+        aesCryptor.encrypt(decryptedSecret).mapSuccess { encryptedSecret ->
+            GeneratedTotpSecret(
+                decryptedSecret = decryptedSecret,
+                encryptedSecret = encryptedSecret,
+                otpAuthUrl = otpAuthUrl
+            )
         }
+    } catch (e: Exception) {
+        AppResult.Error(CommonError.Internal(e))
     }
 
-    override fun isCodeValid(code: String, encryptedSecret: EncryptedString): AppResult<Boolean> {
-        return try {
-            aesCryptor.decrypt(encryptedSecret).mapSuccess { decryptedSecret ->
-                val secretBytes = Base32.decode(decryptedSecret.value)
-                val counter = System.currentTimeMillis() / 1000 / TIME_STEP_SECONDS
+    override fun isCodeValid(
+        code: String,
+        encryptedSecret: EncryptedString
+    ): AppResult<Boolean> = try {
+        aesCryptor.decrypt(encryptedSecret).mapSuccess { decryptedSecret ->
+            val secretBytes = Base32.decode(decryptedSecret.value)
+            val counter = System.currentTimeMillis() / MILLIS_PER_SECOND / TIME_STEP_SECONDS
 
-                VALIDATION_WINDOW_RANGE.any { window ->
-                    generateTotp(secretBytes, counter + window) == code
-                }
+            VALIDATION_WINDOW_RANGE.any { window ->
+                generateTotp(
+                    secretBytes,
+                    counter + window
+                ) == code
             }
-        } catch (e: Exception) {
-            AppResult.Error(CommonError.Internal(e))
         }
+    } catch (e: Exception) {
+        AppResult.Error(CommonError.Internal(e))
     }
 
-    override fun getOtpAuthUrl(accountName: String, encryptedSecret: EncryptedString): AppResult<String> {
-        return try {
-            aesCryptor.decrypt(encryptedSecret).mapSuccess { decryptedSecret ->
-                buildOtpAuthUrl(accountName, decryptedSecret)
-            }
-        } catch (e: Exception) {
-            AppResult.Error(CommonError.Internal(e))
+    override fun getOtpAuthUrl(
+        accountName: String,
+        encryptedSecret: EncryptedString
+    ): AppResult<String> = try {
+        aesCryptor.decrypt(encryptedSecret).mapSuccess { decryptedSecret ->
+            buildOtpAuthUrl(
+                accountName,
+                decryptedSecret
+            )
         }
+    } catch (e: Exception) {
+        AppResult.Error(CommonError.Internal(e))
     }
 
-    override fun generateRecoveryCodes(count: Int): AppResult<List<DecryptedString>> {
-        return try {
-            val codes = List(count) {
-                val rawCode = (1..RECOVERY_CODE_LENGTH).map {
+    override fun generateRecoveryCodes(count: Int): AppResult<List<DecryptedString>> = try {
+        val codes = List(count) {
+            val rawCode = (1..RECOVERY_CODE_LENGTH)
+                .map {
                     RECOVERY_CODE_ALPHABET[secureRandom.nextInt(RECOVERY_CODE_ALPHABET.length)]
                 }.joinToString("")
-                    .chunked(RECOVERY_CODE_CHUNK_SIZE)
-                    .joinToString("-")
+                .chunked(RECOVERY_CODE_CHUNK_SIZE)
+                .joinToString("-")
 
-                DecryptedString(rawCode)
-            }
-            AppResult.Success(codes)
-        } catch (e: Exception) {
-            AppResult.Error(CommonError.Internal(e))
+            DecryptedString(rawCode)
         }
+        AppResult.Success(codes)
+    } catch (e: Exception) {
+        AppResult.Error(CommonError.Internal(e))
     }
 
-    private fun generateTotp(secret: ByteArray, interval: Long): String {
+    private fun generateTotp(
+        secret: ByteArray,
+        interval: Long
+    ): String {
         val data = ByteBuffer.allocate(8).putLong(interval).array()
         val mac = Mac.getInstance(HMAC_ALGORITHM)
-        mac.init(SecretKeySpec(secret, "RAW"))
+        mac.init(
+            SecretKeySpec(
+                secret,
+                "RAW"
+            )
+        )
         val hash = mac.doFinal(data)
 
         val offset = hash[hash.size - 1].toInt() and 0xf
         val binary = ((hash[offset].toInt() and 0x7f) shl 24) or
-                ((hash[offset + 1].toInt() and 0xff) shl 16) or
-                ((hash[offset + 2].toInt() and 0xff) shl 8) or
-                (hash[offset + 3].toInt() and 0xff)
+            ((hash[offset + 1].toInt() and 0xff) shl 16) or
+            ((hash[offset + 2].toInt() and 0xff) shl 8) or
+            (hash[offset + 3].toInt() and 0xff)
 
         val otp = binary % 10.0.pow(OTP_DIGITS.toDouble()).toInt()
-        return otp.toString().padStart(OTP_DIGITS, '0')
+        return otp.toString().padStart(
+            OTP_DIGITS,
+            '0'
+        )
     }
 
-    private fun buildOtpAuthUrl(accountName: String, decryptedSecret: DecryptedString): String {
-        return "otpauth://totp/$issuer:$accountName?secret=${decryptedSecret.value}&issuer=$issuer&algorithm=$URL_ALGORITHM&digits=$OTP_DIGITS&period=$TIME_STEP_SECONDS"
-    }
+    private fun buildOtpAuthUrl(
+        accountName: String,
+        decryptedSecret: DecryptedString
+    ): String =
+        "otpauth://totp/$issuer:$accountName?secret=${decryptedSecret.value}&issuer=$issuer&algorithm=$URL_ALGORITHM&digits=$OTP_DIGITS&period=$TIME_STEP_SECONDS"
 
-    companion object {
+    public companion object {
+        private const val MILLIS_PER_SECOND: Long = 1000L
         private const val SECRET_SIZE_BYTES = 20
         private const val TIME_STEP_SECONDS = 30
         private const val OTP_DIGITS = 6

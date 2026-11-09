@@ -51,21 +51,23 @@ import javax.inject.Singleton
  * @param appLogger Application logger instance used for recording infrastructure errors.
  */
 @Singleton
-class S3StorageService @Inject constructor(
+public class S3StorageService @Inject constructor(
     private val config: StorageConfig,
     private val imgproxyUrlBuilder: ImgproxyUrlBuilder,
     private val appLogger: AppLogger
 ) : StorageService {
+    private val basicCredentials = AwsBasicCredentials.create(
+        config.s3AccessKey,
+        config.s3SecretKey
+    )
 
-    private val basicCredentials = AwsBasicCredentials.create(config.s3AccessKey, config.s3SecretKey)
-
-    private val s3Client = S3AsyncClient.builder()
+    private val s3Client = S3AsyncClient
+        .builder()
         .endpointOverride(URI.create(config.s3Endpoint))
         .region(Region.of(config.s3Region))
         .credentialsProvider(
             StaticCredentialsProvider.create(basicCredentials)
-        )
-        .forcePathStyle(config.forcePathStyle)
+        ).forcePathStyle(config.forcePathStyle)
         .build()
 
     private val presignerEndpoint: URI = run {
@@ -80,18 +82,15 @@ class S3StorageService @Inject constructor(
         }
     }
 
-    private val presigner = S3Presigner.builder()
+    private val presigner = S3Presigner
+        .builder()
         .endpointOverride(presignerEndpoint)
         .region(Region.of(config.s3Region))
         .credentialsProvider(
             StaticCredentialsProvider.create(basicCredentials)
-        )
-        .serviceConfiguration(
-            S3Configuration.builder()
-                .pathStyleAccessEnabled(config.forcePathStyle)
-                .build()
-        )
-        .build()
+        ).serviceConfiguration(
+            S3Configuration.builder().pathStyleAccessEnabled(config.forcePathStyle).build()
+        ).build()
 
     override suspend fun save(
         fileName: String,
@@ -100,9 +99,13 @@ class S3StorageService @Inject constructor(
         bucket: String?,
         isPublic: Boolean
     ): AppResult<String> {
-        val targetBucket = resolveTargetBucket(bucket, isPublic)
+        val targetBucket = resolveTargetBucket(
+            bucket,
+            isPublic
+        )
 
-        val request = PutObjectRequest.builder()
+        val request = PutObjectRequest
+            .builder()
             .bucket(targetBucket)
             .key(fileName)
             .contentType(contentType)
@@ -110,7 +113,11 @@ class S3StorageService @Inject constructor(
             .build()
 
         return try {
-            s3Client.putObject(request, AsyncRequestBody.fromBytes(content)).await()
+            s3Client
+                .putObject(
+                    request,
+                    AsyncRequestBody.fromBytes(content)
+                ).await()
             AppResult.Success(fileName)
         } catch (e: CancellationException) {
             throw e
@@ -118,7 +125,11 @@ class S3StorageService @Inject constructor(
             try {
                 appLogger.logError(CommonError.Internal(e))
                 s3Client.createBucket(CreateBucketRequest.builder().bucket(targetBucket).build()).await()
-                s3Client.putObject(request, AsyncRequestBody.fromBytes(content)).await()
+                s3Client
+                    .putObject(
+                        request,
+                        AsyncRequestBody.fromBytes(content)
+                    ).await()
                 AppResult.Success(fileName)
             } catch (retryException: CancellationException) {
                 throw retryException
@@ -130,10 +141,18 @@ class S3StorageService @Inject constructor(
         }
     }
 
-    override suspend fun delete(key: String, bucket: String?, isPublic: Boolean): AppResult<Boolean> {
-        val targetBucket = resolveTargetBucket(bucket, isPublic)
+    override suspend fun delete(
+        key: String,
+        bucket: String?,
+        isPublic: Boolean
+    ): AppResult<Boolean> {
+        val targetBucket = resolveTargetBucket(
+            bucket,
+            isPublic
+        )
 
-        val request = DeleteObjectRequest.builder()
+        val request = DeleteObjectRequest
+            .builder()
             .bucket(targetBucket)
             .key(key)
             .build()
@@ -153,16 +172,24 @@ class S3StorageService @Inject constructor(
         }
     }
 
-    override suspend fun deleteBatch(keys: List<String>, bucket: String?, isPublic: Boolean): AppResult<Unit> {
+    override suspend fun deleteBatch(
+        keys: List<String>,
+        bucket: String?,
+        isPublic: Boolean
+    ): AppResult<Unit> {
         if (keys.isEmpty()) {
             return AppResult.Success(Unit)
         }
-        val targetBucket = resolveTargetBucket(bucket, isPublic)
+        val targetBucket = resolveTargetBucket(
+            bucket,
+            isPublic
+        )
 
         return try {
             val objectIdentifiers = keys.map { ObjectIdentifier.builder().key(it).build() }
             val delete = Delete.builder().objects(objectIdentifiers).build()
-            val request = DeleteObjectsRequest.builder()
+            val request = DeleteObjectsRequest
+                .builder()
                 .bucket(targetBucket)
                 .delete(delete)
                 .build()
@@ -180,7 +207,10 @@ class S3StorageService @Inject constructor(
         }
     }
 
-    override fun getPublicUrl(key: String, bucket: String?): AppResult<String> {
+    override fun getPublicUrl(
+        key: String,
+        bucket: String?
+    ): AppResult<String> {
         val targetBucket = bucket ?: config.s3BucketNamePublic
         return AppResult.Success("${config.s3PublicUrl.removeSuffix("/")}/$targetBucket/$key")
     }
@@ -191,25 +221,28 @@ class S3StorageService @Inject constructor(
         expirationSeconds: Int,
         bucket: String?,
         isPublic: Boolean
-    ): AppResult<String> {
-        return try {
-            val targetBucket = resolveTargetBucket(bucket, isPublic)
-            val putObjectRequest = PutObjectRequest.builder()
-                .bucket(targetBucket)
-                .key(key)
-                .contentType(contentType)
-                .build()
+    ): AppResult<String> = try {
+        val targetBucket = resolveTargetBucket(
+            bucket,
+            isPublic
+        )
+        val putObjectRequest = PutObjectRequest
+            .builder()
+            .bucket(targetBucket)
+            .key(key)
+            .contentType(contentType)
+            .build()
 
-            val presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofSeconds(expirationSeconds.toLong()))
-                .putObjectRequest(putObjectRequest)
-                .build()
+        val presignRequest = PutObjectPresignRequest
+            .builder()
+            .signatureDuration(Duration.ofSeconds(expirationSeconds.toLong()))
+            .putObjectRequest(putObjectRequest)
+            .build()
 
-            val presignedUrl = presigner.presignPutObject(presignRequest).url().toString()
-            AppResult.Success(presignedUrl)
-        } catch (e: Exception) {
-            AppResult.Error(CommonError.Internal(e))
-        }
+        val presignedUrl = presigner.presignPutObject(presignRequest).url().toString()
+        AppResult.Success(presignedUrl)
+    } catch (e: Exception) {
+        AppResult.Error(CommonError.Internal(e))
     }
 
     override fun generatePresignedGetUrl(
@@ -217,50 +250,59 @@ class S3StorageService @Inject constructor(
         expirationSeconds: Int,
         bucket: String?,
         isPublic: Boolean
-    ): AppResult<String> {
-        return try {
-            val targetBucket = resolveTargetBucket(bucket, isPublic)
-            val getObjectRequest = GetObjectRequest.builder()
-                .bucket(targetBucket)
-                .key(key)
-                .build()
+    ): AppResult<String> = try {
+        val targetBucket = resolveTargetBucket(
+            bucket,
+            isPublic
+        )
+        val getObjectRequest = GetObjectRequest
+            .builder()
+            .bucket(targetBucket)
+            .key(key)
+            .build()
 
-            val presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofSeconds(expirationSeconds.toLong()))
-                .getObjectRequest(getObjectRequest)
-                .build()
+        val presignRequest = GetObjectPresignRequest
+            .builder()
+            .signatureDuration(Duration.ofSeconds(expirationSeconds.toLong()))
+            .getObjectRequest(getObjectRequest)
+            .build()
 
-            val presignedUrl = presigner.presignGetObject(presignRequest).url().toString()
-            AppResult.Success(presignedUrl)
-        } catch (e: Exception) {
-            AppResult.Error(CommonError.Internal(e))
-        }
+        val presignedUrl = presigner.presignGetObject(presignRequest).url().toString()
+        AppResult.Success(presignedUrl)
+    } catch (e: Exception) {
+        AppResult.Error(CommonError.Internal(e))
     }
 
-    override suspend fun getObjectMetadata(key: String, bucket: String?, isPublic: Boolean): AppResult<S3ObjectMetadata> {
-        return try {
-            val targetBucket = resolveTargetBucket(bucket, isPublic)
-            val headRequest = HeadObjectRequest.builder()
-                .bucket(targetBucket)
-                .key(key)
-                .build()
-            val headResponse = s3Client.headObject(headRequest).await()
+    override suspend fun getObjectMetadata(
+        key: String,
+        bucket: String?,
+        isPublic: Boolean
+    ): AppResult<S3ObjectMetadata> = try {
+        val targetBucket = resolveTargetBucket(
+            bucket,
+            isPublic
+        )
+        val headRequest = HeadObjectRequest
+            .builder()
+            .bucket(targetBucket)
+            .key(key)
+            .build()
+        val headResponse = s3Client.headObject(headRequest).await()
 
-            AppResult.Success(
-                S3ObjectMetadata(
-                    sizeBytes = headResponse.contentLength(),
-                    eTag = headResponse.eTag()?.trim('"')
-                )
+        AppResult.Success(
+            S3ObjectMetadata(
+                sizeBytes = headResponse.contentLength(),
+                eTag = headResponse.eTag()?.trim('"')
             )
-        } catch (e: CancellationException) {
-            throw e
-        } catch (_: NoSuchKeyException) {
-            AppResult.Error(StorageError.FileNotFound())
-        } catch (_: NoSuchBucketException) {
-            AppResult.Error(StorageError.FileNotFound())
-        } catch (e: Exception) {
-            AppResult.Error(CommonError.Internal(e))
-        }
+        )
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: NoSuchKeyException) {
+        AppResult.Error(StorageError.FileNotFound())
+    } catch (_: NoSuchBucketException) {
+        AppResult.Error(StorageError.FileNotFound())
+    } catch (e: Exception) {
+        AppResult.Error(CommonError.Internal(e))
     }
 
     override fun resolveFileUrls(file: StorageFileInternal): FileUrls {
@@ -295,8 +337,14 @@ class S3StorageService @Inject constructor(
         )
     }
 
-    override suspend fun ensureBucketExists(bucket: String?, isPublic: Boolean): AppResult<Unit> {
-        val targetBucket = resolveTargetBucket(bucket, isPublic)
+    override suspend fun ensureBucketExists(
+        bucket: String?,
+        isPublic: Boolean
+    ): AppResult<Unit> {
+        val targetBucket = resolveTargetBucket(
+            bucket,
+            isPublic
+        )
         return try {
             s3Client.headBucket(HeadBucketRequest.builder().bucket(targetBucket).build()).await()
             AppResult.Success(Unit)
@@ -319,15 +367,18 @@ class S3StorageService @Inject constructor(
         }
     }
 
-    private fun resolveTargetBucket(bucket: String?, isPublic: Boolean): String =
-        bucket ?: if (isPublic) {
-            config.s3BucketNamePublic
-        } else {
-            config.s3BucketNamePrivate
-        }
+    private fun resolveTargetBucket(
+        bucket: String?,
+        isPublic: Boolean
+    ): String = bucket ?: if (isPublic) {
+        config.s3BucketNamePublic
+    } else {
+        config.s3BucketNamePrivate
+    }
 
     private suspend fun S3AsyncClient.makeBucketPublic(bucketName: String) {
-        val request = PutBucketPolicyRequest.builder()
+        val request = PutBucketPolicyRequest
+            .builder()
             .bucket(bucketName)
             .policy(buildPublicReadPolicy(bucketName))
             .build()
@@ -354,7 +405,7 @@ class S3StorageService @Inject constructor(
         }
         """.trimIndent()
 
-    companion object {
+    public companion object {
         private const val PRIVATE_FILE_PRESIGNED_URL_EXPIRATION_SECONDS = 86400
         private const val IMMUTABLE_CACHE_CONTROL_HEADER = "public, max-age=31536000, immutable"
     }

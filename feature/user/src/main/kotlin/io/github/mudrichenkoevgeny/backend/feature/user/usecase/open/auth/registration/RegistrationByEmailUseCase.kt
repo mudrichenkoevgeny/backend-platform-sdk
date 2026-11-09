@@ -13,6 +13,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestC
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -22,13 +23,15 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.m
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to complete user registration via email and confirmation code.
+ */
 @Singleton
-class RegistrationByEmailUseCase @Inject constructor(
+public class RegistrationByEmailUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val authSettingsProvider: AuthSettingsProvider,
     private val emailRestrictionPolicyValidator: EmailRestrictionPolicyValidator,
@@ -62,7 +65,7 @@ class RegistrationByEmailUseCase @Inject constructor(
      * @param requestContext The context of the public request.
      * @return [AppResult] containing [AuthData] (tokens and user details) upon successful registration.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         email: String,
         password: String,
         confirmationCode: String,
@@ -85,8 +88,9 @@ class RegistrationByEmailUseCase @Inject constructor(
 
         if (!emailRestrictionPolicyValidator.isEmailAllowed(
                 email = email,
-                policy = authSettingsProvider.getOpenEmailRestrictionPolicy())
-            ) {
+                policy = authSettingsProvider.getOpenEmailRestrictionPolicy()
+            )
+        ) {
             return handleError(
                 error = UserError.EmailNotAllowed(),
                 baseMetadata = auditMetadata
@@ -152,6 +156,7 @@ class RegistrationByEmailUseCase @Inject constructor(
                 )
                 registrationResult
             }
+
             is AppResult.Error -> handleError(
                 error = registrationResult.error,
                 baseMetadata = auditMetadata

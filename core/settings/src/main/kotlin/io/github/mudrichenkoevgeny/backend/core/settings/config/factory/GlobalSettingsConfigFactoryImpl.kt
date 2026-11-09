@@ -15,10 +15,9 @@ import javax.inject.Singleton
  * All keys are defined in [SettingsEnvKeys]. Missing variables are treated as `null` or default values.
  */
 @Singleton
-class GlobalSettingsConfigFactoryImpl @Inject constructor(
+public class GlobalSettingsConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader
-): GlobalSettingsConfigFactory {
-
+) : GlobalSettingsConfigFactory {
     override fun create(): GlobalSettingsConfig {
         val privacyPolicyUrl = envReader.getByKeyOrNull(SettingsEnvKeys.PRIVACY_POLICY_URL)
         val termsOfServiceUrl = envReader.getByKeyOrNull(SettingsEnvKeys.TERMS_OF_SERVICE_URL)
@@ -33,9 +32,13 @@ class GlobalSettingsConfigFactoryImpl @Inject constructor(
             }
         } ?: emptyMap()
 
-        val isTracingEnabled = envReader.getByKeyOrNull(SettingsEnvKeys.IS_TRACING_ENABLED)?.toBooleanStrictOrNull() ?: false
-        val isMetricsEnabled = envReader.getByKeyOrNull(SettingsEnvKeys.IS_METRICS_ENABLED)?.toBooleanStrictOrNull() ?: false
-        val isVerboseLoggingEnabled = envReader.getByKeyOrNull(SettingsEnvKeys.IS_VERBOSE_LOGGING_ENABLED)?.toBooleanStrictOrNull() ?: false
+        val isTracingEnabled = envReader.getByKeyOrNull(SettingsEnvKeys.IS_TRACING_ENABLED)?.toBooleanStrictOrNull()
+            ?: false
+        val isMetricsEnabled = envReader.getByKeyOrNull(SettingsEnvKeys.IS_METRICS_ENABLED)?.toBooleanStrictOrNull()
+            ?: false
+        val isVerboseLoggingEnabled = envReader
+            .getByKeyOrNull(SettingsEnvKeys.IS_VERBOSE_LOGGING_ENABLED)
+            ?.toBooleanStrictOrNull() ?: false
 
         val managementGlobalSettings = ManagementGlobalSettings(
             privacyPolicyUrl = privacyPolicyUrl,

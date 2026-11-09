@@ -9,13 +9,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class ObservabilityConfigFactoryImplTest {
-
-    private companion object {
-        private const val TELEMETRY_ENDPOINT = "http://localhost:4318"
-        private const val TELEMETRY_SERVICE_NAME = "test-service"
-        private const val METRIC_INTERVAL_SECONDS = "30"
-    }
-
     private val envReader = mockk<EnvReader>()
 
     @Test
@@ -28,8 +21,23 @@ class ObservabilityConfigFactoryImplTest {
 
         val config: ObservabilityConfig = factory.create()
 
-        assertEquals(TELEMETRY_SERVICE_NAME, config.telemetryServiceName)
-        assertEquals(TELEMETRY_ENDPOINT, config.telemetryEndpoint)
-        assertEquals(30L, config.metricIntervalSeconds)
+        assertEquals(
+            TELEMETRY_SERVICE_NAME,
+            config.telemetryServiceName
+        )
+        assertEquals(
+            TELEMETRY_ENDPOINT,
+            config.telemetryEndpoint
+        )
+        assertEquals(
+            30L,
+            config.metricIntervalSeconds
+        )
+    }
+
+    private companion object {
+        private const val TELEMETRY_ENDPOINT = "http://localhost:4318"
+        private const val TELEMETRY_SERVICE_NAME = "test-service"
+        private const val METRIC_INTERVAL_SECONDS = "30"
     }
 }

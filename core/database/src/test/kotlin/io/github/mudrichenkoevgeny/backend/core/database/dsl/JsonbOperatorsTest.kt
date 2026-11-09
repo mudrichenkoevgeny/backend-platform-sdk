@@ -12,15 +12,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
 class JsonbOperatorsTest {
-
-    companion object {
-        @JvmStatic
-        @BeforeAll
-        fun setup() {
-            Database.connect("jdbc:h2:mem:test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE", driver = "org.h2.Driver")
-        }
-    }
-
     object TestTable : Table("test_table") {
         val tags = jsonb<Set<String>>(
             "tags",
@@ -37,7 +28,10 @@ class JsonbOperatorsTest {
         val queryBuilder = QueryBuilder(false)
         op.toQueryBuilder(queryBuilder)
 
-        assertEquals("(test_table.tags like '%admin%')", queryBuilder.toString().lowercase())
+        assertEquals(
+            "(test_table.tags like '%admin%')",
+            queryBuilder.toString().lowercase()
+        )
     }
 
     @Test
@@ -48,18 +42,27 @@ class JsonbOperatorsTest {
         val queryBuilder = QueryBuilder(false)
         op.toQueryBuilder(queryBuilder)
 
-        assertEquals("(test_table.tags like '%user's%')", queryBuilder.toString().lowercase())
+        assertEquals(
+            "(test_table.tags like '%user's%')",
+            queryBuilder.toString().lowercase()
+        )
     }
 
     @Test
     fun `jsonbContainsAllStrings generates correct SQL for multiple values`() = transaction {
-        val values = setOf("kotlin", "exposed")
+        val values = setOf(
+            "kotlin",
+            "exposed"
+        )
         val op = TestTable.tags jsonbContainsAllStrings values
 
         val queryBuilder = QueryBuilder(false)
         op.toQueryBuilder(queryBuilder)
 
-        assertEquals("(test_table.tags like '%kotlin%' and test_table.tags like '%exposed%')", queryBuilder.toString().lowercase())
+        assertEquals(
+            "(test_table.tags like '%kotlin%' and test_table.tags like '%exposed%')",
+            queryBuilder.toString().lowercase()
+        )
     }
 
     @Test
@@ -69,6 +72,20 @@ class JsonbOperatorsTest {
         val queryBuilder = QueryBuilder(false)
         op.toQueryBuilder(queryBuilder)
 
-        assertEquals("(1=1)", queryBuilder.toString().lowercase())
+        assertEquals(
+            "(1=1)",
+            queryBuilder.toString().lowercase()
+        )
+    }
+
+    companion object {
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            Database.connect(
+                "jdbc:h2:mem:test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE",
+                driver = "org.h2.Driver"
+            )
+        }
     }
 }

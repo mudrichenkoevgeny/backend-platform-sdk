@@ -12,9 +12,8 @@ import javax.inject.Singleton
  * Managers are used by use cases and routes to coordinate repositories and services.
  */
 @Module
-interface StorageManagersModule {
-
+public interface StorageManagersModule {
     @Binds
     @Singleton
-    fun bindStorageManager(storageManagerImpl: StorageManagerImpl): StorageManager
+    public fun bindStorageManager(storageManagerImpl: StorageManagerImpl): StorageManager
 }

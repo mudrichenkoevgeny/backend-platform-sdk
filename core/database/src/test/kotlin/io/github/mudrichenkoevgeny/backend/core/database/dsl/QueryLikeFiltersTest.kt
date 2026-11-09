@@ -14,7 +14,6 @@ import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class QueryLikeFiltersTest {
-
     private val dataSource = createTestDataSource("like_filter")
 
     @BeforeAll
@@ -32,7 +31,10 @@ class QueryLikeFiltersTest {
         suspendTransaction {
             val query = TestTable.selectAll().addOrLikeFilter(
                 column = TestTable.name,
-                rawValues = listOf("alpha", "beta")
+                rawValues = listOf(
+                    "alpha",
+                    "beta"
+                )
             )
 
             assertNotNull(query)

@@ -8,9 +8,9 @@ import io.github.mudrichenkoevgeny.backend.core.settings.config.model.GlobalSett
  * The factory exists to keep configuration parsing separate from DI wiring and to make the
  * configuration creation testable.
  */
-interface GlobalSettingsConfigFactory {
+public interface GlobalSettingsConfigFactory {
     /**
      * Reads configuration values and returns a new immutable [GlobalSettingsConfig].
      */
-    fun create(): GlobalSettingsConfig
+    public fun create(): GlobalSettingsConfig
 }

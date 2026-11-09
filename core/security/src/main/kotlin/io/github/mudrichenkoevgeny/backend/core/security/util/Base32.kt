@@ -7,13 +7,16 @@ package io.github.mudrichenkoevgeny.backend.core.security.util
  * spaces and hyphens) during decoding and provides efficient bit-shifting
  * transformations without external dependencies.
  */
-object Base32 {
+public object Base32 {
     private const val ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
     private val DIGITS = IntArray(128) { -1 }.apply {
         ALPHABET.forEachIndexed { i, char -> this[char.code] = i }
     }
 
-    fun encode(data: ByteArray): String {
+    /**
+     * Encodes byte array [data] into a Base32 string.
+     */
+    public fun encode(data: ByteArray): String {
         var i = 0
         var index = 0
         var digit: Int
@@ -45,7 +48,10 @@ object Base32 {
         return base32.toString()
     }
 
-    fun decode(base32: String): ByteArray {
+    /**
+     * Decodes Base32 encoded string [base32] into a byte array.
+     */
+    public fun decode(base32: String): ByteArray {
         val cleaned = base32.uppercase().replace("-", "").replace(" ", "")
         val out = ByteArray(cleaned.length * 5 / 8)
         var buffer = 0

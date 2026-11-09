@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class RequestContextExtractorTest {
-
     private val call = mockk<RoutingCall>()
     private val request = mockk<RoutingRequest>()
     private val payload = mockk<Payload>()
@@ -40,12 +39,18 @@ class RequestContextExtractorTest {
         every { call.request } returns request
         every { call.attributes } returns mockk(relaxed = true)
 
-        mockkStatic(JWT_EXTENSIONS_KT, CLIENT_INFO_EXTRACTOR_KT)
+        mockkStatic(
+            JWT_EXTENSIONS_KT,
+            CLIENT_INFO_EXTRACTOR_KT
+        )
     }
 
     @AfterEach
     fun tearDown() {
-        unmockkStatic(JWT_EXTENSIONS_KT, CLIENT_INFO_EXTRACTOR_KT)
+        unmockkStatic(
+            JWT_EXTENSIONS_KT,
+            CLIENT_INFO_EXTRACTOR_KT
+        )
     }
 
     @Test
@@ -56,7 +61,10 @@ class RequestContextExtractorTest {
 
         val result = call.getRequestContext()
 
-        assertEquals(TEST_TRACE_ID, result.traceId)
+        assertEquals(
+            TEST_TRACE_ID,
+            result.traceId
+        )
         assertNull(result.userId)
         assertNull(result.sessionId)
     }
@@ -75,10 +83,22 @@ class RequestContextExtractorTest {
 
         val result = call.getAuthenticatedRequestContext()
 
-        assertEquals(TEST_TRACE_ID, result.traceId)
-        assertEquals(expectedUserId, result.userId)
-        assertEquals(UserRole.USER, result.userRole)
-        assertEquals(expectedSessionId, result.sessionId)
+        assertEquals(
+            TEST_TRACE_ID,
+            result.traceId
+        )
+        assertEquals(
+            expectedUserId,
+            result.userId
+        )
+        assertEquals(
+            UserRole.USER,
+            result.userRole
+        )
+        assertEquals(
+            expectedSessionId,
+            result.sessionId
+        )
     }
 
     @Test
@@ -108,7 +128,9 @@ class RequestContextExtractorTest {
         private const val TEST_TRACE_ID = "trace-123"
         private const val TEST_USER_ID = "550e8400-e29b-41d4-a716-446655440000"
         private const val TEST_SESSION_ID = "123e4567-e89b-12d3-a456-426614174000"
-        private const val JWT_EXTENSIONS_KT = "io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.JwtExtensionsKt"
-        private const val CLIENT_INFO_EXTRACTOR_KT = "io.github.mudrichenkoevgeny.backend.core.common.network.utils.ClientInfoExtractorKt"
+        private const val JWT_EXTENSIONS_KT =
+            "io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.JwtExtensionsKt"
+        private const val CLIENT_INFO_EXTRACTOR_KT =
+            "io.github.mudrichenkoevgeny.backend.core.common.network.utils.ClientInfoExtractorKt"
     }
 }

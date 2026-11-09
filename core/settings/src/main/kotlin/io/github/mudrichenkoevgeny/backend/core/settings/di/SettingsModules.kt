@@ -1,11 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.core.settings.di
 
 import dagger.Module
+import io.github.mudrichenkoevgeny.backend.core.settings.di.module.GlobalSettingsProviderModule
 import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsConfigModule
 import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsManagersModule
-import io.github.mudrichenkoevgeny.backend.core.settings.di.module.GlobalSettingsProviderModule
 import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsRepositoriesModule
 import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsServicesModule
+
 /**
  * Dagger module aggregator for the settings feature.
  *
@@ -21,4 +22,4 @@ import io.github.mudrichenkoevgeny.backend.core.settings.di.module.SettingsServi
         GlobalSettingsProviderModule::class
     ]
 )
-interface SettingsModules
+public interface SettingsModules

@@ -1,18 +1,18 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.di
 
 import dagger.Module
-import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserAuthInfrastructureModule
-import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserConfigModule
-import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserManagersModule
-import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserRepositoriesModule
-import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserServicesModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.AuthSettingsProviderModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.EmailParserModule
-import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserAuditErrorParserModule
-import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserExternalAuthVerifierModule
-import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserScheduledJobsModule
-import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserWebSocketModule
 import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserAppErrorParserModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserAuditErrorParserModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserAuthInfrastructureModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserConfigModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserExternalAuthVerifierModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserManagersModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserRepositoriesModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserScheduledJobsModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserServicesModule
+import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserWebSocketModule
 
 /**
  * Aggregates all Dagger modules required by the user feature.
@@ -36,4 +36,4 @@ import io.github.mudrichenkoevgeny.backend.feature.user.di.module.UserAppErrorPa
         UserAppErrorParserModule::class
     ]
 )
-interface UserModules
+public interface UserModules

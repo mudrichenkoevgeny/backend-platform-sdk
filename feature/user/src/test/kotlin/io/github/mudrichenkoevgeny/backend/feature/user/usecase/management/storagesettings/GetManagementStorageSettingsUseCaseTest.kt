@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class GetManagementStorageSettingsUseCaseTest {
-
     private val storageSettingsProvider = mockk<StorageSettingsProvider>()
     private lateinit var useCase: GetManagementStorageSettingsUseCase
 
@@ -39,6 +38,9 @@ class GetManagementStorageSettingsUseCaseTest {
         val result = useCase()
 
         assertTrue(result is AppResult.Success)
-        assertEquals(expectedSettings, (result as AppResult.Success).data)
+        assertEquals(
+            expectedSettings,
+            (result as AppResult.Success).data
+        )
     }
 }

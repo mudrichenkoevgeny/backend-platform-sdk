@@ -11,7 +11,7 @@ import io.ktor.http.HttpStatusCode
 /**
  * Security-related errors: authentication requirements and password policy.
  */
-sealed class SecurityError(
+public sealed class SecurityError(
     override val errorId: ErrorId,
     override val code: String,
     override val publicArgs: Map<String, Any>? = null,
@@ -19,13 +19,12 @@ sealed class SecurityError(
     override val httpStatusCode: HttpStatusCode,
     override val appErrorSeverity: AppErrorSeverity
 ) : AppError {
-
     /**
      * Action requires confirmation via a TOTP (Time-based One-Time Password).
      *
      * @param mfaToken The token required for the subsequent verification request.
      */
-    class MfaConfirmationRequired(
+    public class MfaConfirmationRequired(
         mfaToken: String
     ) : SecurityError(
         errorId = ErrorId.generate(),
@@ -43,7 +42,7 @@ sealed class SecurityError(
      * @param publicArgs Map of rule names to boolean/string values (e.g. passwordTooShort,
      * passwordMinLength) used for localized error messages.
      */
-    class PasswordTooWeak(
+    public class PasswordTooWeak(
         publicArgs: Map<String, Any>
     ) : SecurityError(
         errorId = ErrorId.generate(),
@@ -58,7 +57,7 @@ sealed class SecurityError(
      *
      * @param retryAfterSeconds Remaining wait time in seconds.
      */
-    class OtpRetryTooSoon(
+    public class OtpRetryTooSoon(
         retryAfterSeconds: Int
     ) : SecurityError(
         errorId = ErrorId.generate(),
@@ -73,70 +72,77 @@ sealed class SecurityError(
     /**
      * Indicates that TOTP is already configured and active for the account.
      */
-    class TotpAlreadyEnabled : SecurityError(
-        errorId = ErrorId.generate(),
-        code = SecurityErrorCodes.TOTP_ALREADY_ENABLED,
-        httpStatusCode = HttpStatusCode.Conflict,
-        appErrorSeverity = AppErrorSeverity.LOW
-    )
+    public class TotpAlreadyEnabled :
+        SecurityError(
+            errorId = ErrorId.generate(),
+            code = SecurityErrorCodes.TOTP_ALREADY_ENABLED,
+            httpStatusCode = HttpStatusCode.Conflict,
+            appErrorSeverity = AppErrorSeverity.LOW
+        )
 
     /**
      * Operation failed because TOTP has not been set up for this account.
      */
-    class TotpNotEnabled : SecurityError(
-        errorId = ErrorId.generate(),
-        code = SecurityErrorCodes.TOTP_NOT_ENABLED,
-        httpStatusCode = HttpStatusCode.BadRequest,
-        appErrorSeverity = AppErrorSeverity.LOW
-    )
+    public class TotpNotEnabled :
+        SecurityError(
+            errorId = ErrorId.generate(),
+            code = SecurityErrorCodes.TOTP_NOT_ENABLED,
+            httpStatusCode = HttpStatusCode.BadRequest,
+            appErrorSeverity = AppErrorSeverity.LOW
+        )
 
     /**
      * The provided MFA challenge token has expired and cannot be used for verification.
      */
-    class MfaTokenExpired : SecurityError(
-        errorId = ErrorId.generate(),
-        code = SecurityErrorCodes.MFA_TOKEN_EXPIRED,
-        httpStatusCode = HttpStatusCode.Unauthorized,
-        appErrorSeverity = AppErrorSeverity.LOW
-    )
+    public class MfaTokenExpired :
+        SecurityError(
+            errorId = ErrorId.generate(),
+            code = SecurityErrorCodes.MFA_TOKEN_EXPIRED,
+            httpStatusCode = HttpStatusCode.Unauthorized,
+            appErrorSeverity = AppErrorSeverity.LOW
+        )
 
     /**
      * The recovery code has already been used and is no longer valid for authentication.
      */
-    class RecoveryCodeAlreadyUsed : SecurityError(
-        errorId = ErrorId.generate(),
-        code = SecurityErrorCodes.RECOVERY_CODE_ALREADY_USED,
-        httpStatusCode = HttpStatusCode.Conflict,
-        appErrorSeverity = AppErrorSeverity.LOW
-    )
+    public class RecoveryCodeAlreadyUsed :
+        SecurityError(
+            errorId = ErrorId.generate(),
+            code = SecurityErrorCodes.RECOVERY_CODE_ALREADY_USED,
+            httpStatusCode = HttpStatusCode.Conflict,
+            appErrorSeverity = AppErrorSeverity.LOW
+        )
 
     /**
      * The TOTP or recovery code provided by the user is incorrect.
      */
-    class InvalidTotpCode : SecurityError(
-        errorId = ErrorId.generate(),
-        code = SecurityErrorCodes.INVALID_TOTP_CODE,
-        httpStatusCode = HttpStatusCode.Unauthorized,
-        appErrorSeverity = AppErrorSeverity.LOW
-    )
+    public class InvalidTotpCode :
+        SecurityError(
+            errorId = ErrorId.generate(),
+            code = SecurityErrorCodes.INVALID_TOTP_CODE,
+            httpStatusCode = HttpStatusCode.Unauthorized,
+            appErrorSeverity = AppErrorSeverity.LOW
+        )
 
     /**
      * The provided MFA challenge token is invalid, malformed, or belongs to another session.
      */
-    class InvalidMfaToken : SecurityError(
-        errorId = ErrorId.generate(),
-        code = SecurityErrorCodes.INVALID_MFA_TOKEN,
-        httpStatusCode = HttpStatusCode.Unauthorized,
-        appErrorSeverity = AppErrorSeverity.LOW
-    )
+    public class InvalidMfaToken :
+        SecurityError(
+            errorId = ErrorId.generate(),
+            code = SecurityErrorCodes.INVALID_MFA_TOKEN,
+            httpStatusCode = HttpStatusCode.Unauthorized,
+            appErrorSeverity = AppErrorSeverity.LOW
+        )
 
     /**
      * Request was rejected because the client IP address is not permitted by IP restriction policy.
      */
-    class IpNotAllowed : SecurityError(
-        errorId = ErrorId.generate(),
-        code = SecurityErrorCodes.IP_NOT_ALLOWED,
-        httpStatusCode = HttpStatusCode.Forbidden,
-        appErrorSeverity = AppErrorSeverity.LOW
-    )
+    public class IpNotAllowed :
+        SecurityError(
+            errorId = ErrorId.generate(),
+            code = SecurityErrorCodes.IP_NOT_ALLOWED,
+            httpStatusCode = HttpStatusCode.Forbidden,
+            appErrorSeverity = AppErrorSeverity.LOW
+        )
 }

@@ -14,7 +14,9 @@ fun createTestApplicationCallWithQuery(queryParameters: Parameters): Application
     return call
 }
 
-enum class TestSort(val wire: String) {
+enum class TestSort(
+    val wire: String
+) {
     DEFAULT("default"),
     CUSTOM("custom");
 

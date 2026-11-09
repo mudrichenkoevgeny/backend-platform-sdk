@@ -1,8 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.observability.application
 
-import io.github.mudrichenkoevgeny.backend.core.common.logs.naming.TracingKeys
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.logs.naming.TracingKeys
 import io.github.mudrichenkoevgeny.backend.core.observability.metrics.naming.MetricAttributes
 import io.github.mudrichenkoevgeny.backend.core.observability.metrics.naming.MetricDefaults
 import io.github.mudrichenkoevgeny.backend.core.observability.metrics.naming.MetricSpecs
@@ -27,13 +27,15 @@ import kotlinx.coroutines.withContext
 import org.slf4j.MDC
 
 /** [AttributeKey] name used to obtain [Routing] from the call attributes when resolving the route path for metrics. */
-const val ROUTING_ATTRIBUTE_KEY = "Routing"
+public const val ROUTING_ATTRIBUTE_KEY: String = "Routing"
 
 /** Fallback path value for metrics and spans when the route cannot be determined from attributes or request URI. */
-const val DEFAULT_ROUTE_PATH = "unknown_route"
+public const val DEFAULT_ROUTE_PATH: String = "unknown_route"
 
 /** Default span status message when a recorded exception has no message. */
-const val UNKNOWN_ERROR_MESSAGE = "Unknown error"
+public const val UNKNOWN_ERROR_MESSAGE: String = "Unknown error"
+
+private const val NANOS_PER_MILLIS: Long = 1_000_000L
 
 /**
  * Configures observability for the Ktor [Application]: metrics and distributed tracing.
@@ -47,7 +49,7 @@ const val UNKNOWN_ERROR_MESSAGE = "Unknown error"
  * @param telemetryProvider supplies tracer, meter and Prometheus registry for metrics and tracing.
  * @param appLogger used to log unhandled exceptions before rethrowing.
  */
-fun Application.configureObservability(
+public fun Application.configureObservability(
     telemetryProvider: TelemetryProvider,
     appLogger: AppLogger
 ) {
@@ -55,7 +57,10 @@ fun Application.configureObservability(
         registry = telemetryProvider.prometheusMeterRegistry
     }
 
-    setupTracing(telemetryProvider, appLogger)
+    setupTracing(
+        telemetryProvider,
+        appLogger
+    )
 }
 
 private fun Application.setupTracing(
@@ -86,17 +91,15 @@ private fun Application.setupTracing(
     intercept(ApplicationCallPipeline.Monitoring) {
         val routingKey = AttributeKey<Routing>(ROUTING_ATTRIBUTE_KEY)
 
-        val routePath = call.attributes.getOrNull(routingKey)
+        val routePath = call.attributes
+            .getOrNull(routingKey)
             ?.toString()
             ?.substringAfter(" /")
-            ?: call.request.uri.takeIf { it.isNotBlank() }
-            ?: DEFAULT_ROUTE_PATH
+            ?: call.request.uri.takeIf { it.isNotBlank() } ?: DEFAULT_ROUTE_PATH
 
         val method = call.request.httpMethod.value
 
-        val span = tracer.spanBuilder(call.request.uri)
-            .setSpanKind(SpanKind.SERVER)
-            .startSpan()
+        val span = tracer.spanBuilder(call.request.uri).setSpanKind(SpanKind.SERVER).startSpan()
 
         val traceId = span.spanContext.traceId
         val contextWithSpan = Context.current().with(span)
@@ -104,8 +107,14 @@ private fun Application.setupTracing(
 
         var isThrowable = false
         try {
-            MDC.put(TracingKeys.TRACE_ID_KEY, traceId)
-            call.response.headers.append(CommonHttpHeaders.TRACE_HEADER_NAME, traceId)
+            MDC.put(
+                TracingKeys.TRACE_ID_KEY,
+                traceId
+            )
+            call.response.headers.append(
+                CommonHttpHeaders.TRACE_HEADER_NAME,
+                traceId
+            )
 
             withContext(contextWithSpan.asContextElement()) {
                 proceed()
@@ -116,10 +125,13 @@ private fun Application.setupTracing(
             appLogger.logError(CommonError.Internal(e))
             isThrowable = true
             span.recordException(e)
-            span.setStatus(StatusCode.ERROR, e.message ?: UNKNOWN_ERROR_MESSAGE)
+            span.setStatus(
+                StatusCode.ERROR,
+                e.message ?: UNKNOWN_ERROR_MESSAGE
+            )
             throw e
         } finally {
-            val durationMs = (System.nanoTime() - startTimeNs) / 1_000_000
+            val durationMs = (System.nanoTime() - startTimeNs) / NANOS_PER_MILLIS
 
             val responseStatus = call.response.status()?.value
             val statusCode = responseStatus ?: if (isThrowable) {
@@ -128,17 +140,33 @@ private fun Application.setupTracing(
                 200
             }
 
-            val attributes = Attributes.builder()
-                .put(MetricAttributes.ENDPOINT, routePath)
-                .put(MetricAttributes.METHOD, method)
-                .put(MetricAttributes.STATUS_CODE, statusCode.toLong())
-                .build()
+            val attributes = Attributes
+                .builder()
+                .put(
+                    MetricAttributes.ENDPOINT,
+                    routePath
+                ).put(
+                    MetricAttributes.METHOD,
+                    method
+                ).put(
+                    MetricAttributes.STATUS_CODE,
+                    statusCode.toLong()
+                ).build()
 
-            requestCounter.add(MetricDefaults.COUNTER_VALUE, attributes)
-            requestLatency.record(durationMs.toDouble(), attributes)
+            requestCounter.add(
+                MetricDefaults.COUNTER_VALUE,
+                attributes
+            )
+            requestLatency.record(
+                durationMs.toDouble(),
+                attributes
+            )
 
             if (isThrowable || statusCode >= 400) {
-                errorCounter.add(MetricDefaults.COUNTER_VALUE, attributes)
+                errorCounter.add(
+                    MetricDefaults.COUNTER_VALUE,
+                    attributes
+                )
             }
 
             span.end()

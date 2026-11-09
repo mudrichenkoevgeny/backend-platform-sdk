@@ -35,11 +35,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ResetStorageSettingsUseCaseTest {
-
     private val storageSettingsProvider = mockk<StorageSettingsProvider>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val webSocketManager = mockk<WebSocketManager>(relaxed = true)
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
@@ -67,7 +69,13 @@ class ResetStorageSettingsUseCaseTest {
         val userSession = createTestUserSessionInternal(userId = userId)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(userSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(userInternal, userSession, true) } returns AppResult.Success(Unit)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                userInternal,
+                userSession,
+                true
+            )
+        } returns AppResult.Success(Unit)
     }
 
     @Test
@@ -82,7 +90,10 @@ class ResetStorageSettingsUseCaseTest {
         val result = useCase(context)
 
         assertTrue(result is AppResult.Success)
-        assertEquals(defaultSettings, (result as AppResult.Success).data)
+        assertEquals(
+            defaultSettings,
+            (result as AppResult.Success).data
+        )
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
@@ -115,7 +126,10 @@ class ResetStorageSettingsUseCaseTest {
 
         val result = useCase(context)
 
-        assertEquals(expectedError, result)
+        assertEquals(
+            expectedError,
+            result
+        )
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorId = userId.asHexDashString(),

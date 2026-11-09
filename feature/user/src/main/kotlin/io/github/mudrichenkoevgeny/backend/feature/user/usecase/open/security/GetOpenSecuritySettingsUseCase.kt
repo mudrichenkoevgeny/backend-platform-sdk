@@ -6,8 +6,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to retrieve public security settings snapshot.
+ */
 @Singleton
-class GetOpenSecuritySettingsUseCase @Inject constructor(
+public class GetOpenSecuritySettingsUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider
 ) {
     /**
@@ -25,7 +28,6 @@ class GetOpenSecuritySettingsUseCase @Inject constructor(
      *
      * @return [AppResult] containing the [OpenSecuritySettings].
      */
-    operator fun invoke(): AppResult<OpenSecuritySettings> {
-        return AppResult.Success(securitySettingsProvider.getOpenSecuritySettings())
-    }
+    public operator fun invoke(): AppResult<OpenSecuritySettings> =
+        AppResult.Success(securitySettingsProvider.getOpenSecuritySettings())
 }

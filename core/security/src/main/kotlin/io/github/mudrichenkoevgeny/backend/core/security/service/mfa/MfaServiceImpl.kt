@@ -21,11 +21,10 @@ import kotlin.uuid.Uuid
  * [MfaChallengeType] contexts is strictly prohibited during retrieval.
  */
 @Singleton
-class MfaServiceImpl @Inject constructor(
+public class MfaServiceImpl @Inject constructor(
     private val redisManager: RedisManager,
     private val securitySettingsProvider: SecuritySettingsProvider
 ) : MfaService {
-
     override suspend fun createChallenge(
         userId: String,
         userRole: String,
@@ -49,11 +48,12 @@ class MfaServiceImpl @Inject constructor(
 
         val serializedData = FoundationJson.encodeToString(data)
 
-        return redisManager.setWithExpiration(
-            key = buildKey(token),
-            value = serializedData,
-            expirationSeconds = expirationSeconds.toLong()
-        ).mapSuccess { data }
+        return redisManager
+            .setWithExpiration(
+                key = buildKey(token),
+                value = serializedData,
+                expirationSeconds = expirationSeconds.toLong()
+            ).mapSuccess { data }
     }
 
     override suspend fun getChallenge(
@@ -64,8 +64,8 @@ class MfaServiceImpl @Inject constructor(
         val result = redisManager.get(key)
 
         val serializedData = when (result) {
-            is AppResult.Success -> result.data
-                ?: return AppResult.Error(SecurityError.MfaTokenExpired())
+            is AppResult.Success -> result.data ?: return AppResult.Error(SecurityError.MfaTokenExpired())
+
             is AppResult.Error -> return result
         }
 
@@ -84,9 +84,7 @@ class MfaServiceImpl @Inject constructor(
         }
     }
 
-    override suspend fun consumeChallenge(token: String): AppResult<Unit> {
-        return redisManager.delete(buildKey(token))
-    }
+    override suspend fun consumeChallenge(token: String): AppResult<Unit> = redisManager.delete(buildKey(token))
 
     override suspend fun validateChallenge(
         token: String,
@@ -108,7 +106,5 @@ class MfaServiceImpl @Inject constructor(
         return consumeChallenge(token)
     }
 
-    private fun buildKey(token: String): String {
-        return "mfa_challenge:$token"
-    }
+    private fun buildKey(token: String): String = "mfa_challenge:$token"
 }

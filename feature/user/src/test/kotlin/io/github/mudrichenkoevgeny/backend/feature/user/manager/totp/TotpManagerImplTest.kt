@@ -1,30 +1,26 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.totp
 
-import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.aescryptor.AesCryptor
 import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.TotpCryptoProcessor
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usertotpsettings.UserTotpSettingsRepository
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.model.totp.createTestUserTotpSettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.time.Clock
 
 class TotpManagerImplTest {
-
     private val userTotpSettingsRepository = mockk<UserTotpSettingsRepository>()
     private val userRepository = mockk<UserRepository>()
     private val aesCryptor = mockk<AesCryptor>()
@@ -42,33 +38,57 @@ class TotpManagerImplTest {
 
     @Test
     fun `initiateTotpSetup returns settings`() = runTest {
-        val settings = createSampleSettings(userId, isConfirmed = false)
+        val settings = createSampleSettings(
+            userId,
+            isConfirmed = false
+        )
         coEvery {
-            userTotpSettingsRepository.upsertUnconfirmedSettings(userId, encryptedSecret)
+            userTotpSettingsRepository.upsertUnconfirmedSettings(
+                userId,
+                encryptedSecret
+            )
         } returns AppResult.Success(settings)
 
-        val result = manager.initiateTotpSetup(userId, encryptedSecret)
+        val result = manager.initiateTotpSetup(
+            userId,
+            encryptedSecret
+        )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(settings, (result as AppResult.Success).data)
+        assertEquals(
+            settings,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
     fun `confirmTotp success flow`() = runTest {
         val decryptedCodes = listOf(DecryptedString("code1"))
         val encryptedCodes = listOf(EncryptedString("enc1"))
-        val settings = createSampleSettings(userId, isConfirmed = true)
+        val settings = createSampleSettings(
+            userId,
+            isConfirmed = true
+        )
         val userInternal = createSampleUserInternal(userId)
 
         coEvery { aesCryptor.encrypt(any()) } returns AppResult.Success(encryptedCodes.first())
         coEvery {
-            userTotpSettingsRepository.confirmTotp(userId, any())
+            userTotpSettingsRepository.confirmTotp(
+                userId,
+                any()
+            )
         } returns AppResult.Success(settings)
         coEvery {
-            userRepository.updateUser(userId, updateUserParams = any())
+            userRepository.updateUser(
+                userId,
+                updateUserParams = any()
+            )
         } returns AppResult.Success(userInternal)
 
-        val result = manager.confirmTotp(userId, decryptedCodes)
+        val result = manager.confirmTotp(
+            userId,
+            decryptedCodes
+        )
 
         assertTrue(result is AppResult.Success)
     }
@@ -79,7 +99,10 @@ class TotpManagerImplTest {
 
         coEvery { userTotpSettingsRepository.deleteSettings(userId) } returns AppResult.Success(Unit)
         coEvery {
-            userRepository.updateUser(userId, updateUserParams = any())
+            userRepository.updateUser(
+                userId,
+                updateUserParams = any()
+            )
         } returns AppResult.Success(userInternal)
 
         val result = manager.disableTotp(userId)
@@ -89,13 +112,22 @@ class TotpManagerImplTest {
 
     @Test
     fun `verifyTotp code valid`() = runTest {
-        val settings = createSampleSettings(userId, isConfirmed = true)
+        val settings = createSampleSettings(
+            userId,
+            isConfirmed = true
+        )
         coEvery { userTotpSettingsRepository.getSettingsByUserId(userId) } returns AppResult.Success(settings)
         coEvery {
-            totpCryptoProcessor.isCodeValid("123456", settings.encryptedSecret)
+            totpCryptoProcessor.isCodeValid(
+                "123456",
+                settings.encryptedSecret
+            )
         } returns AppResult.Success(true)
 
-        val result = manager.verifyTotp(userId, "123456")
+        val result = manager.verifyTotp(
+            userId,
+            "123456"
+        )
 
         assertTrue(result is AppResult.Success)
     }
@@ -104,17 +136,26 @@ class TotpManagerImplTest {
     fun `verifyTotpRecoveryCode valid code deletes it`() = runTest {
         val recoveryCode = "REC-1"
         val encCode = EncryptedString("enc-rec-1")
-        val settings = createSampleSettings(userId, isConfirmed = true).copy(
+        val settings = createSampleSettings(
+            userId,
+            isConfirmed = true
+        ).copy(
             encryptedRecoveryCodes = listOf(encCode)
         )
 
         coEvery { userTotpSettingsRepository.getSettingsByUserId(userId) } returns AppResult.Success(settings)
         coEvery { aesCryptor.decrypt(encCode) } returns AppResult.Success(DecryptedString(recoveryCode))
         coEvery {
-            userTotpSettingsRepository.updateSettings(userId, encryptedRecoveryCodes = any())
+            userTotpSettingsRepository.updateSettings(
+                userId,
+                encryptedRecoveryCodes = any()
+            )
         } returns AppResult.Success(settings.copy(encryptedRecoveryCodes = emptyList()))
 
-        val result = manager.verifyTotpRecoveryCode(userId, recoveryCode)
+        val result = manager.verifyTotpRecoveryCode(
+            userId,
+            recoveryCode
+        )
 
         assertTrue(result is AppResult.Success)
     }
@@ -123,7 +164,10 @@ class TotpManagerImplTest {
     fun `getDecryptedRecoveryCodes success`() = runTest {
         val encCodes = listOf(EncryptedString("e1"))
         val decCodes = listOf(DecryptedString("d1"))
-        val settings = createSampleSettings(userId, isConfirmed = true).copy(
+        val settings = createSampleSettings(
+            userId,
+            isConfirmed = true
+        ).copy(
             encryptedRecoveryCodes = encCodes
         )
 
@@ -133,44 +177,71 @@ class TotpManagerImplTest {
         val result = manager.getDecryptedRecoveryCodes(userId)
 
         assertTrue(result is AppResult.Success)
-        assertEquals(decCodes, (result as AppResult.Success).data)
+        assertEquals(
+            decCodes,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
     fun `updateRecoveryCodes flow`() = runTest {
         val newDec = listOf(DecryptedString("n1"))
         val newEnc = listOf(EncryptedString("ne1"))
-        val settings = createSampleSettings(userId, isConfirmed = true).copy(
+        val settings = createSampleSettings(
+            userId,
+            isConfirmed = true
+        ).copy(
             encryptedRecoveryCodes = newEnc
         )
 
         coEvery { aesCryptor.encrypt(any()) } returns AppResult.Success(newEnc.first())
         coEvery {
-            userTotpSettingsRepository.updateSettings(userId, encryptedRecoveryCodes = any())
+            userTotpSettingsRepository.updateSettings(
+                userId,
+                encryptedRecoveryCodes = any()
+            )
         } returns AppResult.Success(settings)
         coEvery { aesCryptor.decrypt(newEnc.first()) } returns AppResult.Success(newDec.first())
 
-        val result = manager.updateRecoveryCodes(userId, newDec)
+        val result = manager.updateRecoveryCodes(
+            userId,
+            newDec
+        )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(newDec, (result as AppResult.Success).data)
+        assertEquals(
+            newDec,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
     fun `markAsUsed success`() = runTest {
         val now = Clock.System.now()
-        val settings = createSampleSettings(userId, isConfirmed = true)
+        val settings = createSampleSettings(
+            userId,
+            isConfirmed = true
+        )
 
         coEvery {
-            userTotpSettingsRepository.updateSettings(userId, lastUsedAt = any())
+            userTotpSettingsRepository.updateSettings(
+                userId,
+                lastUsedAt = any()
+            )
         } returns AppResult.Success(settings)
 
-        val result = manager.markAsUsed(userId, now)
+        val result = manager.markAsUsed(
+            userId,
+            now
+        )
 
         assertTrue(result is AppResult.Success)
     }
 
-    private fun createSampleSettings(uId: UserId, isConfirmed: Boolean) = createTestUserTotpSettings(
+    private fun createSampleSettings(
+        uId: UserId,
+        isConfirmed: Boolean
+    ) = createTestUserTotpSettings(
         userId = uId,
         encryptedSecret = EncryptedString("secret"),
         isConfirmed = isConfirmed

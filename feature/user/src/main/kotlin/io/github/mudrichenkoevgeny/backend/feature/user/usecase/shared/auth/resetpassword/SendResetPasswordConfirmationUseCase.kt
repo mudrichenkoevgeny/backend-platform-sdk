@@ -5,11 +5,11 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirmationData
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
@@ -17,8 +17,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to send password reset confirmation code to user email.
+ */
 @Singleton
-class SendResetPasswordConfirmationUseCase @Inject constructor(
+public class SendResetPasswordConfirmationUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val identifierManager: IdentifierManager,
     private val otpService: OtpService,
@@ -45,11 +48,14 @@ class SendResetPasswordConfirmationUseCase @Inject constructor(
      * @param requestContext The context of the request, used for localization.
      * @return [AppResult] containing [OtpConfirmation] metadata (expiry, resend intervals).
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         email: String,
         requestContext: RequestContext,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
-        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
     ): AppResult<OtpConfirmation> {
         val rateLimitCheck = rateLimiter.checkRateLimit(
             action = UserRateLimitAction.SEND_OTP_EMAIL,
@@ -81,12 +87,18 @@ class SendResetPasswordConfirmationUseCase @Inject constructor(
         val user = if (identifier != null) {
             val userResult = userManager.getUserInternalById(identifier.userId)
             (userResult as? AppResult.Success)?.data
-        } else null
+        } else {
+            null
+        }
 
         val isUserAllowed = user != null && user.role in allowedRoles && user.accountStatus in allowedAccountStatuses
 
         return if (identifier != null && isUserAllowed) {
-            sendConfirmationCode(email, otpConfirmationData, requestContext)
+            sendConfirmationCode(
+                email,
+                otpConfirmationData,
+                requestContext
+            )
         } else {
             fakeSendConfirmationCode(otpConfirmationData)
         }
@@ -109,9 +121,7 @@ class SendResetPasswordConfirmationUseCase @Inject constructor(
         return AppResult.Success(otpConfirmationData.otpConfirmation)
     }
 
-    private suspend fun fakeSendConfirmationCode(
-        otpConfirmationData: OtpConfirmationData
-    ): AppResult<OtpConfirmation> {
+    private suspend fun fakeSendConfirmationCode(otpConfirmationData: OtpConfirmationData): AppResult<OtpConfirmation> {
         val sendEmailResult = emailService.fakeSendEmail()
         if (sendEmailResult is AppResult.Error) {
             return AppResult.Error(sendEmailResult.error)

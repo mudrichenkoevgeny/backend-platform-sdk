@@ -6,13 +6,15 @@ import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Test
 
 class AppSystemResultTest {
-
     @Test
     fun `success wraps data`() {
         val result: AppSystemResult<String> = AppSystemResult.Success("ok")
 
         require(result is AppSystemResult.Success)
-        assertEquals("ok", result.data)
+        assertEquals(
+            "ok",
+            result.data
+        )
     }
 
     @Test
@@ -22,7 +24,9 @@ class AppSystemResultTest {
         val result: AppSystemResult<String> = AppSystemResult.Error(internal)
 
         require(result is AppSystemResult.Error)
-        assertSame(internal, result.internalError)
+        assertSame(
+            internal,
+            result.internalError
+        )
     }
 }
-

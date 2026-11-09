@@ -17,11 +17,10 @@ import kotlin.time.Instant
  * consecutive temporary lockouts, and indefinite lockout thresholds.
  */
 @Singleton
-class LockoutManagerImpl @Inject constructor(
+public class LockoutManagerImpl @Inject constructor(
     private val redisManager: RedisManager,
     private val securitySettingsProvider: SecuritySettingsProvider
 ) : LockoutManager {
-
     override suspend fun recordFailedAttempt(
         identifier: String,
         type: LockoutAttemptType
@@ -33,7 +32,10 @@ class LockoutManagerImpl @Inject constructor(
             LockoutAttemptType.TOTP -> policy.maxFailedTotpAttempts
         }
 
-        val counterKey = buildCounterKey(identifier, type)
+        val counterKey = buildCounterKey(
+            identifier,
+            type
+        )
         val countResult = redisManager.incrementWithExpiration(
             key = counterKey,
             expirationSeconds = policy.failedAttemptsWindowSeconds.toLong()
@@ -124,7 +126,10 @@ class LockoutManagerImpl @Inject constructor(
         redisManager.delete(consecutiveKey)
 
         for (type in LockoutAttemptType.entries) {
-            val counterKey = buildCounterKey(identifier, type)
+            val counterKey = buildCounterKey(
+                identifier,
+                type
+            )
             val deleteCounterResult = redisManager.delete(counterKey)
             if (deleteCounterResult is AppResult.Error) {
                 return deleteCounterResult
@@ -144,30 +149,30 @@ class LockoutManagerImpl @Inject constructor(
             keysToDelete.add(buildIndefiniteLockoutKey(identifier))
             keysToDelete.add(buildConsecutiveKey(identifier))
             for (type in LockoutAttemptType.entries) {
-                keysToDelete.add(buildCounterKey(identifier, type))
+                keysToDelete.add(
+                    buildCounterKey(
+                        identifier,
+                        type
+                    )
+                )
             }
         }
         return redisManager.deleteBatch(keysToDelete)
     }
 
-    private fun buildCounterKey(identifier: String, type: LockoutAttemptType): String {
-        return "lockout:failed:${type.name.lowercase()}:$identifier"
-    }
+    private fun buildCounterKey(
+        identifier: String,
+        type: LockoutAttemptType
+    ): String = "lockout:failed:${type.name.lowercase()}:$identifier"
 
-    private fun buildLockoutKey(identifier: String): String {
-        return "lockout:blocked:$identifier"
-    }
+    private fun buildLockoutKey(identifier: String): String = "lockout:blocked:$identifier"
 
-    private fun buildIndefiniteLockoutKey(identifier: String): String {
-        return "lockout:indefinite:$identifier"
-    }
+    private fun buildIndefiniteLockoutKey(identifier: String): String = "lockout:indefinite:$identifier"
 
-    private fun buildConsecutiveKey(identifier: String): String {
-        return "lockout:consecutive:$identifier"
-    }
+    private fun buildConsecutiveKey(identifier: String): String = "lockout:consecutive:$identifier"
 
-    companion object {
+    public companion object {
         private const val REDIS_TRUE_FLAG = "1"
-        private val INDEFINITE_LOCKOUT_TTL_SECONDS = 7.days.inWholeSeconds // 7 days in seconds
+        private val INDEFINITE_LOCKOUT_TTL_SECONDS = 7.days.inWholeSeconds
     }
 }

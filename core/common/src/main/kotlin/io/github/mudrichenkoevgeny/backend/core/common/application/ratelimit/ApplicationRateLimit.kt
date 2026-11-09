@@ -15,7 +15,7 @@ import io.ktor.server.request.httpMethod
  * - Uses the `X-Forwarded-For` header or remote address as a key.
  * - Skips limiting for `OPTIONS` (preflight) requests.
  */
-fun Application.configureGlobalRateLimit(
+public fun Application.configureGlobalRateLimit(
     rateLimit: Int,
     rateLimitPeriodSeconds: Int
 ) {
@@ -31,7 +31,7 @@ fun Application.configureGlobalRateLimit(
  * Automatically detects changes in [getMaxRequestsPerPeriod] and [getRateLimitPeriodSeconds]
  * when settings are updated at runtime.
  */
-fun Application.configureGlobalRateLimit(
+public fun Application.configureGlobalRateLimit(
     getMaxRequestsPerPeriod: () -> Int,
     getRateLimitPeriodSeconds: () -> Int
 ) {
@@ -51,8 +51,7 @@ fun Application.configureGlobalRateLimit(
                     return@requestKey "options-preflight-skip"
                 }
 
-                call.request.headers[CommonNetworkHttpHeaders.X_FORWARDED_FOR]
-                    ?: call.request.local.remoteAddress
+                call.request.headers[CommonNetworkHttpHeaders.X_FORWARDED_FOR] ?: call.request.local.remoteAddress
             }
         }
     }

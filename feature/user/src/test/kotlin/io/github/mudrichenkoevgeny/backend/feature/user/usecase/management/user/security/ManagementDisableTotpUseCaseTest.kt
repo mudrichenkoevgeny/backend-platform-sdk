@@ -6,8 +6,6 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
@@ -22,6 +20,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -31,11 +31,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ManagementDisableTotpUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
     private val totpManager = mockk<TotpManager>()
@@ -72,18 +74,38 @@ class ManagementDisableTotpUseCaseTest {
             role = UserRole.USER
         )
 
-        val managerSession = createTestUserSessionInternal(id = sessionId, userId = managerId)
+        val managerSession = createTestUserSessionInternal(
+            id = sessionId,
+            userId = managerId
+        )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
         coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(managerSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { totpManager.disableTotp(targetId) } returns AppResult.Success(Unit)
 
-        val result = useCase(targetId, context)
+        val result = useCase(
+            targetId,
+            context
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
         coVerify { totpManager.disableTotp(targetId) }
         coVerify {
             auditLogger.log(
@@ -101,7 +123,10 @@ class ManagementDisableTotpUseCaseTest {
 
     @Test
     fun `returns error when attempting to disable own TOTP via management`() = runTest {
-        val result = useCase(managerId, context)
+        val result = useCase(
+            managerId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserForbidden)
     }
@@ -117,11 +142,19 @@ class ManagementDisableTotpUseCaseTest {
             isTotpEnabled = false
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
 
-        val result = useCase(targetId, context)
+        val result = useCase(
+            targetId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is SecurityError.TotpNotEnabled)
     }
@@ -139,11 +172,19 @@ class ManagementDisableTotpUseCaseTest {
             authorityLevel = 50
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
 
-        val result = useCase(targetId, context)
+        val result = useCase(
+            targetId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserInsufficientAuthorityLevel)
     }
@@ -163,11 +204,19 @@ class ManagementDisableTotpUseCaseTest {
             role = UserRole.STAFF
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
 
-        val result = useCase(targetId, context)
+        val result = useCase(
+            targetId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserMissingPermissions)
     }
@@ -186,11 +235,19 @@ class ManagementDisableTotpUseCaseTest {
             role = UserRole.ADMIN
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
 
-        val result = useCase(targetId, context)
+        val result = useCase(
+            targetId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserForbidden)
     }

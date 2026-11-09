@@ -16,13 +16,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.reques
  * @return [LoginByExternalAuthProviderParams] domain model containing mapped authentication fields.
  * @throws [RequestHandlingException] if [LoginByExternalAuthProviderRequest.authProvider] cannot be parsed.
  */
-fun LoginByExternalAuthProviderRequest.toLoginByExternalAuthProviderParams(): LoginByExternalAuthProviderParams {
-    val parsedAuthProvider = UserAuthProvider.fromValueOrNull(authProvider)
-        ?: throw RequestHandlingException(
-            CommonError.InvalidFieldValue(
-                fieldName = UserApiFields.AUTH_PROVIDER
-            )
+public fun LoginByExternalAuthProviderRequest.toLoginByExternalAuthProviderParams(): LoginByExternalAuthProviderParams {
+    val parsedAuthProvider = UserAuthProvider.fromValueOrNull(authProvider) ?: throw RequestHandlingException(
+        CommonError.InvalidFieldValue(
+            fieldName = UserApiFields.AUTH_PROVIDER
         )
+    )
 
     return LoginByExternalAuthProviderParams(
         authProvider = parsedAuthProvider,

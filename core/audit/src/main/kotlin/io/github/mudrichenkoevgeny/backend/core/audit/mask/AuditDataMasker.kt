@@ -24,27 +24,30 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toA
  * Converts internal domain audit events ([AuditEventInternal]) into sanitized private models ([AuditEventPrivate])
  * when callers require masked views.
  */
-object AuditDataMasker {
-
+public object AuditDataMasker {
     /**
      * Transforms this [AuditEventInternal] into a sanitized [AuditEventPrivate] with sensitive fields
      * (such as `resourceId` and metadata values) redacted per their defined [AuditValueSensitivity].
      *
      * @return [AuditEventPrivate] containing masked sensitive data.
      */
-    fun AuditEventInternal.maskSensitiveData(): AuditEventPrivate {
+    public fun AuditEventInternal.maskSensitiveData(): AuditEventPrivate {
         val maskedAuditEventInternal = this.copy(
             resourceId = resourceId?.let {
-                maskBySensitivity(it, resourceValueSensitivity)
-            },
-            metadata = metadata.map { auditEventMetadata ->
-                auditEventMetadata.copy(
-                    value = maskBySensitivity(
-                        value = auditEventMetadata.value,
-                        sensitivity = auditEventMetadata.key.valueSensitivity
-                    )
+                maskBySensitivity(
+                    it,
+                    resourceValueSensitivity
                 )
-            }.toSet()
+            },
+            metadata = metadata
+                .map { auditEventMetadata ->
+                    auditEventMetadata.copy(
+                        value = maskBySensitivity(
+                            value = auditEventMetadata.value,
+                            sensitivity = auditEventMetadata.key.valueSensitivity
+                        )
+                    )
+                }.toSet()
         )
 
         return maskedAuditEventInternal.toAuditEventPrivate()
@@ -53,14 +56,15 @@ object AuditDataMasker {
     /**
      * Maps [AuditValueSensitivity] to the corresponding [DataMasker] helper; [AuditValueSensitivity.NON_SENSITIVE] returns [value] as-is.
      */
-    fun maskBySensitivity(value: String, sensitivity: AuditValueSensitivity): String {
-        return when (sensitivity) {
-            AuditValueSensitivity.NON_SENSITIVE -> value
-            AuditValueSensitivity.EMAIL -> maskEmail(value)
-            AuditValueSensitivity.PHONE_NUMBER -> maskPhone(value)
-            AuditValueSensitivity.IP_ADDRESS -> maskIpAddress(value)
-            AuditValueSensitivity.PARTIAL_VALUE_MASK -> maskPartialValue(value)
-            AuditValueSensitivity.FULL_VALUE_MASK -> maskFullValue(value)
-        }
+    public fun maskBySensitivity(
+        value: String,
+        sensitivity: AuditValueSensitivity
+    ): String = when (sensitivity) {
+        AuditValueSensitivity.NON_SENSITIVE -> value
+        AuditValueSensitivity.EMAIL -> maskEmail(value)
+        AuditValueSensitivity.PHONE_NUMBER -> maskPhone(value)
+        AuditValueSensitivity.IP_ADDRESS -> maskIpAddress(value)
+        AuditValueSensitivity.PARTIAL_VALUE_MASK -> maskPartialValue(value)
+        AuditValueSensitivity.FULL_VALUE_MASK -> maskFullValue(value)
     }
 }

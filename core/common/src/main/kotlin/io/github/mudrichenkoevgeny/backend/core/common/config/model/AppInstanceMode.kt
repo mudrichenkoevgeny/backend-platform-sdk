@@ -6,7 +6,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.config.model
  * Defines which API routes and background services (migrations, seeders, jobs)
  * are initialized at runtime.
  */
-enum class AppInstanceMode {
+public enum class AppInstanceMode {
     /** Public-facing API for end-users. Minimal background processing. */
     PUBLIC,
 
@@ -14,20 +14,20 @@ enum class AppInstanceMode {
     MANAGEMENT,
 
     /** Hybrid mode combining all roles. */
-    FULL;
+    FULL
 
-    companion object {
+    ;
+
+    public companion object {
         /**
          * Parses a nullable string into [AppInstanceMode], defaulting to [FULL] on null or invalid input.
          *
          * @param value raw instance mode value (case-insensitive).
          */
-        fun fromString(value: String?): AppInstanceMode {
-            return try {
-                value?.uppercase()?.let { valueOf(it) } ?: FULL
-            } catch (_: IllegalArgumentException) {
-                FULL
-            }
+        public fun fromString(value: String?): AppInstanceMode = try {
+            value?.uppercase()?.let { valueOf(it) } ?: FULL
+        } catch (_: IllegalArgumentException) {
+            FULL
         }
     }
 }

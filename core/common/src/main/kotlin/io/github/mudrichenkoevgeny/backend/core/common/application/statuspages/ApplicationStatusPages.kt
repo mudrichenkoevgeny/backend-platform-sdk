@@ -23,7 +23,7 @@ import kotlin.coroutines.cancellation.CancellationException
  * - [BadRequestException] → wraps into [CommonError.BadRequest].
  * - Any other [Throwable] → wraps into [CommonError.Internal] including the [ApplicationCall] context.
  */
-fun Application.configureStatusPages(
+public fun Application.configureStatusPages(
     appErrorParser: AppErrorParser,
     appLogger: AppLogger
 ) {
@@ -31,22 +31,40 @@ fun Application.configureStatusPages(
         exception<RequestHandlingException> { call, cause ->
             val appError = cause.error
             appLogger.logError(appError)
-            val apiErrorResponse = appErrorParser.getApiErrorResponse(appError, call.requestLocale())
-            call.respond(cause.error.httpStatusCode, apiErrorResponse)
+            val apiErrorResponse = appErrorParser.getApiErrorResponse(
+                appError,
+                call.requestLocale()
+            )
+            call.respond(
+                cause.error.httpStatusCode,
+                apiErrorResponse
+            )
         }
 
         exception<ContentTransformationException> { call, cause ->
             val appError = CommonError.InvalidJsonBody(cause.message)
             appLogger.logError(appError)
-            val apiErrorResponse = appErrorParser.getApiErrorResponse(appError, call.requestLocale())
-            call.respond(appError.httpStatusCode, apiErrorResponse)
+            val apiErrorResponse = appErrorParser.getApiErrorResponse(
+                appError,
+                call.requestLocale()
+            )
+            call.respond(
+                appError.httpStatusCode,
+                apiErrorResponse
+            )
         }
 
         exception<BadRequestException> { call, cause ->
             val appError = CommonError.BadRequest(cause.message)
             appLogger.logError(appError)
-            val apiErrorResponse = appErrorParser.getApiErrorResponse(appError, call.requestLocale())
-            call.respond(appError.httpStatusCode, apiErrorResponse)
+            val apiErrorResponse = appErrorParser.getApiErrorResponse(
+                appError,
+                call.requestLocale()
+            )
+            call.respond(
+                appError.httpStatusCode,
+                apiErrorResponse
+            )
         }
 
         exception<Throwable> { call, cause ->
@@ -54,10 +72,19 @@ fun Application.configureStatusPages(
                 throw cause
             }
 
-            val appError = CommonError.Internal(cause, call)
+            val appError = CommonError.Internal(
+                cause,
+                call
+            )
             appLogger.logError(appError)
-            val apiErrorResponse = appErrorParser.getApiErrorResponse(appError, call.requestLocale())
-            call.respond(appError.httpStatusCode, apiErrorResponse)
+            val apiErrorResponse = appErrorParser.getApiErrorResponse(
+                appError,
+                call.requestLocale()
+            )
+            call.respond(
+                appError.httpStatusCode,
+                apiErrorResponse
+            )
         }
     }
 }

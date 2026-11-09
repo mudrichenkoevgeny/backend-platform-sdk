@@ -49,6 +49,9 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.testcontainers.core)
+    testImplementation(libs.testcontainers.minio)
+    testImplementation(libs.testcontainers.junit.jupiter)
 }
 
 tasks.test {

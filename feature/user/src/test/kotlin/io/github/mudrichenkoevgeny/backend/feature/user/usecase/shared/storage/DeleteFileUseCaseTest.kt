@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DeleteFileUseCaseTest {
-
     private val storageManager = mockk<StorageManager>()
     private val useCase = DeleteFileUseCase(storageManager)
 
@@ -31,9 +30,15 @@ class DeleteFileUseCaseTest {
             )
         } returns AppResult.Success(Unit)
 
-        val result = useCase(fileId, context)
+        val result = useCase(
+            fileId,
+            context
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
         coVerify(exactly = 1) {
             storageManager.deleteSelfStorageFile(
                 ownerUserId = currentUserId.asHexDashString(),
@@ -53,7 +58,10 @@ class DeleteFileUseCaseTest {
             )
         } returns AppResult.Error(expectedError)
 
-        val result = useCase(fileId, context)
+        val result = useCase(
+            fileId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error == expectedError)
     }

@@ -6,8 +6,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to retrieve public authentication settings.
+ */
 @Singleton
-class GetOpenAuthSettingsUseCase @Inject constructor(
+public class GetOpenAuthSettingsUseCase @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider
 ) {
     /**
@@ -21,7 +24,6 @@ class GetOpenAuthSettingsUseCase @Inject constructor(
      *
      * @return [AppResult.Success] containing [OpenAuthSettings].
      */
-    operator fun invoke(): AppResult<OpenAuthSettings> {
-        return AppResult.Success(authSettingsProvider.getOpenAuthSettings())
-    }
+    public operator fun invoke(): AppResult<OpenAuthSettings> =
+        AppResult.Success(authSettingsProvider.getOpenAuthSettings())
 }

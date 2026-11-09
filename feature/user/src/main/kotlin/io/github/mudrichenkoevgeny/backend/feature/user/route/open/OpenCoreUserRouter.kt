@@ -6,11 +6,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.route.open.configuration
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.identifier.OpenIdentifierRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.security.OpenSecuritySettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.session.OpenSessionRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.open.user.OpenUserRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.open.user.security.OpenUserSecurityRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.settings.OpenGlobalSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.storage.OpenStorageRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.storage.OpenStorageSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.user.OpenUserRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.user.security.OpenUserSecurityRouter
 import io.ktor.server.routing.Route
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -36,7 +36,7 @@ import javax.inject.Singleton
  * 10. [OpenStorageSettingsRouter] — Public storage upload limits and configuration.
  */
 @Singleton
-class OpenCoreUserRouter @Inject constructor(
+public class OpenCoreUserRouter @Inject constructor(
     private val openStorageRouter: OpenStorageRouter,
     private val openAuthRouter: OpenAuthRouter,
     private val openUserConfigurationRouter: OpenUserConfigurationRouter,
@@ -48,7 +48,7 @@ class OpenCoreUserRouter @Inject constructor(
     private val openGlobalSettingsRouter: OpenGlobalSettingsRouter,
     private val openStorageSettingsRouter: OpenStorageSettingsRouter
 ) : BaseRouter {
-    override fun register(route: Route) {
+    public override fun register(route: Route) {
         openStorageRouter.register(route)
         openAuthRouter.register(route)
         openUserConfigurationRouter.register(route)

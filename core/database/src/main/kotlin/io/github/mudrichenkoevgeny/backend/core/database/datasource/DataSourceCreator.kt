@@ -6,8 +6,7 @@ import javax.sql.DataSource
  * Creates a JDBC [DataSource] from connection parameters.
  * Implementations typically use a connection pool (e.g. HikariCP).
  */
-interface DataSourceCreator {
-
+public interface DataSourceCreator {
     /**
      * Builds a configured [DataSource] for the given JDBC URL and credentials.
      *
@@ -16,5 +15,9 @@ interface DataSourceCreator {
      * @param password Database password.
      * @return configured [DataSource] ready for use.
      */
-    fun create(url: String, user: String, password: String): DataSource
+    public fun create(
+        url: String,
+        user: String,
+        password: String
+    ): DataSource
 }

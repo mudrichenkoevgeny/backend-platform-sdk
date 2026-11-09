@@ -33,24 +33,39 @@ import javax.inject.Singleton
  * 1. [SelfManagementRefreshTokenRoutes.REFRESH_TOKEN] — prolongs the management session via [RefreshTokenUseCase].
  */
 @Singleton
-class SelfManagementRefreshTokenRouter @Inject constructor(
+public class SelfManagementRefreshTokenRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val refreshTokenUseCase: RefreshTokenUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         registerRefreshTokenRoute(route)
     }
 
     private fun registerRefreshTokenRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = SelfManagementRefreshTokenRoutes.REFRESH_TOKEN,
-            builder = { refreshTokenDocs(allowedRoles, allowedAccountStatuses) },
-            body = { refreshToken(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                refreshTokenDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                refreshToken(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -94,15 +109,20 @@ class SelfManagementRefreshTokenRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { sessionToken ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { sessionToken ->
             sessionToken.toSessionTokenPayload()
         }
     }
 
-    companion object {
-        const val REFRESH_TOKEN_ROUTE_SUMMARY = "Refresh management auth token"
-        const val REFRESH_TOKEN_ROUTE_DESCRIPTION = "Exchanges a management refresh token for a new management session."
-        const val REFRESH_TOKEN_ROUTE_OPERATION_ID = "refreshManagementToken"
-        const val REFRESH_TOKEN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Token refreshed."
+    public companion object {
+        private const val REFRESH_TOKEN_ROUTE_SUMMARY = "Refresh management auth token"
+        private const val REFRESH_TOKEN_ROUTE_DESCRIPTION =
+            "Exchanges a management refresh token for a new management session."
+        private const val REFRESH_TOKEN_ROUTE_OPERATION_ID = "refreshManagementToken"
+        private const val REFRESH_TOKEN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Token refreshed."
     }
 }

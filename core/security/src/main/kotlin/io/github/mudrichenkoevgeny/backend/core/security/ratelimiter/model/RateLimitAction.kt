@@ -8,10 +8,13 @@ package io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model
  *
  * Default [createKey] follows `rl:{id}:{identifier}`; override when a different key shape is required.
  */
-interface RateLimitAction {
-    val id: String
-    val limit: Int
-    val windowSeconds: Int
+public interface RateLimitAction {
+    public val id: String
+    public val limit: Int
+    public val windowSeconds: Int
 
-    fun createKey(identifier: String): String = "rl:$id:$identifier"
+    /**
+     * Creates a unique storage key for rate limiting this action for [identifier].
+     */
+    public fun createKey(identifier: String): String = "rl:$id:$identifier"
 }

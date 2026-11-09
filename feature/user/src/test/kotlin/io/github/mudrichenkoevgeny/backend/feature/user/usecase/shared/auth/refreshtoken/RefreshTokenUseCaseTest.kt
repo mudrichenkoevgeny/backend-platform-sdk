@@ -8,7 +8,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.refreshtoken.RefreshTokenUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
@@ -27,7 +26,6 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
 class RefreshTokenUseCaseTest {
-
     private val sessionManager = mockk<SessionManager>()
     private val rateLimiter = mockk<RateLimiter>()
     private val refreshTokenProvider = mockk<RefreshTokenProvider>()
@@ -46,11 +44,27 @@ class RefreshTokenUseCaseTest {
 
         every { refreshTokenProvider.getRefreshTokenHash(refreshToken) } returns hashError
 
-        val result = useCase(refreshToken, ctx)
+        val result = useCase(
+            refreshToken,
+            ctx
+        )
 
-        assertEquals(hashError, result)
-        coVerify(exactly = 0) { rateLimiter.checkRateLimit(any(), any()) }
-        coVerify(exactly = 0) { sessionManager.refreshSession(any(), any()) }
+        assertEquals(
+            hashError,
+            result
+        )
+        coVerify(exactly = 0) {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        }
+        coVerify(exactly = 0) {
+            sessionManager.refreshSession(
+                any(),
+                any()
+            )
+        }
     }
 
     @Test
@@ -70,13 +84,27 @@ class RefreshTokenUseCaseTest {
             RefreshTokenHash(REFRESH_HASH_B64)
         )
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.REFRESH_TOKEN, REFRESH_HASH_B64)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.REFRESH_TOKEN,
+                REFRESH_HASH_B64
+            )
         } returns rateLimitError
 
-        val result = useCase(refreshToken, ctx)
+        val result = useCase(
+            refreshToken,
+            ctx
+        )
 
-        assertEquals(rateLimitError, result)
-        coVerify(exactly = 0) { sessionManager.refreshSession(any(), any()) }
+        assertEquals(
+            rateLimitError,
+            result
+        )
+        coVerify(exactly = 0) {
+            sessionManager.refreshSession(
+                any(),
+                any()
+            )
+        }
     }
 
     @Test
@@ -95,7 +123,10 @@ class RefreshTokenUseCaseTest {
             RefreshTokenHash(REFRESH_HASH_B64)
         )
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.REFRESH_TOKEN, REFRESH_HASH_B64)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.REFRESH_TOKEN,
+                REFRESH_HASH_B64
+            )
         } returns AppResult.Success(Unit)
 
         coEvery {
@@ -107,10 +138,16 @@ class RefreshTokenUseCaseTest {
             )
         } returns AppResult.Success(newSessionToken)
 
-        val result = useCase(refreshToken, ctx)
+        val result = useCase(
+            refreshToken,
+            ctx
+        )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(newSessionToken, (result as AppResult.Success).data)
+        assertEquals(
+            newSessionToken,
+            (result as AppResult.Success).data
+        )
 
         coVerify(exactly = 1) {
             sessionManager.refreshSession(
@@ -131,14 +168,30 @@ class RefreshTokenUseCaseTest {
         every { refreshTokenProvider.getRefreshTokenHash(refreshToken) } returns AppResult.Success(
             RefreshTokenHash(REFRESH_HASH_B64)
         )
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery {
-            sessionManager.refreshSession(any(), any(), any(), any())
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            sessionManager.refreshSession(
+                any(),
+                any(),
+                any(),
+                any()
+            )
         } returns sessionError
 
-        val result = useCase(refreshToken, ctx)
+        val result = useCase(
+            refreshToken,
+            ctx
+        )
 
-        assertEquals(sessionError, result)
+        assertEquals(
+            sessionError,
+            result
+        )
     }
 
     private companion object {

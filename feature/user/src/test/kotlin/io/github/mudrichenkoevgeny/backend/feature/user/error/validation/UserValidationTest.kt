@@ -1,11 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.error.validation
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -13,9 +13,14 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
 class UserValidationTest {
-
-    private val defaultAllowedRoles = setOf(UserRole.USER, UserRole.ADMIN)
-    private val defaultAllowedStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+    private val defaultAllowedRoles = setOf(
+        UserRole.USER,
+        UserRole.ADMIN
+    )
+    private val defaultAllowedStatuses = setOf(
+        UserAccountStatus.ACTIVE,
+        UserAccountStatus.READ_ONLY
+    )
 
     @Test
     fun `validateRoleAndStatus returns Success when role, status, and lockout are valid`() {
@@ -25,7 +30,10 @@ class UserValidationTest {
             lockoutType = AccountLockoutType.NONE
         )
 
-        val result = user.validateAccessEligibility(defaultAllowedRoles, defaultAllowedStatuses)
+        val result = user.validateAccessEligibility(
+            defaultAllowedRoles,
+            defaultAllowedStatuses
+        )
 
         assertTrue(result is AppResult.Success)
     }
@@ -34,60 +42,90 @@ class UserValidationTest {
     fun `validateRoleAndStatus returns Error UserRoleNotAllowed when role is not in allowedRoles`() {
         val user = createTestUserInternal(role = UserRole.STAFF)
 
-        val result = user.validateAccessEligibility(setOf(UserRole.USER), defaultAllowedStatuses)
+        val result = user.validateAccessEligibility(
+            setOf(UserRole.USER),
+            defaultAllowedStatuses
+        )
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
         assertTrue(error is UserError.UserRoleNotAllowed)
-        assertEquals(user.id, (error as UserError.UserRoleNotAllowed).userId)
+        assertEquals(
+            user.id,
+            (error as UserError.UserRoleNotAllowed).userId
+        )
     }
 
     @Test
     fun `validateRoleAndStatus returns Error UserReadOnly when status is READ_ONLY and not allowed`() {
         val user = createTestUserInternal(accountStatus = UserAccountStatus.READ_ONLY)
 
-        val result = user.validateAccessEligibility(defaultAllowedRoles, setOf(UserAccountStatus.ACTIVE))
+        val result = user.validateAccessEligibility(
+            defaultAllowedRoles,
+            setOf(UserAccountStatus.ACTIVE)
+        )
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
         assertTrue(error is UserError.UserReadOnly)
-        assertEquals(user.id, (error as UserError.UserReadOnly).userId)
+        assertEquals(
+            user.id,
+            (error as UserError.UserReadOnly).userId
+        )
     }
 
     @Test
     fun `validateRoleAndStatus returns Error UserBanned when status is BANNED`() {
         val user = createTestUserInternal(accountStatus = UserAccountStatus.BANNED)
 
-        val result = user.validateAccessEligibility(defaultAllowedRoles, defaultAllowedStatuses)
+        val result = user.validateAccessEligibility(
+            defaultAllowedRoles,
+            defaultAllowedStatuses
+        )
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
         assertTrue(error is UserError.UserBanned)
-        assertEquals(user.id, (error as UserError.UserBanned).userId)
+        assertEquals(
+            user.id,
+            (error as UserError.UserBanned).userId
+        )
     }
 
     @Test
     fun `validateRoleAndStatus returns Error UserSecurityHold when status is SECURITY_HOLD`() {
         val user = createTestUserInternal(accountStatus = UserAccountStatus.SECURITY_HOLD)
 
-        val result = user.validateAccessEligibility(defaultAllowedRoles, defaultAllowedStatuses)
+        val result = user.validateAccessEligibility(
+            defaultAllowedRoles,
+            defaultAllowedStatuses
+        )
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
         assertTrue(error is UserError.UserSecurityHold)
-        assertEquals(user.id, (error as UserError.UserSecurityHold).userId)
+        assertEquals(
+            user.id,
+            (error as UserError.UserSecurityHold).userId
+        )
     }
 
     @Test
     fun `validateRoleAndStatus returns Error UserPendingDeletion when status is PENDING_DELETION`() {
         val user = createTestUserInternal(accountStatus = UserAccountStatus.PENDING_DELETION)
 
-        val result = user.validateAccessEligibility(defaultAllowedRoles, defaultAllowedStatuses)
+        val result = user.validateAccessEligibility(
+            defaultAllowedRoles,
+            defaultAllowedStatuses
+        )
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
         assertTrue(error is UserError.UserPendingDeletion)
-        assertEquals(user.id, (error as UserError.UserPendingDeletion).userId)
+        assertEquals(
+            user.id,
+            (error as UserError.UserPendingDeletion).userId
+        )
     }
 
     @Test
@@ -98,12 +136,18 @@ class UserValidationTest {
             lockoutType = AccountLockoutType.INDEFINITE
         )
 
-        val result = user.validateAccessEligibility(defaultAllowedRoles, defaultAllowedStatuses)
+        val result = user.validateAccessEligibility(
+            defaultAllowedRoles,
+            defaultAllowedStatuses
+        )
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
         assertTrue(error is UserError.UserLocked)
-        assertEquals(AccountLockoutType.INDEFINITE, (error as UserError.UserLocked).lockoutType)
+        assertEquals(
+            AccountLockoutType.INDEFINITE,
+            (error as UserError.UserLocked).lockoutType
+        )
     }
 
     @Test
@@ -116,14 +160,23 @@ class UserValidationTest {
             temporaryLockoutUntil = futureTime
         )
 
-        val result = user.validateAccessEligibility(defaultAllowedRoles, defaultAllowedStatuses)
+        val result = user.validateAccessEligibility(
+            defaultAllowedRoles,
+            defaultAllowedStatuses
+        )
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
         assertTrue(error is UserError.UserLocked)
         val userLocked = error as UserError.UserLocked
-        assertEquals(AccountLockoutType.TEMPORARY, userLocked.lockoutType)
-        assertEquals(futureTime, userLocked.temporaryLockoutUntil)
+        assertEquals(
+            AccountLockoutType.TEMPORARY,
+            userLocked.lockoutType
+        )
+        assertEquals(
+            futureTime,
+            userLocked.temporaryLockoutUntil
+        )
     }
 
     @Test
@@ -135,12 +188,18 @@ class UserValidationTest {
             temporaryLockoutUntil = null
         )
 
-        val result = user.validateAccessEligibility(defaultAllowedRoles, defaultAllowedStatuses)
+        val result = user.validateAccessEligibility(
+            defaultAllowedRoles,
+            defaultAllowedStatuses
+        )
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
         assertTrue(error is UserError.UserLocked)
-        assertEquals(AccountLockoutType.TEMPORARY, (error as UserError.UserLocked).lockoutType)
+        assertEquals(
+            AccountLockoutType.TEMPORARY,
+            (error as UserError.UserLocked).lockoutType
+        )
     }
 
     @Test
@@ -153,7 +212,10 @@ class UserValidationTest {
             temporaryLockoutUntil = pastTime
         )
 
-        val result = user.validateAccessEligibility(defaultAllowedRoles, defaultAllowedStatuses)
+        val result = user.validateAccessEligibility(
+            defaultAllowedRoles,
+            defaultAllowedStatuses
+        )
 
         assertTrue(result is AppResult.Success)
     }

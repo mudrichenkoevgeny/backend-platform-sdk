@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.database.di
 
+import dagger.Module
 import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheck
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import io.github.mudrichenkoevgeny.backend.core.database.di.module.DatabaseConfigModule
@@ -9,7 +10,6 @@ import io.github.mudrichenkoevgeny.backend.core.database.di.module.RedisModule
 import io.github.mudrichenkoevgeny.backend.core.database.factory.redis.RedisFactory
 import io.github.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManager
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
-import dagger.Module
 
 /**
  * Aggregate Dagger module for the database feature.
@@ -26,4 +26,4 @@ import dagger.Module
         DatabaseHealthCheckModule::class
     ]
 )
-interface DatabaseModules
+public interface DatabaseModules

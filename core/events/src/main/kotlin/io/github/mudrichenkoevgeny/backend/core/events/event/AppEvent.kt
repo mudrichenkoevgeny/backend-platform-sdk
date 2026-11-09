@@ -10,4 +10,4 @@ import kotlinx.serialization.KSerializer
  * All domain events sent over the event bus (e.g. Kafka or in-memory) must implement this interface and be serializable
  * (Kotlin Serialization). The event type is specified at publish and subscribe time via [KSerializer].
  */
-interface AppEvent
+public interface AppEvent

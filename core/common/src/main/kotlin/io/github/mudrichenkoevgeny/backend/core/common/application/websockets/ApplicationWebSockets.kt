@@ -13,7 +13,7 @@ import io.ktor.server.websocket.timeout
  * Sets ping period, session timeout, maximum frame size and masking strategy
  * so that all services have consistent WebSocket behavior.
  */
-fun Application.configureWebSockets() {
+public fun Application.configureWebSockets() {
     install(WebSockets) {
         pingPeriod = WebSocketConfig.PING_PERIOD
         timeout = WebSocketConfig.TIMEOUT

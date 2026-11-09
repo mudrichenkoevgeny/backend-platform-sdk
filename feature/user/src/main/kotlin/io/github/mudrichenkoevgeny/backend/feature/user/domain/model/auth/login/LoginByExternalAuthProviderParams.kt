@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
  * @property token identity token provided by the external OAuth2/OIDC provider
  * @property displayName optional profile display name override
  */
-data class LoginByExternalAuthProviderParams(
+public data class LoginByExternalAuthProviderParams(
     val authProvider: UserAuthProvider,
     val token: String,
     val displayName: String? = null

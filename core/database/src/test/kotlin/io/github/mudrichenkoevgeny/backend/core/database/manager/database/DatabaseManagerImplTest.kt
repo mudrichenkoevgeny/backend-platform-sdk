@@ -15,14 +15,18 @@ import org.junit.jupiter.api.assertThrows
 import javax.sql.DataSource
 
 class DatabaseManagerImplTest {
-
     private val migrationPaths = listOf("classpath:db/migration")
 
     @Test
     fun `create connects and runs migrator then returns Database`() {
         val dataSource = createTestDataSource("manager_create")
         val databaseMigrator = mockk<DatabaseMigrator> {
-            every { migrate(any(), any()) } returns Unit
+            every {
+                migrate(
+                    any(),
+                    any()
+                )
+            } returns Unit
         }
         val databaseConfig = DatabaseConfig(
             dbUrl = "jdbc:postgresql://localhost/db",
@@ -44,14 +48,24 @@ class DatabaseManagerImplTest {
         val database = manager.create()
 
         assertNotNull(database)
-        verify(exactly = 1) { databaseMigrator.migrate(dataSource, migrationPaths) }
+        verify(exactly = 1) {
+            databaseMigrator.migrate(
+                dataSource,
+                migrationPaths
+            )
+        }
     }
 
     @Test
     fun `create logs and rethrows when migrator throws`() {
         val dataSource = mockk<DataSource>()
         val databaseMigrator = mockk<DatabaseMigrator> {
-            every { migrate(any(), any()) } throws RuntimeException("migrate failed")
+            every {
+                migrate(
+                    any(),
+                    any()
+                )
+            } throws RuntimeException("migrate failed")
         }
         val databaseConfig = DatabaseConfig(
             dbUrl = "jdbc:postgresql://localhost/db",

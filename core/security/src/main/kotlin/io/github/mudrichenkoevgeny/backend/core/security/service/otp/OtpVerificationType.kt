@@ -1,7 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.security.service.otp
 
 import kotlinx.serialization.Serializable
-import kotlin.jvm.JvmInline
 
 /**
  * Strongly typed OTP verification type used in confirmation flows and API contracts.
@@ -13,12 +12,14 @@ import kotlin.jvm.JvmInline
  */
 @Serializable
 @JvmInline
-value class OtpVerificationType(val value: String) {
+public value class OtpVerificationType(
+    public val value: String
+) {
     init {
         require(value.isNotBlank()) { "OtpVerificationType value must not be blank." }
     }
 
-    override fun toString(): String = value
+    public override fun toString(): String = value
 }
 
 /**
@@ -26,17 +27,13 @@ value class OtpVerificationType(val value: String) {
  *
  * Returns `null` if the string is blank.
  */
-fun String.toOtpVerificationTypeOrNull(): OtpVerificationType? {
-    return if (this.isNotBlank()) {
-        OtpVerificationType(this)
-    } else {
-        null
-    }
+public fun String.toOtpVerificationTypeOrNull(): OtpVerificationType? = if (this.isNotBlank()) {
+    OtpVerificationType(this)
+} else {
+    null
 }
 
 /**
  * Creates an [OtpVerificationType] from this string or throws an exception if the string is blank.
  */
-fun String.toOtpVerificationTypeOrThrow(): OtpVerificationType {
-    return OtpVerificationType(this)
-}
+public fun String.toOtpVerificationTypeOrThrow(): OtpVerificationType = OtpVerificationType(this)

@@ -10,15 +10,15 @@ import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTabl
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -35,7 +35,6 @@ import kotlin.time.Instant
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserRepositoryImplTest {
-
     private val dataSource = createTestDataSource("user_repo")
     private lateinit var repository: UserRepository
 
@@ -61,7 +60,10 @@ class UserRepositoryImplTest {
         val success = result as AppResult.Success
         val data = success.data
         assertNotNull(data)
-        assertEquals(user.id, data?.id)
+        assertEquals(
+            user.id,
+            data?.id
+        )
     }
 
     @Test
@@ -89,14 +91,35 @@ class UserRepositoryImplTest {
         }
 
         val updated = (result as AppResult.Success).data
-        assertEquals(UserAccountStatus.BANNED, updated.accountStatus)
-        assertEquals(UserAccountStatus.ACTIVE, updated.accountStatusOnRestore)
-        assertEquals(10, updated.authorityLevel)
-        assertEquals(permissions, updated.permissionCodes)
+        assertEquals(
+            UserAccountStatus.BANNED,
+            updated.accountStatus
+        )
+        assertEquals(
+            UserAccountStatus.ACTIVE,
+            updated.accountStatusOnRestore
+        )
+        assertEquals(
+            10,
+            updated.authorityLevel
+        )
+        assertEquals(
+            permissions,
+            updated.permissionCodes
+        )
         assertTrue(updated.isTotpEnabled)
-        assertEquals(user.lastLoginAt, updated.lastLoginAt)
-        assertEquals(user.lastActiveAt, updated.lastActiveAt)
-        assertEquals(deletionAt, updated.scheduledPermanentDeletionAt)
+        assertEquals(
+            user.lastLoginAt,
+            updated.lastLoginAt
+        )
+        assertEquals(
+            user.lastActiveAt,
+            updated.lastActiveAt
+        )
+        assertEquals(
+            deletionAt,
+            updated.scheduledPermanentDeletionAt
+        )
         assertNotNull(updated.updatedAt)
     }
 
@@ -134,40 +157,53 @@ class UserRepositoryImplTest {
         }
 
         val success = result as AppResult.Success
-        assertEquals(1, success.data.items.size)
-        assertEquals(userId, success.data.items.first().id)
+        assertEquals(
+            1,
+            success.data.items.size
+        )
+        assertEquals(
+            userId,
+            success.data.items.first().id
+        )
     }
 
     @Test
-    fun `getUsersPageWithAccessFilter filters by accountLockoutTypes and sorts by TEMPORARY_LOCKOUT_UNTIL`() = runBlocking {
-        val userId1 = UserId.generate()
-        val userId2 = UserId.generate()
-        val user1 = createTestUser(userId1).copy(lockoutType = AccountLockoutType.TEMPORARY)
-        val user2 = createTestUser(userId2).copy(lockoutType = AccountLockoutType.NONE)
+    fun `getUsersPageWithAccessFilter filters by accountLockoutTypes and sorts by TEMPORARY_LOCKOUT_UNTIL`() =
+        runBlocking {
+            val userId1 = UserId.generate()
+            val userId2 = UserId.generate()
+            val user1 = createTestUser(userId1).copy(lockoutType = AccountLockoutType.TEMPORARY)
+            val user2 = createTestUser(userId2).copy(lockoutType = AccountLockoutType.NONE)
 
-        suspendTransaction {
-            repository.createUser(user1)
-            repository.createUser(user2)
-        }
+            suspendTransaction {
+                repository.createUser(user1)
+                repository.createUser(user2)
+            }
 
-        val result = suspendTransaction {
-            repository.getUsersPageWithAccessFilter(
-                accessFilter = UserRoleAccessFilter(allowedUserRoles = setOf(UserRole.USER)),
-                queryParams = UserListQueryParams(
-                    listing = ListingQueryParams(
-                        pageParams = PageParams(),
-                        sortBy = UserSortBy.TEMPORARY_LOCKOUT_UNTIL,
-                        sortOrder = SortOrder.ASC
-                    ),
-                    accountLockoutTypes = listOf(AccountLockoutType.TEMPORARY)
+            val result = suspendTransaction {
+                repository.getUsersPageWithAccessFilter(
+                    accessFilter = UserRoleAccessFilter(allowedUserRoles = setOf(UserRole.USER)),
+                    queryParams = UserListQueryParams(
+                        listing = ListingQueryParams(
+                            pageParams = PageParams(),
+                            sortBy = UserSortBy.TEMPORARY_LOCKOUT_UNTIL,
+                            sortOrder = SortOrder.ASC
+                        ),
+                        accountLockoutTypes = listOf(AccountLockoutType.TEMPORARY)
+                    )
                 )
+            }
+
+            val success = result as AppResult.Success
+            assertEquals(
+                1,
+                success.data.items.size
+            )
+            assertEquals(
+                userId1,
+                success.data.items.first().id
             )
         }
-
-        val success = result as AppResult.Success
-        assertEquals(1, success.data.items.size)
-        assertEquals(userId1, success.data.items.first().id)
-    }
 
     @Test
     fun `getUsersPageWithAccessFilter should apply every query parameter to generated SQL`() = runBlocking {
@@ -202,7 +238,10 @@ class UserRepositoryImplTest {
             repository.deleteUsersDueForPermanentDeletion(asOf = baseTime)
         }
 
-        assertEquals(1, (deletedResult as AppResult.Success).data)
+        assertEquals(
+            1,
+            (deletedResult as AppResult.Success).data
+        )
 
         val checkExpired = suspendTransaction { repository.getUserInternalById(expired.id) }
         val checkActive = suspendTransaction { repository.getUserInternalById(notExpired.id) }

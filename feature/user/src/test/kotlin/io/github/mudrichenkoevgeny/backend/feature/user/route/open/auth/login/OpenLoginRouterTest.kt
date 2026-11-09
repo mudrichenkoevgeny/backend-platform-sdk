@@ -1,16 +1,15 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.login
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.LoginByExternalAuthProviderUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.LoginByPhoneUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.SendLoginConfirmationToPhoneUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByTotpRecoveryCodeUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByTotpUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.login.SendLoginConfirmationToPhoneUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.verifytotp.VerifyTotpPayload
@@ -19,7 +18,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.reques
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByPhoneRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToPhoneRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.open.auth.login.OpenLoginRoutes
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -33,9 +32,9 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class OpenLoginRouterTest : BaseRouterTest() {
-
     private val loginByEmailUseCase = mockk<LoginByEmailUseCase>()
     private val loginByPhoneUseCase = mockk<LoginByPhoneUseCase>()
     private val loginByExternalAuthProviderUseCase = mockk<LoginByExternalAuthProviderUseCase>()
@@ -68,10 +67,21 @@ class OpenLoginRouterTest : BaseRouterTest() {
 
     @Test
     fun `login by email - success`() = testApplication {
-        val request = LoginByEmailRequest("test@example.com", "password123")
+        val request = LoginByEmailRequest(
+            "test@example.com",
+            "password123"
+        )
         val authData = createTestAuthData()
 
-        coEvery { loginByEmailUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
+        coEvery {
+            loginByEmailUseCase(
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -86,15 +96,29 @@ class OpenLoginRouterTest : BaseRouterTest() {
             setBody(request)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
     fun `login by phone - success`() = testApplication {
-        val request = LoginByPhoneRequest("+1234567890", "123456")
+        val request = LoginByPhoneRequest(
+            "+1234567890",
+            "123456"
+        )
         val authData = createTestAuthData()
 
-        coEvery { loginByPhoneUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
+        coEvery {
+            loginByPhoneUseCase(
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -109,15 +133,28 @@ class OpenLoginRouterTest : BaseRouterTest() {
             setBody(request)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
     fun `login by external auth provider - success`() = testApplication {
-        val request = LoginByExternalAuthProviderRequest("GOOGLE", "external_token_123")
+        val request = LoginByExternalAuthProviderRequest(
+            "GOOGLE",
+            "external_token_123"
+        )
         val authData = createTestAuthData()
 
-        coEvery { loginByExternalAuthProviderUseCase(any(), any(), any(), any()) } returns AppResult.Success(authData)
+        coEvery {
+            loginByExternalAuthProviderUseCase(
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -132,15 +169,29 @@ class OpenLoginRouterTest : BaseRouterTest() {
             setBody(request)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
     fun `login by totp - success`() = testApplication {
-        val request = VerifyTotpPayload("mfa_token_123", "123456")
+        val request = VerifyTotpPayload(
+            "mfa_token_123",
+            "123456"
+        )
         val authData = createTestAuthData()
 
-        coEvery { loginByTotpUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
+        coEvery {
+            loginByTotpUseCase(
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(authData)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -155,15 +206,31 @@ class OpenLoginRouterTest : BaseRouterTest() {
             setBody(request)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
     fun `login by totp recovery code - success`() = testApplication {
-        val request = VerifyTotpPayload("mfa_token_123", "RECOVERY_CODE_123")
+        val request = VerifyTotpPayload(
+            "mfa_token_123",
+            "RECOVERY_CODE_123"
+        )
         val authData = createTestAuthData()
 
-        coEvery { loginByTotpRecoveryCodeUseCase(any(), any(), any(), any(), any()) } returns AppResult.Success(authData)
+        coEvery {
+            loginByTotpRecoveryCodeUseCase(
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(
+            authData
+        )
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -178,15 +245,27 @@ class OpenLoginRouterTest : BaseRouterTest() {
             setBody(request)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
     fun `send login confirmation to phone - success`() = testApplication {
         val request = SendConfirmationToPhoneRequest("+1234567890")
-        val otpConfirmation = OtpConfirmation(retryAfterSeconds = 60, numberOfSymbols = 6, expirationSeconds = 300)
+        val otpConfirmation = OtpConfirmation(
+            retryAfterSeconds = 60,
+            numberOfSymbols = 6,
+            expirationSeconds = 300
+        )
 
-        coEvery { sendLoginConfirmationToPhoneUseCase(request.phoneNumber, any<RequestContext>()) } returns AppResult.Success(otpConfirmation)
+        coEvery {
+            sendLoginConfirmationToPhoneUseCase(
+                request.phoneNumber,
+                any<RequestContext>()
+            )
+        } returns AppResult.Success(otpConfirmation)
 
         setupOpenTestEnvironment(openLoginRouter)
 
@@ -201,6 +280,9 @@ class OpenLoginRouterTest : BaseRouterTest() {
             setBody(request)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 }

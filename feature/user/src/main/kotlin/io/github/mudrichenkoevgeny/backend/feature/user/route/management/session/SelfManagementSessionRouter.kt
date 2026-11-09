@@ -63,14 +63,17 @@ import javax.inject.Singleton
  *
  * Registered routes:
  * 1. [SelfManagementSessionRoutes.LOGOUT] — terminates the current active session via [LogoutUseCase].
- * 2. [SelfManagementSessionRoutes.GET_SESSIONS] — retrieves all active sessions for the current user via [GetSessionsUseCase].
+ * 2. [SelfManagementSessionRoutes.GET_SESSIONS] — retrieves all active sessions for the current user via
+ * [GetSessionsUseCase].
  * 3. [SelfManagementSessionRoutes.GET_SESSION] — retrieves details of a specific session via [GetSessionUseCase].
  * 4. [SelfManagementSessionRoutes.DELETE_SESSION] — terminates a specific session via [DeleteSessionUseCase].
- * 5. [SelfManagementSessionRoutes.DELETE_ALL_OTHER_SESSIONS] — terminates all sessions except the current one via [DeleteAllOtherSessionsUseCase].
- * 6. [SelfManagementSessionRoutes.REAUTHENTICATE_SESSION] — elevates session trust level via TOTP verification using [ReauthenticateSessionUseCase].
+ * 5. [SelfManagementSessionRoutes.DELETE_ALL_OTHER_SESSIONS] — terminates all sessions except the current one via
+ * [DeleteAllOtherSessionsUseCase].
+ * 6. [SelfManagementSessionRoutes.REAUTHENTICATE_SESSION] — elevates session trust level via TOTP verification using
+ * [ReauthenticateSessionUseCase].
  */
 @Singleton
-class SelfManagementSessionRouter @Inject constructor(
+public class SelfManagementSessionRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -83,7 +86,6 @@ class SelfManagementSessionRouter @Inject constructor(
     private val deleteAllOtherSessionsUseCase: DeleteAllOtherSessionsUseCase,
     private val reauthenticateSessionUseCase: ReauthenticateSessionUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerLogoutRoute(this)
@@ -96,68 +98,155 @@ class SelfManagementSessionRouter @Inject constructor(
     }
 
     private fun registerLogoutRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = UserAccountStatus.entries.toSet()
 
         route.post(
             path = SelfManagementSessionRoutes.LOGOUT,
-            builder = { logoutDocs(allowedRoles, allowedAccountStatuses) },
-            body = { logout(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                logoutDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                logout(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerGetSessionsRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = UserAccountStatus.entries.toSet()
 
         route.get(
             path = SelfManagementSessionRoutes.GET_SESSIONS,
-            builder = { getSessionsDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getSessions(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getSessionsDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getSessions(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerGetSessionRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = UserAccountStatus.entries.toSet()
 
         route.get(
             path = SelfManagementSessionRoutes.GET_SESSION,
-            builder = { getSessionDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getSession(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getSessionDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getSession(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerDeleteSessionRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.delete(
             path = SelfManagementSessionRoutes.DELETE_SESSION,
-            builder = { deleteSessionDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteSession(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteSessionDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteSession(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerDeleteAllOtherSessionsRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.delete(
             path = SelfManagementSessionRoutes.DELETE_ALL_OTHER_SESSIONS,
-            builder = { deleteAllOtherSessionsDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteAllOtherSessions(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteAllOtherSessionsDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteAllOtherSessions(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerReauthenticateSessionRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = SelfManagementSessionRoutes.REAUTHENTICATE_SESSION,
-            builder = { reauthenticateSessionDocs(allowedRoles, allowedAccountStatuses) },
-            body = { reauthenticateSession(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                reauthenticateSessionDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                reauthenticateSession(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -199,12 +288,20 @@ class SelfManagementSessionRouter @Inject constructor(
                 resourceId = authenticatedRequestContext.sessionId.asHexDashString(),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
         val result = logoutUseCase(authenticatedRequestContext)
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun RouteConfig.getSessionsDocs(
@@ -244,7 +341,11 @@ class SelfManagementSessionRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -253,7 +354,11 @@ class SelfManagementSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { pagedSessions ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { pagedSessions ->
             pagedSessions.mapItems { userSessionSummary -> userSessionSummary.toUserSessionSummaryPayload() }
         }
     }
@@ -303,7 +408,11 @@ class SelfManagementSessionRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -312,7 +421,11 @@ class SelfManagementSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userSessionPrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userSessionPrivate ->
             userSessionPrivate.toUserSessionPrivatePayload()
         }
     }
@@ -374,7 +487,11 @@ class SelfManagementSessionRouter @Inject constructor(
                     )
                 )
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -383,7 +500,11 @@ class SelfManagementSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun RouteConfig.deleteAllOtherSessionsDocs(
@@ -434,7 +555,11 @@ class SelfManagementSessionRouter @Inject constructor(
                     )
                 )
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -442,7 +567,11 @@ class SelfManagementSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { deletedSessions ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { deletedSessions ->
             deletedSessions.toDeletedSessionsPayload()
         }
     }
@@ -493,7 +622,11 @@ class SelfManagementSessionRouter @Inject constructor(
                 resourceId = authenticatedRequestContext.sessionId.asHexDashString(),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -503,7 +636,11 @@ class SelfManagementSessionRouter @Inject constructor(
             code = payload.code
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun logErrorToAudit(
@@ -528,37 +665,43 @@ class SelfManagementSessionRouter @Inject constructor(
         )
     }
 
-    companion object {
-        const val LOGOUT_ROUTE_SUMMARY = "Logout from current session (management)"
-        const val LOGOUT_ROUTE_DESCRIPTION = "Terminates the current management user session and invalidates the associated authentication tokens."
-        const val LOGOUT_ROUTE_OPERATION_ID = "logoutManagementSession"
-        const val LOGOUT_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Success. Current session has been terminated."
+    public companion object {
+        private const val LOGOUT_ROUTE_SUMMARY = "Logout from current session (management)"
+        private const val LOGOUT_ROUTE_DESCRIPTION =
+            "Terminates the current management user session and invalidates the associated authentication tokens."
+        private const val LOGOUT_ROUTE_OPERATION_ID = "logoutManagementSession"
+        private const val LOGOUT_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Success. Current session has been terminated."
 
-        const val GET_SELF_SESSIONS_ROUTE_SUMMARY = "List active sessions (management)"
-        const val GET_SELF_SESSIONS_ROUTE_DESCRIPTION = "Returns a paginated list of all active sessions for the current management user."
-        const val GET_SELF_SESSIONS_ROUTE_OPERATION_ID = "getSelfManagementSessions"
-        const val GET_SELF_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged sessions data"
+        private const val GET_SELF_SESSIONS_ROUTE_SUMMARY = "List active sessions (management)"
+        private const val GET_SELF_SESSIONS_ROUTE_DESCRIPTION =
+            "Returns a paginated list of all active sessions for the current management user."
+        private const val GET_SELF_SESSIONS_ROUTE_OPERATION_ID = "getSelfManagementSessions"
+        private const val GET_SELF_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged sessions data"
 
-        const val GET_SELF_SESSION_ROUTE_SUMMARY = "Get a specific session (management)"
-        const val GET_SELF_SESSION_ROUTE_DESCRIPTION = "Retrieves details of a specific session by its identifier."
-        const val GET_SELF_SESSION_ROUTE_OPERATION_ID = "getSelfManagementSession"
-        const val GET_SELF_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "Session ID"
-        const val GET_SELF_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session details retrieved successfully"
+        private const val GET_SELF_SESSION_ROUTE_SUMMARY = "Get a specific session (management)"
+        private const val GET_SELF_SESSION_ROUTE_DESCRIPTION =
+            "Retrieves details of a specific session by its identifier."
+        private const val GET_SELF_SESSION_ROUTE_OPERATION_ID = "getSelfManagementSession"
+        private const val GET_SELF_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "Session ID"
+        private const val GET_SELF_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session details retrieved successfully"
 
-        const val DELETE_SELF_SESSION_ROUTE_SUMMARY = "Delete a specific session (management)"
-        const val DELETE_SELF_SESSION_ROUTE_DESCRIPTION = "Terminates a specific session by its ID. Cannot be used to delete current session."
-        const val DELETE_SELF_SESSION_ROUTE_OPERATION_ID = "deleteSelfManagementSession"
-        const val DELETE_SELF_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "Session ID"
-        const val DELETE_SELF_SESSION_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Session deleted successfully"
+        private const val DELETE_SELF_SESSION_ROUTE_SUMMARY = "Delete a specific session (management)"
+        private const val DELETE_SELF_SESSION_ROUTE_DESCRIPTION =
+            "Terminates a specific session by its ID. Cannot be used to delete current session."
+        private const val DELETE_SELF_SESSION_ROUTE_OPERATION_ID = "deleteSelfManagementSession"
+        private const val DELETE_SELF_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "Session ID"
+        private const val DELETE_SELF_SESSION_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Session deleted successfully"
 
-        const val DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_SUMMARY = "Delete all other sessions (management)"
-        const val DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_DESCRIPTION = "Terminates all active sessions except the current one."
-        const val DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_OPERATION_ID = "deleteAllOtherSelfManagementSessions"
-        const val DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "IDs of the deleted sessions."
+        private const val DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_SUMMARY = "Delete all other sessions (management)"
+        private const val DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_DESCRIPTION =
+            "Terminates all active sessions except the current one."
+        private const val DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_OPERATION_ID = "deleteAllOtherSelfManagementSessions"
+        private const val DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "IDs of the deleted sessions."
 
-        const val REAUTHENTICATE_SESSION_ROUTE_SUMMARY = "Re-authenticate session (management)"
-        const val REAUTHENTICATE_SESSION_ROUTE_DESCRIPTION = "Performs re-authentication via TOTP to update the session's trust level."
-        const val REAUTHENTICATE_SESSION_ROUTE_OPERATION_ID = "reauthenticateManagementSession"
-        const val REAUTHENTICATE_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session re-authenticated successfully"
+        private const val REAUTHENTICATE_SESSION_ROUTE_SUMMARY = "Re-authenticate session (management)"
+        private const val REAUTHENTICATE_SESSION_ROUTE_DESCRIPTION =
+            "Performs re-authentication via TOTP to update the session's trust level."
+        private const val REAUTHENTICATE_SESSION_ROUTE_OPERATION_ID = "reauthenticateManagementSession"
+        private const val REAUTHENTICATE_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session re-authenticated successfully"
     }
 }

@@ -11,6 +11,6 @@ import kotlinx.serialization.Serializable
  * @param admins collection of admin accounts to create.
  */
 @Serializable
-data class AdminList(
+public data class AdminList(
     val admins: List<AdminAccount>
 )

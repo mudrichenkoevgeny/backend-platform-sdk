@@ -18,7 +18,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
  * @param sessionId authenticated session identifier, if available.
  * @param clientInfo structured information about the calling client.
  */
-data class RequestContext(
+public data class RequestContext(
     val traceId: String?,
     val userId: UserId?,
     val userRole: UserRole?,

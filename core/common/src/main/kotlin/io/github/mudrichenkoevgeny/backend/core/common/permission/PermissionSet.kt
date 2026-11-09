@@ -15,7 +15,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.pe
  * @param masked caller may read data only in masked/redacted form.
  * @param unmasked caller may read data in full (unmasked) form.
  */
-data class PermissionSet(
+public data class PermissionSet(
     val masked: PermissionCode,
     val unmasked: PermissionCode
 )

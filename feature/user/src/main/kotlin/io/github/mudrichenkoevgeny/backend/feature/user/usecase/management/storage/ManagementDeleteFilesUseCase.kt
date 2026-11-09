@@ -32,20 +32,19 @@ import javax.inject.Singleton
  * @property auditLogger Audit logging facility.
  */
 @Singleton
-class ManagementDeleteFilesUseCase @Inject constructor(
+public class ManagementDeleteFilesUseCase @Inject constructor(
     private val storageManager: StorageManager,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val userManager: UserManager
 ) {
-
     /**
      * Executes batch administrative file deletion in the database.
      *
      * @param fileIds List of target file IDs.
      * @return [AppResult.Success] on completion, or [AppResult.Error] on failure.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         fileIds: List<FileId>,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
@@ -103,6 +102,7 @@ class ManagementDeleteFilesUseCase @Inject constructor(
                 )
                 deleteResult
             }
+
             is AppResult.Error -> handleError(
                 error = deleteResult.error,
                 actorId = auditActorId,

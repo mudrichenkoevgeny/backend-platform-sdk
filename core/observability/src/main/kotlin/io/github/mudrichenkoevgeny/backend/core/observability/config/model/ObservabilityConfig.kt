@@ -7,7 +7,7 @@ package io.github.mudrichenkoevgeny.backend.core.observability.config.model
  * @param telemetryEndpoint OTLP or other telemetry collector endpoint URL.
  * @param metricIntervalSeconds interval in seconds for exporting metrics to the collector.
  */
-data class ObservabilityConfig(
+public data class ObservabilityConfig(
     val telemetryServiceName: String,
     val telemetryEndpoint: String,
     val metricIntervalSeconds: Long

@@ -10,9 +10,8 @@ import javax.inject.Singleton
  * Binds the email address parser used by email provider services.
  */
 @Module
-interface EmailParserModule {
-
+public interface EmailParserModule {
     @Binds
     @Singleton
-    fun bindEmailParser(emailParserImpl: EmailParserImpl): EmailParser
+    public fun bindEmailParser(emailParserImpl: EmailParserImpl): EmailParser
 }

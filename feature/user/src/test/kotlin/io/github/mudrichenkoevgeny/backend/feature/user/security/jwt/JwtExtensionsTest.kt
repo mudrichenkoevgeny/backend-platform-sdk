@@ -25,12 +25,6 @@ import org.junit.jupiter.api.assertThrows
 import java.util.Date
 
 class JwtExtensionsTest {
-
-    private companion object {
-        const val SECRET = "01234567890123456789012345678901"
-        val ALGORITHM: Algorithm = Algorithm.HMAC256(SECRET)
-    }
-
     @Test
     fun `JwtBuilder extensions should set correct claims`() {
         val userId = UserId.generate()
@@ -38,19 +32,28 @@ class JwtExtensionsTest {
         val identifierId = UserIdentifierId.generate()
         val userRole = UserRole.ADMIN
 
-        val token = Jwts.builder()
-            .withUserIdSubject(userId)
-            .withSessionIdSubject(sessionId)
-            .withIdentifierIdClaim(identifierId)
-            .withUserRoleSubject(userRole)
-            .signWith(Jwts.SIG.HS256.key().build())
-            .compact()
+        val token = Jwts.builder().withUserIdSubject(userId).withSessionIdSubject(sessionId)
+            .withIdentifierIdClaim(identifierId).withUserRoleSubject(userRole).signWith(
+                Jwts.SIG.HS256.key().build()
+            ).compact()
 
         val payload = JWT.decode(token)
-        assertEquals(userId.asHexDashString(), payload.subject)
-        assertEquals(sessionId.asHexDashString(), payload.getClaim(UserTokenClaims.SESSION_ID).asString())
-        assertEquals(identifierId.asHexDashString(), payload.getClaim(UserTokenClaims.IDENTIFIER_ID).asString())
-        assertEquals(userRole.value, payload.getClaim(UserTokenClaims.USER_ROLE).asString())
+        assertEquals(
+            userId.asHexDashString(),
+            payload.subject
+        )
+        assertEquals(
+            sessionId.asHexDashString(),
+            payload.getClaim(UserTokenClaims.SESSION_ID).asString()
+        )
+        assertEquals(
+            identifierId.asHexDashString(),
+            payload.getClaim(UserTokenClaims.IDENTIFIER_ID).asString()
+        )
+        assertEquals(
+            userRole.value,
+            payload.getClaim(UserTokenClaims.USER_ROLE).asString()
+        )
     }
 
     @Test
@@ -60,7 +63,10 @@ class JwtExtensionsTest {
         val invalidCredential = createCredential(subject = "invalid")
         val missingCredential = createCredential(subject = null)
 
-        assertEquals(userId, credential.getUserIdFromCredential())
+        assertEquals(
+            userId,
+            credential.getUserIdFromCredential()
+        )
         assertThrows<JWTDecodeException> { invalidCredential.getUserIdFromCredential() }
         assertThrows<JWTDecodeException> { missingCredential.getUserIdFromCredential() }
     }
@@ -71,17 +77,25 @@ class JwtExtensionsTest {
         val credential = createCredential(claims = mapOf(UserTokenClaims.SESSION_ID to sessionId.asHexDashString()))
         val missingCredential = createCredential()
 
-        assertEquals(sessionId, credential.getSessionIdFromCredential())
+        assertEquals(
+            sessionId,
+            credential.getSessionIdFromCredential()
+        )
         assertNull(missingCredential.getSessionIdFromCredential())
     }
 
     @Test
     fun `JWTCredential getIdentifierIdFromCredential should return identifier id or null`() {
         val identifierId = UserIdentifierId.generate()
-        val credential = createCredential(claims = mapOf(UserTokenClaims.IDENTIFIER_ID to identifierId.asHexDashString()))
+        val credential = createCredential(
+            claims = mapOf(UserTokenClaims.IDENTIFIER_ID to identifierId.asHexDashString())
+        )
         val missingCredential = createCredential()
 
-        assertEquals(identifierId, credential.getIdentifierIdFromCredential())
+        assertEquals(
+            identifierId,
+            credential.getIdentifierIdFromCredential()
+        )
         assertNull(missingCredential.getIdentifierIdFromCredential())
     }
 
@@ -104,11 +118,26 @@ class JwtExtensionsTest {
             )
         )
 
-        assertEquals(userId, principal.getUserId())
-        assertEquals(sessionId, principal.getSessionId())
-        assertEquals(identifierId, principal.getIdentifierId())
-        assertEquals(userRole, principal.getUserRole())
-        assertEquals(exp.time, principal.getExpiresAt())
+        assertEquals(
+            userId,
+            principal.getUserId()
+        )
+        assertEquals(
+            sessionId,
+            principal.getSessionId()
+        )
+        assertEquals(
+            identifierId,
+            principal.getIdentifierId()
+        )
+        assertEquals(
+            userRole,
+            principal.getUserRole()
+        )
+        assertEquals(
+            exp.time,
+            principal.getExpiresAt()
+        )
     }
 
     @Test
@@ -117,7 +146,12 @@ class JwtExtensionsTest {
 
         assertTrue(getUserIdFromSubject(userId.asHexDashString()) is AppResult.Success)
 
-        val errorCases = listOf(null, "", "  ", "random-string")
+        val errorCases = listOf(
+            null,
+            "",
+            "  ",
+            "random-string"
+        )
         errorCases.forEach {
             val result = getUserIdFromSubject(it)
             assertTrue(result is AppResult.Error)
@@ -126,7 +160,6 @@ class JwtExtensionsTest {
     }
 
     @Test
-    @Suppress("UNCHECKED_CAST")
     fun `Jws Claims getUserIdFromPayload should extract user id`() {
         val userId = UserId.generate()
         val claims = mockk<Claims>()
@@ -136,7 +169,10 @@ class JwtExtensionsTest {
         every { claims.subject } returns userId.asHexDashString()
 
         val result = jws.getUserIdFromPayload()
-        assertEquals(userId, (result as AppResult.Success).data)
+        assertEquals(
+            userId,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
@@ -145,7 +181,10 @@ class JwtExtensionsTest {
         val validPrincipal = createPrincipal(subject = userId.asHexDashString())
         val emptyPrincipal = createPrincipal(subject = null)
 
-        assertEquals(userId, (validPrincipal.getUserIdForWebSocket(false) as AppResult.Success).data)
+        assertEquals(
+            userId,
+            (validPrincipal.getUserIdForWebSocket(false) as AppResult.Success).data
+        )
 
         val requiredError = emptyPrincipal.getUserIdForWebSocket(isOptional = false)
         assertTrue(requiredError is AppResult.Error)
@@ -160,7 +199,12 @@ class JwtExtensionsTest {
         claims: Map<String, String> = emptyMap()
     ): JWTCredential {
         val builder = JWT.create().withSubject(subject)
-        claims.forEach { (k, v) -> builder.withClaim(k, v) }
+        claims.forEach { (k, v) ->
+            builder.withClaim(
+                k,
+                v
+            )
+        }
         return JWTCredential(builder.sign(ALGORITHM).let { JWT.decode(it) })
     }
 
@@ -171,7 +215,17 @@ class JwtExtensionsTest {
     ): JWTPrincipal {
         val builder = JWT.create().withSubject(subject)
         expiresAt?.let { builder.withExpiresAt(it) }
-        claims.forEach { (k, v) -> builder.withClaim(k, v) }
+        claims.forEach { (k, v) ->
+            builder.withClaim(
+                k,
+                v
+            )
+        }
         return JWTPrincipal(builder.sign(ALGORITHM).let { JWT.decode(it) })
+    }
+
+    private companion object {
+        const val SECRET = "01234567890123456789012345678901"
+        val ALGORITHM: Algorithm = Algorithm.HMAC256(SECRET)
     }
 }

@@ -1,9 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.core.security.di.module
 
-import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
-import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasherImpl
 import dagger.Binds
 import dagger.Module
+import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasher
+import io.github.mudrichenkoevgeny.backend.core.security.passwordhasher.PasswordHasherImpl
 import javax.inject.Singleton
 
 /**
@@ -12,9 +12,8 @@ import javax.inject.Singleton
  * Binds [PasswordHasher] to [PasswordHasherImpl].
  */
 @Module
-interface PasswordHasherModule {
-
+public interface PasswordHasherModule {
     @Binds
     @Singleton
-    fun bindPasswordHasher(passwordHasherImpl: PasswordHasherImpl): PasswordHasher
+    public fun bindPasswordHasher(passwordHasherImpl: PasswordHasherImpl): PasswordHasher
 }

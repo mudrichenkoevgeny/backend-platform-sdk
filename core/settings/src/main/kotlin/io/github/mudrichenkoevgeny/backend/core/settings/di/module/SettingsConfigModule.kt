@@ -16,23 +16,16 @@ import javax.inject.Singleton
  * - [GlobalSettingsConfig] created from the factory at injection time
  */
 @Module
-class SettingsConfigModule {
-
+public class SettingsConfigModule {
     @Provides
     @Singleton
-    fun provideSettingsConfigFactory(
-        envReader: EnvReader
-    ): GlobalSettingsConfigFactory {
-        return GlobalSettingsConfigFactoryImpl(
+    public fun provideSettingsConfigFactory(envReader: EnvReader): GlobalSettingsConfigFactory =
+        GlobalSettingsConfigFactoryImpl(
             envReader = envReader
         )
-    }
 
     @Provides
     @Singleton
-    fun provideSettingsConfig(
-        globalSettingsConfigFactory: GlobalSettingsConfigFactory
-    ): GlobalSettingsConfig {
-        return globalSettingsConfigFactory.create()
-    }
+    public fun provideSettingsConfig(globalSettingsConfigFactory: GlobalSettingsConfigFactory): GlobalSettingsConfig =
+        globalSettingsConfigFactory.create()
 }

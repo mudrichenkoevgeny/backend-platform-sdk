@@ -1,11 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.network.query
 
+import io.github.mudrichenkoevgeny.backend.core.audit.network.model.ManagementAuditEventListQueryParams
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.firstNonBlankQueryValue
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.getQueryValues
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseTimestampQueryOrNull
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseValidatedQueryList
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
-import io.github.mudrichenkoevgeny.backend.core.audit.network.model.ManagementAuditEventListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
@@ -23,10 +24,10 @@ import io.ktor.server.application.ApplicationCall
  * @param compositeAuditActionTypeParser parser used to validate and convert action wire strings into [AuditActionType] instances
  * @param compositeAuditResourceTypeParser parser used to validate and convert resource wire strings into [AuditResourceType] instances
  * @return [ManagementAuditEventListQueryParams] containing strictly validated query parameters and listing settings
- * @throws io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
+ * @throws RequestHandlingException
  * when any query parameter fails validation or parsing (e.g. invalid UUID, enum, or timestamp format)
  */
-fun ApplicationCall.parseAuditEventsListQueryParams(
+public fun ApplicationCall.parseAuditEventsListQueryParams(
     compositeAuditActionTypeParser: CompositeAuditActionTypeParser,
     compositeAuditResourceTypeParser: CompositeAuditResourceTypeParser
 ): ManagementAuditEventListQueryParams {
@@ -37,9 +38,18 @@ fun ApplicationCall.parseAuditEventsListQueryParams(
 
     val filterNames = AuditEventFilterValues
 
-    val eventIds = parseValidatedQueryList(filterNames.EVENT_ID, String::toAuditEventIdOrNull)
-    val actorTypes = parseValidatedQueryList(filterNames.ACTOR_TYPE, AuditActorType::fromValueOrNull)
-    val excludeActorTypes = parseValidatedQueryList(filterNames.EXCLUDE_ACTOR_TYPE, AuditActorType::fromValueOrNull)
+    val eventIds = parseValidatedQueryList(
+        filterNames.EVENT_ID,
+        String::toAuditEventIdOrNull
+    )
+    val actorTypes = parseValidatedQueryList(
+        filterNames.ACTOR_TYPE,
+        AuditActorType::fromValueOrNull
+    )
+    val excludeActorTypes = parseValidatedQueryList(
+        filterNames.EXCLUDE_ACTOR_TYPE,
+        AuditActorType::fromValueOrNull
+    )
     val actions = parseValidatedQueryList(filterNames.ACTION) { raw ->
         runCatching { compositeAuditActionTypeParser.fromValueOrThrow(raw) }.getOrNull()
     }
@@ -49,8 +59,14 @@ fun ApplicationCall.parseAuditEventsListQueryParams(
     val resources = parseValidatedQueryList(filterNames.RESOURCE) { raw ->
         runCatching { compositeAuditResourceTypeParser.fromValueOrThrow(raw) }.getOrNull()
     }
-    val statuses = parseValidatedQueryList(filterNames.STATUS, AuditStatus::fromValueOrNull)
-    val excludeStatuses = parseValidatedQueryList(filterNames.EXCLUDE_STATUS, AuditStatus::fromValueOrNull)
+    val statuses = parseValidatedQueryList(
+        filterNames.STATUS,
+        AuditStatus::fromValueOrNull
+    )
+    val excludeStatuses = parseValidatedQueryList(
+        filterNames.EXCLUDE_STATUS,
+        AuditStatus::fromValueOrNull
+    )
 
     return ManagementAuditEventListQueryParams(
         listing = listing,

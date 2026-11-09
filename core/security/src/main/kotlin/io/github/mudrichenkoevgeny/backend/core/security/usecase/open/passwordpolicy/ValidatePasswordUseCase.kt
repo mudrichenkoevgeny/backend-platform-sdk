@@ -10,8 +10,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.passwordpolic
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to validate raw passwords against management password policy.
+ */
 @Singleton
-class ValidatePasswordUseCase @Inject constructor(
+public class ValidatePasswordUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val passwordPolicyValidator: PasswordPolicyValidator
 ) {
@@ -33,9 +36,12 @@ class ValidatePasswordUseCase @Inject constructor(
      * @return [AppResult.Success] if the password satisfies the policy, or [AppResult.Error]
      *         with [SecurityError.PasswordTooWeak].
      */
-    operator fun invoke(password: String): AppResult<Unit> {
+    public operator fun invoke(password: String): AppResult<Unit> {
         val passwordPolicy = securitySettingsProvider.getManagementPasswordPolicy()
-        val validationResult = passwordPolicyValidator.validate(passwordPolicy, password)
+        val validationResult = passwordPolicyValidator.validate(
+            passwordPolicy,
+            password
+        )
 
         return when (validationResult) {
             is PasswordPolicyValidatorResult.Success -> AppResult.Success(Unit)

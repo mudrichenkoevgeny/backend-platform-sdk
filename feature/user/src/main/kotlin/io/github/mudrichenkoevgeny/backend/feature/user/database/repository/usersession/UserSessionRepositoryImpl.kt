@@ -10,9 +10,9 @@ import io.github.mudrichenkoevgeny.backend.core.database.dsl.applyPagination
 import io.github.mudrichenkoevgeny.backend.core.database.dsl.applyTimestampFilter
 import io.github.mudrichenkoevgeny.backend.core.database.dsl.substringSqlLikePattern
 import io.github.mudrichenkoevgeny.backend.core.database.mapper.toExposedSortOrder
-import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
-import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserSessionsTable
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserIdentifiersTable
+import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserSessionsTable
+import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementSessionListQueryParams
@@ -49,21 +49,19 @@ import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
-import java.time.Instant as JavaInstant
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.time.Instant as KotlinInstant
 import kotlin.uuid.Uuid
+import org.jetbrains.exposed.v1.core.SortOrder as ExposedSortOrder
+import java.time.Instant as JavaInstant
+import kotlin.time.Instant as KotlinInstant
 
 /**
  * Default [UserSessionRepository] implementation backed by Exposed and [UserSessionsTable].
  */
 @Singleton
-class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
-
-    override suspend fun createUserSession(
-        userSession: UserSessionInternal
-    ): AppResult<UserSessionInternal> {
+public class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
+    override suspend fun createUserSession(userSession: UserSessionInternal): AppResult<UserSessionInternal> {
         return try {
             val inserted = UserSessionsTable.insert { userSessionRow ->
                 userSessionRow[id] = userSession.id.value
@@ -107,63 +105,44 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         }
     }
 
-    override suspend fun deleteUserSessionById(userSessionId: UserSessionId): AppResult<Unit> {
-        return try {
-            UserSessionsTable.deleteWhere { UserSessionsTable.id eq userSessionId.value }
-            AppResult.Success(Unit)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error deleting user session: ${e.message}"))
-        }
+    override suspend fun deleteUserSessionById(userSessionId: UserSessionId): AppResult<Unit> = try {
+        UserSessionsTable.deleteWhere { UserSessionsTable.id eq userSessionId.value }
+        AppResult.Success(Unit)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error deleting user session: ${e.message}"))
     }
 
-    override suspend fun deleteAllUserSessions(
-        userId: UserId
-    ): AppResult<Unit> {
-        return try {
-            UserSessionsTable
-                .deleteWhere { UserSessionsTable.userId eq userId.value }
-            AppResult.Success(Unit)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error deleting all user sessions: ${e.message}"))
-        }
+    override suspend fun deleteAllUserSessions(userId: UserId): AppResult<Unit> = try {
+        UserSessionsTable.deleteWhere { UserSessionsTable.userId eq userId.value }
+        AppResult.Success(Unit)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error deleting all user sessions: ${e.message}"))
     }
 
     override suspend fun deleteAllUserSessionsExceptOne(
         userId: UserId,
         userSessionId: UserSessionId
-    ): AppResult<List<UserSessionId>> {
-        return try {
-            val deletedIds = UserSessionsTable
-                .selectAll()
-                .where {
-                    (UserSessionsTable.userId eq userId.value) and
-                            (UserSessionsTable.id neq userSessionId.value)
-                }
-                .map { UserSessionId(it[UserSessionsTable.id].value) }
+    ): AppResult<List<UserSessionId>> = try {
+        val deletedIds = UserSessionsTable.selectAll().where {
+            (UserSessionsTable.userId eq userId.value) and (UserSessionsTable.id neq userSessionId.value)
+        }.map { UserSessionId(it[UserSessionsTable.id].value) }
 
-            UserSessionsTable.deleteWhere {
-                (UserSessionsTable.userId eq userId.value) and
-                        (UserSessionsTable.id neq userSessionId.value)
-            }
-
-            AppResult.Success(deletedIds)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error deleting user sessions except one: ${e.message}"))
+        UserSessionsTable.deleteWhere {
+            (UserSessionsTable.userId eq userId.value) and (UserSessionsTable.id neq userSessionId.value)
         }
+
+        AppResult.Success(deletedIds)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error deleting user sessions except one: ${e.message}"))
     }
 
     override suspend fun deleteLeastRecentlyUsedUserSession(userId: UserId): AppResult<UserSessionId> {
         return try {
-            val oldestSessionId = UserSessionsTable
-                .selectAll()
-                .where { UserSessionsTable.userId eq userId.value }
-                .orderBy(UserSessionsTable.lastAccessedAt to org.jetbrains.exposed.v1.core.SortOrder.ASC)
-                .limit(1)
-                .map { UserSessionId(it[UserSessionsTable.id].value) }
-                .firstOrNull()
-                ?: return AppResult.Error(
-                    CommonError.Database("No sessions found for userId=${userId.value}")
-                )
+            val oldestSessionId = UserSessionsTable.selectAll().where { UserSessionsTable.userId eq userId.value }
+                .orderBy(UserSessionsTable.lastAccessedAt to ExposedSortOrder.ASC).limit(1)
+                .map { UserSessionId(it[UserSessionsTable.id].value) }.firstOrNull() ?: return AppResult.Error(
+                CommonError.Database("No sessions found for userId=${userId.value}")
+            )
 
             UserSessionsTable.deleteWhere { UserSessionsTable.id eq oldestSessionId.value }
 
@@ -173,14 +152,11 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         }
     }
 
-    override suspend fun updateLastAccessed(
-        userSessionId: UserSessionId
-    ): AppResult<Unit> {
+    override suspend fun updateLastAccessed(userSessionId: UserSessionId): AppResult<Unit> {
         return try {
-            val updatedCount = UserSessionsTable
-                .update({ UserSessionsTable.id eq userSessionId.value }) {
-                    it[UserSessionsTable.lastAccessedAt] = JavaInstant.now()
-                }
+            val updatedCount = UserSessionsTable.update({ UserSessionsTable.id eq userSessionId.value }) {
+                it[UserSessionsTable.lastAccessedAt] = JavaInstant.now()
+            }
 
             if (updatedCount == 0) {
                 return AppResult.Error(UserError.InvalidSession())
@@ -192,14 +168,11 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         }
     }
 
-    override suspend fun updateLastReauthenticated(
-        userSessionId: UserSessionId
-    ): AppResult<Unit> {
+    override suspend fun updateLastReauthenticated(userSessionId: UserSessionId): AppResult<Unit> {
         return try {
-            val updatedCount = UserSessionsTable
-                .update({ UserSessionsTable.id eq userSessionId.value }) {
-                    it[UserSessionsTable.lastReauthenticatedAt] = JavaInstant.now()
-                }
+            val updatedCount = UserSessionsTable.update({ UserSessionsTable.id eq userSessionId.value }) {
+                it[UserSessionsTable.lastReauthenticatedAt] = JavaInstant.now()
+            }
 
             if (updatedCount == 0) {
                 return AppResult.Error(UserError.InvalidSession())
@@ -211,212 +184,187 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         }
     }
 
-    override suspend fun getUserSessionInternalById(
-        userSessionId: UserSessionId
-    ): AppResult<UserSessionInternal?> {
-        return try {
+    override suspend fun getUserSessionInternalById(userSessionId: UserSessionId): AppResult<UserSessionInternal?> =
+        try {
             AppResult.Success(getUserSessionResultRow(userSessionId)?.toUserSessionInternal())
         } catch (e: ExposedSQLException) {
             AppResult.Error(CommonError.Database("Error retrieving user session by id: ${e.message}"))
         }
-    }
 
-    override suspend fun getUserSessionByHash(
-        refreshTokenHash: RefreshTokenHash
-    ): AppResult<UserSessionInternal?> {
-        return try {
-            val row = UserSessionsTable
-                .selectAll()
-                .where { UserSessionsTable.refreshTokenHash eq refreshTokenHash.value }
-                .singleOrNull()
+    override suspend fun getUserSessionByHash(refreshTokenHash: RefreshTokenHash): AppResult<UserSessionInternal?> =
+        try {
+            val row = UserSessionsTable.selectAll()
+                .where { UserSessionsTable.refreshTokenHash eq refreshTokenHash.value }.singleOrNull()
 
             AppResult.Success(row?.toUserSessionInternal())
         } catch (e: ExposedSQLException) {
             AppResult.Error(CommonError.Database("Error retrieving user session by hash: ${e.message}"))
         }
-    }
 
-    override suspend fun getAllUserSessions(userId: UserId): AppResult<List<UserSessionInternal>> {
-        return try {
-            val rows = UserSessionsTable
-                .selectAll()
-                .where { UserSessionsTable.userId eq userId.value }
-                .map { it.toUserSessionInternal() }
+    override suspend fun getAllUserSessions(userId: UserId): AppResult<List<UserSessionInternal>> = try {
+        val rows = UserSessionsTable.selectAll().where { UserSessionsTable.userId eq userId.value }
+            .map { it.toUserSessionInternal() }
 
-            AppResult.Success(rows)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error retrieving all user sessions: ${e.message}"))
-        }
+        AppResult.Success(rows)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving all user sessions: ${e.message}"))
     }
 
     override suspend fun getUserSessionsByIdentifierId(
         userIdentifierId: UserIdentifierId,
         userId: UserId?
-    ): AppResult<List<UserSessionInternal>> {
-        return try {
-            var query = UserSessionsTable
-                .selectAll()
-                .where { UserSessionsTable.identifierId eq userIdentifierId.value }
+    ): AppResult<List<UserSessionInternal>> = try {
+        var query = UserSessionsTable.selectAll().where { UserSessionsTable.identifierId eq userIdentifierId.value }
 
-            if (userId != null) {
-                query = query.andWhere { UserSessionsTable.userId eq userId.value }
-            }
-
-            val rows = query.map { it.toUserSessionInternal() }
-            AppResult.Success(rows)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error retrieving user sessions by identifier id: ${e.message}"))
+        if (userId != null) {
+            query = query.andWhere { UserSessionsTable.userId eq userId.value }
         }
+
+        val rows = query.map { it.toUserSessionInternal() }
+        AppResult.Success(rows)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving user sessions by identifier id: ${e.message}"))
     }
 
-    private fun getUserSessionResultRow(
-        userSessionId: UserSessionId
-    ): ResultRow? = UserSessionsTable
-        .selectAll()
-        .where { UserSessionsTable.id eq userSessionId.value }
-        .limit(1)
-        .singleOrNull()
+    private fun getUserSessionResultRow(userSessionId: UserSessionId): ResultRow? =
+        UserSessionsTable.selectAll().where { UserSessionsTable.id eq userSessionId.value }.limit(1).singleOrNull()
 
     override suspend fun getUserSessionsPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter,
         queryParams: ManagementSessionListQueryParams
-    ): AppResult<PagedResult<UserSessionInternal>> {
-        return try {
-            var query = UserSessionsTable
-                .innerJoin(UsersTable)
-                .selectAll()
+    ): AppResult<PagedResult<UserSessionInternal>> = try {
+        var query = UserSessionsTable.innerJoin(UsersTable).selectAll()
 
-            query.andWhere {
-                val allowedRoleConditions = accessFilter.allowedUserRoles
-                    .map { allowedRole -> UsersTable.role eq allowedRole }
+        query.andWhere {
+            val allowedRoleConditions =
+                accessFilter.allowedUserRoles.map { allowedRole -> UsersTable.role eq allowedRole }
 
-                allowedRoleConditions.reduceOrNull { acc, condition -> acc or condition }
-                    ?: Op.FALSE
-            }
-
-            if (queryParams.userIds.isNotEmpty()) {
-                val userEntityIds = queryParams.userIds.mapNotNull { idStr ->
-                    runCatching { EntityID(Uuid.parse(idStr), UsersTable) }.getOrNull()
-                }
-                if (userEntityIds.isNotEmpty()) {
-                    query = query.andWhere { UserSessionsTable.userId inList userEntityIds }
-                }
-            }
-
-            if (queryParams.userRoles.isNotEmpty()) {
-                query = query.andWhere { UsersTable.role inList queryParams.userRoles }
-            }
-            if (queryParams.excludeUserRoles.isNotEmpty()) {
-                query = query.andWhere { UsersTable.role notInList queryParams.excludeUserRoles }
-            }
-
-            query = query.applyCommonFilters(
-                sessionIds = queryParams.sessionIds,
-                identifier = queryParams.identifier,
-                identifierIds = queryParams.identifierIds,
-                identifierDisplayName = queryParams.identifierDisplayName,
-                identifierAuthProviders = queryParams.identifierAuthProviders,
-                excludeIdentifierAuthProviders = queryParams.excludeIdentifierAuthProviders,
-                clientTypes = queryParams.clientTypes,
-                excludeClientTypes = queryParams.excludeClientTypes,
-                isClientTypeSet = queryParams.isClientTypeSet,
-                deviceId = queryParams.deviceId,
-                isDeviceIdSet = queryParams.isDeviceIdSet,
-                deviceName = queryParams.deviceName,
-                isDeviceNameSet = queryParams.isDeviceNameSet,
-                language = queryParams.language,
-                isLanguageSet = queryParams.isLanguageSet,
-                appVersion = queryParams.appVersion,
-                isAppVersionSet = queryParams.isAppVersionSet,
-                osVersion = queryParams.osVersion,
-                isOperationSystemVersionSet = queryParams.isOperationSystemVersionSet,
-                userAgent = queryParams.userAgent,
-                isUserAgentSet = queryParams.isUserAgentSet,
-                ipAddress = queryParams.ipAddress,
-                isIpAddressSet = queryParams.isIpAddressSet,
-                expiresAtFrom = queryParams.expiresAtFrom,
-                expiresAtTo = queryParams.expiresAtTo,
-                lastAccessedAtFrom = queryParams.lastAccessedAtFrom,
-                lastAccessedAtTo = queryParams.lastAccessedAtTo,
-                lastReauthenticatedAtFrom = queryParams.lastReauthenticatedAtFrom,
-                lastReauthenticatedAtTo = queryParams.lastReauthenticatedAtTo,
-                createdAtFrom = queryParams.createdAtFrom,
-                createdAtTo = queryParams.createdAtTo,
-                updatedAtFrom = queryParams.updatedAtFrom,
-                updatedAtTo = queryParams.updatedAtTo,
-                isUpdatedAtSet = queryParams.isUpdatedAtSet,
-                searchQuery = queryParams.searchQuery
-            )
-
-            executeUserSessionsPagedQuery(
-                query = query,
-                pageNumber = queryParams.listing.pageParams.page,
-                pageSize = queryParams.listing.pageParams.size,
-                sortBy = queryParams.listing.sortBy,
-                sortOrder = queryParams.listing.sortOrder
-            )
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error executing user sessions paged query: ${e.message}"))
+            allowedRoleConditions.reduceOrNull { acc, condition -> acc or condition } ?: Op.FALSE
         }
+
+        if (queryParams.userIds.isNotEmpty()) {
+            val userEntityIds = queryParams.userIds.mapNotNull { idStr ->
+                runCatching {
+                    EntityID(
+                        Uuid.parse(idStr),
+                        UsersTable
+                    )
+                }.getOrNull()
+            }
+            if (userEntityIds.isNotEmpty()) {
+                query = query.andWhere { UserSessionsTable.userId inList userEntityIds }
+            }
+        }
+
+        if (queryParams.userRoles.isNotEmpty()) {
+            query = query.andWhere { UsersTable.role inList queryParams.userRoles }
+        }
+        if (queryParams.excludeUserRoles.isNotEmpty()) {
+            query = query.andWhere { UsersTable.role notInList queryParams.excludeUserRoles }
+        }
+
+        query = query.applyCommonFilters(
+            sessionIds = queryParams.sessionIds,
+            identifier = queryParams.identifier,
+            identifierIds = queryParams.identifierIds,
+            identifierDisplayName = queryParams.identifierDisplayName,
+            identifierAuthProviders = queryParams.identifierAuthProviders,
+            excludeIdentifierAuthProviders = queryParams.excludeIdentifierAuthProviders,
+            clientTypes = queryParams.clientTypes,
+            excludeClientTypes = queryParams.excludeClientTypes,
+            isClientTypeSet = queryParams.isClientTypeSet,
+            deviceId = queryParams.deviceId,
+            isDeviceIdSet = queryParams.isDeviceIdSet,
+            deviceName = queryParams.deviceName,
+            isDeviceNameSet = queryParams.isDeviceNameSet,
+            language = queryParams.language,
+            isLanguageSet = queryParams.isLanguageSet,
+            appVersion = queryParams.appVersion,
+            isAppVersionSet = queryParams.isAppVersionSet,
+            osVersion = queryParams.osVersion,
+            isOperationSystemVersionSet = queryParams.isOperationSystemVersionSet,
+            userAgent = queryParams.userAgent,
+            isUserAgentSet = queryParams.isUserAgentSet,
+            ipAddress = queryParams.ipAddress,
+            isIpAddressSet = queryParams.isIpAddressSet,
+            expiresAtFrom = queryParams.expiresAtFrom,
+            expiresAtTo = queryParams.expiresAtTo,
+            lastAccessedAtFrom = queryParams.lastAccessedAtFrom,
+            lastAccessedAtTo = queryParams.lastAccessedAtTo,
+            lastReauthenticatedAtFrom = queryParams.lastReauthenticatedAtFrom,
+            lastReauthenticatedAtTo = queryParams.lastReauthenticatedAtTo,
+            createdAtFrom = queryParams.createdAtFrom,
+            createdAtTo = queryParams.createdAtTo,
+            updatedAtFrom = queryParams.updatedAtFrom,
+            updatedAtTo = queryParams.updatedAtTo,
+            isUpdatedAtSet = queryParams.isUpdatedAtSet,
+            searchQuery = queryParams.searchQuery
+        )
+
+        executeUserSessionsPagedQuery(
+            query = query,
+            pageNumber = queryParams.listing.pageParams.page,
+            pageSize = queryParams.listing.pageParams.size,
+            sortBy = queryParams.listing.sortBy,
+            sortOrder = queryParams.listing.sortOrder
+        )
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error executing user sessions paged query: ${e.message}"))
     }
 
     override suspend fun getUserSessionsPageByUserId(
         userId: UserId,
         queryParams: SelfSessionListQueryParams
-    ): AppResult<PagedResult<UserSessionInternal>> {
-        return try {
-            var query = UserSessionsTable
-                .selectAll()
-                .where { UserSessionsTable.userId eq userId.value }
+    ): AppResult<PagedResult<UserSessionInternal>> = try {
+        var query = UserSessionsTable.selectAll().where { UserSessionsTable.userId eq userId.value }
 
-            query = query.applyCommonFilters(
-                sessionIds = queryParams.sessionIds,
-                identifier = queryParams.identifier,
-                identifierIds = queryParams.identifierIds,
-                identifierDisplayName = queryParams.identifierDisplayName,
-                identifierAuthProviders = queryParams.identifierAuthProviders,
-                excludeIdentifierAuthProviders = queryParams.excludeIdentifierAuthProviders,
-                clientTypes = queryParams.clientTypes,
-                excludeClientTypes = queryParams.excludeClientTypes,
-                isClientTypeSet = queryParams.isClientTypeSet,
-                deviceId = queryParams.deviceId,
-                isDeviceIdSet = queryParams.isDeviceIdSet,
-                deviceName = queryParams.deviceName,
-                isDeviceNameSet = queryParams.isDeviceNameSet,
-                language = queryParams.language,
-                isLanguageSet = queryParams.isLanguageSet,
-                appVersion = queryParams.appVersion,
-                isAppVersionSet = queryParams.isAppVersionSet,
-                osVersion = queryParams.osVersion,
-                isOperationSystemVersionSet = queryParams.isOperationSystemVersionSet,
-                userAgent = queryParams.userAgent,
-                isUserAgentSet = queryParams.isUserAgentSet,
-                ipAddress = queryParams.ipAddress,
-                isIpAddressSet = queryParams.isIpAddressSet,
-                expiresAtFrom = queryParams.expiresAtFrom,
-                expiresAtTo = queryParams.expiresAtTo,
-                lastAccessedAtFrom = queryParams.lastAccessedAtFrom,
-                lastAccessedAtTo = queryParams.lastAccessedAtTo,
-                lastReauthenticatedAtFrom = queryParams.lastReauthenticatedAtFrom,
-                lastReauthenticatedAtTo = queryParams.lastReauthenticatedAtTo,
-                createdAtFrom = queryParams.createdAtFrom,
-                createdAtTo = queryParams.createdAtTo,
-                updatedAtFrom = queryParams.updatedAtFrom,
-                updatedAtTo = queryParams.updatedAtTo,
-                isUpdatedAtSet = queryParams.isUpdatedAtSet,
-                searchQuery = queryParams.searchQuery
-            )
+        query = query.applyCommonFilters(
+            sessionIds = queryParams.sessionIds,
+            identifier = queryParams.identifier,
+            identifierIds = queryParams.identifierIds,
+            identifierDisplayName = queryParams.identifierDisplayName,
+            identifierAuthProviders = queryParams.identifierAuthProviders,
+            excludeIdentifierAuthProviders = queryParams.excludeIdentifierAuthProviders,
+            clientTypes = queryParams.clientTypes,
+            excludeClientTypes = queryParams.excludeClientTypes,
+            isClientTypeSet = queryParams.isClientTypeSet,
+            deviceId = queryParams.deviceId,
+            isDeviceIdSet = queryParams.isDeviceIdSet,
+            deviceName = queryParams.deviceName,
+            isDeviceNameSet = queryParams.isDeviceNameSet,
+            language = queryParams.language,
+            isLanguageSet = queryParams.isLanguageSet,
+            appVersion = queryParams.appVersion,
+            isAppVersionSet = queryParams.isAppVersionSet,
+            osVersion = queryParams.osVersion,
+            isOperationSystemVersionSet = queryParams.isOperationSystemVersionSet,
+            userAgent = queryParams.userAgent,
+            isUserAgentSet = queryParams.isUserAgentSet,
+            ipAddress = queryParams.ipAddress,
+            isIpAddressSet = queryParams.isIpAddressSet,
+            expiresAtFrom = queryParams.expiresAtFrom,
+            expiresAtTo = queryParams.expiresAtTo,
+            lastAccessedAtFrom = queryParams.lastAccessedAtFrom,
+            lastAccessedAtTo = queryParams.lastAccessedAtTo,
+            lastReauthenticatedAtFrom = queryParams.lastReauthenticatedAtFrom,
+            lastReauthenticatedAtTo = queryParams.lastReauthenticatedAtTo,
+            createdAtFrom = queryParams.createdAtFrom,
+            createdAtTo = queryParams.createdAtTo,
+            updatedAtFrom = queryParams.updatedAtFrom,
+            updatedAtTo = queryParams.updatedAtTo,
+            isUpdatedAtSet = queryParams.isUpdatedAtSet,
+            searchQuery = queryParams.searchQuery
+        )
 
-            executeUserSessionsPagedQuery(
-                query = query,
-                pageNumber = queryParams.listing.pageParams.page,
-                pageSize = queryParams.listing.pageParams.size,
-                sortBy = queryParams.listing.sortBy,
-                sortOrder = queryParams.listing.sortOrder
-            )
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error executing self user sessions paged query: ${e.message}"))
-        }
+        executeUserSessionsPagedQuery(
+            query = query,
+            pageNumber = queryParams.listing.pageParams.page,
+            pageSize = queryParams.listing.pageParams.size,
+            sortBy = queryParams.listing.sortBy,
+            sortOrder = queryParams.listing.sortOrder
+        )
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error executing self user sessions paged query: ${e.message}"))
     }
 
     private fun Query.applyCommonFilters(
@@ -460,7 +408,12 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
 
         if (sessionIds.isNotEmpty()) {
             val entityIds = sessionIds.mapNotNull { idStr ->
-                runCatching { EntityID(Uuid.parse(idStr), UserSessionsTable) }.getOrNull()
+                runCatching {
+                    EntityID(
+                        Uuid.parse(idStr),
+                        UserSessionsTable
+                    )
+                }.getOrNull()
             }
             if (entityIds.isNotEmpty()) {
                 query = query.andWhere { UserSessionsTable.id inList entityIds }
@@ -472,14 +425,21 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         }
         if (identifierIds.isNotEmpty()) {
             val idEntityIds = identifierIds.mapNotNull { idStr ->
-                runCatching { EntityID(Uuid.parse(idStr), UserIdentifiersTable) }.getOrNull()
+                runCatching {
+                    EntityID(
+                        Uuid.parse(idStr),
+                        UserIdentifiersTable
+                    )
+                }.getOrNull()
             }
             if (idEntityIds.isNotEmpty()) {
                 query = query.andWhere { UserSessionsTable.identifierId inList idEntityIds }
             }
         }
         if (!identifierDisplayName.isNullOrBlank()) {
-            query = query.andWhere { UserSessionsTable.identifierDisplayName.lowerCase() eq identifierDisplayName.lowercase() }
+            query = query.andWhere {
+                UserSessionsTable.identifierDisplayName.lowerCase() eq identifierDisplayName.lowercase()
+            }
         }
 
         if (identifierAuthProviders.isNotEmpty()) {
@@ -598,8 +558,8 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
             val pattern = substringSqlLikePattern(searchQuery.lowercase())
             query = query.andWhere {
                 (UserSessionsTable.identifier.lowerCase() like pattern) or
-                        (UserSessionsTable.identifierDisplayName.lowerCase() like pattern) or
-                        (UserSessionsTable.deviceName.lowerCase() like pattern)
+                    (UserSessionsTable.identifierDisplayName.lowerCase() like pattern) or
+                    (UserSessionsTable.deviceName.lowerCase() like pattern)
             }
         }
 
@@ -614,7 +574,10 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
         sortOrder: SortOrder
     ): AppResult<PagedResult<UserSessionInternal>> {
         val totalCount = query.count()
-        val totalPages = getNumOfTotalPages(totalCount, pageSize)
+        val totalPages = getNumOfTotalPages(
+            totalCount,
+            pageSize
+        )
 
         val sortColumn = when (sortBy) {
             UserSessionSortBy.EXPIRES_AT -> UserSessionsTable.expiresAt
@@ -624,11 +587,12 @@ class UserSessionRepositoryImpl @Inject constructor() : UserSessionRepository {
             UserSessionSortBy.UPDATED_AT -> UserSessionsTable.updatedAt
         }
 
-        val pageParams = PageParams(page = pageNumber, size = pageSize)
+        val pageParams = PageParams(
+            page = pageNumber,
+            size = pageSize
+        )
 
-        val items = query
-            .orderBy(sortColumn to sortOrder.toExposedSortOrder())
-            .applyPagination(pageParams)
+        val items = query.orderBy(sortColumn to sortOrder.toExposedSortOrder()).applyPagination(pageParams)
             .map { it.toUserSessionInternal() }
 
         return AppResult.Success(

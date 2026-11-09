@@ -7,15 +7,18 @@ import java.time.Instant as JavaInstant
 import kotlin.time.Instant as KotlinInstant
 
 class TimeUtilsTest {
-
     @Test
     fun `toJavaInstant converts correctly`() {
+        val millis2 = 1488L
         val millis = 1714730000000L
         val kotlinInstant = KotlinInstant.fromEpochMilliseconds(millis)
 
         val result = kotlinInstant.toJavaInstant()
 
-        assertEquals(millis, result.toEpochMilli())
+        assertEquals(
+            millis,
+            result.toEpochMilli()
+        )
     }
 
     @Test
@@ -24,7 +27,10 @@ class TimeUtilsTest {
         val kotlinInstant: KotlinInstant = KotlinInstant.fromEpochMilliseconds(millis)
         val nullInstant: KotlinInstant? = null
 
-        assertEquals(millis, kotlinInstant.toJavaInstantOrNull()?.toEpochMilli())
+        assertEquals(
+            millis,
+            kotlinInstant.toJavaInstantOrNull()?.toEpochMilli()
+        )
         assertNull(nullInstant.toJavaInstantOrNull())
     }
 
@@ -35,7 +41,10 @@ class TimeUtilsTest {
 
         val result = javaInstant.toKotlinInstant()
 
-        assertEquals(millis, result.toEpochMilliseconds())
+        assertEquals(
+            millis,
+            result.toEpochMilliseconds()
+        )
     }
 
     @Test
@@ -44,7 +53,10 @@ class TimeUtilsTest {
         val javaInstant: JavaInstant? = JavaInstant.ofEpochMilli(millis)
         val nullInstant: JavaInstant? = null
 
-        assertEquals(millis, javaInstant.toKotlinInstantOrNull()?.toEpochMilliseconds())
+        assertEquals(
+            millis,
+            javaInstant.toKotlinInstantOrNull()?.toEpochMilliseconds()
+        )
         assertNull(nullInstant.toKotlinInstantOrNull())
     }
 }

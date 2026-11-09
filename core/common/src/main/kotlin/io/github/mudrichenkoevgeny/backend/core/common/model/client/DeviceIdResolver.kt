@@ -11,8 +11,7 @@ import kotlin.uuid.Uuid
  * Uses the client's explicitly provided [ClientDeviceId] if present in [ClientInfo],
  * or generates a deterministic fallback identifier derived from user ID, client IP, and user-agent.
  */
-object DeviceIdResolver {
-
+public object DeviceIdResolver {
     /**
      * Resolves the [ClientDeviceId] for a given user and request context.
      *
@@ -20,7 +19,10 @@ object DeviceIdResolver {
      * @param clientInfo client request metadata containing device, IP, and user-agent information.
      * @return explicit or deterministic fallback [ClientDeviceId].
      */
-    fun resolveDeviceId(userId: String, clientInfo: ClientInfo): ClientDeviceId {
+    public fun resolveDeviceId(
+        userId: String,
+        clientInfo: ClientInfo
+    ): ClientDeviceId {
         val clientDeviceId = clientInfo.clientDeviceInfo.deviceId
         if (clientDeviceId != null) {
             return clientDeviceId
@@ -32,7 +34,12 @@ object DeviceIdResolver {
         val hashBytes = MessageDigest.getInstance("SHA-256").digest(rawString.toByteArray())
         val mostSigBits = hashBytes.toLong(0)
         val leastSigBits = hashBytes.toLong(8)
-        return ClientDeviceId(Uuid.fromLongs(mostSigBits, leastSigBits))
+        return ClientDeviceId(
+            Uuid.fromLongs(
+                mostSigBits,
+                leastSigBits
+            )
+        )
     }
 
     private fun ByteArray.toLong(offset: Int): Long {

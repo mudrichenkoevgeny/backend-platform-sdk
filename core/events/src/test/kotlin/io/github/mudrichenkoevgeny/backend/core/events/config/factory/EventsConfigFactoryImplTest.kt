@@ -10,13 +10,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class EventsConfigFactoryImplTest {
-
-    private companion object {
-        private const val KAFKA_BOOTSTRAP_SERVERS = "localhost:9092"
-        private const val KAFKA_GROUP_ID = "test-group"
-        private const val KAFKA_CLIENT_ID = "test-client"
-    }
-
     private val envReader = mockk<EnvReader>()
 
     @Test
@@ -30,10 +23,22 @@ class EventsConfigFactoryImplTest {
 
         val config: EventsConfig = factory.create()
 
-        assertEquals(EventsType.IN_MEMORY, config.eventsType)
-        assertEquals(KAFKA_BOOTSTRAP_SERVERS, config.kafkaBootstrapServers)
-        assertEquals(KAFKA_GROUP_ID, config.kafkaGroupId)
-        assertEquals(KAFKA_CLIENT_ID, config.kafkaClientId)
+        assertEquals(
+            EventsType.IN_MEMORY,
+            config.eventsType
+        )
+        assertEquals(
+            KAFKA_BOOTSTRAP_SERVERS,
+            config.kafkaBootstrapServers
+        )
+        assertEquals(
+            KAFKA_GROUP_ID,
+            config.kafkaGroupId
+        )
+        assertEquals(
+            KAFKA_CLIENT_ID,
+            config.kafkaClientId
+        )
     }
 
     @Test
@@ -47,7 +52,15 @@ class EventsConfigFactoryImplTest {
 
         val config: EventsConfig = factory.create()
 
-        assertEquals(EventsType.KAFKA, config.eventsType)
+        assertEquals(
+            EventsType.KAFKA,
+            config.eventsType
+        )
+    }
+
+    private companion object {
+        private const val KAFKA_BOOTSTRAP_SERVERS = "localhost:9092"
+        private const val KAFKA_GROUP_ID = "test-group"
+        private const val KAFKA_CLIENT_ID = "test-client"
     }
 }
-

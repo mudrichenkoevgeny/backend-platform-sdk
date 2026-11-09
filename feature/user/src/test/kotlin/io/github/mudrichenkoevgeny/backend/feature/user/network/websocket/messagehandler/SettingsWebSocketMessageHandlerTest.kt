@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SettingsWebSocketMessageHandlerTest {
-
     @Test
     fun `handle returns Handled for global settings updated event types`() {
         val handler = SettingsWebSocketMessageHandler()
@@ -19,7 +18,12 @@ class SettingsWebSocketMessageHandlerTest {
         )
 
         eventTypes.forEach { type ->
-            val frame = SocketFrame(type = type, payload = null, metadata = emptyMap(), timestamp = 0L)
+            val frame = SocketFrame(
+                type = type,
+                payload = null,
+                metadata = emptyMap(),
+                timestamp = 0L
+            )
 
             val result = runBlocking {
                 handler.handle(
@@ -42,7 +46,12 @@ class SettingsWebSocketMessageHandlerTest {
     @Test
     fun `handle returns NotHandled for unknown type`() = runBlocking {
         val handler = SettingsWebSocketMessageHandler()
-        val frame = SocketFrame(type = "unknown", payload = null, metadata = emptyMap(), timestamp = 0L)
+        val frame = SocketFrame(
+            type = "unknown",
+            payload = null,
+            metadata = emptyMap(),
+            timestamp = 0L
+        )
 
         val result = handler.handle(
             frame = frame,

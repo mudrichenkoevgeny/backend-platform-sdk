@@ -32,7 +32,7 @@ import javax.inject.Singleton
  * - **Observability**: Integrated logging and distributed tracing via MDC.
  */
 @Singleton
-class HttpClientProvider @Inject constructor() {
+public class HttpClientProvider @Inject constructor() {
     /**
      * Creates a new [HttpClient] instance with the provided settings for external integration.
      *
@@ -41,42 +41,46 @@ class HttpClientProvider @Inject constructor() {
      * (e.g., adding specific plugins or interceptors for a particular external service).
      * @return A fully initialized [HttpClient] ready for outbound requests.
      */
-    fun create(
+    public fun create(
         config: HttpClientSettings,
         block: HttpClientConfig<CIOEngineConfig>.() -> Unit = {}
-    ): HttpClient {
-        return HttpClient(CIO) {
-            block()
+    ): HttpClient = HttpClient(CIO) {
+        block()
 
-            install(ContentNegotiation) { json(FoundationJson) }
+        install(ContentNegotiation) { json(FoundationJson) }
 
-            install(HttpTimeout) {
-                requestTimeoutMillis = config.requestTimeout
-                connectTimeoutMillis = config.connectTimeout
-                socketTimeoutMillis = config.socketTimeout
+        install(HttpTimeout) {
+            requestTimeoutMillis = config.requestTimeout
+            connectTimeoutMillis = config.connectTimeout
+            socketTimeoutMillis = config.socketTimeout
+        }
+
+        install(HttpRequestRetry) {
+            maxRetries = config.maxRetries
+            retryIf { _, response -> !response.status.isSuccess() }
+            retryOnExceptionIf { _, cause -> cause is IOException }
+            exponentialDelay()
+        }
+
+        install(Logging) {
+            level = LogLevel.INFO
+        }
+
+        defaultRequest {
+            config.baseUrl?.let { url(it) }
+            config.defaultHeaders.forEach { (key, value) ->
+                header(
+                    key,
+                    value
+                )
             }
 
-            install(HttpRequestRetry) {
-                maxRetries = config.maxRetries
-                retryIf { _, response -> !response.status.isSuccess() }
-                retryOnExceptionIf { _, cause -> cause is IOException }
-                exponentialDelay()
-            }
-
-            install(Logging) {
-                level = LogLevel.INFO
-            }
-
-            defaultRequest {
-                config.baseUrl?.let { url(it) }
-                config.defaultHeaders.forEach { (key, value) ->
-                    header(key, value)
-                }
-
-                val currentTraceId = MDC.get(TracingKeys.TRACE_ID_KEY)
-                if (!currentTraceId.isNullOrBlank()) {
-                    header(CommonHttpHeaders.TRACE_HEADER_NAME, currentTraceId)
-                }
+            val currentTraceId = MDC.get(TracingKeys.TRACE_ID_KEY)
+            if (!currentTraceId.isNullOrBlank()) {
+                header(
+                    CommonHttpHeaders.TRACE_HEADER_NAME,
+                    currentTraceId
+                )
             }
         }
     }

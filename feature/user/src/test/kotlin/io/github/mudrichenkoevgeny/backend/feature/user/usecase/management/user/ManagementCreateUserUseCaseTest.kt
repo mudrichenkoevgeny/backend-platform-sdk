@@ -34,13 +34,15 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ManagementCreateUserUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val authSettingsProvider = mockk<AuthSettingsProvider>(relaxed = true)
     private val emailRestrictionPolicyValidator = EmailRestrictionPolicyValidator()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val userManager = mockk<UserManager>()
     private val authManager = mockk<AuthManager>()
     private val sessionManager = mockk<SessionManager>()
@@ -74,14 +76,26 @@ class ManagementCreateUserUseCaseTest {
             permissionCodes = setOf(permission)
         )
         val createdUser = createTestUserInternal(id = UserId.generate())
-        val managerSession = createTestUserSessionInternal(id = sessionId, userId = managerId)
+        val managerSession = createTestUserSessionInternal(
+            id = sessionId,
+            userId = managerId
+        )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         every { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(managerSession)
         coEvery {
-            authenticationChallengeService.ensureSessionConfirmed(any(), any(), any())
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any(),
+                any()
+            )
         } returns AppResult.Success(Unit)
 
         coEvery {
@@ -104,9 +118,15 @@ class ManagementCreateUserUseCaseTest {
             authorityLevel = 50,
             permissions = setOf(permission)
         )
-        val result = useCase(createUserParams = params, authenticatedRequestContext = context)
+        val result = useCase(
+            createUserParams = params,
+            authenticatedRequestContext = context
+        )
 
-        assertEquals(AppResult.Success(createdUser), result)
+        assertEquals(
+            AppResult.Success(createdUser),
+            result
+        )
         coVerify {
             authManager.createUserAndIdentifier(
                 userAuthProvider = any(),
@@ -130,13 +150,25 @@ class ManagementCreateUserUseCaseTest {
             permissionCodes = setOf(permission)
         )
         val createdUser = createTestUserInternal(id = UserId.generate())
-        val managerSession = createTestUserSessionInternal(id = sessionId, userId = managerId)
+        val managerSession = createTestUserSessionInternal(
+            id = sessionId,
+            userId = managerId
+        )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(managerSession)
         coEvery {
-            authenticationChallengeService.ensureSessionConfirmed(any(), any(), any())
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any(),
+                any()
+            )
         } returns AppResult.Success(Unit)
 
         coEvery {
@@ -159,9 +191,15 @@ class ManagementCreateUserUseCaseTest {
             authorityLevel = 50,
             permissions = setOf(permission)
         )
-        val result = useCase(createUserParams = params, authenticatedRequestContext = context)
+        val result = useCase(
+            createUserParams = params,
+            authenticatedRequestContext = context
+        )
 
-        assertEquals(AppResult.Success(createdUser), result)
+        assertEquals(
+            AppResult.Success(createdUser),
+            result
+        )
         coVerify(exactly = 0) { validatePasswordUseCase(any()) }
         coVerify {
             authManager.createUserAndIdentifier(
@@ -184,7 +222,12 @@ class ManagementCreateUserUseCaseTest {
             authorityLevel = 50
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 
         val params = CreateUserParams(
@@ -195,7 +238,10 @@ class ManagementCreateUserUseCaseTest {
             authorityLevel = 60,
             permissions = emptySet()
         )
-        val result = useCase(createUserParams = params, authenticatedRequestContext = context)
+        val result = useCase(
+            createUserParams = params,
+            authenticatedRequestContext = context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserInsufficientAuthorityLevel)
     }
@@ -209,7 +255,12 @@ class ManagementCreateUserUseCaseTest {
             permissionCodes = emptySet()
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 
         val params = CreateUserParams(
@@ -220,7 +271,10 @@ class ManagementCreateUserUseCaseTest {
             authorityLevel = 50,
             permissions = emptySet()
         )
-        val result = useCase(createUserParams = params, authenticatedRequestContext = context)
+        val result = useCase(
+            createUserParams = params,
+            authenticatedRequestContext = context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserMissingPermissions)
     }
@@ -235,10 +289,28 @@ class ManagementCreateUserUseCaseTest {
             permissionCodes = setOf(permission)
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
-        coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(createTestUserSessionInternal(id = sessionId, userId = managerId))
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            sessionManager.getUserSessionInternal(sessionId)
+        } returns AppResult.Success(
+            createTestUserSessionInternal(
+                id = sessionId,
+                userId = managerId
+            )
+        )
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         every { validatePasswordUseCase(any()) } returns AppResult.Success(Unit)
         every { authSettingsProvider.getOpenEmailRestrictionPolicy() } returns createTestEmailRestrictionPolicy(
             isBlacklistEnabled = true,
@@ -257,7 +329,10 @@ class ManagementCreateUserUseCaseTest {
             authorityLevel = 50,
             permissions = emptySet()
         )
-        val result = useCase(createUserParams = params, authenticatedRequestContext = context)
+        val result = useCase(
+            createUserParams = params,
+            authenticatedRequestContext = context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.EmailNotAllowed)
     }
@@ -274,7 +349,12 @@ class ManagementCreateUserUseCaseTest {
             permissionCodes = setOf(managerPermission)
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 
         val params = CreateUserParams(
@@ -285,7 +365,10 @@ class ManagementCreateUserUseCaseTest {
             authorityLevel = 50,
             permissions = setOf(extraPermission)
         )
-        val result = useCase(createUserParams = params, authenticatedRequestContext = context)
+        val result = useCase(
+            createUserParams = params,
+            authenticatedRequestContext = context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserMissingPermissions)
     }
@@ -298,7 +381,12 @@ class ManagementCreateUserUseCaseTest {
             authorityLevel = 100
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 
         val params = CreateUserParams(
@@ -309,7 +397,10 @@ class ManagementCreateUserUseCaseTest {
             authorityLevel = 50,
             permissions = emptySet()
         )
-        val result = useCase(createUserParams = params, authenticatedRequestContext = context)
+        val result = useCase(
+            createUserParams = params,
+            authenticatedRequestContext = context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserForbidden)
     }

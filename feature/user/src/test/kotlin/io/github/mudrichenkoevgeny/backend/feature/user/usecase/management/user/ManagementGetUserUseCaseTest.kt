@@ -1,7 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
@@ -9,6 +8,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -21,7 +21,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ManagementGetUserUseCaseTest {
-
     private val userManager = mockk<UserManager>()
     private val useCase = ManagementGetUserUseCase(userManager)
 
@@ -43,7 +42,10 @@ class ManagementGetUserUseCaseTest {
 
     @Test
     fun `successfully returns user details when manager is active and authorized`() = runTest {
-        val managerInternal = createTestUserInternal(id = managerId, accountStatus = UserAccountStatus.ACTIVE)
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE
+        )
         val targetInternal = createTestUserInternal(id = targetId)
         val expectedTargetPrivate = targetInternal.toUserPrivate()
 
@@ -56,18 +58,30 @@ class ManagementGetUserUseCaseTest {
             )
         } returns AppResult.Success(targetInternal)
 
-        val result = useCase(targetId, context)
+        val result = useCase(
+            targetId,
+            context
+        )
 
-        assertEquals(AppResult.Success(expectedTargetPrivate), result)
+        assertEquals(
+            AppResult.Success(expectedTargetPrivate),
+            result
+        )
     }
 
     @Test
     fun `returns error when manager is not active`() = runTest {
-        val managerInternal = createTestUserInternal(id = managerId, accountStatus = UserAccountStatus.BANNED)
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.BANNED
+        )
 
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 
-        val result = useCase(targetId, context)
+        val result = useCase(
+            targetId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserIllegalAccountStatus)
     }
@@ -76,14 +90,20 @@ class ManagementGetUserUseCaseTest {
     fun `returns error when manager is not found`() = runTest {
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(null)
 
-        val result = useCase(targetId, context)
+        val result = useCase(
+            targetId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserForbidden)
     }
 
     @Test
     fun `returns error when target user is not found or not authorized`() = runTest {
-        val managerInternal = createTestUserInternal(id = managerId, accountStatus = UserAccountStatus.ACTIVE)
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE
+        )
 
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery {
@@ -94,7 +114,10 @@ class ManagementGetUserUseCaseTest {
             )
         } returns AppResult.Success(null)
 
-        val result = useCase(targetId, context)
+        val result = useCase(
+            targetId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserNotFound)
     }

@@ -12,9 +12,8 @@ import javax.inject.Singleton
  * Configures [UserScheduledJobs] as a singleton by binding its concrete implementation [UserScheduledJobsImpl].
  */
 @Module
-interface UserScheduledJobsModule {
-
+public interface UserScheduledJobsModule {
     @Binds
     @Singleton
-    fun bindUserScheduledJobs(impl: UserScheduledJobsImpl): UserScheduledJobs
+    public fun bindUserScheduledJobs(impl: UserScheduledJobsImpl): UserScheduledJobs
 }

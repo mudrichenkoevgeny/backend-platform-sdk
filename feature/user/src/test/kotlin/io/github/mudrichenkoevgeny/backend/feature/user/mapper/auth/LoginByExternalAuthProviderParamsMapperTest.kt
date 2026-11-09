@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class LoginByExternalAuthProviderParamsMapperTest {
-
     @Test
     fun `toLoginByExternalAuthProviderParams maps all fields correctly when displayName is provided`() {
         val request = LoginByExternalAuthProviderRequest(

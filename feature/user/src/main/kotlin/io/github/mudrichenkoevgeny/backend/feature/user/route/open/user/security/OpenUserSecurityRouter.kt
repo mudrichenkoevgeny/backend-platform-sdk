@@ -47,7 +47,6 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.collections.plus
 
 /**
  * Router managing user security settings, specifically Multi-Factor Authentication (MFA) via TOTP.
@@ -61,10 +60,11 @@ import kotlin.collections.plus
  * 2. [OpenUserSecurityRoutes.ENABLE_TOTP] — validates the initial code to activate MFA via [EnableTotpUseCase].
  * 3. [OpenUserSecurityRoutes.DISABLE_TOTP] — removes TOTP protection via [DisableTotpUseCase].
  * 4. [OpenUserSecurityRoutes.GET_RECOVERY_CODES] — retrieves active backup codes via [GetRecoveryCodesUseCase].
- * 5. [OpenUserSecurityRoutes.REGENERATE_RECOVERY_CODES] — replaces existing backup codes via [RegenerateRecoveryCodesUseCase].
+ * 5. [OpenUserSecurityRoutes.REGENERATE_RECOVERY_CODES] — replaces existing backup codes via
+ * [RegenerateRecoveryCodesUseCase].
  */
 @Singleton
-class OpenUserSecurityRouter @Inject constructor(
+public class OpenUserSecurityRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -76,7 +76,6 @@ class OpenUserSecurityRouter @Inject constructor(
     private val getRecoveryCodesUseCase: GetRecoveryCodesUseCase,
     private val regenerateRecoveryCodesUseCase: RegenerateRecoveryCodesUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerSetupTotpRoute(this)
@@ -89,56 +88,121 @@ class OpenUserSecurityRouter @Inject constructor(
 
     private fun registerSetupTotpRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = OpenUserSecurityRoutes.SETUP_TOTP,
-            builder = { setupTotpDocs(allowedRoles, allowedAccountStatuses) },
-            body = { setupTotp(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                setupTotpDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                setupTotp(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerEnableTotpRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = OpenUserSecurityRoutes.ENABLE_TOTP,
-            builder = { enableTotpDocs(allowedRoles, allowedAccountStatuses) },
-            body = { enableTotp(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                enableTotpDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                enableTotp(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerDisableTotpRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.delete(
             path = OpenUserSecurityRoutes.DISABLE_TOTP,
-            builder = { disableTotpDocs(allowedRoles, allowedAccountStatuses) },
-            body = { disableTotp(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                disableTotpDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                disableTotp(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerGetRecoveryCodesRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = OpenUserSecurityRoutes.GET_RECOVERY_CODES,
-            builder = { getRecoveryCodesDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getRecoveryCodes(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getRecoveryCodesDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getRecoveryCodes(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerRegenerateRecoveryCodesRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = OpenUserSecurityRoutes.REGENERATE_RECOVERY_CODES,
-            builder = { regenerateRecoveryCodesDocs(allowedRoles, allowedAccountStatuses) },
-            body = { regenerateRecoveryCodes(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                regenerateRecoveryCodesDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                regenerateRecoveryCodes(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -176,7 +240,11 @@ class OpenUserSecurityRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -184,7 +252,11 @@ class OpenUserSecurityRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { totpSetup ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { totpSetup ->
             totpSetup.toTotpSetupPayload()
         }
     }
@@ -224,7 +296,11 @@ class OpenUserSecurityRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -244,7 +320,11 @@ class OpenUserSecurityRouter @Inject constructor(
             )
         }
 
-        call.respondResult(result, appLogger, appErrorParser) { totpRecoveryCodes ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { totpRecoveryCodes ->
             totpRecoveryCodes.toTotpRecoveryCodesPayload()
         }
     }
@@ -283,7 +363,11 @@ class OpenUserSecurityRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -299,7 +383,11 @@ class OpenUserSecurityRouter @Inject constructor(
             )
         }
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun RouteConfig.getRecoveryCodesDocs(
@@ -337,7 +425,11 @@ class OpenUserSecurityRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -353,7 +445,11 @@ class OpenUserSecurityRouter @Inject constructor(
             )
         }
 
-        call.respondResult(result, appLogger, appErrorParser) { totpRecoveryCodes ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { totpRecoveryCodes ->
             totpRecoveryCodes.toTotpRecoveryCodesPayload()
         }
     }
@@ -393,7 +489,11 @@ class OpenUserSecurityRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -409,7 +509,11 @@ class OpenUserSecurityRouter @Inject constructor(
             )
         }
 
-        call.respondResult(result, appLogger, appErrorParser) { totpRecoveryCodes ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { totpRecoveryCodes ->
             totpRecoveryCodes.toTotpRecoveryCodesPayload()
         }
     }
@@ -435,30 +539,35 @@ class OpenUserSecurityRouter @Inject constructor(
         )
     }
 
-    companion object {
-        const val SETUP_TOTP_SUMMARY = "Initiate TOTP setup"
-        const val SETUP_TOTP_DESCRIPTION = "Generates a new TOTP secret and returns setup data (secret key, otpauth URL, and challenge token)."
-        const val SETUP_TOTP_OPERATION_ID = "openSetupTotp"
-        const val SETUP_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP setup data generated"
+    public companion object {
+        private const val SETUP_TOTP_SUMMARY = "Initiate TOTP setup"
+        private const val SETUP_TOTP_DESCRIPTION =
+            "Generates a new TOTP secret and returns setup data (secret key, otpauth URL, and challenge token)."
+        private const val SETUP_TOTP_OPERATION_ID = "openSetupTotp"
+        private const val SETUP_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP setup data generated"
 
-        const val ENABLE_TOTP_SUMMARY = "Finalize TOTP activation"
-        const val ENABLE_TOTP_DESCRIPTION = "Finalizes TOTP activation by verifying the first code from the authenticator app."
-        const val ENABLE_TOTP_OPERATION_ID = "openEnableTotp"
-        const val ENABLE_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP enabled successfully"
+        private const val ENABLE_TOTP_SUMMARY = "Finalize TOTP activation"
+        private const val ENABLE_TOTP_DESCRIPTION =
+            "Finalizes TOTP activation by verifying the first code from the authenticator app."
+        private const val ENABLE_TOTP_OPERATION_ID = "openEnableTotp"
+        private const val ENABLE_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP enabled successfully"
 
-        const val DISABLE_TOTP_SUMMARY = "Disable TOTP"
-        const val DISABLE_TOTP_DESCRIPTION = "Disables TOTP and invalidates all associated recovery codes for the authenticated account."
-        const val DISABLE_TOTP_OPERATION_ID = "openDisableTotp"
-        const val DISABLE_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP disabled successfully"
+        private const val DISABLE_TOTP_SUMMARY = "Disable TOTP"
+        private const val DISABLE_TOTP_DESCRIPTION =
+            "Disables TOTP and invalidates all associated recovery codes for the authenticated account."
+        private const val DISABLE_TOTP_OPERATION_ID = "openDisableTotp"
+        private const val DISABLE_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP disabled successfully"
 
-        const val GET_RECOVERY_CODES_SUMMARY = "Get recovery codes"
-        const val GET_RECOVERY_CODES_DESCRIPTION = "Returns the current active recovery codes for the authenticated user."
-        const val GET_RECOVERY_CODES_OPERATION_ID = "openGetRecoveryCodes"
-        const val GET_RECOVERY_CODES_RESPONSE_OK_DESCRIPTION = "Current recovery codes"
+        private const val GET_RECOVERY_CODES_SUMMARY = "Get recovery codes"
+        private const val GET_RECOVERY_CODES_DESCRIPTION =
+            "Returns the current active recovery codes for the authenticated user."
+        private const val GET_RECOVERY_CODES_OPERATION_ID = "openGetRecoveryCodes"
+        private const val GET_RECOVERY_CODES_RESPONSE_OK_DESCRIPTION = "Current recovery codes"
 
-        const val REGENERATE_RECOVERY_CODES_SUMMARY = "Regenerate recovery codes"
-        const val REGENERATE_RECOVERY_CODES_DESCRIPTION = "Invalidates all existing recovery codes and generates a new set for the account."
-        const val REGENERATE_RECOVERY_CODES_OPERATION_ID = "openRegenerateRecoveryCodes"
-        const val REGENERATE_RECOVERY_CODES_RESPONSE_OK_DESCRIPTION = "New recovery codes generated"
+        private const val REGENERATE_RECOVERY_CODES_SUMMARY = "Regenerate recovery codes"
+        private const val REGENERATE_RECOVERY_CODES_DESCRIPTION =
+            "Invalidates all existing recovery codes and generates a new set for the account."
+        private const val REGENERATE_RECOVERY_CODES_OPERATION_ID = "openRegenerateRecoveryCodes"
+        private const val REGENERATE_RECOVERY_CODES_RESPONSE_OK_DESCRIPTION = "New recovery codes generated"
     }
 }

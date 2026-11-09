@@ -37,7 +37,7 @@ import kotlin.uuid.Uuid
  * Use case for resetting global security settings to default values from a management context.
  */
 @Singleton
-class ResetSecuritySettingsUseCase @Inject constructor(
+public class ResetSecuritySettingsUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -63,7 +63,7 @@ class ResetSecuritySettingsUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] containing the reset [ManagementSecuritySettings] or an [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<ManagementSecuritySettings> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
@@ -80,6 +80,7 @@ class ResetSecuritySettingsUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 
@@ -132,7 +133,8 @@ class ResetSecuritySettingsUseCase @Inject constructor(
 
         val timestamp = System.currentTimeMillis()
 
-        val openSecuritySettingsPayload = securitySettingsProvider.getOpenSecuritySettings().toOpenSecuritySettingsPayload()
+        val openSecuritySettingsPayload = securitySettingsProvider.getOpenSecuritySettings()
+            .toOpenSecuritySettingsPayload()
         webSocketManager.sendMessageToScope(
             scope = ApiScope.OPEN,
             frame = SocketFrame(

@@ -22,13 +22,12 @@ import kotlin.time.Duration.Companion.seconds
  * 2. [StorageManager.processExpiredPendingUploads] on a configurable interval based on presigned URL expiration.
  */
 @Singleton
-class StorageScheduledJobsImpl @Inject constructor(
+public class StorageScheduledJobsImpl @Inject constructor(
     private val storageManager: StorageManager,
     private val storageSettingsProvider: StorageSettingsProvider,
     @param:BackgroundScope private val scope: CoroutineScope,
     private val appLogger: AppLogger
 ) : StorageScheduledJobs {
-
     @Volatile
     private var deletedFilesCleanupJob: Job? = null
 

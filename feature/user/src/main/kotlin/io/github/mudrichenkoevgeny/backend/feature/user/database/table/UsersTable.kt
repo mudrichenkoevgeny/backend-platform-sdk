@@ -7,8 +7,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import kotlinx.serialization.serializer
+import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.javatime.timestamp
 import org.jetbrains.exposed.v1.json.jsonb
+import java.time.Instant
+import kotlin.uuid.Uuid
 
 /**
  * Users table.
@@ -16,33 +19,51 @@ import org.jetbrains.exposed.v1.json.jsonb
  * Schema is created by a Flyway migration in `db/migration/feature/user/`.
  * The app must include this path in its Flyway migration locations.
  */
-object UsersTable : BaseTable("users") {
-    const val NICKNAME_UNIQUE_INDEX_NAME = "idx_users_nickname"
+public object UsersTable : BaseTable("users") {
+    public const val NICKNAME_UNIQUE_INDEX_NAME: String = "idx_users_nickname"
 
-    val role = enumerationByName("role", BaseDbConstraints.ENUM_MAX_LENGTH, UserRole::class)
-    val accountStatus = enumerationByName("account_status", BaseDbConstraints.ENUM_MAX_LENGTH, UserAccountStatus::class)
-    val accountStatusOnRestore = enumerationByName(
+    public val role: Column<UserRole> = enumerationByName(
+        "role",
+        BaseDbConstraints.ENUM_MAX_LENGTH,
+        UserRole::class
+    )
+    public val accountStatus: Column<UserAccountStatus> = enumerationByName(
+        "account_status",
+        BaseDbConstraints.ENUM_MAX_LENGTH,
+        UserAccountStatus::class
+    )
+    public val accountStatusOnRestore: Column<UserAccountStatus?> = enumerationByName(
         "account_status_on_restore",
         BaseDbConstraints.ENUM_MAX_LENGTH,
         UserAccountStatus::class
     ).nullable()
-    val authorityLevel = integer("authority_level").default(0)
-    val permissionCodes = jsonb<Set<String>>(
+    public val authorityLevel: Column<Int> = integer("authority_level").default(0)
+    public val permissionCodes: Column<Set<String>> = jsonb<Set<String>>(
         "permission_codes",
         FoundationJson,
         serializer<Set<String>>()
     )
-    val isTotpEnabled = bool("is_totp_enabled").default(false)
-    val accountLockoutType = enumerationByName("account_lockout_type", BaseDbConstraints.ENUM_MAX_LENGTH, AccountLockoutType::class).default(AccountLockoutType.NONE)
-    val temporaryLockoutUntil = timestamp("temporary_lockout_until").nullable()
-    val storageQuotaBytes = long("storage_quota_bytes").nullable()
-    val storageMaxUploadSizeBytes = long("storage_max_upload_size_bytes").nullable()
-    val storageMaxPendingUploads = integer("storage_max_pending_uploads").nullable()
-    val lastLoginAt = timestamp("last_login_at").nullable()
-    val lastActiveAt = timestamp("last_active_at").nullable()
-    val scheduledPermanentDeletionAt = timestamp("scheduled_permanent_deletion_at").nullable()
-    val nickname = varchar("nickname", BaseDbConstraints.DEFAULT_MAX_LENGTH).nullable()
-    val displayName = varchar("display_name", BaseDbConstraints.DEFAULT_MAX_LENGTH).nullable()
-    val avatarFileId = uuid("avatar_file_id").nullable()
-    val birthdate = timestamp("birthdate").nullable()
+    public val isTotpEnabled: Column<Boolean> = bool("is_totp_enabled").default(false)
+    public val accountLockoutType: Column<AccountLockoutType> = enumerationByName(
+        "account_lockout_type",
+        BaseDbConstraints.ENUM_MAX_LENGTH,
+        AccountLockoutType::class
+    ).default(AccountLockoutType.NONE)
+    public val temporaryLockoutUntil: Column<Instant?> = timestamp("temporary_lockout_until").nullable()
+    public val storageQuotaBytes: Column<Long?> = long("storage_quota_bytes").nullable()
+    public val storageMaxUploadSizeBytes: Column<Long?> = long("storage_max_upload_size_bytes").nullable()
+    public val storageMaxPendingUploads: Column<Int?> = integer("storage_max_pending_uploads").nullable()
+    public val lastLoginAt: Column<Instant?> = timestamp("last_login_at").nullable()
+    public val lastActiveAt: Column<Instant?> = timestamp("last_active_at").nullable()
+    public val scheduledPermanentDeletionAt: Column<Instant?> = timestamp("scheduled_permanent_deletion_at").nullable()
+    public val nickname: Column<String?> = varchar(
+        "nickname",
+        BaseDbConstraints.DEFAULT_MAX_LENGTH
+    ).nullable()
+    public val displayName: Column<String?> = varchar(
+        "display_name",
+        BaseDbConstraints.DEFAULT_MAX_LENGTH
+    ).nullable()
+    public val avatarFileId: Column<Uuid?> = uuid("avatar_file_id").nullable()
+    public val birthdate: Column<Instant?> = timestamp("birthdate").nullable()
 }

@@ -21,7 +21,7 @@ import javax.inject.Singleton
  * `retryAfterSeconds`.
  */
 @Singleton
-class RateLimiterImpl @Inject constructor(
+public class RateLimiterImpl @Inject constructor(
     private val redisManager: RedisManager,
     private val appLogger: AppLogger
 ) : RateLimiter {

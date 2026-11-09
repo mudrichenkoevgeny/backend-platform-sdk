@@ -15,7 +15,7 @@ import kotlin.time.Instant
  * Provides strict type safety (e.g. [Instant], [AuditEventId], [AuditActionType], [AuditResourceType])
  * for fields that are represented as strings in the shared network/client library layer.
  */
-data class ManagementAuditEventListQueryParams(
+public data class ManagementAuditEventListQueryParams(
     val listing: ListingQueryParams<AuditEventSortBy>,
     val eventIds: List<AuditEventId> = emptyList(),
     val actorIds: List<String> = emptyList(),

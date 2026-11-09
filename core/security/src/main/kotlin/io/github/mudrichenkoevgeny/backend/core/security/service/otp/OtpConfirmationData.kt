@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
  * @property otpConfirmation The settings applied to this OTP (TTL, retry period, and length).
  * @property code The actual generated numeric code to be delivered to the user.
  */
-data class OtpConfirmationData(
+public data class OtpConfirmationData(
     val otpConfirmation: OtpConfirmation,
     val code: String
 )

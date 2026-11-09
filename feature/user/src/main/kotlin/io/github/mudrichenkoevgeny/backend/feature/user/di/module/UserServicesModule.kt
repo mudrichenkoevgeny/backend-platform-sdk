@@ -30,57 +30,51 @@ import javax.inject.Singleton
  * - otherwise [UnconfiguredEmailService]
  */
 @Module
-interface UserServicesModule {
-
+public interface UserServicesModule {
     @Binds
     @Singleton
-    fun bindAuthenticationChallengeService(
+    public fun bindAuthenticationChallengeService(
         authenticationChallengeServiceImpl: AuthenticationChallengeServiceImpl
     ): AuthenticationChallengeService
 
     @Binds
     @Singleton
-    fun bindPhoneService(phoneServiceImpl: PhoneServiceImpl): PhoneService
+    public fun bindPhoneService(phoneServiceImpl: PhoneServiceImpl): PhoneService
 
-    companion object {
-
+    public companion object {
         @Provides
         @Singleton
-        fun provideEmailService(
+        public fun provideEmailService(
             userConfig: UserConfig,
             httpClientProvider: HttpClientProvider,
             emailParser: EmailParser,
             unconfiguredEmailService: UnconfiguredEmailService
-        ): EmailService {
-            return when {
-                userConfig.resendConfig != null -> ResendEmailService(
-                    config = userConfig.resendConfig,
-                    httpClient = httpClientProvider.create(
-                        HttpClientSettings(baseUrl = userConfig.resendConfig.url)
-                    ),
-                    emailParser = emailParser
-                )
-                userConfig.uniOneConfig != null -> UniOneEmailService(
-                    config = userConfig.uniOneConfig,
-                    httpClient = httpClientProvider.create(
-                        HttpClientSettings(baseUrl = userConfig.uniOneConfig.url)
-                    ),
-                    emailParser = emailParser
-                )
-                else -> unconfiguredEmailService
-            }
+        ): EmailService = when {
+            userConfig.resendConfig != null -> ResendEmailService(
+                config = userConfig.resendConfig,
+                httpClient = httpClientProvider.create(
+                    HttpClientSettings(baseUrl = userConfig.resendConfig.url)
+                ),
+                emailParser = emailParser
+            )
+
+            userConfig.uniOneConfig != null -> UniOneEmailService(
+                config = userConfig.uniOneConfig,
+                httpClient = httpClientProvider.create(
+                    HttpClientSettings(baseUrl = userConfig.uniOneConfig.url)
+                ),
+                emailParser = emailParser
+            )
+
+            else -> unconfiguredEmailService
         }
 
         @Provides
         @Singleton
-        fun provideNicknameValidator(): NicknameValidator {
-            return NicknameValidatorImpl()
-        }
+        public fun provideNicknameValidator(): NicknameValidator = NicknameValidatorImpl()
 
         @Provides
         @Singleton
-        fun provideDisplayNameValidator(): DisplayNameValidator {
-            return DisplayNameValidatorImpl()
-        }
+        public fun provideDisplayNameValidator(): DisplayNameValidator = DisplayNameValidatorImpl()
     }
 }

@@ -14,10 +14,9 @@ import javax.inject.Singleton
  * version, description, server URL) and kotlinx schema generator; output format is JSON.
  */
 @Singleton
-class SwaggerInitializerImpl @Inject constructor(
+public class SwaggerInitializerImpl @Inject constructor(
     private val config: SwaggerConfig
-): SwaggerInitializer {
-
+) : SwaggerInitializer {
     override fun initialize(application: Application) {
         application.install(OpenApi) {
             info {

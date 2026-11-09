@@ -13,8 +13,7 @@ import javax.inject.Singleton
  * Feature-specific error parser for common-related errors (validation, internal, rate limiting, etc.).
  */
 @Singleton
-class CommonAppErrorSpecificParser @Inject constructor() : AppErrorSpecificParser {
-
+public class CommonAppErrorSpecificParser @Inject constructor() : AppErrorSpecificParser {
     override fun getApiErrorResponse(
         errorId: ErrorId,
         code: String,
@@ -116,12 +115,10 @@ class CommonAppErrorSpecificParser @Inject constructor() : AppErrorSpecificParse
     override fun getApiErrorResponse(
         appError: AppError,
         locale: String
-    ): ApiErrorResponse? {
-        return getApiErrorResponse(
-            errorId = appError.errorId,
-            code = appError.code,
-            args = appError.publicArgs,
-            locale = locale
-        )
-    }
+    ): ApiErrorResponse? = getApiErrorResponse(
+        errorId = appError.errorId,
+        code = appError.code,
+        args = appError.publicArgs,
+        locale = locale
+    )
 }

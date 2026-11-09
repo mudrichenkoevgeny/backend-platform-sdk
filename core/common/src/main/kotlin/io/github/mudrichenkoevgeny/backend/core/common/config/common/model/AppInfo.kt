@@ -17,16 +17,16 @@ package io.github.mudrichenkoevgeny.backend.core.common.config.common.model
  * }
  * ```
  */
-interface AppInfo {
+public interface AppInfo {
     /**
      * The current version of the application (e.g., "1.2.0").
      * Usually synchronized with the Gradle project version.
      */
-    val version: String
+    public val version: String
 
     /**
      * The unique name of the application (e.g., "backend-app").
      * Used for service identification in distributed systems.
      */
-    val appName: String
+    public val appName: String
 }

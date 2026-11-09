@@ -27,7 +27,7 @@ import javax.inject.Singleton
  * Use case allowing the authenticated user to update their own profile details.
  */
 @Singleton
-class UpdateSelfUserUseCase @Inject constructor(
+public class UpdateSelfUserUseCase @Inject constructor(
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val userManager: UserManager,
@@ -48,7 +48,7 @@ class UpdateSelfUserUseCase @Inject constructor(
      * @param authenticatedRequestContext Context of the authenticated user request.
      * @return [AppResult] containing the updated [UserPrivate].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         updateUserParams: UpdateUserParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<UserPrivate> {
@@ -113,6 +113,7 @@ class UpdateSelfUserUseCase @Inject constructor(
                 )
                 AppResult.Success(updateResult.data.toUserPrivate())
             }
+
             is AppResult.Error -> handleError(
                 error = updateResult.error,
                 actorId = auditActorId,

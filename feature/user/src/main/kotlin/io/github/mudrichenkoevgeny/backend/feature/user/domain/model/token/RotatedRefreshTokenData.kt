@@ -27,19 +27,19 @@ import kotlin.time.Instant
  * @property rotatedAt Timestamp when the refresh token rotation occurred.
  */
 @Serializable
-data class RotatedRefreshTokenData(
-    val sessionId: String,
-    val identifierId: String,
-    val accessToken: String,
-    val refreshToken: String,
-    val expiresAt: Instant,
-    val userId: String,
-    val rotatedAt: Instant
+public data class RotatedRefreshTokenData(
+    public val sessionId: String,
+    public val identifierId: String,
+    public val accessToken: String,
+    public val refreshToken: String,
+    public val expiresAt: Instant,
+    public val userId: String,
+    public val rotatedAt: Instant
 ) {
     /**
      * Converts this rotated data back into a [SessionToken].
      */
-    fun toSessionToken(): SessionToken = SessionToken(
+    public fun toSessionToken(): SessionToken = SessionToken(
         sessionId = sessionId.toUserSessionIdOrThrow(),
         identifierId = identifierId.toUserIdentifierIdOrThrow(),
         accessToken = AccessToken(accessToken),
@@ -50,21 +50,24 @@ data class RotatedRefreshTokenData(
     /**
      * Returns the [UserId] associated with this token rotation.
      */
-    fun getUserId(): UserId = userId.toUserIdOrThrow()
+    public fun getUserId(): UserId = userId.toUserIdOrThrow()
 
-    companion object {
+    public companion object {
         /**
          * Creates a [RotatedRefreshTokenData] instance from a [SessionToken], [UserId], and rotation timestamp.
          */
-        fun from(sessionToken: SessionToken, userId: UserId, rotatedAt: Instant): RotatedRefreshTokenData =
-            RotatedRefreshTokenData(
-                sessionId = sessionToken.sessionId.asHexDashString(),
-                identifierId = sessionToken.identifierId.asHexDashString(),
-                accessToken = sessionToken.accessToken.value,
-                refreshToken = sessionToken.refreshToken.value,
-                expiresAt = sessionToken.expiresAt,
-                userId = userId.asHexDashString(),
-                rotatedAt = rotatedAt
-            )
+        public fun from(
+            sessionToken: SessionToken,
+            userId: UserId,
+            rotatedAt: Instant
+        ): RotatedRefreshTokenData = RotatedRefreshTokenData(
+            sessionId = sessionToken.sessionId.asHexDashString(),
+            identifierId = sessionToken.identifierId.asHexDashString(),
+            accessToken = sessionToken.accessToken.value,
+            refreshToken = sessionToken.refreshToken.value,
+            expiresAt = sessionToken.expiresAt,
+            userId = userId.asHexDashString(),
+            rotatedAt = rotatedAt
+        )
     }
 }

@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class UserSessionExpirationListenerTest {
-
     private val dispatcher = StandardTestDispatcher()
     private val scope = TestScope(dispatcher)
 
@@ -37,7 +36,12 @@ class UserSessionExpirationListenerTest {
 
         dispatcher.scheduler.advanceTimeBy(UNAUTHORIZED_DELAY_MS - BEFORE_UNAUTHORIZED_MARGIN_MS)
         dispatcher.scheduler.runCurrent()
-        coVerify(exactly = 0) { webSocketManager.sendMessageToSocket(any(), any()) }
+        coVerify(exactly = 0) {
+            webSocketManager.sendMessageToSocket(
+                any(),
+                any()
+            )
+        }
         coVerify(exactly = 0) { webSocketManager.disconnectSocket(any()) }
 
         dispatcher.scheduler.advanceTimeBy(BEFORE_UNAUTHORIZED_MARGIN_MS)
@@ -46,7 +50,10 @@ class UserSessionExpirationListenerTest {
             webSocketManager.sendMessageToSocket(
                 SOCKET_ID,
                 withArg { frame ->
-                    assertEquals(UserWebSocketEventTypes.UNAUTHORIZED, frame.type)
+                    assertEquals(
+                        UserWebSocketEventTypes.UNAUTHORIZED,
+                        frame.type
+                    )
                 }
             )
         }
@@ -75,7 +82,12 @@ class UserSessionExpirationListenerTest {
 
         dispatcher.scheduler.advanceUntilIdle()
 
-        coVerify(exactly = 0) { webSocketManager.sendMessageToSocket(any(), any()) }
+        coVerify(exactly = 0) {
+            webSocketManager.sendMessageToSocket(
+                any(),
+                any()
+            )
+        }
         coVerify(exactly = 0) { webSocketManager.disconnectSocket(any()) }
     }
 

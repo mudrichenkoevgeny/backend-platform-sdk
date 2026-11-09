@@ -16,10 +16,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class MfaServiceImplTest {
-
     private val redisManager = mockk<RedisManager>()
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
-    private val service = MfaServiceImpl(redisManager, securitySettingsProvider)
+    private val service = MfaServiceImpl(
+        redisManager,
+        securitySettingsProvider
+    )
 
     @Test
     fun `createChallenge saves data to redis and returns it`() = runTest {
@@ -29,14 +31,30 @@ class MfaServiceImplTest {
         val expiration = 300
 
         every { securitySettingsProvider.getMfaTokenExpirationSeconds() } returns expiration
-        coEvery { redisManager.setWithExpiration(any(), any(), expiration.toLong()) } returns AppResult.Success(Unit)
+        coEvery {
+            redisManager.setWithExpiration(
+                any(),
+                any(),
+                expiration.toLong()
+            )
+        } returns AppResult.Success(Unit)
 
-        val result = service.createChallenge(userId, userRole, type)
+        val result = service.createChallenge(
+            userId,
+            userRole,
+            type
+        )
 
         assertTrue(result is AppResult.Success)
         val data = (result as AppResult.Success).data
-        assertEquals(userId, data.userId)
-        assertEquals(type, data.type)
+        assertEquals(
+            userId,
+            data.userId
+        )
+        assertEquals(
+            type,
+            data.type
+        )
 
         coVerify {
             redisManager.setWithExpiration(
@@ -59,10 +77,16 @@ class MfaServiceImplTest {
 
         coEvery { redisManager.get("mfa_challenge:$token") } returns AppResult.Success(json)
 
-        val result = service.getChallenge(token, type)
+        val result = service.getChallenge(
+            token,
+            type
+        )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(challengeData, (result as AppResult.Success).data)
+        assertEquals(
+            challengeData,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
@@ -70,7 +94,10 @@ class MfaServiceImplTest {
         val token = "expired-token"
         coEvery { redisManager.get("mfa_challenge:$token") } returns AppResult.Success(null)
 
-        val result = service.getChallenge(token, MfaChallengeType.LOGIN_TOTP)
+        val result = service.getChallenge(
+            token,
+            MfaChallengeType.LOGIN_TOTP
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is SecurityError.MfaTokenExpired)
@@ -88,7 +115,10 @@ class MfaServiceImplTest {
 
         coEvery { redisManager.get("mfa_challenge:$token") } returns AppResult.Success(json)
 
-        val result = service.getChallenge(token, MfaChallengeType.LOGIN_TOTP)
+        val result = service.getChallenge(
+            token,
+            MfaChallengeType.LOGIN_TOTP
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is SecurityError.InvalidMfaToken)
@@ -111,7 +141,12 @@ class MfaServiceImplTest {
         coEvery { redisManager.get("mfa_challenge:$token") } returns AppResult.Success(json)
         coEvery { redisManager.delete("mfa_challenge:$token") } returns AppResult.Success(Unit)
 
-        val result = service.validateChallenge(token, type, userId, sessionId)
+        val result = service.validateChallenge(
+            token,
+            type,
+            userId,
+            sessionId
+        )
 
         assertTrue(result is AppResult.Success)
         coVerify { redisManager.delete("mfa_challenge:$token") }
@@ -130,7 +165,12 @@ class MfaServiceImplTest {
 
         coEvery { redisManager.get("mfa_challenge:$token") } returns AppResult.Success(json)
 
-        val result = service.validateChallenge(token, type, "imposter", null)
+        val result = service.validateChallenge(
+            token,
+            type,
+            "imposter",
+            null
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is SecurityError.InvalidMfaToken)

@@ -15,8 +15,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to send confirmation code for adding a phone identifier.
+ */
 @Singleton
-class SendAddPhoneIdentifierConfirmationUseCase @Inject constructor(
+public class SendAddPhoneIdentifierConfirmationUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val identifierManager: IdentifierManager,
     private val otpService: OtpService,
@@ -38,7 +41,7 @@ class SendAddPhoneIdentifierConfirmationUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] containing [OtpConfirmation] data.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         phoneNumber: String,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<OtpConfirmation> {
@@ -70,9 +73,17 @@ class SendAddPhoneIdentifierConfirmationUseCase @Inject constructor(
         }
 
         return if (identifier != null) {
-            sendAlreadyRegistered(phoneNumber, otpConfirmationData, authenticatedRequestContext)
+            sendAlreadyRegistered(
+                phoneNumber,
+                otpConfirmationData,
+                authenticatedRequestContext
+            )
         } else {
-            sendConfirmationCode(phoneNumber, otpConfirmationData, authenticatedRequestContext)
+            sendConfirmationCode(
+                phoneNumber,
+                otpConfirmationData,
+                authenticatedRequestContext
+            )
         }
     }
 

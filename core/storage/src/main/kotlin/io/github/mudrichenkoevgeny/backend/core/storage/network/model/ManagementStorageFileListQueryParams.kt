@@ -8,7 +8,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.s
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
 import kotlin.time.Instant
 
-data class ManagementStorageFileListQueryParams(
+/**
+ * Query parameters for filtering and paginating storage files in management API.
+ */
+public data class ManagementStorageFileListQueryParams(
     val listing: ListingQueryParams<StorageFileSortBy>,
     val fileIds: List<FileId> = emptyList(),
     val ownerUserIds: List<String> = emptyList(),

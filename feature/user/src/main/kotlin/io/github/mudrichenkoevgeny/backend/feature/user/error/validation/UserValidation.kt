@@ -12,7 +12,7 @@ import kotlin.time.Clock
  * Validates if the user has an allowed role, account status, and is not locked out.
  * Returns [AppResult.Success] if validation passes, or [AppResult.Error] with an appropriate [UserError] if it fails.
  */
-fun UserInternal.validateAccessEligibility(
+public fun UserInternal.validateAccessEligibility(
     allowedRoles: Set<UserRole>,
     allowedAccountStatuses: Set<UserAccountStatus>
 ): AppResult<Unit> {

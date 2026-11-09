@@ -15,11 +15,10 @@ import javax.inject.Singleton
  * fast when required paths or environment variables are missing.
  */
 @Singleton
-class PathResolverImpl @Inject constructor(
+public class PathResolverImpl @Inject constructor(
     pathResolverConfig: PathResolverConfig,
     appLogger: AppLogger
 ) : PathResolver {
-
     private val envFile: File
     private val secretsDir: File
 
@@ -33,7 +32,10 @@ class PathResolverImpl @Inject constructor(
             throw exception
         }
 
-        secretsDir = resolveFile(pathResolverConfig.projectRoot, secretsPath)
+        secretsDir = resolveFile(
+            pathResolverConfig.projectRoot,
+            secretsPath
+        )
         if (!secretsDir.exists()) {
             val exception = NoSuchFileException(secretsDir)
             appLogger.logError(CommonError.Internal(exception))
@@ -49,7 +51,10 @@ class PathResolverImpl @Inject constructor(
             throw exception
         }
 
-        envFile = resolveFile(pathResolverConfig.projectRoot, envFilePath)
+        envFile = resolveFile(
+            pathResolverConfig.projectRoot,
+            envFilePath
+        )
         if (!envFile.exists()) {
             val exception = NoSuchFileException(envFile)
             appLogger.logError(CommonError.Internal(exception))
@@ -57,19 +62,23 @@ class PathResolverImpl @Inject constructor(
         }
     }
 
-    override fun getResolvedPaths(): ResolvedPaths {
-        return ResolvedPaths(
-            envFile = envFile,
-            secretsDir = secretsDir
-        )
-    }
+    override fun getResolvedPaths(): ResolvedPaths = ResolvedPaths(
+        envFile = envFile,
+        secretsDir = secretsDir
+    )
 
-    private fun resolveFile(root: File, path: String): File {
+    private fun resolveFile(
+        root: File,
+        path: String
+    ): File {
         val file = File(path)
         return if (file.isAbsolute) {
             file
         } else {
-            File(root, path)
+            File(
+                root,
+                path
+            )
         }
     }
 }

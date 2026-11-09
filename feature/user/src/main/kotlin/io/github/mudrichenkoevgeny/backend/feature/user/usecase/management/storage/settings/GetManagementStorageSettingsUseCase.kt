@@ -6,8 +6,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.s
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to get storage settings.
+ */
 @Singleton
-class GetManagementStorageSettingsUseCase @Inject constructor(
+public class GetManagementStorageSettingsUseCase @Inject constructor(
     private val storageSettingsProvider: StorageSettingsProvider
 ) {
     /**
@@ -24,7 +27,6 @@ class GetManagementStorageSettingsUseCase @Inject constructor(
      *
      * @return [AppResult] containing the [ManagementStorageSettings].
      */
-    operator fun invoke(): AppResult<ManagementStorageSettings> {
-        return AppResult.Success(storageSettingsProvider.getManagementStorageSettings())
-    }
+    public operator fun invoke(): AppResult<ManagementStorageSettings> =
+        AppResult.Success(storageSettingsProvider.getManagementStorageSettings())
 }

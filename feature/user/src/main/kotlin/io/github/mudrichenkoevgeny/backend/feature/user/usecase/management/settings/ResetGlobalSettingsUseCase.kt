@@ -37,7 +37,7 @@ import kotlin.uuid.Uuid
  * Use case for resetting global settings to default values from a management context.
  */
 @Singleton
-class ResetGlobalSettingsUseCase @Inject constructor(
+public class ResetGlobalSettingsUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -63,7 +63,7 @@ class ResetGlobalSettingsUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] containing the reset [ManagementGlobalSettings] or an [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<ManagementGlobalSettings> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
@@ -80,6 +80,7 @@ class ResetGlobalSettingsUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 

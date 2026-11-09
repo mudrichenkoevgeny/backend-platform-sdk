@@ -7,11 +7,11 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.mod
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseManagementIdentifiersListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
@@ -55,14 +55,18 @@ import javax.inject.Singleton
  * Management HTTP routes for managing user identifiers (e.g., email, phone).
  *
  * Registered routes:
- * 1. [ManagementIdentifiersRoutes.GET_IDENTIFIERS] — retrieves a filtered, paginated list of identifiers via [ManagementGetIdentifiersUseCase].
- * 2. [ManagementIdentifiersRoutes.GET_USER_IDENTIFIERS] — retrieves a filtered, paginated list of identifiers for a target user via [ManagementGetIdentifiersUseCase].
- * 3. [ManagementIdentifiersRoutes.GET_IDENTIFIER] — retrieves a specific identifier's details via [ManagementGetIdentifierUseCase].
+ * 1. [ManagementIdentifiersRoutes.GET_IDENTIFIERS] — retrieves a filtered, paginated list of identifiers via
+ * [ManagementGetIdentifiersUseCase].
+ * 2. [ManagementIdentifiersRoutes.GET_USER_IDENTIFIERS] — retrieves a filtered, paginated list of identifiers for a
+ * target user via [ManagementGetIdentifiersUseCase].
+ * 3. [ManagementIdentifiersRoutes.GET_IDENTIFIER] — retrieves a specific identifier's details via
+ * [ManagementGetIdentifierUseCase].
  * 4. [ManagementIdentifiersRoutes.DELETE_IDENTIFIER] — removes a user identifier via [ManagementDeleteIdentifierUseCase].
- * 5. [ManagementIdentifiersRoutes.DELETE_IDENTIFIER_PASSWORD] — revokes an identifier's password via [ManagementDeleteIdentifierPasswordUseCase].
+ * 5. [ManagementIdentifiersRoutes.DELETE_IDENTIFIER_PASSWORD] — revokes an identifier's password via
+ * [ManagementDeleteIdentifierPasswordUseCase].
  */
 @Singleton
-class ManagementIdentifierRouter @Inject constructor(
+public class ManagementIdentifierRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -73,7 +77,6 @@ class ManagementIdentifierRouter @Inject constructor(
     private val managementDeleteIdentifierUseCase: ManagementDeleteIdentifierUseCase,
     private val managementDeleteIdentifierPasswordUseCase: ManagementDeleteIdentifierPasswordUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetIdentifiersRoute(this)
@@ -85,57 +88,122 @@ class ManagementIdentifierRouter @Inject constructor(
     }
 
     private fun registerGetIdentifiersRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.get(
             path = ManagementIdentifiersRoutes.GET_IDENTIFIERS,
-            builder = { getIdentifiersDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getIdentifiers(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getIdentifiersDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getIdentifiers(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerGetUserIdentifiersRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.get(
             path = ManagementIdentifiersRoutes.GET_USER_IDENTIFIERS,
-            builder = { getUserIdentifiersDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getUserIdentifiers(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getUserIdentifiersDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getUserIdentifiers(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerGetIdentifierRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.get(
             path = ManagementIdentifiersRoutes.GET_IDENTIFIER,
-            builder = { getIdentifierDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getIdentifier(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getIdentifierDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getIdentifier(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerDeleteIdentifierRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
             path = ManagementIdentifiersRoutes.DELETE_IDENTIFIER,
-            builder = { deleteIdentifierDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteIdentifier(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteIdentifierDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteIdentifier(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerDeleteIdentifierPasswordRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
             path = ManagementIdentifiersRoutes.DELETE_IDENTIFIER_PASSWORD,
-            builder = { deleteIdentifierPasswordDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteIdentifierPassword(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteIdentifierPasswordDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteIdentifierPassword(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -170,7 +238,11 @@ class ManagementIdentifierRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -182,8 +254,14 @@ class ManagementIdentifierRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { pagedIdentifiers ->
-            pagedIdentifiers.mapItems { userIdentifierSummary -> userIdentifierSummary.toUserIdentifierSummaryPayload() }
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { pagedIdentifiers ->
+            pagedIdentifiers.mapItems { userIdentifierSummary ->
+                userIdentifierSummary.toUserIdentifierSummaryPayload()
+            }
         }
     }
 
@@ -227,7 +305,11 @@ class ManagementIdentifierRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -243,8 +325,14 @@ class ManagementIdentifierRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { pagedIdentifiers ->
-            pagedIdentifiers.mapItems { userIdentifierSummary -> userIdentifierSummary.toUserIdentifierSummaryPayload() }
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { pagedIdentifiers ->
+            pagedIdentifiers.mapItems { userIdentifierSummary ->
+                userIdentifierSummary.toUserIdentifierSummaryPayload()
+            }
         }
     }
 
@@ -284,7 +372,11 @@ class ManagementIdentifierRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -298,7 +390,11 @@ class ManagementIdentifierRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userIdentifierPrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userIdentifierPrivate ->
             userIdentifierPrivate.toUserIdentifierPrivatePayload()
         }
     }
@@ -351,7 +447,11 @@ class ManagementIdentifierRouter @Inject constructor(
                 resourceId = userIdentifierId.asHexDashString(),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -360,7 +460,11 @@ class ManagementIdentifierRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun RouteConfig.deleteIdentifierPasswordDocs(
@@ -411,7 +515,11 @@ class ManagementIdentifierRouter @Inject constructor(
                 resourceId = userIdentifierId.asHexDashString(),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -420,7 +528,11 @@ class ManagementIdentifierRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun logErrorToAudit(
@@ -444,39 +556,42 @@ class ManagementIdentifierRouter @Inject constructor(
         )
     }
 
-    companion object {
-        const val GET_IDENTIFIERS_ROUTE_SUMMARY = "List user identifiers (management)"
-        const val GET_IDENTIFIERS_ROUTE_DESCRIPTION =
+    public companion object {
+        private const val GET_IDENTIFIERS_ROUTE_SUMMARY = "List user identifiers (management)"
+        private const val GET_IDENTIFIERS_ROUTE_DESCRIPTION =
             "Returns a paginated list of identifiers. Filters and row-level access follow the management identifier API contract."
-        const val GET_IDENTIFIERS_ROUTE_OPERATION_ID = "getManagementUserIdentifiers"
-        const val GET_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user identifiers"
+        private const val GET_IDENTIFIERS_ROUTE_OPERATION_ID = "getManagementUserIdentifiers"
+        private const val GET_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user identifiers"
 
-        const val GET_USER_IDENTIFIERS_ROUTE_SUMMARY = "List target user's identifiers (management)"
-        const val GET_USER_IDENTIFIERS_ROUTE_DESCRIPTION =
+        private const val GET_USER_IDENTIFIERS_ROUTE_SUMMARY = "List target user's identifiers (management)"
+        private const val GET_USER_IDENTIFIERS_ROUTE_DESCRIPTION =
             "Returns a paginated list of identifiers for a specific user."
-        const val GET_USER_IDENTIFIERS_ROUTE_OPERATION_ID = "getManagementUserTargetIdentifiers"
-        const val GET_USER_IDENTIFIERS_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
-        const val GET_USER_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user identifiers"
+        private const val GET_USER_IDENTIFIERS_ROUTE_OPERATION_ID = "getManagementUserTargetIdentifiers"
+        private const val GET_USER_IDENTIFIERS_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
+        private const val GET_USER_IDENTIFIERS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user identifiers"
 
-        const val GET_IDENTIFIER_ROUTE_SUMMARY = "Get user identifier (management)"
-        const val GET_IDENTIFIER_ROUTE_DESCRIPTION = "Returns a single identifier."
-        const val GET_IDENTIFIER_ROUTE_OPERATION_ID = "getManagementUserIdentifier"
-        const val GET_IDENTIFIER_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION = "User identifier id (UUID string, hex with dashes)"
-        const val GET_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION = "User identifier"
-
-        const val DELETE_IDENTIFIER_ROUTE_SUMMARY = "Delete user identifier (management)"
-        const val DELETE_IDENTIFIER_ROUTE_DESCRIPTION = "Deletes a user identifier record."
-        const val DELETE_IDENTIFIER_ROUTE_OPERATION_ID = "deleteManagementUserIdentifier"
-        const val DELETE_IDENTIFIER_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION =
+        private const val GET_IDENTIFIER_ROUTE_SUMMARY = "Get user identifier (management)"
+        private const val GET_IDENTIFIER_ROUTE_DESCRIPTION = "Returns a single identifier."
+        private const val GET_IDENTIFIER_ROUTE_OPERATION_ID = "getManagementUserIdentifier"
+        private const val GET_IDENTIFIER_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION =
             "User identifier id (UUID string, hex with dashes)"
-        const val DELETE_IDENTIFIER_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Identifier removed; no response body."
+        private const val GET_IDENTIFIER_ROUTE_RESPONSE_OK_DESCRIPTION = "User identifier"
 
-        const val DELETE_IDENTIFIER_PASSWORD_ROUTE_SUMMARY = "Delete user identifier password (management)"
-        const val DELETE_IDENTIFIER_PASSWORD_ROUTE_DESCRIPTION =
+        private const val DELETE_IDENTIFIER_ROUTE_SUMMARY = "Delete user identifier (management)"
+        private const val DELETE_IDENTIFIER_ROUTE_DESCRIPTION = "Deletes a user identifier record."
+        private const val DELETE_IDENTIFIER_ROUTE_OPERATION_ID = "deleteManagementUserIdentifier"
+        private const val DELETE_IDENTIFIER_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION =
+            "User identifier id (UUID string, hex with dashes)"
+        private const val DELETE_IDENTIFIER_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
+            "Identifier removed; no response body."
+
+        private const val DELETE_IDENTIFIER_PASSWORD_ROUTE_SUMMARY = "Delete user identifier password (management)"
+        private const val DELETE_IDENTIFIER_PASSWORD_ROUTE_DESCRIPTION =
             "Revokes and removes the password credential from a specific user identifier."
-        const val DELETE_IDENTIFIER_PASSWORD_ROUTE_OPERATION_ID = "deleteManagementUserIdentifierPassword"
-        const val DELETE_IDENTIFIER_PASSWORD_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION =
+        private const val DELETE_IDENTIFIER_PASSWORD_ROUTE_OPERATION_ID = "deleteManagementUserIdentifierPassword"
+        private const val DELETE_IDENTIFIER_PASSWORD_ROUTE_PATH_IDENTIFIER_ID_DESCRIPTION =
             "User identifier id (UUID string, hex with dashes)"
-        const val DELETE_IDENTIFIER_PASSWORD_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Password removed; no response body."
+        private const val DELETE_IDENTIFIER_PASSWORD_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
+            "Password removed; no response body."
     }
 }

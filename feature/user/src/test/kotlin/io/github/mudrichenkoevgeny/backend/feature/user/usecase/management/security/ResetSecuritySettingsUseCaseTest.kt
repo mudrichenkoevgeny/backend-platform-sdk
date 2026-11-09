@@ -33,11 +33,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ResetSecuritySettingsUseCaseTest {
-
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val webSocketManager = mockk<WebSocketManager>(relaxed = true)
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
@@ -58,7 +60,13 @@ class ResetSecuritySettingsUseCaseTest {
         val userSession = createTestUserSessionInternal(userId = userId)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(userSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(userInternal, userSession, true) } returns AppResult.Success(Unit)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                userInternal,
+                userSession,
+                true
+            )
+        } returns AppResult.Success(Unit)
     }
 
     @Test
@@ -70,12 +78,17 @@ class ResetSecuritySettingsUseCaseTest {
 
         mockMfaCheckSuccess(userId)
 
-        coEvery { securitySettingsProvider.resetManagementSecuritySettings() } returns AppResult.Success(defaultSettings)
+        coEvery { securitySettingsProvider.resetManagementSecuritySettings() } returns AppResult.Success(
+            defaultSettings
+        )
         every { securitySettingsProvider.getOpenSecuritySettings() } returns openSettings
 
         val result = useCase(context)
 
-        assertEquals(AppResult.Success(defaultSettings), result)
+        assertEquals(
+            AppResult.Success(defaultSettings),
+            result
+        )
 
         coVerify(exactly = 1) {
             securitySettingsProvider.resetManagementSecuritySettings()
@@ -112,7 +125,10 @@ class ResetSecuritySettingsUseCaseTest {
         val result = useCase(context)
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
 
         coVerify(exactly = 1) {
             auditLogger.log(
@@ -126,7 +142,10 @@ class ResetSecuritySettingsUseCaseTest {
             )
         }
         coVerify(exactly = 0) {
-            webSocketManager.sendMessageToScope(any(), any())
+            webSocketManager.sendMessageToScope(
+                any(),
+                any()
+            )
         }
     }
 }

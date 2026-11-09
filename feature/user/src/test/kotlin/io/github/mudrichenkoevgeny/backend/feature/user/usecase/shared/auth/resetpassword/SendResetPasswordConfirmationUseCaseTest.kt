@@ -5,9 +5,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirmationData
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -15,11 +12,13 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTe
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.resetpassword.SendResetPasswordConfirmationUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -29,7 +28,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SendResetPasswordConfirmationUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val identifierManager = mockk<IdentifierManager>()
     private val otpService = mockk<OtpService>()
@@ -61,26 +59,49 @@ class SendResetPasswordConfirmationUseCaseTest {
         val identifier = createTestUserIdentifierInternal(userId = userId)
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_EMAIL, TEST_EMAIL)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.SEND_OTP_EMAIL,
+                TEST_EMAIL
+            )
         } returns AppResult.Success(Unit)
         coEvery {
-            identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.EMAIL, TEST_EMAIL)
+            identifierManager.getUserIdentifierInternalByProvider(
+                UserAuthProvider.EMAIL,
+                TEST_EMAIL
+            )
         } returns AppResult.Success(identifier)
         coEvery {
             userManager.getUserInternalById(userId)
         } returns AppResult.Success(userInternal)
         coEvery {
-            otpService.getOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_PASSWORD_RESET)
+            otpService.getOtp(
+                TEST_EMAIL,
+                UserOtpVerificationType.EMAIL_PASSWORD_RESET
+            )
         } returns AppResult.Success(otpData)
         coEvery {
-            emailService.sendResetPasswordVerificationCode(any(), any(), any())
+            emailService.sendResetPasswordVerificationCode(
+                any(),
+                any(),
+                any()
+            )
         } returns AppResult.Success(Unit)
 
-        val result = useCase(TEST_EMAIL, context)
+        val result = useCase(
+            TEST_EMAIL,
+            context
+        )
 
-        assertEquals(AppResult.Success(otpConfirmation), result)
+        assertEquals(
+            AppResult.Success(otpConfirmation),
+            result
+        )
         coVerify(exactly = 1) {
-            emailService.sendResetPasswordVerificationCode(TEST_EMAIL, TEST_CODE, any())
+            emailService.sendResetPasswordVerificationCode(
+                TEST_EMAIL,
+                TEST_CODE,
+                any()
+            )
         }
         coVerify(exactly = 0) { emailService.fakeSendEmail() }
     }
@@ -95,21 +116,42 @@ class SendResetPasswordConfirmationUseCaseTest {
         )
 
         coEvery {
-            rateLimiter.checkRateLimit(any(), any())
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
         } returns AppResult.Success(Unit)
         coEvery {
-            identifierManager.getUserIdentifierInternalByProvider(any(), any())
+            identifierManager.getUserIdentifierInternalByProvider(
+                any(),
+                any()
+            )
         } returns AppResult.Success(null)
         coEvery {
-            otpService.getOtp(any(), any())
+            otpService.getOtp(
+                any(),
+                any()
+            )
         } returns AppResult.Success(otpData)
         coEvery { emailService.fakeSendEmail() } returns AppResult.Success(Unit)
 
-        val result = useCase(TEST_EMAIL, context)
+        val result = useCase(
+            TEST_EMAIL,
+            context
+        )
 
-        assertEquals(AppResult.Success(otpConfirmation), result)
+        assertEquals(
+            AppResult.Success(otpConfirmation),
+            result
+        )
         coVerify(exactly = 1) { emailService.fakeSendEmail() }
-        coVerify(exactly = 0) { emailService.sendResetPasswordVerificationCode(any(), any(), any()) }
+        coVerify(exactly = 0) {
+            emailService.sendResetPasswordVerificationCode(
+                any(),
+                any(),
+                any()
+            )
+        }
     }
 
     @Test
@@ -118,14 +160,28 @@ class SendResetPasswordConfirmationUseCaseTest {
         val error = UserError.InvalidCredentials()
 
         coEvery {
-            rateLimiter.checkRateLimit(any(), any())
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
         } returns AppResult.Error(error)
 
-        val result = useCase(TEST_EMAIL, context)
+        val result = useCase(
+            TEST_EMAIL,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
-        coVerify(exactly = 0) { identifierManager.getUserIdentifierInternalByProvider(any(), any()) }
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
+        coVerify(exactly = 0) {
+            identifierManager.getUserIdentifierInternalByProvider(
+                any(),
+                any()
+            )
+        }
     }
 
     @Test
@@ -145,21 +201,44 @@ class SendResetPasswordConfirmationUseCaseTest {
         )
         val identifier = createTestUserIdentifierInternal(userId = userId)
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
         coEvery {
-            identifierManager.getUserIdentifierInternalByProvider(any(), any())
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            identifierManager.getUserIdentifierInternalByProvider(
+                any(),
+                any()
+            )
         } returns AppResult.Success(identifier)
         coEvery {
             userManager.getUserInternalById(userId)
         } returns AppResult.Success(userInternal)
-        coEvery { otpService.getOtp(any(), any()) } returns AppResult.Success(otpData)
         coEvery {
-            emailService.sendResetPasswordVerificationCode(any(), any(), any())
+            otpService.getOtp(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(otpData)
+        coEvery {
+            emailService.sendResetPasswordVerificationCode(
+                any(),
+                any(),
+                any()
+            )
         } returns AppResult.Error(error)
 
-        val result = useCase(TEST_EMAIL, context)
+        val result = useCase(
+            TEST_EMAIL,
+            context
+        )
 
-        assertEquals(AppResult.Error(error), result)
+        assertEquals(
+            AppResult.Error(error),
+            result
+        )
     }
 
     companion object {

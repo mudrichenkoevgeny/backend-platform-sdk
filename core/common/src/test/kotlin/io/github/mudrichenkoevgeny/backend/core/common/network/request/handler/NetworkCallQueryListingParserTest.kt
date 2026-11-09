@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 class NetworkCallQueryListingParserTest {
-
     private val defaultSort = TestSort.DEFAULT
 
     @Test
@@ -22,19 +21,40 @@ class NetworkCallQueryListingParserTest {
             parseSortByOrNull = TestSort::fromWireOrNull
         )
 
-        assertEquals(PageParams(), listing.pageParams)
-        assertEquals(defaultSort, listing.sortBy)
-        assertEquals(SortOrder.DEFAULT, listing.sortOrder)
+        assertEquals(
+            PageParams(),
+            listing.pageParams
+        )
+        assertEquals(
+            defaultSort,
+            listing.sortBy
+        )
+        assertEquals(
+            SortOrder.DEFAULT,
+            listing.sortOrder
+        )
     }
 
     @Test
     fun `parseListingQueryParams reads page size sort_by and sort_order`() {
         val call = createTestApplicationCallWithQuery(
             Parameters.build {
-                append(ListingParamNames.Pagination.PAGE_NUMBER, "2")
-                append(ListingParamNames.Pagination.PAGE_SIZE, "15")
-                append(ListingParamNames.Sort.SORT_BY, "custom")
-                append(ListingParamNames.Sort.SORT_ORDER, wireFor(SortOrder.ASC))
+                append(
+                    ListingParamNames.Pagination.PAGE_NUMBER,
+                    "2"
+                )
+                append(
+                    ListingParamNames.Pagination.PAGE_SIZE,
+                    "15"
+                )
+                append(
+                    ListingParamNames.Sort.SORT_BY,
+                    "custom"
+                )
+                append(
+                    ListingParamNames.Sort.SORT_ORDER,
+                    wireFor(SortOrder.ASC)
+                )
             }
         )
 
@@ -43,15 +63,32 @@ class NetworkCallQueryListingParserTest {
             parseSortByOrNull = TestSort::fromWireOrNull
         )
 
-        assertEquals(PageParams(page = 2, size = 15), listing.pageParams)
-        assertEquals(TestSort.CUSTOM, listing.sortBy)
-        assertEquals(SortOrder.ASC, listing.sortOrder)
+        assertEquals(
+            PageParams(
+                page = 2,
+                size = 15
+            ),
+            listing.pageParams
+        )
+        assertEquals(
+            TestSort.CUSTOM,
+            listing.sortBy
+        )
+        assertEquals(
+            SortOrder.ASC,
+            listing.sortOrder
+        )
     }
 
     @Test
     fun `parseListingQueryParams throws when page not positive`() {
         val call = createTestApplicationCallWithQuery(
-            Parameters.build { append(ListingParamNames.Pagination.PAGE_NUMBER, "0") }
+            Parameters.build {
+                append(
+                    ListingParamNames.Pagination.PAGE_NUMBER,
+                    "0"
+                )
+            }
         )
 
         assertThrows(RequestHandlingException::class.java) {
@@ -65,7 +102,12 @@ class NetworkCallQueryListingParserTest {
     @Test
     fun `parseListingQueryParams throws when page size not positive`() {
         val call = createTestApplicationCallWithQuery(
-            Parameters.build { append(ListingParamNames.Pagination.PAGE_SIZE, "0") }
+            Parameters.build {
+                append(
+                    ListingParamNames.Pagination.PAGE_SIZE,
+                    "0"
+                )
+            }
         )
 
         assertThrows(RequestHandlingException::class.java) {
@@ -79,7 +121,12 @@ class NetworkCallQueryListingParserTest {
     @Test
     fun `parseListingQueryParams throws when sort_by unknown`() {
         val call = createTestApplicationCallWithQuery(
-            Parameters.build { append(ListingParamNames.Sort.SORT_BY, "unknown") }
+            Parameters.build {
+                append(
+                    ListingParamNames.Sort.SORT_BY,
+                    "unknown"
+                )
+            }
         )
 
         val ex = assertThrows(RequestHandlingException::class.java) {
@@ -88,13 +135,21 @@ class NetworkCallQueryListingParserTest {
                 parseSortByOrNull = TestSort::fromWireOrNull
             )
         }
-        assertEquals(CommonError.InvalidParameterValue::class, ex.error::class)
+        assertEquals(
+            CommonError.InvalidParameterValue::class,
+            ex.error::class
+        )
     }
 
     @Test
     fun `parseListingQueryParams throws when sort_order unknown`() {
         val call = createTestApplicationCallWithQuery(
-            Parameters.build { append(ListingParamNames.Sort.SORT_ORDER, "sideways") }
+            Parameters.build {
+                append(
+                    ListingParamNames.Sort.SORT_ORDER,
+                    "sideways"
+                )
+            }
         )
 
         val ex = assertThrows(RequestHandlingException::class.java) {
@@ -103,7 +158,10 @@ class NetworkCallQueryListingParserTest {
                 parseSortByOrNull = TestSort::fromWireOrNull
             )
         }
-        assertEquals(CommonError.InvalidParameterValue::class, ex.error::class)
+        assertEquals(
+            CommonError.InvalidParameterValue::class,
+            ex.error::class
+        )
     }
 
     private fun wireFor(sortOrder: SortOrder): String {
@@ -112,7 +170,8 @@ class NetworkCallQueryListingParserTest {
             sortOrder.name.lowercase(),
             sortOrder.name.uppercase()
         )
-        return candidates.firstOrNull { SortOrder.fromValueOrNull(it) == sortOrder }
-            ?: error("No wire string maps to $sortOrder via SortOrder.fromValueOrNull")
+        return candidates.firstOrNull { SortOrder.fromValueOrNull(it) == sortOrder } ?: error(
+            "No wire string maps to $sortOrder via SortOrder.fromValueOrNull"
+        )
     }
 }

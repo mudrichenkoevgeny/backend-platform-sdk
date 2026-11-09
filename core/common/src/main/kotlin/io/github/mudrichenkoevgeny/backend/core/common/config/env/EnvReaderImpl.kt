@@ -14,10 +14,9 @@ import javax.inject.Singleton
  * - Secrets are read as plain text files under [ResolvedPaths.secretsDir].
  */
 @Singleton
-class EnvReaderImpl @Inject constructor(
+public class EnvReaderImpl @Inject constructor(
     private val paths: ResolvedPaths
-): EnvReader {
-
+) : EnvReader {
     private val fileVariables: Map<String, String> by lazy {
         val props = Properties()
         if (paths.envFile.exists()) {
@@ -26,20 +25,18 @@ class EnvReaderImpl @Inject constructor(
         props.map { it.key.toString() to it.value.toString() }.toMap()
     }
 
-    override fun getByKey(key: String): String {
-        return getByKeyOrNull(key)
-            ?: error("Environment variable '$key' not found.")
-    }
+    override fun getByKey(key: String): String = getByKeyOrNull(key) ?: error("Environment variable '$key' not found.")
 
-    override fun getByKeyOrNull(key: String): String? {
-        return System.getenv(key) ?: fileVariables[key]
-    }
+    override fun getByKeyOrNull(key: String): String? = System.getenv(key) ?: fileVariables[key]
 
     override fun readSecret(relativeFile: String): String {
         val secretFile = if (File(relativeFile).isAbsolute) {
             File(relativeFile)
         } else {
-            File(paths.secretsDir, relativeFile)
+            File(
+                paths.secretsDir,
+                relativeFile
+            )
         }
 
         if (!secretFile.exists()) {

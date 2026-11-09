@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class GetManagementAuthSettingsUseCaseTest {
-
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val useCase = GetManagementAuthSettingsUseCase(authSettingsProvider)
 
@@ -23,6 +22,9 @@ class GetManagementAuthSettingsUseCaseTest {
         val result = useCase()
 
         assertTrue(result is AppResult.Success)
-        assertEquals(expectedSettings, (result as AppResult.Success).data)
+        assertEquals(
+            expectedSettings,
+            (result as AppResult.Success).data
+        )
     }
 }

@@ -14,7 +14,7 @@ import kotlin.time.Instant
  * Combines standard [ListingQueryParams] (pagination and sorting) with domain-specific filters
  * such as roles, account statuses, authority levels, profile fields, timestamps, and search query.
  */
-data class UserListQueryParams(
+public data class UserListQueryParams(
     val listing: ListingQueryParams<UserSortBy>,
     val userIds: List<String> = emptyList(),
     val roles: List<UserRole> = emptyList(),

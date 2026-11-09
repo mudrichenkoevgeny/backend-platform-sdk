@@ -15,7 +15,6 @@ import kotlin.time.Instant as KotlinInstant
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class QueryTimestampFiltersTest {
-
     private val dataSource = createTestDataSource("timestamp_filter")
 
     @BeforeAll

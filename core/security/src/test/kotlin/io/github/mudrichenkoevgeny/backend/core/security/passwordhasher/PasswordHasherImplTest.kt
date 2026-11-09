@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class PasswordHasherImplTest {
-
     private val appLogger = mockk<AppLogger>(relaxed = true)
     private val hasher = PasswordHasherImpl(appLogger)
 
@@ -21,7 +20,10 @@ class PasswordHasherImplTest {
         val hashResult = hasher.hash(password) as AppResult.Success
         val storedHash = hashResult.data
 
-        val verifyResult = hasher.verify(password, storedHash) as AppResult.Success
+        val verifyResult = hasher.verify(
+            password,
+            storedHash
+        ) as AppResult.Success
         assertTrue(verifyResult.data)
     }
 
@@ -33,15 +35,27 @@ class PasswordHasherImplTest {
         val hashResult = hasher.hash(password) as AppResult.Success
         val storedHash = hashResult.data
 
-        val verifyResult = hasher.verify(wrongPassword, storedHash) as AppResult.Success
+        val verifyResult = hasher.verify(
+            wrongPassword,
+            storedHash
+        ) as AppResult.Success
         assertFalse(verifyResult.data)
     }
 
     @Test
     fun `isPasswordValid returns false when password or hash is missing`() {
-        val result1 = hasher.isPasswordValid(null, PasswordHash("hash")) as AppResult.Success
-        val result2 = hasher.isPasswordValid("pass", null) as AppResult.Success
-        val result3 = hasher.isPasswordValid("", PasswordHash("hash")) as AppResult.Success
+        val result1 = hasher.isPasswordValid(
+            null,
+            PasswordHash("hash")
+        ) as AppResult.Success
+        val result2 = hasher.isPasswordValid(
+            "pass",
+            null
+        ) as AppResult.Success
+        val result3 = hasher.isPasswordValid(
+            "",
+            PasswordHash("hash")
+        ) as AppResult.Success
 
         assertFalse(result1.data)
         assertFalse(result2.data)
@@ -51,7 +65,9 @@ class PasswordHasherImplTest {
     @Test
     fun `isPasswordValidFakeCheck returns success`() {
         val result = hasher.isPasswordValidFakeCheck("any") as AppResult.Success
-        assertEquals(Unit, result.data)
+        assertEquals(
+            Unit,
+            result.data
+        )
     }
 }
-

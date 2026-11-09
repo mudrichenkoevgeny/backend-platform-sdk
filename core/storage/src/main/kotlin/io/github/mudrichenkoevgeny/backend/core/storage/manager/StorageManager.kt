@@ -11,14 +11,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.f
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFilePrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileSummary
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.presigned.PresignedUrl
-import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
 
 /**
  * Manages storage files operations, mapping internal repositories into domain models.
  */
-interface StorageManager {
-
+public interface StorageManager {
     /**
      * Validates quotas, creates a pending storage file record, and generates a presigned upload URL.
      *
@@ -35,7 +33,7 @@ interface StorageManager {
      * @param customMaxPendingUploads Optional custom max pending uploads override for the user. If null, the global setting is used.
      * @return [AppResult] containing domain [PresignedUrl] or an error.
      */
-    suspend fun initiateFileUpload(
+    public suspend fun initiateFileUpload(
         ownerUserId: String,
         isManagementUser: Boolean,
         fileName: String,
@@ -56,7 +54,7 @@ interface StorageManager {
      * @param fileId Target pending file ID.
      * @return [AppResult] containing updated [StorageFilePrivate] or an error.
      */
-    suspend fun confirmUpload(
+    public suspend fun confirmUpload(
         ownerUserId: String,
         fileId: FileId
     ): AppResult<StorageFilePrivate>
@@ -67,7 +65,7 @@ interface StorageManager {
      * @param fileId Unique file identifier.
      * @return [AppResult] containing [Unit] on success or an error.
      */
-    suspend fun deleteStorageFile(fileId: FileId): AppResult<Unit>
+    public suspend fun deleteStorageFile(fileId: FileId): AppResult<Unit>
 
     /**
      * Deletes a file record belonging to a specific user by its unique identifier.
@@ -76,7 +74,10 @@ interface StorageManager {
      * @param fileId Unique file identifier.
      * @return [AppResult] containing [Unit] on success or an error.
      */
-    suspend fun deleteSelfStorageFile(ownerUserId: String, fileId: FileId): AppResult<Unit>
+    public suspend fun deleteSelfStorageFile(
+        ownerUserId: String,
+        fileId: FileId
+    ): AppResult<Unit>
 
     /**
      * Deletes multiple file records unconditionally in a single batch operation.
@@ -84,7 +85,7 @@ interface StorageManager {
      * @param fileIds List of unique file identifiers.
      * @return [AppResult] containing [Unit] on success or an error.
      */
-    suspend fun deleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit>
+    public suspend fun deleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit>
 
     /**
      * Deletes multiple file records belonging to a specific user in a single batch operation.
@@ -93,7 +94,10 @@ interface StorageManager {
      * @param fileIds List of unique file identifiers.
      * @return [AppResult] containing [Unit] on success or an error.
      */
-    suspend fun deleteSelfStorageFilesBatch(ownerUserId: String, fileIds: List<FileId>): AppResult<Unit>
+    public suspend fun deleteSelfStorageFilesBatch(
+        ownerUserId: String,
+        fileIds: List<FileId>
+    ): AppResult<Unit>
 
     /**
      * Retrieves a detailed private view of a specific file record owned by the requesting user.
@@ -104,7 +108,7 @@ interface StorageManager {
      * @param fileId Target file ID.
      * @return [AppResult.Success] containing [StorageFilePrivate], null if missing, or an error.
      */
-    suspend fun getSelfStorageFilePrivate(
+    public suspend fun getSelfStorageFilePrivate(
         ownerUserId: String,
         fileId: FileId
     ): AppResult<StorageFilePrivate?>
@@ -118,7 +122,7 @@ interface StorageManager {
      * @param fileId Target file ID.
      * @return [AppResult.Success] containing [StorageFilePrivate], null if missing, or an error.
      */
-    suspend fun getStorageFilePrivate(
+    public suspend fun getStorageFilePrivate(
         managementUserPermissionCodes: Set<PermissionCode>,
         fileId: FileId
     ): AppResult<StorageFilePrivate?>
@@ -132,7 +136,7 @@ interface StorageManager {
      * @param queryParams structured filter and pagination parameters ([SelfStorageFileListQueryParams]).
      * @return [AppResult.Success] with [PagedResult] of the user's storage file summaries or an error.
      */
-    suspend fun getSelfStorageFilesSummaryPage(
+    public suspend fun getSelfStorageFilesSummaryPage(
         ownerUserId: String,
         queryParams: SelfStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileSummary>>
@@ -146,7 +150,7 @@ interface StorageManager {
      * @param queryParams structured filter and pagination parameters ([ManagementStorageFileListQueryParams]).
      * @return [AppResult.Success] with [PagedResult] of storage file summaries or an error.
      */
-    suspend fun getStorageFilesSummaryPage(
+    public suspend fun getStorageFilesSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
         queryParams: ManagementStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileSummary>>
@@ -157,9 +161,7 @@ interface StorageManager {
      * @param batchSize Optional custom batch size. If null, the configured [StorageConfig.maintenanceBatchSize] is used.
      * @return [AppResult.Success] containing the number of successfully cleaned up files or an error.
      */
-    suspend fun cleanupDeletedStorageFiles(
-        batchSize: Int? = null
-    ): AppResult<Int>
+    public suspend fun cleanupDeletedStorageFiles(batchSize: Int? = null): AppResult<Int>
 
     /**
      * Processes expired pending upload sessions. If S3 confirms the file exists, updates its status to READY.
@@ -168,7 +170,5 @@ interface StorageManager {
      * @param batchSize Optional custom batch size. If null, the configured [StorageConfig.maintenanceBatchSize] is used.
      * @return [AppResult.Success] containing the number of successfully processed files or an error.
      */
-    suspend fun processExpiredPendingUploads(
-        batchSize: Int? = null
-    ): AppResult<Int>
+    public suspend fun processExpiredPendingUploads(batchSize: Int? = null): AppResult<Int>
 }

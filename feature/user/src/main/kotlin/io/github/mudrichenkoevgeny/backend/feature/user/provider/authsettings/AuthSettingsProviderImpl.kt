@@ -23,11 +23,10 @@ import javax.inject.Singleton
  * [AuthSettingsProvider] implementation backed by [SystemSettingsService].
  */
 @Singleton
-class AuthSettingsProviderImpl @Inject constructor(
+public class AuthSettingsProviderImpl @Inject constructor(
     private val settingsService: SystemSettingsService,
     private val config: UserConfig
 ) : AuthSettingsProvider {
-
     private val openEmailRestrictionPolicyCache = AtomicReference<Pair<String, EmailRestrictionPolicy>?>()
     private val managementEmailRestrictionPolicyCache = AtomicReference<Pair<String, EmailRestrictionPolicy>?>()
 
@@ -36,7 +35,9 @@ class AuthSettingsProviderImpl @Inject constructor(
         val defaultSettings = listOf(
             SystemSetting(
                 key = KEY_AVAILABLE_AUTH_PROVIDERS,
-                value = FoundationJson.encodeToString(defaults.availableAuthProviders.toAvailableAuthProvidersPayload()),
+                value = FoundationJson.encodeToString(
+                    defaults.availableAuthProviders.toAvailableAuthProvidersPayload()
+                ),
                 type = SettingType.JSON
             ),
             SystemSetting(
@@ -121,143 +122,115 @@ class AuthSettingsProviderImpl @Inject constructor(
             ),
             SystemSetting(
                 key = KEY_OPEN_EMAIL_RESTRICTION_POLICY,
-                value = FoundationJson.encodeToString(defaults.openEmailRestrictionPolicy.toEmailRestrictionPolicyPayload()),
+                value = FoundationJson.encodeToString(
+                    defaults.openEmailRestrictionPolicy.toEmailRestrictionPolicyPayload()
+                ),
                 type = SettingType.JSON
             ),
             SystemSetting(
                 key = KEY_MANAGEMENT_EMAIL_RESTRICTION_POLICY,
-                value = FoundationJson.encodeToString(defaults.managementEmailRestrictionPolicy.toEmailRestrictionPolicyPayload()),
+                value = FoundationJson.encodeToString(
+                    defaults.managementEmailRestrictionPolicy.toEmailRestrictionPolicyPayload()
+                ),
                 type = SettingType.JSON
             )
         )
         return settingsService.registerDefaults(defaultSettings)
     }
 
-    override fun getManagementAuthSettings(): ManagementAuthSettings {
-        return ManagementAuthSettings(
-            availableAuthProviders = getAvailableAuthProviders(),
-            maxTotalIdentifiers = getMaxTotalIdentifiers(),
-            maxEmailIdentifiers = getMaxEmailIdentifiers(),
-            maxPhoneIdentifiers = getMaxPhoneIdentifiers(),
-            maxIdentifiersPerExternalProvider = getMaxIdentifiersPerExternalProvider(),
-            userNicknameMinLength = getUserNicknameMinLength(),
-            userNicknameMaxLength = getUserNicknameMaxLength(),
-            userDisplayNameMinLength = getUserDisplayNameMinLength(),
-            userDisplayNameMaxLength = getUserDisplayNameMaxLength(),
-            isUserNicknameChangeAllowed = getIsUserNicknameChangeAllowed(),
-            maxActiveSessionsForOpenUser = getMaxActiveSessionsForOpenUser(),
-            maxActiveSessionsForManagementUser = getMaxActiveSessionsForManagementUser(),
-            accessTokenExpirationSeconds = getAccessTokenExpirationSeconds(),
-            refreshTokenExpirationSeconds = getRefreshTokenExpirationSeconds(),
-            accountDeletionGracePeriodSeconds = getAccountDeletionGracePeriodSeconds(),
-            accountDeletionCheckIntervalSeconds = getAccountDeletionCheckIntervalSeconds(),
-            isRegistrationEnabled = getIsRegistrationEnabled(),
-            openEmailRestrictionPolicy = getOpenEmailRestrictionPolicy(),
-            managementEmailRestrictionPolicy = getManagementEmailRestrictionPolicy()
-        )
-    }
+    override fun getManagementAuthSettings(): ManagementAuthSettings = ManagementAuthSettings(
+        availableAuthProviders = getAvailableAuthProviders(),
+        maxTotalIdentifiers = getMaxTotalIdentifiers(),
+        maxEmailIdentifiers = getMaxEmailIdentifiers(),
+        maxPhoneIdentifiers = getMaxPhoneIdentifiers(),
+        maxIdentifiersPerExternalProvider = getMaxIdentifiersPerExternalProvider(),
+        userNicknameMinLength = getUserNicknameMinLength(),
+        userNicknameMaxLength = getUserNicknameMaxLength(),
+        userDisplayNameMinLength = getUserDisplayNameMinLength(),
+        userDisplayNameMaxLength = getUserDisplayNameMaxLength(),
+        isUserNicknameChangeAllowed = getIsUserNicknameChangeAllowed(),
+        maxActiveSessionsForOpenUser = getMaxActiveSessionsForOpenUser(),
+        maxActiveSessionsForManagementUser = getMaxActiveSessionsForManagementUser(),
+        accessTokenExpirationSeconds = getAccessTokenExpirationSeconds(),
+        refreshTokenExpirationSeconds = getRefreshTokenExpirationSeconds(),
+        accountDeletionGracePeriodSeconds = getAccountDeletionGracePeriodSeconds(),
+        accountDeletionCheckIntervalSeconds = getAccountDeletionCheckIntervalSeconds(),
+        isRegistrationEnabled = getIsRegistrationEnabled(),
+        openEmailRestrictionPolicy = getOpenEmailRestrictionPolicy(),
+        managementEmailRestrictionPolicy = getManagementEmailRestrictionPolicy()
+    )
 
-    override fun getOpenAuthSettings(): OpenAuthSettings {
-        return OpenAuthSettings(
-            availableAuthProviders = getAvailableAuthProviders(),
-            maxTotalIdentifiers = getMaxTotalIdentifiers(),
-            maxEmailIdentifiers = getMaxEmailIdentifiers(),
-            maxPhoneIdentifiers = getMaxPhoneIdentifiers(),
-            maxIdentifiersPerExternalProvider = getMaxIdentifiersPerExternalProvider(),
-            userNicknameMinLength = getUserNicknameMinLength(),
-            userNicknameMaxLength = getUserNicknameMaxLength(),
-            userDisplayNameMinLength = getUserDisplayNameMinLength(),
-            userDisplayNameMaxLength = getUserDisplayNameMaxLength(),
-            isUserNicknameChangeAllowed = getIsUserNicknameChangeAllowed(),
-            isRegistrationEnabled = getIsRegistrationEnabled()
-        )
-    }
+    override fun getOpenAuthSettings(): OpenAuthSettings = OpenAuthSettings(
+        availableAuthProviders = getAvailableAuthProviders(),
+        maxTotalIdentifiers = getMaxTotalIdentifiers(),
+        maxEmailIdentifiers = getMaxEmailIdentifiers(),
+        maxPhoneIdentifiers = getMaxPhoneIdentifiers(),
+        maxIdentifiersPerExternalProvider = getMaxIdentifiersPerExternalProvider(),
+        userNicknameMinLength = getUserNicknameMinLength(),
+        userNicknameMaxLength = getUserNicknameMaxLength(),
+        userDisplayNameMinLength = getUserDisplayNameMinLength(),
+        userDisplayNameMaxLength = getUserDisplayNameMaxLength(),
+        isUserNicknameChangeAllowed = getIsUserNicknameChangeAllowed(),
+        isRegistrationEnabled = getIsRegistrationEnabled()
+    )
 
-    override fun getAvailableAuthProviders(): AvailableAuthProviders {
-        return settingsService.getJson(KEY_AVAILABLE_AUTH_PROVIDERS) { json ->
+    override fun getAvailableAuthProviders(): AvailableAuthProviders =
+        settingsService.getJson(KEY_AVAILABLE_AUTH_PROVIDERS) { json ->
             FoundationJson.decodeFromString<AvailableAuthProviders>(json)
         } ?: config.managementAuthSettings.availableAuthProviders
-    }
 
-    override fun getMaxTotalIdentifiers(): Int {
-        return settingsService.getInt(KEY_MAX_TOTAL_IDENTIFIERS)
-            ?: config.managementAuthSettings.maxTotalIdentifiers
-    }
+    override fun getMaxTotalIdentifiers(): Int =
+        settingsService.getInt(KEY_MAX_TOTAL_IDENTIFIERS) ?: config.managementAuthSettings.maxTotalIdentifiers
 
-    override fun getMaxEmailIdentifiers(): Int {
-        return settingsService.getInt(KEY_MAX_EMAIL_IDENTIFIERS)
-            ?: config.managementAuthSettings.maxEmailIdentifiers
-    }
+    override fun getMaxEmailIdentifiers(): Int =
+        settingsService.getInt(KEY_MAX_EMAIL_IDENTIFIERS) ?: config.managementAuthSettings.maxEmailIdentifiers
 
-    override fun getMaxPhoneIdentifiers(): Int {
-        return settingsService.getInt(KEY_MAX_PHONE_IDENTIFIERS)
-            ?: config.managementAuthSettings.maxPhoneIdentifiers
-    }
+    override fun getMaxPhoneIdentifiers(): Int =
+        settingsService.getInt(KEY_MAX_PHONE_IDENTIFIERS) ?: config.managementAuthSettings.maxPhoneIdentifiers
 
-    override fun getMaxIdentifiersPerExternalProvider(): Int {
-        return settingsService.getInt(KEY_MAX_IDENTIFIERS_PER_EXTERNAL_PROVIDER)
+    override fun getMaxIdentifiersPerExternalProvider(): Int =
+        settingsService.getInt(KEY_MAX_IDENTIFIERS_PER_EXTERNAL_PROVIDER)
             ?: config.managementAuthSettings.maxIdentifiersPerExternalProvider
-    }
 
-    override fun getUserNicknameMinLength(): Int {
-        return settingsService.getInt(KEY_USER_NICKNAME_MIN_LENGTH)
-            ?: config.managementAuthSettings.userNicknameMinLength
-    }
+    override fun getUserNicknameMinLength(): Int =
+        settingsService.getInt(KEY_USER_NICKNAME_MIN_LENGTH) ?: config.managementAuthSettings.userNicknameMinLength
 
-    override fun getUserNicknameMaxLength(): Int {
-        return settingsService.getInt(KEY_USER_NICKNAME_MAX_LENGTH)
-            ?: config.managementAuthSettings.userNicknameMaxLength
-    }
+    override fun getUserNicknameMaxLength(): Int =
+        settingsService.getInt(KEY_USER_NICKNAME_MAX_LENGTH) ?: config.managementAuthSettings.userNicknameMaxLength
 
-    override fun getUserDisplayNameMinLength(): Int {
-        return settingsService.getInt(KEY_USER_DISPLAY_NAME_MIN_LENGTH)
-            ?: config.managementAuthSettings.userDisplayNameMinLength
-    }
+    override fun getUserDisplayNameMinLength(): Int = settingsService.getInt(KEY_USER_DISPLAY_NAME_MIN_LENGTH)
+        ?: config.managementAuthSettings.userDisplayNameMinLength
 
-    override fun getUserDisplayNameMaxLength(): Int {
-        return settingsService.getInt(KEY_USER_DISPLAY_NAME_MAX_LENGTH)
-            ?: config.managementAuthSettings.userDisplayNameMaxLength
-    }
+    override fun getUserDisplayNameMaxLength(): Int = settingsService.getInt(KEY_USER_DISPLAY_NAME_MAX_LENGTH)
+        ?: config.managementAuthSettings.userDisplayNameMaxLength
 
-    override fun getIsUserNicknameChangeAllowed(): Boolean {
-        return settingsService.getBoolean(KEY_IS_USER_NICKNAME_CHANGE_ALLOWED)
+    override fun getIsUserNicknameChangeAllowed(): Boolean =
+        settingsService.getBoolean(KEY_IS_USER_NICKNAME_CHANGE_ALLOWED)
             ?: config.managementAuthSettings.isUserNicknameChangeAllowed
-    }
 
-    override fun getMaxActiveSessionsForOpenUser(): Int {
-        return settingsService.getInt(KEY_MAX_ACTIVE_SESSIONS_FOR_OPEN_USER)
-            ?: config.managementAuthSettings.maxActiveSessionsForOpenUser
-    }
+    override fun getMaxActiveSessionsForOpenUser(): Int = settingsService.getInt(KEY_MAX_ACTIVE_SESSIONS_FOR_OPEN_USER)
+        ?: config.managementAuthSettings.maxActiveSessionsForOpenUser
 
-    override fun getMaxActiveSessionsForManagementUser(): Int {
-        return settingsService.getInt(KEY_MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER)
+    override fun getMaxActiveSessionsForManagementUser(): Int =
+        settingsService.getInt(KEY_MAX_ACTIVE_SESSIONS_FOR_MANAGEMENT_USER)
             ?: config.managementAuthSettings.maxActiveSessionsForManagementUser
-    }
 
-    override fun getAccessTokenExpirationSeconds(): Int {
-        return settingsService.getInt(KEY_ACCESS_TOKEN_EXPIRATION_SECONDS)
-            ?: config.managementAuthSettings.accessTokenExpirationSeconds
-    }
+    override fun getAccessTokenExpirationSeconds(): Int = settingsService.getInt(KEY_ACCESS_TOKEN_EXPIRATION_SECONDS)
+        ?: config.managementAuthSettings.accessTokenExpirationSeconds
 
-    override fun getRefreshTokenExpirationSeconds(): Int {
-        return settingsService.getInt(KEY_REFRESH_TOKEN_EXPIRATION_SECONDS)
-            ?: config.managementAuthSettings.refreshTokenExpirationSeconds
-    }
+    override fun getRefreshTokenExpirationSeconds(): Int = settingsService.getInt(KEY_REFRESH_TOKEN_EXPIRATION_SECONDS)
+        ?: config.managementAuthSettings.refreshTokenExpirationSeconds
 
-    override fun getAccountDeletionGracePeriodSeconds(): Int {
-        return settingsService.getInt(KEY_ACCOUNT_DELETION_GRACE_PERIOD_SECONDS)
+    override fun getAccountDeletionGracePeriodSeconds(): Int =
+        settingsService.getInt(KEY_ACCOUNT_DELETION_GRACE_PERIOD_SECONDS)
             ?: config.managementAuthSettings.accountDeletionGracePeriodSeconds
-    }
 
-    override fun getAccountDeletionCheckIntervalSeconds(): Int {
-        return settingsService.getInt(KEY_ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS)
+    override fun getAccountDeletionCheckIntervalSeconds(): Int =
+        settingsService.getInt(KEY_ACCOUNT_DELETION_CHECK_INTERVAL_SECONDS)
             ?: config.managementAuthSettings.accountDeletionCheckIntervalSeconds
-    }
 
-    override fun getIsRegistrationEnabled(): Boolean {
-        return settingsService.getBoolean(KEY_IS_REGISTRATION_ENABLED)
-            ?: config.managementAuthSettings.isRegistrationEnabled
-    }
+    override fun getIsRegistrationEnabled(): Boolean =
+        settingsService.getBoolean(KEY_IS_REGISTRATION_ENABLED) ?: config.managementAuthSettings.isRegistrationEnabled
 
     override fun getOpenEmailRestrictionPolicy(): EmailRestrictionPolicy {
         val rawJson = settingsService.getString(KEY_OPEN_EMAIL_RESTRICTION_POLICY)
@@ -269,7 +242,9 @@ class AuthSettingsProviderImpl @Inject constructor(
         }
 
         return try {
-            val parsed = FoundationJson.decodeFromString<EmailRestrictionPolicyPayload>(rawJson).toEmailRestrictionPolicy()
+            val parsed = FoundationJson.decodeFromString<EmailRestrictionPolicyPayload>(
+                rawJson
+            ).toEmailRestrictionPolicy()
             openEmailRestrictionPolicyCache.set(rawJson to parsed)
             parsed
         } catch (_: Exception) {
@@ -287,7 +262,9 @@ class AuthSettingsProviderImpl @Inject constructor(
         }
 
         return try {
-            val parsed = FoundationJson.decodeFromString<EmailRestrictionPolicyPayload>(rawJson).toEmailRestrictionPolicy()
+            val parsed = FoundationJson.decodeFromString<EmailRestrictionPolicyPayload>(
+                rawJson
+            ).toEmailRestrictionPolicy()
             managementEmailRestrictionPolicyCache.set(rawJson to parsed)
             parsed
         } catch (_: Exception) {
@@ -295,13 +272,13 @@ class AuthSettingsProviderImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateManagementAuthSettings(
-        managementAuthSettings: ManagementAuthSettings
-    ): AppResult<Unit> {
+    override suspend fun updateManagementAuthSettings(managementAuthSettings: ManagementAuthSettings): AppResult<Unit> {
         val settingsToUpdate = listOf(
             SystemSetting(
                 key = KEY_AVAILABLE_AUTH_PROVIDERS,
-                value = FoundationJson.encodeToString(managementAuthSettings.availableAuthProviders.toAvailableAuthProvidersPayload()),
+                value = FoundationJson.encodeToString(
+                    managementAuthSettings.availableAuthProviders.toAvailableAuthProvidersPayload()
+                ),
                 type = SettingType.JSON
             ),
             SystemSetting(
@@ -386,12 +363,16 @@ class AuthSettingsProviderImpl @Inject constructor(
             ),
             SystemSetting(
                 key = KEY_OPEN_EMAIL_RESTRICTION_POLICY,
-                value = FoundationJson.encodeToString(managementAuthSettings.openEmailRestrictionPolicy.toEmailRestrictionPolicyPayload()),
+                value = FoundationJson.encodeToString(
+                    managementAuthSettings.openEmailRestrictionPolicy.toEmailRestrictionPolicyPayload()
+                ),
                 type = SettingType.JSON
             ),
             SystemSetting(
                 key = KEY_MANAGEMENT_EMAIL_RESTRICTION_POLICY,
-                value = FoundationJson.encodeToString(managementAuthSettings.managementEmailRestrictionPolicy.toEmailRestrictionPolicyPayload()),
+                value = FoundationJson.encodeToString(
+                    managementAuthSettings.managementEmailRestrictionPolicy.toEmailRestrictionPolicyPayload()
+                ),
                 type = SettingType.JSON
             )
         )

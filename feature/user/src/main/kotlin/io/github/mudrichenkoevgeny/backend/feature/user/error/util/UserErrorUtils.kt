@@ -9,7 +9,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
  *
  * @return The [UserId] associated with the error, or null if not applicable or missing.
  */
-fun AppError.extractUserIdOrNull(): UserId? {
+public fun AppError.extractUserIdOrNull(): UserId? {
     val userError = this as? UserError ?: return null
     return when (userError) {
         is UserError.UserBanned -> userError.userId
@@ -33,4 +33,4 @@ fun AppError.extractUserIdOrNull(): UserId? {
  *
  * @return The UUID hex-with-dashes string associated with the error, or null if not applicable or missing.
  */
-fun AppError.extractUserIdHexOrNull(): String? = extractUserIdOrNull()?.asHexDashString()
+public fun AppError.extractUserIdHexOrNull(): String? = extractUserIdOrNull()?.asHexDashString()

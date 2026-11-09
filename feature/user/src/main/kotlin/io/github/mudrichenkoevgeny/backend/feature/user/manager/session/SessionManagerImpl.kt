@@ -1,43 +1,41 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.manager.session
 
-import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
+import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.mask.DataMasker
 import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.model.client.DeviceIdResolver
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionRequirement
 import io.github.mudrichenkoevgeny.backend.core.common.permission.PermissionSet
+import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
-import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.UserConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user.UserRepository
-import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
-import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
-import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.userknowndevices.UserKnownDevicesRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
-import io.github.mudrichenkoevgeny.backend.feature.user.model.device.UserKnownDevice
-import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.userknowndevices.UserKnownDevicesRepository
+import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.token.RotatedRefreshTokenData
+import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
+import io.github.mudrichenkoevgeny.backend.feature.user.model.device.UserKnownDevice
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementSessionListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfSessionListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceId
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
-import kotlin.uuid.Uuid
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
@@ -61,11 +59,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.SessionPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionSummary
-import java.security.MessageDigest
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
@@ -79,7 +76,7 @@ import kotlin.time.Instant
  * Uses [UserConfig] token validity settings to compute token expiration timestamps.
  */
 @Singleton
-class SessionManagerImpl @Inject constructor(
+public class SessionManagerImpl @Inject constructor(
     private val appLogger: AppLogger,
     private val authSettingsProvider: AuthSettingsProvider,
     private val securitySettingsProvider: SecuritySettingsProvider,
@@ -95,7 +92,6 @@ class SessionManagerImpl @Inject constructor(
     private val userRepository: UserRepository,
     @param:BackgroundScope private val scope: CoroutineScope
 ) : SessionManager {
-
     override suspend fun createSession(
         userId: UserId,
         userRole: UserRole,
@@ -124,7 +120,11 @@ class SessionManagerImpl @Inject constructor(
 
         if (sessionResult is AppResult.Success && isNewDeviceDetected) {
             scope.launch {
-                notifyNewDeviceDetected(userId, userRole, clientInfo)
+                notifyNewDeviceDetected(
+                    userId,
+                    userRole,
+                    clientInfo
+                )
             }
         }
 
@@ -196,8 +196,14 @@ class SessionManagerImpl @Inject constructor(
         val createUserSessionResult = userSessionRepository.createUserSession(userSession)
 
         if (checkNewDevice) {
-            val deviceId = DeviceIdResolver.resolveDeviceId(userId.asHexDashString(), clientInfo)
-            val knownDeviceResult = userKnownDevicesRepository.getKnownDevice(userId, deviceId)
+            val deviceId = DeviceIdResolver.resolveDeviceId(
+                userId.asHexDashString(),
+                clientInfo
+            )
+            val knownDeviceResult = userKnownDevicesRepository.getKnownDevice(
+                userId,
+                deviceId
+            )
             when (knownDeviceResult) {
                 is AppResult.Success -> {
                     val knownDevice = knownDeviceResult.data
@@ -222,6 +228,7 @@ class SessionManagerImpl @Inject constructor(
                         onNewDeviceDetected()
                     }
                 }
+
                 is AppResult.Error -> {
                     appLogger.logError(knownDeviceResult.error)
                 }
@@ -238,6 +245,7 @@ class SessionManagerImpl @Inject constructor(
                     expiresAt = createUserSessionResult.data.expiresAt
                 )
             )
+
             is AppResult.Error -> createUserSessionResult
         }
     }
@@ -309,7 +317,10 @@ class SessionManagerImpl @Inject constructor(
                 is AppResult.Error -> return@dbQuery userResult
             }
 
-            val validateResult = user.validateAccessEligibility(allowedRoles, allowedAccountStatuses)
+            val validateResult = user.validateAccessEligibility(
+                allowedRoles,
+                allowedAccountStatuses
+            )
             if (validateResult is AppResult.Error) {
                 return@dbQuery validateResult
             }
@@ -367,7 +378,9 @@ class SessionManagerImpl @Inject constructor(
 
                     userRepository.updateUser(
                         userId = rotatedData.getUserId(),
-                        updateUserParams = UpdateUserParams(accountStatus = UpdateField.Set(UserAccountStatus.SECURITY_HOLD))
+                        updateUserParams = UpdateUserParams(
+                            accountStatus = UpdateField.Set(UserAccountStatus.SECURITY_HOLD)
+                        )
                     )
 
                     redisManager.delete(buildRotatedRefreshKey(refreshTokenHash.value))
@@ -411,17 +424,21 @@ class SessionManagerImpl @Inject constructor(
         userSessionRepository.deleteAllUserSessions(userId)
     }
 
-    override suspend fun getUserSessionInternal(userSessionId: UserSessionId): AppResult<UserSessionInternal?> = dbQuery {
-        userSessionRepository.getUserSessionInternalById(userSessionId)
-    }
+    override suspend fun getUserSessionInternal(userSessionId: UserSessionId): AppResult<UserSessionInternal?> =
+        dbQuery {
+            userSessionRepository.getUserSessionInternalById(userSessionId)
+        }
 
     override suspend fun getUserSessionPrivate(userSessionId: UserSessionId): AppResult<UserSessionPrivate?> = dbQuery {
-        userSessionRepository.getUserSessionInternalById(userSessionId).mapSuccess { it?.toUserSessionPrivate() }
+        userSessionRepository.getUserSessionInternalById(
+            userSessionId
+        ).mapSuccess { it?.toUserSessionPrivate() }
     }
 
-    override suspend fun getAllUserSessionsInternalList(userId: UserId): AppResult<List<UserSessionInternal>> = dbQuery {
-        userSessionRepository.getAllUserSessions(userId)
-    }
+    override suspend fun getAllUserSessionsInternalList(userId: UserId): AppResult<List<UserSessionInternal>> =
+        dbQuery {
+            userSessionRepository.getAllUserSessions(userId)
+        }
 
     override suspend fun getUserSessionsInternalListByIdentifierId(
         userIdentifierId: UserIdentifierId,
@@ -437,7 +454,10 @@ class SessionManagerImpl @Inject constructor(
         userId: UserId,
         userSessionId: UserSessionId
     ): AppResult<DeletedSessions> = dbQuery {
-        val deleteSessionsResult = userSessionRepository.deleteAllUserSessionsExceptOne(userId, userSessionId)
+        val deleteSessionsResult = userSessionRepository.deleteAllUserSessionsExceptOne(
+            userId,
+            userSessionId
+        )
 
         when (deleteSessionsResult) {
             is AppResult.Error -> deleteSessionsResult
@@ -476,10 +496,20 @@ class SessionManagerImpl @Inject constructor(
                             return@dbQuery AppResult.Error(UserError.UserMissingPermissions(managementUserId))
                         }
 
-                        when (determinePermissionRequirement(targetUser.role, managementUserPermissionCodes)) {
-                            PermissionRequirement.UNMASKED -> AppResult.Success(userSession.toUserSessionPrivate())
+                        when (
+                            determinePermissionRequirement(
+                                targetUser.role,
+                                managementUserPermissionCodes
+                            )
+                        ) {
+                            PermissionRequirement.UNMASKED -> AppResult.Success(
+                                userSession.toUserSessionPrivate()
+                            )
+
                             PermissionRequirement.MASKED -> AppResult.Success(userSession.maskSensitiveData())
-                            PermissionRequirement.FORBIDDEN -> AppResult.Error(UserError.UserMissingPermissions(managementUserId))
+                            PermissionRequirement.FORBIDDEN -> AppResult.Error(
+                                UserError.UserMissingPermissions(managementUserId)
+                            )
                         }
                     }
                 }
@@ -517,7 +547,12 @@ class SessionManagerImpl @Inject constructor(
                         }
                     }
 
-                    when (determinePermissionRequirement(targetRole, managementUserPermissionCodes)) {
+                    when (
+                        determinePermissionRequirement(
+                            targetRole,
+                            managementUserPermissionCodes
+                        )
+                    ) {
                         PermissionRequirement.UNMASKED -> session.toUserSessionSummary()
                         PermissionRequirement.MASKED -> session.maskSensitiveDataToSummary()
                         PermissionRequirement.FORBIDDEN -> null
@@ -562,10 +597,12 @@ class SessionManagerImpl @Inject constructor(
                 masked = SessionPermissionCode.SESSION_GET_OF_USER_MASKED,
                 unmasked = SessionPermissionCode.SESSION_GET_OF_USER_UNMASKED
             )
+
             UserRole.STAFF -> PermissionSet(
                 masked = SessionPermissionCode.SESSION_GET_OF_STAFF_MASKED,
                 unmasked = SessionPermissionCode.SESSION_GET_OF_STAFF_UNMASKED
             )
+
             UserRole.ADMIN -> null
         } ?: return PermissionRequirement.FORBIDDEN
 
@@ -593,8 +630,8 @@ class SessionManagerImpl @Inject constructor(
         return UserRoleAccessFilter(allowedUserRoles = allowedUserRoles)
     }
 
-    private fun UserSessionInternal.maskSensitiveData(): UserSessionPrivate {
-        return this.toUserSessionPrivate(isSensitiveValuesMasked = true).copy(
+    private fun UserSessionInternal.maskSensitiveData(): UserSessionPrivate =
+        this.toUserSessionPrivate(isSensitiveValuesMasked = true).copy(
             identifier = when (identifierAuthProvider) {
                 UserAuthProvider.EMAIL -> DataMasker.maskEmail(identifier)
                 UserAuthProvider.PHONE -> DataMasker.maskPhone(identifier)
@@ -603,25 +640,34 @@ class SessionManagerImpl @Inject constructor(
             userAgent = userAgent?.let { DataMasker.maskPartialValue(it) },
             ipAddress = ipAddress?.let { DataMasker.maskIpAddress(it) },
             clientDeviceInfo = clientDeviceInfo.copy(
-                deviceName = clientDeviceInfo.deviceName?.let { DataMasker.maskPartialValue(it) },
+                deviceName = clientDeviceInfo.deviceName?.let {
+                    DataMasker.maskPartialValue(it)
+                },
                 language = clientDeviceInfo.language?.let { DataMasker.maskPartialValue(it) },
                 appVersion = clientDeviceInfo.appVersion?.let { DataMasker.maskPartialValue(it) },
-                operationSystemVersion = clientDeviceInfo.operationSystemVersion?.let { DataMasker.maskPartialValue(it) }
+                operationSystemVersion = clientDeviceInfo.operationSystemVersion?.let {
+                    DataMasker.maskPartialValue(
+                        it
+                    )
+                }
             )
         )
-    }
 
-    private fun UserSessionInternal.maskSensitiveDataToSummary(): UserSessionSummary {
-        return this.toUserSessionSummary().copy(
-            identifierDisplayName = DataMasker.maskPartialValue(identifierDisplayName),
-            clientDeviceInfo = clientDeviceInfo.copy(
-                deviceName = clientDeviceInfo.deviceName?.let { DataMasker.maskPartialValue(it) },
-                language = clientDeviceInfo.language?.let { DataMasker.maskPartialValue(it) },
-                appVersion = clientDeviceInfo.appVersion?.let { DataMasker.maskPartialValue(it) },
-                operationSystemVersion = clientDeviceInfo.operationSystemVersion?.let { DataMasker.maskPartialValue(it) }
-            )
+    private fun UserSessionInternal.maskSensitiveDataToSummary(): UserSessionSummary = this.toUserSessionSummary().copy(
+        identifierDisplayName = DataMasker.maskPartialValue(identifierDisplayName),
+        clientDeviceInfo = clientDeviceInfo.copy(
+            deviceName = clientDeviceInfo.deviceName?.let {
+                DataMasker.maskPartialValue(it)
+            },
+            language = clientDeviceInfo.language?.let { DataMasker.maskPartialValue(it) },
+            appVersion = clientDeviceInfo.appVersion?.let { DataMasker.maskPartialValue(it) },
+            operationSystemVersion = clientDeviceInfo.operationSystemVersion?.let {
+                DataMasker.maskPartialValue(
+                    it
+                )
+            }
         )
-    }
+    )
 
     private fun buildRotatedRefreshKey(hashValue: String): String = "auth:rotated_refresh:$hashValue"
 }

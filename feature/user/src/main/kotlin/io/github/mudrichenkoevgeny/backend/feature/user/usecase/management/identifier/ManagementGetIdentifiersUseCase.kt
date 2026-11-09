@@ -13,8 +13,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.i
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to get identifiers.
+ */
 @Singleton
-class ManagementGetIdentifiersUseCase @Inject constructor(
+public class ManagementGetIdentifiersUseCase @Inject constructor(
     private val userManager: UserManager,
     private val identifierManager: IdentifierManager
 ) {
@@ -38,7 +41,7 @@ class ManagementGetIdentifiersUseCase @Inject constructor(
      * @param authenticatedRequestContext Context containing the ID of the management caller performing the search.
      * @return [AppResult] containing [PagedResult] of [UserIdentifierSummary] within the caller's authorized scope.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         queryParams: ManagementIdentifierListQueryParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<UserIdentifierSummary>> {

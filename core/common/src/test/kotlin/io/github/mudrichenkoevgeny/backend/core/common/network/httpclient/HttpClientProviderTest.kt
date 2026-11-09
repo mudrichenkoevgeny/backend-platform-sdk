@@ -6,12 +6,14 @@ import org.junit.jupiter.api.Test
 import org.slf4j.MDC
 
 class HttpClientProviderTest {
-
     private val provider = HttpClientProvider()
 
     @Test
     fun `create builds http client without errors`() {
-        MDC.put(TracingKeys.TRACE_ID_KEY, "trace-123")
+        MDC.put(
+            TracingKeys.TRACE_ID_KEY,
+            "trace-123"
+        )
 
         val settings = createTestHttpClientSettings(
             baseUrl = "https://example.com",

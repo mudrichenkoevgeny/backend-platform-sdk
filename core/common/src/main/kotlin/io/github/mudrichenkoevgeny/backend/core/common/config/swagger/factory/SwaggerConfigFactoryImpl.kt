@@ -15,11 +15,10 @@ import javax.inject.Singleton
  * [CommonEnvKeys] and [SwaggerEnvKeys], while the version is taken from [AppInfo].
  */
 @Singleton
-class SwaggerConfigFactoryImpl @Inject constructor(
+public class SwaggerConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader,
     private val appInfo: AppInfo
-): SwaggerConfigFactory {
-
+) : SwaggerConfigFactory {
     override fun create(): SwaggerConfig {
         val version = appInfo.version
 

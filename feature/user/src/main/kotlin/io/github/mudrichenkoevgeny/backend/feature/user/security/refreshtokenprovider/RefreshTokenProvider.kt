@@ -10,9 +10,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.t
  * The raw refresh token should only be sent to the client. Server-side storage and comparisons
  * must use [RefreshTokenHash].
  */
-interface RefreshTokenProvider {
+public interface RefreshTokenProvider {
     /** Generates a new refresh token value. */
-    fun getRefreshToken(): AppResult<RefreshToken>
+    public fun getRefreshToken(): AppResult<RefreshToken>
+
     /** Computes a one-way hash for [refreshToken] suitable for persistence. */
-    fun getRefreshTokenHash(refreshToken: RefreshToken): AppResult<RefreshTokenHash>
+    public fun getRefreshTokenHash(refreshToken: RefreshToken): AppResult<RefreshTokenHash>
 }

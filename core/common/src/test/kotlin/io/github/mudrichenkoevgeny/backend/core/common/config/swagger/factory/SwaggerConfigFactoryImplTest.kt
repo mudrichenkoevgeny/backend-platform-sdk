@@ -11,15 +11,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class SwaggerConfigFactoryImplTest {
-
-    private companion object {
-        private const val APP_VERSION = "2.1.0"
-        private const val SERVER_URL = "https://api.example.com"
-        private const val SWAGGER_TITLE = "Test API"
-        private const val SWAGGER_DESCRIPTION = "Test Description"
-        private const val SWAGGER_SERVER_DESCRIPTION = "Production Server"
-    }
-
     private val envReader = mockk<EnvReader>()
     private val appInfo = mockk<AppInfo> {
         every { version } returns APP_VERSION
@@ -32,14 +23,40 @@ class SwaggerConfigFactoryImplTest {
         every { envReader.getByKey(SwaggerEnvKeys.SWAGGER_DESCRIPTION) } returns SWAGGER_DESCRIPTION
         every { envReader.getByKey(SwaggerEnvKeys.SWAGGER_SERVER_DESCRIPTION) } returns SWAGGER_SERVER_DESCRIPTION
 
-        val factory = SwaggerConfigFactoryImpl(envReader, appInfo)
+        val factory = SwaggerConfigFactoryImpl(
+            envReader,
+            appInfo
+        )
 
         val config: SwaggerConfig = factory.create()
 
-        assertEquals(SWAGGER_TITLE, config.title)
-        assertEquals(SWAGGER_DESCRIPTION, config.description)
-        assertEquals(APP_VERSION, config.version)
-        assertEquals(SERVER_URL, config.serverUrl)
-        assertEquals(SWAGGER_SERVER_DESCRIPTION, config.serverDescription)
+        assertEquals(
+            SWAGGER_TITLE,
+            config.title
+        )
+        assertEquals(
+            SWAGGER_DESCRIPTION,
+            config.description
+        )
+        assertEquals(
+            APP_VERSION,
+            config.version
+        )
+        assertEquals(
+            SERVER_URL,
+            config.serverUrl
+        )
+        assertEquals(
+            SWAGGER_SERVER_DESCRIPTION,
+            config.serverDescription
+        )
+    }
+
+    private companion object {
+        private const val APP_VERSION = "2.1.0"
+        private const val SERVER_URL = "https://api.example.com"
+        private const val SWAGGER_TITLE = "Test API"
+        private const val SWAGGER_DESCRIPTION = "Test Description"
+        private const val SWAGGER_SERVER_DESCRIPTION = "Production Server"
     }
 }

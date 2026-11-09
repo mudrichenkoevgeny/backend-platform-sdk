@@ -14,16 +14,19 @@ import javax.sql.DataSource
  * baselineOnMigrate and outOfOrder enabled, failOnMissingLocations false. On failure logs via [AppLogger] and rethrows.
  */
 @Singleton
-class FlywayDatabaseMigrator @Inject constructor(
+public class FlywayDatabaseMigrator @Inject constructor(
     private val appLogger: AppLogger
-): DatabaseMigrator {
-
-    override fun migrate(dataSource: DataSource, resources: List<String>) {
+) : DatabaseMigrator {
+    override fun migrate(
+        dataSource: DataSource,
+        resources: List<String>
+    ) {
         try {
             val sdkBaseLocation = "classpath:db/migration"
             val allLocations = (resources + sdkBaseLocation).distinct()
 
-            val flyway = Flyway.configure()
+            val flyway = Flyway
+                .configure()
                 .dataSource(dataSource)
                 .locations(*allLocations.toTypedArray())
                 .baselineOnMigrate(true)

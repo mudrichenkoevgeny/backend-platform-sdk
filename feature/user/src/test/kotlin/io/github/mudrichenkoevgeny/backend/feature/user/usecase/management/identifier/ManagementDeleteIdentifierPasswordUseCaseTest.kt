@@ -6,10 +6,6 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
@@ -30,6 +26,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -39,11 +39,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ManagementDeleteIdentifierPasswordUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
     private val identifierManager = mockk<IdentifierManager>()
@@ -93,26 +95,63 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             accountStatus = UserAccountStatus.ACTIVE
         )
 
-        val managerSession = createTestUserSessionInternal(id = context.sessionId, userId = managerId)
-        val targetSession = createTestUserSessionInternal(id = targetSessionId, userId = targetUserId)
+        val managerSession = createTestUserSessionInternal(
+            id = context.sessionId,
+            userId = managerId
+        )
+        val targetSession = createTestUserSessionInternal(
+            id = targetSessionId,
+            userId = targetUserId
+        )
         val updatedUserIdentifier = createTestUserIdentifierPrivate()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
-        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
+        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(
+            targetIdentifier
+        )
         coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserInternal)
         coEvery { sessionManager.getUserSessionInternal(context.sessionId) } returns AppResult.Success(managerSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
-        coEvery { sessionManager.getUserSessionsInternalListByIdentifierId(targetIdentifierId, targetUserId) } returns AppResult.Success(listOf(targetSession))
-        coEvery { identifierManager.clearUserIdentifierPassword(targetIdentifier) } returns AppResult.Success(updatedUserIdentifier)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            sessionManager.getUserSessionsInternalListByIdentifierId(
+                targetIdentifierId,
+                targetUserId
+            )
+        } returns AppResult.Success(listOf(targetSession))
+        coEvery { identifierManager.clearUserIdentifierPassword(targetIdentifier) } returns AppResult.Success(
+            updatedUserIdentifier
+        )
         coEvery { sessionManager.deleteSessionById(targetSessionId) } returns AppResult.Success(Unit)
 
-        val result = useCase(targetIdentifierId, context)
+        val result = useCase(
+            targetIdentifierId,
+            context
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
 
         coVerify { sessionManager.deleteSessionById(targetSessionId) }
-        coVerify { webSocketManager.sendMessageToUserSession(targetSessionId, any()) }
+        coVerify {
+            webSocketManager.sendMessageToUserSession(
+                targetSessionId,
+                any()
+            )
+        }
         coVerify {
             auditLogger.log(
                 actorId = managerId.asHexDashString(),
@@ -158,12 +197,22 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             accountStatus = UserAccountStatus.ACTIVE
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
-        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
+        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(
+            targetIdentifier
+        )
         coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserInternal)
 
-        val result = useCase(targetIdentifierId, context)
+        val result = useCase(
+            targetIdentifierId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserIdentifierPasswordNotSupported)
     }
@@ -199,12 +248,22 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             accountStatus = UserAccountStatus.ACTIVE
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
-        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
+        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(
+            targetIdentifier
+        )
         coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserInternal)
 
-        val result = useCase(targetIdentifierId, context)
+        val result = useCase(
+            targetIdentifierId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserIdentifierPasswordNotSet)
     }
@@ -226,11 +285,21 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             userId = managerId
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
-        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
+        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(
+            targetIdentifier
+        )
 
-        val result = useCase(targetIdentifierId, context)
+        val result = useCase(
+            targetIdentifierId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserForbidden)
     }
@@ -259,12 +328,22 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
             accountStatus = UserAccountStatus.ACTIVE
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
-        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(targetIdentifier)
+        coEvery { identifierManager.getUserIdentifierInternalById(targetIdentifierId) } returns AppResult.Success(
+            targetIdentifier
+        )
         coEvery { userManager.getUserInternalById(targetUserId) } returns AppResult.Success(targetUserInternal)
 
-        val result = useCase(targetIdentifierId, context)
+        val result = useCase(
+            targetIdentifierId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserInsufficientAuthorityLevel)
     }
@@ -276,9 +355,17 @@ class ManagementDeleteIdentifierPasswordUseCaseTest {
         val context = createTestAuthenticatedRequestContext(userId = managerId)
         val limitError = CommonError.Unknown()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(limitError)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Error(limitError)
 
-        val result = useCase(targetIdentifierId, context)
+        val result = useCase(
+            targetIdentifierId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error == limitError)
         coVerify(exactly = 0) { identifierManager.clearUserIdentifierPassword(any()) }

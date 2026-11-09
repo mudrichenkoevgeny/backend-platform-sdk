@@ -10,7 +10,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.session.DeleteSessionUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
@@ -26,11 +25,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DeleteSessionUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val sessionManager = mockk<SessionManager>()
     private val webSocketManager = mockk<WebSocketManager>(relaxed = true)
 
@@ -48,16 +49,25 @@ class DeleteSessionUseCaseTest {
         val targetSessionId = UserSessionId.generate()
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.SESSION_DELETE, context.userId.asHexDashString())
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.SESSION_DELETE,
+                context.userId.asHexDashString()
+            )
         } returns AppResult.Success(Unit)
 
         coEvery {
             sessionManager.deleteSessionById(targetSessionId)
         } returns AppResult.Success(Unit)
 
-        val result = useCase(targetSessionId, context)
+        val result = useCase(
+            targetSessionId,
+            context
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
 
         coVerify {
             webSocketManager.sendMessageToUserSession(
@@ -86,12 +96,23 @@ class DeleteSessionUseCaseTest {
         val targetSessionId = UserSessionId.generate()
         val error = CommonError.Unknown()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(error)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Error(error)
 
-        val result = useCase(targetSessionId, context)
+        val result = useCase(
+            targetSessionId,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
 
         coVerify {
             auditLogger.log(
@@ -115,16 +136,30 @@ class DeleteSessionUseCaseTest {
         val targetSessionId = UserSessionId.generate()
         val error = CommonError.Unknown()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { sessionManager.deleteSessionById(targetSessionId) } returns AppResult.Error(error)
 
-        val result = useCase(targetSessionId, context)
+        val result = useCase(
+            targetSessionId,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
 
         coVerify(exactly = 0) {
-            webSocketManager.sendMessageToUserSession(any(), any())
+            webSocketManager.sendMessageToUserSession(
+                any(),
+                any()
+            )
         }
 
         coVerify {

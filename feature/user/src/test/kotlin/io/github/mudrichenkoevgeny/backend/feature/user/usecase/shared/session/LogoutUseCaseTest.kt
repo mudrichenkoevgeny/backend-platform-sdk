@@ -8,7 +8,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.session.LogoutUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
@@ -23,10 +22,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class LogoutUseCaseTest {
-
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val sessionManager = mockk<SessionManager>()
     private val webSocketManager = mockk<WebSocketManager>(relaxed = true)
 
@@ -47,7 +48,10 @@ class LogoutUseCaseTest {
 
         val result = useCase(context)
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
 
         coVerify {
             webSocketManager.sendMessageToUserSession(
@@ -79,10 +83,16 @@ class LogoutUseCaseTest {
         val result = useCase(context)
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
 
         coVerify(exactly = 0) {
-            webSocketManager.sendMessageToUserSession(any(), any())
+            webSocketManager.sendMessageToUserSession(
+                any(),
+                any()
+            )
         }
 
         coVerify {

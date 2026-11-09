@@ -21,10 +21,9 @@ import javax.inject.Singleton
  * concatenated [IV + EncryptedData].
  */
 @Singleton
-class AesCryptorImpl @Inject constructor(
+public class AesCryptorImpl @Inject constructor(
     securityConfig: SecurityConfig
 ) : AesCryptor {
-
     private val secretKey: SecretKeySpec
     private val secureRandom = SecureRandom()
 
@@ -36,45 +35,65 @@ class AesCryptorImpl @Inject constructor(
     init {
         val keyBytes = Base64.getDecoder().decode(securityConfig.totpEncryptionSecret)
         require(keyBytes.size >= minKeyLength) { "Encryption secret must be at least 32 bytes." }
-        secretKey = SecretKeySpec(keyBytes, "AES")
+        secretKey = SecretKeySpec(
+            keyBytes,
+            "AES"
+        )
     }
 
-    override fun encrypt(decryptedString: DecryptedString): AppResult<EncryptedString> {
-        return try {
-            val iv = ByteArray(ivLength)
-            secureRandom.nextBytes(iv)
+    override fun encrypt(decryptedString: DecryptedString): AppResult<EncryptedString> = try {
+        val iv = ByteArray(ivLength)
+        secureRandom.nextBytes(iv)
 
-            val cipher = Cipher.getInstance(algorithm)
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, GCMParameterSpec(tagLength, iv))
+        val cipher = Cipher.getInstance(algorithm)
+        cipher.init(
+            Cipher.ENCRYPT_MODE,
+            secretKey,
+            GCMParameterSpec(
+                tagLength,
+                iv
+            )
+        )
 
-            val encryptedBytes = cipher.doFinal(decryptedString.value.toByteArray(Charsets.UTF_8))
+        val encryptedBytes = cipher.doFinal(decryptedString.value.toByteArray(Charsets.UTF_8))
 
-            val combined = iv + encryptedBytes
-            AppResult.Success(EncryptedString(Base64.getEncoder().encodeToString(combined)))
-        } catch (e: Exception) {
-            AppResult.Error(CommonError.Internal(e))
-        }
+        val combined = iv + encryptedBytes
+        AppResult.Success(EncryptedString(Base64.getEncoder().encodeToString(combined)))
+    } catch (e: Exception) {
+        AppResult.Error(CommonError.Internal(e))
     }
 
-    override fun decrypt(encryptedString: EncryptedString): AppResult<DecryptedString> {
-        return try {
-            val combined = Base64.getDecoder().decode(encryptedString.value)
-            val minLength = ivLength + (tagLength / 8)
+    override fun decrypt(encryptedString: EncryptedString): AppResult<DecryptedString> = try {
+        val combined = Base64.getDecoder().decode(encryptedString.value)
+        val minLength = ivLength + (tagLength / 8)
 
-            if (combined.size < minLength) {
-                throw IllegalArgumentException("Invalid encrypted data length")
-            }
-
-            val iv = combined.sliceArray(0 until ivLength)
-            val encryptedBytes = combined.sliceArray(ivLength until combined.size)
-
-            val cipher = Cipher.getInstance(algorithm)
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(tagLength, iv))
-
-            val decryptedBytes = cipher.doFinal(encryptedBytes)
-            AppResult.Success(DecryptedString(String(decryptedBytes, Charsets.UTF_8)))
-        } catch (e: Exception) {
-            AppResult.Error(CommonError.Internal(e))
+        if (combined.size < minLength) {
+            throw IllegalArgumentException("Invalid encrypted data length")
         }
+
+        val iv = combined.sliceArray(0 until ivLength)
+        val encryptedBytes = combined.sliceArray(ivLength until combined.size)
+
+        val cipher = Cipher.getInstance(algorithm)
+        cipher.init(
+            Cipher.DECRYPT_MODE,
+            secretKey,
+            GCMParameterSpec(
+                tagLength,
+                iv
+            )
+        )
+
+        val decryptedBytes = cipher.doFinal(encryptedBytes)
+        AppResult.Success(
+            DecryptedString(
+                String(
+                    decryptedBytes,
+                    Charsets.UTF_8
+                )
+            )
+        )
+    } catch (e: Exception) {
+        AppResult.Error(CommonError.Internal(e))
     }
 }

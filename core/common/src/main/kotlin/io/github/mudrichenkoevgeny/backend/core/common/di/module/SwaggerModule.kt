@@ -1,10 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.core.common.di.module
 
+import dagger.Module
+import dagger.Provides
 import io.github.mudrichenkoevgeny.backend.core.common.config.swagger.model.SwaggerConfig
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.initializer.SwaggerInitializer
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.initializer.SwaggerInitializerImpl
-import dagger.Module
-import dagger.Provides
 import javax.inject.Singleton
 
 /**
@@ -14,15 +14,10 @@ import javax.inject.Singleton
  * can be used to register OpenAPI documentation endpoints.
  */
 @Module
-class SwaggerModule {
-
+public class SwaggerModule {
     @Provides
     @Singleton
-    fun provideSwaggerInitializer(
-        swaggerConfig: SwaggerConfig
-    ): SwaggerInitializer {
-        return SwaggerInitializerImpl(
-            config = swaggerConfig
-        )
-    }
+    public fun provideSwaggerInitializer(swaggerConfig: SwaggerConfig): SwaggerInitializer = SwaggerInitializerImpl(
+        config = swaggerConfig
+    )
 }

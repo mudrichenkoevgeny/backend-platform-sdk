@@ -13,11 +13,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
  * verified by the user, the implementation MUST discard the email (set it to `null` in
  * [ExternalAuthProviderData]) to prevent Account Takeover (ATO) via implicit account linking.
  */
-interface ExternalAuthVerifier {
+public interface ExternalAuthVerifier {
     /**
      * Provider supported by this verifier implementation.
      */
-    val provider: UserAuthProvider
+    public val provider: UserAuthProvider
 
     /**
      * Verifies the provided token and returns extracted provider identity data.
@@ -25,5 +25,5 @@ interface ExternalAuthVerifier {
      * @param token provider-issued token (typically an ID token / JWT)
      * @return [AppResult.Success] with [ExternalAuthProviderData] when verified; otherwise [AppResult.Error]
      */
-    suspend fun verify(token: String): AppResult<ExternalAuthProviderData>
+    public suspend fun verify(token: String): AppResult<ExternalAuthProviderData>
 }

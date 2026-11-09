@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class UserWebSocketMessageHandlerTest {
-
     private val handler = UserWebSocketMessageHandler()
 
     @Test
@@ -36,7 +35,10 @@ class UserWebSocketMessageHandlerTest {
                 )
             }
 
-            assertEquals(WebSocketMessageHandlerResult.Handled, result)
+            assertEquals(
+                WebSocketMessageHandlerResult.Handled,
+                result
+            )
         }
     }
 
@@ -55,19 +57,20 @@ class UserWebSocketMessageHandlerTest {
             )
         }
 
-        assertEquals(WebSocketMessageHandlerResult.NotHandled, result)
-    }
-
-    private fun context(): WebSocketSessionContext {
-        return WebSocketSessionContext(
-            socketSessionId = SOCKET_ID,
-            apiScope = ApiScope.OPEN,
-            clientInfo = null,
-            userId = null,
-            userRole = null,
-            userSessionId = null
+        assertEquals(
+            WebSocketMessageHandlerResult.NotHandled,
+            result
         )
     }
+
+    private fun context(): WebSocketSessionContext = WebSocketSessionContext(
+        socketSessionId = SOCKET_ID,
+        apiScope = ApiScope.OPEN,
+        clientInfo = null,
+        userId = null,
+        userRole = null,
+        userSessionId = null
+    )
 
     private companion object {
         const val FRAME_ID = "frame-id"

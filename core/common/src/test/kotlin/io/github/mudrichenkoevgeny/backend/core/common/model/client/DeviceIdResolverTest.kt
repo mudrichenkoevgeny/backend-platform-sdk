@@ -10,15 +10,20 @@ import org.junit.jupiter.api.Test
 import kotlin.uuid.Uuid
 
 class DeviceIdResolverTest {
-
     @Test
     fun `resolveDeviceId returns explicit deviceId when present in clientInfo`() {
         val explicitDeviceId = ClientDeviceId(Uuid.random())
         val clientInfo = createTestClientInfo(deviceId = explicitDeviceId)
 
-        val resolved = DeviceIdResolver.resolveDeviceId("user-123", clientInfo)
+        val resolved = DeviceIdResolver.resolveDeviceId(
+            "user-123",
+            clientInfo
+        )
 
-        assertEquals(explicitDeviceId, resolved)
+        assertEquals(
+            explicitDeviceId,
+            resolved
+        )
     }
 
     @Test
@@ -34,10 +39,19 @@ class DeviceIdResolverTest {
             userAgent = "Mozilla/5.0"
         )
 
-        val resolved1 = DeviceIdResolver.resolveDeviceId("user-123", clientInfo1)
-        val resolved2 = DeviceIdResolver.resolveDeviceId("user-123", clientInfo2)
+        val resolved1 = DeviceIdResolver.resolveDeviceId(
+            "user-123",
+            clientInfo1
+        )
+        val resolved2 = DeviceIdResolver.resolveDeviceId(
+            "user-123",
+            clientInfo2
+        )
 
-        assertEquals(resolved1, resolved2)
+        assertEquals(
+            resolved1,
+            resolved2
+        )
     }
 
     @Test
@@ -48,10 +62,19 @@ class DeviceIdResolverTest {
             userAgent = "Mozilla/5.0"
         )
 
-        val resolvedUser1 = DeviceIdResolver.resolveDeviceId("user-1", clientInfo)
-        val resolvedUser2 = DeviceIdResolver.resolveDeviceId("user-2", clientInfo)
+        val resolvedUser1 = DeviceIdResolver.resolveDeviceId(
+            "user-1",
+            clientInfo
+        )
+        val resolvedUser2 = DeviceIdResolver.resolveDeviceId(
+            "user-2",
+            clientInfo
+        )
 
-        assertNotEquals(resolvedUser1, resolvedUser2)
+        assertNotEquals(
+            resolvedUser1,
+            resolvedUser2
+        )
     }
 
     @Test
@@ -67,10 +90,19 @@ class DeviceIdResolverTest {
             userAgent = "Mozilla/5.0"
         )
 
-        val resolvedIp1 = DeviceIdResolver.resolveDeviceId("user-123", clientInfoIp1)
-        val resolvedIp2 = DeviceIdResolver.resolveDeviceId("user-123", clientInfoIp2)
+        val resolvedIp1 = DeviceIdResolver.resolveDeviceId(
+            "user-123",
+            clientInfoIp1
+        )
+        val resolvedIp2 = DeviceIdResolver.resolveDeviceId(
+            "user-123",
+            clientInfoIp2
+        )
 
-        assertNotEquals(resolvedIp1, resolvedIp2)
+        assertNotEquals(
+            resolvedIp1,
+            resolvedIp2
+        )
     }
 
     @Test
@@ -86,10 +118,19 @@ class DeviceIdResolverTest {
             userAgent = "Firefox/100"
         )
 
-        val resolvedUa1 = DeviceIdResolver.resolveDeviceId("user-123", clientInfoUa1)
-        val resolvedUa2 = DeviceIdResolver.resolveDeviceId("user-123", clientInfoUa2)
+        val resolvedUa1 = DeviceIdResolver.resolveDeviceId(
+            "user-123",
+            clientInfoUa1
+        )
+        val resolvedUa2 = DeviceIdResolver.resolveDeviceId(
+            "user-123",
+            clientInfoUa2
+        )
 
-        assertNotEquals(resolvedUa1, resolvedUa2)
+        assertNotEquals(
+            resolvedUa1,
+            resolvedUa2
+        )
     }
 
     @Test
@@ -100,10 +141,19 @@ class DeviceIdResolverTest {
             userAgent = null
         )
 
-        val resolved1 = DeviceIdResolver.resolveDeviceId("user-123", clientInfoNulls)
-        val resolved2 = DeviceIdResolver.resolveDeviceId("user-123", clientInfoNulls)
+        val resolved1 = DeviceIdResolver.resolveDeviceId(
+            "user-123",
+            clientInfoNulls
+        )
+        val resolved2 = DeviceIdResolver.resolveDeviceId(
+            "user-123",
+            clientInfoNulls
+        )
 
-        assertEquals(resolved1, resolved2)
+        assertEquals(
+            resolved1,
+            resolved2
+        )
     }
 
     private fun createTestClientInfo(

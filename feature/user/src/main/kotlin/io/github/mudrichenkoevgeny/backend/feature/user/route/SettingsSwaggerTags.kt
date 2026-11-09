@@ -5,6 +5,6 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route
  *
  * These constants are referenced from route docs builders to keep tag names consistent.
  */
-object SettingsSwaggerTags {
-    const val GLOBAL_SETTINGS = "Global settings"
+public object SettingsSwaggerTags {
+    public const val GLOBAL_SETTINGS: String = "Global settings"
 }

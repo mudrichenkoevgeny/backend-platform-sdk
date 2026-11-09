@@ -37,7 +37,7 @@ import kotlin.uuid.Uuid
  * Use case for resetting storage settings to default values from a management context.
  */
 @Singleton
-class ResetStorageSettingsUseCase @Inject constructor(
+public class ResetStorageSettingsUseCase @Inject constructor(
     private val storageSettingsProvider: StorageSettingsProvider,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -63,7 +63,7 @@ class ResetStorageSettingsUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] containing the reset [ManagementStorageSettings] or an [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<ManagementStorageSettings> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
@@ -80,6 +80,7 @@ class ResetStorageSettingsUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 

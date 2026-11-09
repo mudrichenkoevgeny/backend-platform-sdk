@@ -15,8 +15,7 @@ import javax.inject.Singleton
  * Feature-specific error parser for storage-related errors.
  */
 @Singleton
-class StorageErrorParser @Inject constructor() : AppErrorSpecificParser {
-
+public class StorageErrorParser @Inject constructor() : AppErrorSpecificParser {
     override fun getApiErrorResponse(
         errorId: ErrorId,
         code: String,
@@ -28,7 +27,10 @@ class StorageErrorParser @Inject constructor() : AppErrorSpecificParser {
         val message = when (code) {
             StorageErrorCodes.FILE_SIZE_EXCEEDS_LIMIT -> {
                 val maxBytes = args?.get(StorageErrorArgs.MAX_FILE_SIZE_BYTES)
-                val formatted = ByteSizeFormatter.format(maxBytes, locale = locale)
+                val formatted = ByteSizeFormatter.format(
+                    maxBytes,
+                    locale = locale
+                )
                 if (formatted != null) {
                     strings.fileSizeExceedsLimit(formatted)
                 } else {
@@ -38,7 +40,10 @@ class StorageErrorParser @Inject constructor() : AppErrorSpecificParser {
 
             StorageErrorCodes.FILE_SIZE_BELOW_MINIMUM -> {
                 val minBytes = args?.get(StorageErrorArgs.MIN_FILE_SIZE_BYTES)
-                val formatted = ByteSizeFormatter.format(minBytes, locale = locale)
+                val formatted = ByteSizeFormatter.format(
+                    minBytes,
+                    locale = locale
+                )
                 if (formatted != null) {
                     strings.fileSizeBelowMinimum(formatted)
                 } else {
@@ -52,10 +57,19 @@ class StorageErrorParser @Inject constructor() : AppErrorSpecificParser {
             StorageErrorCodes.STORAGE_QUOTA_EXCEEDED -> {
                 val usedBytes = args?.get(StorageErrorArgs.USED_BYTES)
                 val quotaBytes = args?.get(StorageErrorArgs.QUOTA_BYTES)
-                val formattedUsed = ByteSizeFormatter.format(usedBytes, locale = locale)
-                val formattedQuota = ByteSizeFormatter.format(quotaBytes, locale = locale)
+                val formattedUsed = ByteSizeFormatter.format(
+                    usedBytes,
+                    locale = locale
+                )
+                val formattedQuota = ByteSizeFormatter.format(
+                    quotaBytes,
+                    locale = locale
+                )
                 if (formattedUsed != null && formattedQuota != null) {
-                    strings.storageQuotaExceeded(formattedUsed = formattedUsed, formattedQuota = formattedQuota)
+                    strings.storageQuotaExceeded(
+                        formattedUsed = formattedUsed,
+                        formattedQuota = formattedQuota
+                    )
                 } else {
                     strings.storageQuotaExceededWithoutArgs
                 }
@@ -93,12 +107,10 @@ class StorageErrorParser @Inject constructor() : AppErrorSpecificParser {
     override fun getApiErrorResponse(
         appError: AppError,
         locale: String
-    ): ApiErrorResponse? {
-        return getApiErrorResponse(
-            errorId = appError.errorId,
-            code = appError.code,
-            args = appError.publicArgs,
-            locale = locale
-        )
-    }
+    ): ApiErrorResponse? = getApiErrorResponse(
+        errorId = appError.errorId,
+        code = appError.code,
+        args = appError.publicArgs,
+        locale = locale
+    )
 }

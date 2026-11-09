@@ -1,11 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.core.database.di.module
 
+import dagger.Module
+import dagger.Provides
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.database.config.factory.DatabaseConfigFactory
 import io.github.mudrichenkoevgeny.backend.core.database.config.factory.DatabaseConfigFactoryImpl
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
-import dagger.Module
-import dagger.Provides
 import javax.inject.Singleton
 
 /**
@@ -15,23 +15,15 @@ import javax.inject.Singleton
  * and [DatabaseConfig] from the factory.
  */
 @Module
-class DatabaseConfigModule {
+public class DatabaseConfigModule {
+    @Provides
+    @Singleton
+    public fun provideDatabaseConfigFactory(envReader: EnvReader): DatabaseConfigFactory = DatabaseConfigFactoryImpl(
+        envReader = envReader
+    )
 
     @Provides
     @Singleton
-    fun provideDatabaseConfigFactory(
-        envReader: EnvReader
-    ): DatabaseConfigFactory {
-        return DatabaseConfigFactoryImpl(
-            envReader = envReader
-        )
-    }
-
-    @Provides
-    @Singleton
-    fun provideDatabaseConfig(
-        databaseConfigFactory: DatabaseConfigFactory
-    ): DatabaseConfig {
-        return databaseConfigFactory.create()
-    }
+    public fun provideDatabaseConfig(databaseConfigFactory: DatabaseConfigFactory): DatabaseConfig =
+        databaseConfigFactory.create()
 }

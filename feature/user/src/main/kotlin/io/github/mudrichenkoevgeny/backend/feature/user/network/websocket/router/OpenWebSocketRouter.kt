@@ -13,7 +13,7 @@ import javax.inject.Singleton
  * assigned to [ApiScope.OPEN] and delegates session handling to [WebSocketManager].
  */
 @Singleton
-class OpenWebSocketRouter @Inject constructor(
+public class OpenWebSocketRouter @Inject constructor(
     webSocketManager: WebSocketManager
 ) : BaseAuthenticatedWebSocketRouter(
     webSocketManager = webSocketManager,

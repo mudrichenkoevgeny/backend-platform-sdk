@@ -31,41 +31,73 @@ import javax.inject.Singleton
  * Management HTTP routes for password recovery.
  *
  * Registered routes:
- * 1. [SelfManagementResetPasswordRoutes.SEND_RESET_PASSWORD_CONFIRMATION] — initiates recovery via [SendResetPasswordConfirmationUseCase].
+ * 1. [SelfManagementResetPasswordRoutes.SEND_RESET_PASSWORD_CONFIRMATION] — initiates recovery via
+ * [SendResetPasswordConfirmationUseCase].
  * 2. [SelfManagementResetPasswordRoutes.RESET_PASSWORD] — applies the new password via [ResetPasswordUseCase].
  */
 @Singleton
-class SelfManagementResetPasswordRouter @Inject constructor(
+public class SelfManagementResetPasswordRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val sendResetPasswordConfirmationUseCase: SendResetPasswordConfirmationUseCase,
     private val resetPasswordUseCase: ResetPasswordUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         registerSendResetPasswordConfirmationRoute(route)
         registerResetPasswordRoute(route)
     }
 
     private fun registerSendResetPasswordConfirmationRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = SelfManagementResetPasswordRoutes.SEND_RESET_PASSWORD_CONFIRMATION,
-            builder = { sendResetPasswordConfirmationDocs(allowedRoles, allowedAccountStatuses) },
-            body = { sendResetPasswordConfirmation(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                sendResetPasswordConfirmationDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                sendResetPasswordConfirmation(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerResetPasswordRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = SelfManagementResetPasswordRoutes.RESET_PASSWORD,
-            builder = { resetPasswordDocs(allowedRoles, allowedAccountStatuses) },
-            body = { resetPassword(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                resetPasswordDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                resetPassword(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -108,7 +140,11 @@ class SelfManagementResetPasswordRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { otpConfirmation ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { otpConfirmation ->
             otpConfirmation.toOtpConfirmationPayload()
         }
     }
@@ -153,18 +189,24 @@ class SelfManagementResetPasswordRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
-    companion object {
-        const val SEND_RESET_PASSWORD_CONFIRMATION_SUMMARY = "Send management reset password confirmation"
-        const val SEND_RESET_PASSWORD_CONFIRMATION_DESCRIPTION = "Initiates password recovery for a management account by sending a confirmation code."
-        const val SEND_RESET_PASSWORD_CONFIRMATION_OPERATION_ID = "sendManagementResetPasswordConfirmation"
-        const val SEND_RESET_PASSWORD_CONFIRMATION_RESPONSE_DESCRIPTION = "Confirmation sent successfully."
+    public companion object {
+        private const val SEND_RESET_PASSWORD_CONFIRMATION_SUMMARY = "Send management reset password confirmation"
+        private const val SEND_RESET_PASSWORD_CONFIRMATION_DESCRIPTION =
+            "Initiates password recovery for a management account by sending a confirmation code."
+        private const val SEND_RESET_PASSWORD_CONFIRMATION_OPERATION_ID = "sendManagementResetPasswordConfirmation"
+        private const val SEND_RESET_PASSWORD_CONFIRMATION_RESPONSE_DESCRIPTION = "Confirmation sent successfully."
 
-        const val RESET_PASSWORD_SUMMARY = "Reset management password"
-        const val RESET_PASSWORD_DESCRIPTION = "Completes the password reset for a management account (STAFF or ADMIN)."
-        const val RESET_PASSWORD_OPERATION_ID = "resetManagementPassword"
-        const val RESET_PASSWORD_RESPONSE_DESCRIPTION = "Password reset successfully."
+        private const val RESET_PASSWORD_SUMMARY = "Reset management password"
+        private const val RESET_PASSWORD_DESCRIPTION =
+            "Completes the password reset for a management account (STAFF or ADMIN)."
+        private const val RESET_PASSWORD_OPERATION_ID = "resetManagementPassword"
+        private const val RESET_PASSWORD_RESPONSE_DESCRIPTION = "Password reset successfully."
     }
 }

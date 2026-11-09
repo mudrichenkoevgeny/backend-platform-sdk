@@ -11,13 +11,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class GoogleAuthVerifierTest {
-
-    private companion object {
-        private const val ANY_TOKEN = "any"
-        private const val INVALID_TOKEN = "invalid-token"
-        private const val WEB_CLIENT_ID = "client-id"
-    }
-
     @Test
     fun `verify returns ExternalIdMismatch when web client id is missing`() = runBlocking {
         val verifier = GoogleAuthVerifier(webClientId = null)
@@ -44,5 +37,11 @@ class GoogleAuthVerifierTest {
     fun `provider is correctly set to GOOGLE`() {
         val verifier = GoogleAuthVerifier(webClientId = WEB_CLIENT_ID)
         assertEquals(UserAuthProvider.GOOGLE, verifier.provider)
+    }
+
+    private companion object {
+        private const val ANY_TOKEN = "any"
+        private const val INVALID_TOKEN = "invalid-token"
+        private const val WEB_CLIENT_ID = "client-id"
     }
 }

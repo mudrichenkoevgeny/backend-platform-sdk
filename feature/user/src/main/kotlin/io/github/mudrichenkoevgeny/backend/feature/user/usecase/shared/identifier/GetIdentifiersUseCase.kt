@@ -13,8 +13,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.i
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to retrieve a paginated list of user identifiers.
+ */
 @Singleton
-class GetIdentifiersUseCase @Inject constructor(
+public class GetIdentifiersUseCase @Inject constructor(
     private val userManager: UserManager,
     private val identifierManager: IdentifierManager
 ) {
@@ -32,7 +35,7 @@ class GetIdentifiersUseCase @Inject constructor(
      * @param authenticatedRequestContext Context containing the authenticated user's ID.
      * @return [AppResult] with [PagedResult] of [UserIdentifierSummary].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         queryParams: SelfIdentifierListQueryParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<UserIdentifierSummary>> {
@@ -46,7 +49,11 @@ class GetIdentifiersUseCase @Inject constructor(
             is AppResult.Success -> getCurrentUserResult.data
         }
 
-        if (currentUser.accountStatus !in setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)) {
+        if (currentUser.accountStatus !in setOf(
+                UserAccountStatus.ACTIVE,
+                UserAccountStatus.READ_ONLY
+            )
+        ) {
             return AppResult.Error(UserError.UserForbidden(currentUserId))
         }
 

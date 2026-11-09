@@ -1,9 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.config.model
 
 import io.github.mudrichenkoevgeny.backend.feature.user.config.seed.AdminAccount
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.resend.model.ResendConfig
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.model.UniOneConfig
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.ManagementAuthSettings
 
 /**
  * Configuration for the user feature.
@@ -18,7 +18,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.email.unione.mod
  * @param uniOneConfig optional UniOne email provider config (null when not configured)
  * @param resendConfig optional Resend email provider config (null when not configured)
  */
-data class UserConfig(
+public data class UserConfig(
     val jwtSecret: String,
     val adminAccountsList: List<AdminAccount>,
     val managementAuthSettings: ManagementAuthSettings,

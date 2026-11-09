@@ -1,7 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.common.error.model
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.ApplicationCall
 
 /**
  * Represents an application error that can be propagated through the layers of the system.
@@ -10,11 +9,11 @@ import io.ktor.server.application.ApplicationCall
  * (`publicArgs`) and sensitive/internal details (`secretArgs`), while keeping
  * a unique `errorId` for tracking and correlation in logs.
  */
-interface AppError {
-    val errorId: ErrorId
-    val code: String
-    val publicArgs: Map<String, Any>?
-    val secretArgs: Map<String, Any>?
-    val httpStatusCode: HttpStatusCode
-    val appErrorSeverity: AppErrorSeverity
+public interface AppError {
+    public val errorId: ErrorId
+    public val code: String
+    public val publicArgs: Map<String, Any>?
+    public val secretArgs: Map<String, Any>?
+    public val httpStatusCode: HttpStatusCode
+    public val appErrorSeverity: AppErrorSeverity
 }

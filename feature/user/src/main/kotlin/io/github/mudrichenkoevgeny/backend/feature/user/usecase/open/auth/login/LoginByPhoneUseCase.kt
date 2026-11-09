@@ -7,8 +7,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutAttemptType
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
-import io.github.mudrichenkoevgeny.backend.feature.user.error.util.extractUserIdHexOrNull
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.error.util.extractUserIdHexOrNull
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
@@ -29,8 +29,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to login by phone.
+ */
 @Singleton
-class LoginByPhoneUseCase @Inject constructor(
+public class LoginByPhoneUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -61,12 +64,15 @@ class LoginByPhoneUseCase @Inject constructor(
      * @param requestContext The context of the public request.
      * @return [AppResult] containing [AuthData] or an MFA challenge.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         phoneNumber: String,
         confirmationCode: String,
         requestContext: RequestContext,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
-        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
     ): AppResult<AuthData> {
         val auditMetadata = requestContext.clientInfo.toAuditMetadata().toMutableSet()
         auditMetadata.add(
@@ -159,6 +165,7 @@ class LoginByPhoneUseCase @Inject constructor(
                 )
                 authenticateUserResult
             }
+
             is AppResult.Error -> handleError(
                 error = authenticateUserResult.error,
                 baseMetadata = auditMetadata

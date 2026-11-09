@@ -31,8 +31,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
 
+/**
+ * Use case to delete a user.
+ */
 @Singleton
-class ManagementDeleteUserUseCase @Inject constructor(
+public class ManagementDeleteUserUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -67,7 +70,7 @@ class ManagementDeleteUserUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] indicating success or the specific [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         userId: UserId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
@@ -132,8 +135,7 @@ class ManagementDeleteUserUseCase @Inject constructor(
             )
         }
 
-        val targetUserResult = userManager.getUserInternalById(userId)
-            .mapNotNullOrError(UserError.UserNotFound(userId))
+        val targetUserResult = userManager.getUserInternalById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
 
         val targetUser = when (targetUserResult) {
             is AppResult.Success -> targetUserResult.data
@@ -236,6 +238,7 @@ class ManagementDeleteUserUseCase @Inject constructor(
                 )
                 deleteResult
             }
+
             is AppResult.Error -> handleError(
                 error = deleteResult.error,
                 actorId = auditActorId,

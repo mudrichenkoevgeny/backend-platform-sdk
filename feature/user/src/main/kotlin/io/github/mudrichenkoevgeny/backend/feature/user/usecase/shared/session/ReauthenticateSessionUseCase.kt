@@ -6,10 +6,10 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutAttemptType
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
+import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
-import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
@@ -18,15 +18,18 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to perform session re-authentication (Step-up).
+ */
 @Singleton
-class ReauthenticateSessionUseCase @Inject constructor(
+public class ReauthenticateSessionUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -52,7 +55,7 @@ class ReauthenticateSessionUseCase @Inject constructor(
      * @param code TOTP code for verification.
      * @return [AppResult] indicating successful session elevation.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext,
         mfaToken: String,
         code: String
@@ -89,11 +92,12 @@ class ReauthenticateSessionUseCase @Inject constructor(
                 sessionId = sessionId.asHexDashString(),
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> getChallengeResult.data
         }
 
-        if (mfaChallengeData.userId != authenticatedRequestContext.userId.asHexDashString()
-            || mfaChallengeData.sessionId != sessionId.asHexDashString()
+        if (mfaChallengeData.userId != authenticatedRequestContext.userId.asHexDashString() ||
+            mfaChallengeData.sessionId != sessionId.asHexDashString()
         ) {
             return handleError(
                 error = SecurityError.InvalidMfaToken(),

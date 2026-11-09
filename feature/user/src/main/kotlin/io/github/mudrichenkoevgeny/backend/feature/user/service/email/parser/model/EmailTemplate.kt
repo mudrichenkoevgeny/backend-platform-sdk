@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.service.email.parser.model
 
-import kotlinx.serialization.Serializable
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.parser.EmailParser
+import kotlinx.serialization.Serializable
 
 /**
  * Localized email content template.
@@ -12,7 +12,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.email.parser.Ema
  * @property body email HTML body template
  */
 @Serializable
-data class EmailTemplate(
+public data class EmailTemplate(
     val subject: String,
     val body: String
 )

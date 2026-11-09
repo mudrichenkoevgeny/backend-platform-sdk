@@ -14,7 +14,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.auth.login.SelfManagementLoginRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -28,9 +27,9 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class SelfManagementLoginRouterTest : BaseRouterTest() {
-
     private val loginByEmailUseCase = mockk<LoginByEmailUseCase>()
     private val loginByTotpUseCase = mockk<LoginByTotpUseCase>()
     private val loginByTotpRecoveryCodeUseCase = mockk<LoginByTotpRecoveryCodeUseCase>()
@@ -54,7 +53,10 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
 
     @Test
     fun `login by email - success`() = testApplication {
-        val request = LoginByEmailRequest("staff@example.com", "password123")
+        val request = LoginByEmailRequest(
+            "staff@example.com",
+            "password123"
+        )
         val authData = createTestAuthData()
 
         coEvery {
@@ -80,12 +82,18 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
             setBody(request)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
     fun `login by totp - success`() = testApplication {
-        val request = VerifyTotpPayload("mfa_token_123", "123456")
+        val request = VerifyTotpPayload(
+            "mfa_token_123",
+            "123456"
+        )
         val authData = createTestAuthData()
 
         coEvery {
@@ -111,12 +119,18 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
             setBody(request)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
     fun `login by totp recovery code - success`() = testApplication {
-        val request = VerifyTotpPayload("mfa_token_123", "RECOVERY_CODE_123")
+        val request = VerifyTotpPayload(
+            "mfa_token_123",
+            "RECOVERY_CODE_123"
+        )
         val authData = createTestAuthData()
 
         coEvery {
@@ -142,6 +156,9 @@ class SelfManagementLoginRouterTest : BaseRouterTest() {
             setBody(request)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 }

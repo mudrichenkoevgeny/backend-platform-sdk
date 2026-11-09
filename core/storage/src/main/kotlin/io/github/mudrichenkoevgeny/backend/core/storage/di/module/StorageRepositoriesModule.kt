@@ -12,12 +12,11 @@ import javax.inject.Singleton
  * Binds [StorageFilesRepositoryImpl] to [StorageFilesRepository].
  */
 @Module
-interface StorageRepositoriesModule {
-
+public interface StorageRepositoriesModule {
     /**
      * Binds the Exposed repository implementation for storage files metadata.
      */
     @Binds
     @Singleton
-    fun bindStorageFilesRepository(impl: StorageFilesRepositoryImpl): StorageFilesRepository
+    public fun bindStorageFilesRepository(impl: StorageFilesRepositoryImpl): StorageFilesRepository
 }

@@ -8,21 +8,28 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.email.parser.Ema
  *
  * Keys are expected to exist in localization resources loaded by [EmailParser].
  */
-object EmailTemplateKeys {
+public object EmailTemplateKeys {
     /** Email ownership verification code template. */
-    const val VERIFICATION_CODE = "verification_code"
+    public const val VERIFICATION_CODE: String = "verification_code"
+
     /** Reset password verification code template. */
-    const val RESET_PASSWORD_CODE = "reset_password_code"
+    public const val RESET_PASSWORD_CODE: String = "reset_password_code"
+
     /** Account unlock verification code template. */
-    const val UNLOCK_ACCOUNT_CODE = "unlock_account_code"
+    public const val UNLOCK_ACCOUNT_CODE: String = "unlock_account_code"
+
     /** Security notification: email already registered. */
-    const val ALREADY_REGISTERED = "already_registered"
+    public const val ALREADY_REGISTERED: String = "already_registered"
+
     /** Welcome email after registration. */
-    const val SUCCESSFUL_REGISTRATION = "successful_registration"
+    public const val SUCCESSFUL_REGISTRATION: String = "successful_registration"
+
     /** Security notification: successful login. */
-    const val SUCCESSFUL_LOGIN = "successful_login"
+    public const val SUCCESSFUL_LOGIN: String = "successful_login"
+
     /** Security notification: login from new device. */
-    const val NEW_DEVICE_LOGIN = "new_device_login"
+    public const val NEW_DEVICE_LOGIN: String = "new_device_login"
+
     /** Security notification: password changed. */
-    const val PASSWORD_CHANGED = "password_changed"
+    public const val PASSWORD_CHANGED: String = "password_changed"
 }

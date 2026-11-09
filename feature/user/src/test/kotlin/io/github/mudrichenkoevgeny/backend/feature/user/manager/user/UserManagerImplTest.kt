@@ -31,18 +31,25 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Clock
 
 class UserManagerImplTest {
-
     private val userRepository = mockk<UserRepository>()
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val lockoutManager = mockk<LockoutManager>(relaxed = true)
     private val storageManager = mockk<StorageManager>(relaxed = true)
-    private val userManager = UserManagerImpl(userRepository, authSettingsProvider, lockoutManager, storageManager)
+    private val userManager = UserManagerImpl(
+        userRepository,
+        authSettingsProvider,
+        lockoutManager,
+        storageManager
+    )
 
     private val userId = UserId.generate()
 
     @BeforeEach
     fun setup() {
-        Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
+        Database.connect(
+            "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;",
+            driver = "org.h2.Driver"
+        )
         coEvery { lockoutManager.isIndefiniteLockout(any()) } returns AppResult.Success(false)
         coEvery { lockoutManager.getLockoutUntil(any()) } returns AppResult.Success(null)
     }
@@ -55,7 +62,10 @@ class UserManagerImplTest {
         val result = userManager.getUserInternalById(userId)
 
         assertTrue(result is AppResult.Success)
-        assertEquals(user, (result as AppResult.Success).data)
+        assertEquals(
+            user,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
@@ -70,7 +80,10 @@ class UserManagerImplTest {
         )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(UserRole.USER, (result as AppResult.Success).data.role)
+        assertEquals(
+            UserRole.USER,
+            (result as AppResult.Success).data.role
+        )
     }
 
     @Test
@@ -87,12 +100,18 @@ class UserManagerImplTest {
         )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(userId, (result as AppResult.Success).data.id)
+        assertEquals(
+            userId,
+            (result as AppResult.Success).data.id
+        )
     }
 
     @Test
     fun `updateUser schedules deletion when status changes to pending`() = runTest {
-        val user = createSampleUserInternal(userId, status = UserAccountStatus.ACTIVE)
+        val user = createSampleUserInternal(
+            userId,
+            status = UserAccountStatus.ACTIVE
+        )
         val updatedUser = user.copy(accountStatus = UserAccountStatus.PENDING_DELETION)
 
         coEvery { authSettingsProvider.getAccountDeletionGracePeriodSeconds() } returns 3600
@@ -105,11 +124,16 @@ class UserManagerImplTest {
 
         val result = userManager.updateUser(
             user = user,
-            updateUserParams = UpdateUserParams(accountStatus = UpdateField.Set(UserAccountStatus.PENDING_DELETION))
+            updateUserParams = UpdateUserParams(
+                accountStatus = UpdateField.Set(UserAccountStatus.PENDING_DELETION)
+            )
         )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(UserAccountStatus.PENDING_DELETION, (result as AppResult.Success).data?.accountStatus)
+        assertEquals(
+            UserAccountStatus.PENDING_DELETION,
+            (result as AppResult.Success).data?.accountStatus
+        )
     }
 
     @Test
@@ -138,13 +162,22 @@ class UserManagerImplTest {
 
         assertTrue(result is AppResult.Success)
         val data = (result as AppResult.Success).data
-        assertEquals(UserAccountStatus.PENDING_DELETION, data?.accountStatus)
-        assertEquals(UserAccountStatus.BANNED, data?.accountStatusOnRestore)
+        assertEquals(
+            UserAccountStatus.PENDING_DELETION,
+            data?.accountStatus
+        )
+        assertEquals(
+            UserAccountStatus.BANNED,
+            data?.accountStatusOnRestore
+        )
     }
 
     @Test
     fun `getUserInternal returns error if management missing permissions`() = runTest {
-        val targetUser = createSampleUserInternal(userId, role = UserRole.STAFF)
+        val targetUser = createSampleUserInternal(
+            userId,
+            role = UserRole.STAFF
+        )
         coEvery { userRepository.getUserInternalById(userId) } returns AppResult.Success(targetUser)
 
         val result = userManager.getUserInternal(
@@ -159,7 +192,10 @@ class UserManagerImplTest {
 
     @Test
     fun `getUserInternal returns user if permissions match`() = runTest {
-        val targetUser = createSampleUserInternal(userId, role = UserRole.USER)
+        val targetUser = createSampleUserInternal(
+            userId,
+            role = UserRole.USER
+        )
         coEvery { userRepository.getUserInternalById(userId) } returns AppResult.Success(targetUser)
 
         val result = userManager.getUserInternal(
@@ -169,23 +205,38 @@ class UserManagerImplTest {
         )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(targetUser, (result as AppResult.Success).data)
+        assertEquals(
+            targetUser,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
     fun `getUserInternalByNickname returns success`() = runTest {
-        val user = createSampleUserInternal(userId, nickname = "testnick")
+        val user = createSampleUserInternal(
+            userId,
+            nickname = "testnick"
+        )
         coEvery { userRepository.getUserInternalByNickname("testnick") } returns AppResult.Success(user)
 
         val result = userManager.getUserInternalByNickname("testnick")
 
         assertTrue(result is AppResult.Success)
-        assertEquals(user, (result as AppResult.Success).data)
+        assertEquals(
+            user,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
     fun `getUsersInternalPage calls repository with filter`() = runTest {
-        val paged = PagedResult(emptyList<UserInternal>(), 0, 1, 10, 0)
+        val paged = PagedResult(
+            emptyList<UserInternal>(),
+            0,
+            1,
+            10,
+            0
+        )
 
         coEvery {
             userRepository.getUsersPageWithAccessFilter(
@@ -218,7 +269,10 @@ class UserManagerImplTest {
             )
         } returns AppResult.Success(user)
 
-        val result = userManager.restoreUser(userId, UserAccountStatus.ACTIVE)
+        val result = userManager.restoreUser(
+            userId,
+            UserAccountStatus.ACTIVE
+        )
 
         assertTrue(result is AppResult.Success)
     }
@@ -234,7 +288,10 @@ class UserManagerImplTest {
             )
         } returns AppResult.Success(user)
 
-        val result = userManager.scheduleUserDeletion(userId, UserAccountStatus.ACTIVE)
+        val result = userManager.scheduleUserDeletion(
+            userId,
+            UserAccountStatus.ACTIVE
+        )
 
         assertTrue(result is AppResult.Success)
     }
@@ -255,7 +312,10 @@ class UserManagerImplTest {
         val result = userManager.deleteUsersDueForPermanentDeletion()
 
         assertTrue(result is AppResult.Success)
-        assertEquals(5, (result as AppResult.Success).data)
+        assertEquals(
+            5,
+            (result as AppResult.Success).data
+        )
     }
 
     private fun createSampleUserInternal(

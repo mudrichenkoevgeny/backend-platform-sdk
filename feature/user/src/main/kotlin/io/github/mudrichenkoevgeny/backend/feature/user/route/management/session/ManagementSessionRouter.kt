@@ -7,11 +7,11 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.mod
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseManagementSessionsListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
@@ -55,14 +55,17 @@ import javax.inject.Singleton
  * Management HTTP routes for overseeing and terminating user sessions.
  *
  * Registered routes:
- * 1. [ManagementSessionsRoutes.GET_SESSIONS] — retrieves a filtered list of user sessions via [ManagementGetSessionsUseCase].
- * 2. [ManagementSessionsRoutes.GET_USER_SESSIONS] — retrieves a filtered list of user sessions for a target user via [ManagementGetSessionsUseCase].
+ * 1. [ManagementSessionsRoutes.GET_SESSIONS] — retrieves a filtered list of user sessions via
+ * [ManagementGetSessionsUseCase].
+ * 2. [ManagementSessionsRoutes.GET_USER_SESSIONS] — retrieves a filtered list of user sessions for a target user via
+ * [ManagementGetSessionsUseCase].
  * 3. [ManagementSessionsRoutes.GET_SESSION] — retrieves specific session details via [ManagementGetSessionUseCase].
  * 4. [ManagementSessionsRoutes.DELETE_SESSION] — terminates a specific user session via [ManagementDeleteSessionUseCase].
- * 5. [ManagementSessionsRoutes.DELETE_ALL_USER_SESSIONS] — terminates all active sessions for a user via [ManagementDeleteAllSessionsUseCase].
+ * 5. [ManagementSessionsRoutes.DELETE_ALL_USER_SESSIONS] — terminates all active sessions for a user via
+ * [ManagementDeleteAllSessionsUseCase].
  */
 @Singleton
-class ManagementSessionRouter @Inject constructor(
+public class ManagementSessionRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -73,7 +76,6 @@ class ManagementSessionRouter @Inject constructor(
     private val managementDeleteSessionUseCase: ManagementDeleteSessionUseCase,
     private val managementDeleteAllSessionsUseCase: ManagementDeleteAllSessionsUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetSessionsRoute(this)
@@ -85,57 +87,131 @@ class ManagementSessionRouter @Inject constructor(
     }
 
     private fun registerGetSessionsRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = ManagementSessionsRoutes.GET_SESSIONS,
-            builder = { getSessionsDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getSessions(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getSessionsDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getSessions(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerGetUserSessionsRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = ManagementSessionsRoutes.GET_USER_SESSIONS,
-            builder = { getUserSessionsDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getUserSessions(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getUserSessionsDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getUserSessions(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerGetSessionRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = ManagementSessionsRoutes.GET_SESSION,
-            builder = { getSessionDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getSession(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getSessionDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getSession(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerDeleteSessionRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
             path = ManagementSessionsRoutes.DELETE_SESSION,
-            builder = { deleteSessionDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteSession(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteSessionDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteSession(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerDeleteAllUserSessionsRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
             path = ManagementSessionsRoutes.DELETE_ALL_USER_SESSIONS,
-            builder = { deleteAllUserSessionsDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteAllUserSessions(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteAllUserSessionsDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteAllUserSessions(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -170,7 +246,11 @@ class ManagementSessionRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -182,7 +262,11 @@ class ManagementSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { pagedSessions ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { pagedSessions ->
             pagedSessions.mapItems { userSessionSummary -> userSessionSummary.toUserSessionSummaryPayload() }
         }
     }
@@ -227,7 +311,11 @@ class ManagementSessionRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -243,7 +331,11 @@ class ManagementSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { pagedSessions ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { pagedSessions ->
             pagedSessions.mapItems { userSessionSummary -> userSessionSummary.toUserSessionSummaryPayload() }
         }
     }
@@ -284,7 +376,11 @@ class ManagementSessionRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -298,7 +394,11 @@ class ManagementSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userSessionPrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userSessionPrivate ->
             userSessionPrivate.toUserSessionPrivatePayload()
         }
     }
@@ -351,7 +451,11 @@ class ManagementSessionRouter @Inject constructor(
                 resourceId = userSessionId.asHexDashString(),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -360,7 +464,11 @@ class ManagementSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun RouteConfig.deleteAllUserSessionsDocs(
@@ -411,7 +519,11 @@ class ManagementSessionRouter @Inject constructor(
                 resourceId = userId.asHexDashString(),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -420,7 +532,11 @@ class ManagementSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun logErrorToAudit(
@@ -444,37 +560,39 @@ class ManagementSessionRouter @Inject constructor(
         )
     }
 
-    companion object {
-        const val GET_SESSIONS_ROUTE_SUMMARY = "List user sessions (management)"
-        const val GET_SESSIONS_ROUTE_DESCRIPTION =
+    public companion object {
+        private const val GET_SESSIONS_ROUTE_SUMMARY = "List user sessions (management)"
+        private const val GET_SESSIONS_ROUTE_DESCRIPTION =
             "Returns a paginated list of user sessions. Row visibility and masking follow session permissions."
-        const val GET_SESSIONS_ROUTE_OPERATION_ID = "getManagementSessions"
-        const val GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user sessions"
+        private const val GET_SESSIONS_ROUTE_OPERATION_ID = "getManagementSessions"
+        private const val GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user sessions"
 
-        const val GET_USER_SESSIONS_ROUTE_SUMMARY = "List target user's sessions (management)"
-        const val GET_USER_SESSIONS_ROUTE_DESCRIPTION =
+        private const val GET_USER_SESSIONS_ROUTE_SUMMARY = "List target user's sessions (management)"
+        private const val GET_USER_SESSIONS_ROUTE_DESCRIPTION =
             "Returns a paginated list of sessions for a specific target user."
-        const val GET_USER_SESSIONS_ROUTE_OPERATION_ID = "getManagementUserTargetSessions"
-        const val GET_USER_SESSIONS_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
-        const val GET_USER_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user sessions"
+        private const val GET_USER_SESSIONS_ROUTE_OPERATION_ID = "getManagementUserTargetSessions"
+        private const val GET_USER_SESSIONS_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
+        private const val GET_USER_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged user sessions"
 
-        const val GET_SESSION_ROUTE_SUMMARY = "Get user session (management)"
-        const val GET_SESSION_ROUTE_DESCRIPTION = "Returns a single user session by session id."
-        const val GET_SESSION_ROUTE_OPERATION_ID = "getManagementSession"
-        const val GET_SESSION_ROUTE_PATH_SESSION_ID_DESCRIPTION = "Session id (UUID string, hex with dashes)"
-        const val GET_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "User session"
+        private const val GET_SESSION_ROUTE_SUMMARY = "Get user session (management)"
+        private const val GET_SESSION_ROUTE_DESCRIPTION = "Returns a single user session by session id."
+        private const val GET_SESSION_ROUTE_OPERATION_ID = "getManagementSession"
+        private const val GET_SESSION_ROUTE_PATH_SESSION_ID_DESCRIPTION = "Session id (UUID string, hex with dashes)"
+        private const val GET_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "User session"
 
-        const val DELETE_SESSION_ROUTE_SUMMARY = "Delete user session (management)"
-        const val DELETE_SESSION_ROUTE_DESCRIPTION = "Force-terminates the specified session by session id."
-        const val DELETE_SESSION_ROUTE_OPERATION_ID = "deleteManagementSession"
-        const val DELETE_SESSION_ROUTE_PATH_SESSION_ID_DESCRIPTION = "Session id (UUID string, hex with dashes)"
-        const val DELETE_SESSION_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Session terminated; no response body."
+        private const val DELETE_SESSION_ROUTE_SUMMARY = "Delete user session (management)"
+        private const val DELETE_SESSION_ROUTE_DESCRIPTION = "Force-terminates the specified session by session id."
+        private const val DELETE_SESSION_ROUTE_OPERATION_ID = "deleteManagementSession"
+        private const val DELETE_SESSION_ROUTE_PATH_SESSION_ID_DESCRIPTION = "Session id (UUID string, hex with dashes)"
+        private const val DELETE_SESSION_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Session terminated; no response body."
 
-        const val DELETE_ALL_USER_SESSIONS_ROUTE_SUMMARY = "Delete all user sessions (management)"
-        const val DELETE_ALL_USER_SESSIONS_ROUTE_DESCRIPTION = "Force-terminates all sessions for the specified user."
-        const val DELETE_ALL_USER_SESSIONS_ROUTE_OPERATION_ID = "deleteManagementAllUserSessions"
-        const val DELETE_ALL_USER_SESSIONS_ROUTE_PATH_USER_ID_DESCRIPTION = "User id (UUID string, hex with dashes)"
-        const val DELETE_ALL_USER_SESSIONS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
+        private const val DELETE_ALL_USER_SESSIONS_ROUTE_SUMMARY = "Delete all user sessions (management)"
+        private const val DELETE_ALL_USER_SESSIONS_ROUTE_DESCRIPTION =
+            "Force-terminates all sessions for the specified user."
+        private const val DELETE_ALL_USER_SESSIONS_ROUTE_OPERATION_ID = "deleteManagementAllUserSessions"
+        private const val DELETE_ALL_USER_SESSIONS_ROUTE_PATH_USER_ID_DESCRIPTION =
+            "User id (UUID string, hex with dashes)"
+        private const val DELETE_ALL_USER_SESSIONS_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
             "All sessions terminated; no response body."
     }
 }

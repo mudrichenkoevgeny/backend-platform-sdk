@@ -17,7 +17,7 @@ import kotlin.time.Instant
  * @property firstSeenAt timestamp of the initial authentication from this device
  * @property lastSeenAt timestamp of the most recent authentication or activity from this device
  */
-data class UserKnownDevice(
+public data class UserKnownDevice(
     val userId: UserId,
     val deviceId: ClientDeviceId,
     val firstIpAddress: String?,

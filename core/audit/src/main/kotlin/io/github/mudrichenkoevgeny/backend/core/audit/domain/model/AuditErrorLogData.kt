@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
  *
  * Used to enrich audit events with relevant [AuditStatus] and metadata when an operation fails.
  */
-data class AuditErrorLogData(
+public data class AuditErrorLogData(
     val status: AuditStatus,
     val metadata: Set<AuditEventMetadata>
 )

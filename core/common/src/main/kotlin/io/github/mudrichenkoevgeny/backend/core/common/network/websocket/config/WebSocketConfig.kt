@@ -6,9 +6,9 @@ import kotlin.time.Duration.Companion.seconds
 /**
  * Shared WebSocket configuration values used when installing the Ktor WebSockets plugin.
  */
-object WebSocketConfig {
-    val PING_PERIOD: Duration = 15.seconds
-    val TIMEOUT: Duration = 15.seconds
-    const val MAX_FRAME_SIZE: Long = Long.MAX_VALUE
-    const val MASKING: Boolean = false
+public object WebSocketConfig {
+    public val PING_PERIOD: Duration = 15.seconds
+    public val TIMEOUT: Duration = 15.seconds
+    public const val MAX_FRAME_SIZE: Long = Long.MAX_VALUE
+    public const val MASKING: Boolean = false
 }

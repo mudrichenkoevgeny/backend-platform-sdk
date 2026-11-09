@@ -4,17 +4,16 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupManagementTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByExternalAuthProviderUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByPhoneUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.SendUnlockConfirmationToEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.SendUnlockConfirmationToPhoneUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.UnlockByEmailUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByExternalAuthProviderUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByPhoneUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.unlock.UnlockByEmailConfirmationRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.auth.unlock.SelfManagementUnlockRoutes
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -28,9 +27,9 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class SelfManagementUnlockRouterTest : BaseRouterTest() {
-
     private val sendUnlockConfirmationToEmailUseCase = mockk<SendUnlockConfirmationToEmailUseCase>()
     private val unlockByEmailUseCase = mockk<UnlockByEmailUseCase>()
     private val sendUnlockConfirmationToPhoneUseCase = mockk<SendUnlockConfirmationToPhoneUseCase>()
@@ -66,7 +65,12 @@ class SelfManagementUnlockRouterTest : BaseRouterTest() {
 
         val otpConfirmation = createTestOtpConfirmation()
         coEvery {
-            sendUnlockConfirmationToEmailUseCase(any(), any<RequestContext>(), any(), any())
+            sendUnlockConfirmationToEmailUseCase(
+                any(),
+                any<RequestContext>(),
+                any(),
+                any()
+            )
         } returns AppResult.Success(otpConfirmation)
 
         val response = jsonClient.post(SelfManagementUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION) {
@@ -74,7 +78,10 @@ class SelfManagementUnlockRouterTest : BaseRouterTest() {
             setBody(SendConfirmationToEmailRequest(email = "admin@example.com"))
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
@@ -87,14 +94,28 @@ class SelfManagementUnlockRouterTest : BaseRouterTest() {
         }
 
         coEvery {
-            unlockByEmailUseCase(any(), any(), any<RequestContext>(), any(), any())
+            unlockByEmailUseCase(
+                any(),
+                any(),
+                any<RequestContext>(),
+                any(),
+                any()
+            )
         } returns AppResult.Success(Unit)
 
         val response = jsonClient.post(SelfManagementUnlockRoutes.UNLOCK_BY_EMAIL) {
             contentType(ContentType.Application.Json)
-            setBody(UnlockByEmailConfirmationRequest(email = "admin@example.com", confirmationCode = "123456"))
+            setBody(
+                UnlockByEmailConfirmationRequest(
+                    email = "admin@example.com",
+                    confirmationCode = "123456"
+                )
+            )
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 }

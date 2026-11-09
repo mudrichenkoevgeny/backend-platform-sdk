@@ -23,10 +23,9 @@ import javax.inject.Singleton
  * [warmup] starts and ends a short span to ensure the tracer is ready.
  */
 @Singleton
-class TelemetryProviderImpl @Inject constructor(
+public class TelemetryProviderImpl @Inject constructor(
     observabilityConfig: ObservabilityConfig
 ) : TelemetryProvider {
-
     override val openTelemetry: OpenTelemetry = GlobalOpenTelemetry.get()
     override val tracer: Tracer = openTelemetry.getTracer(observabilityConfig.telemetryServiceName)
     override val meter: Meter = openTelemetry.getMeter(observabilityConfig.telemetryServiceName)
@@ -46,8 +45,8 @@ class TelemetryProviderImpl @Inject constructor(
         tracer.spanBuilder(SPAN_WARMUP).startSpan().end()
     }
 
-    companion object {
+    public companion object {
         /** Span name used in [warmup] to initialize the tracer. */
-        const val SPAN_WARMUP = "warmup"
+        public const val SPAN_WARMUP: String = "warmup"
     }
 }

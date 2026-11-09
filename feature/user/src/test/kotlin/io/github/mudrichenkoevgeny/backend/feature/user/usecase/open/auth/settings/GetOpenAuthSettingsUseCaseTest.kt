@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class GetOpenAuthSettingsUseCaseTest {
-
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
 
     private val useCase = GetOpenAuthSettingsUseCase(
@@ -26,6 +25,9 @@ class GetOpenAuthSettingsUseCaseTest {
 
         val result = useCase()
 
-        assertEquals(AppResult.Success(openAuthSettings), result)
+        assertEquals(
+            AppResult.Success(openAuthSettings),
+            result
+        )
     }
 }

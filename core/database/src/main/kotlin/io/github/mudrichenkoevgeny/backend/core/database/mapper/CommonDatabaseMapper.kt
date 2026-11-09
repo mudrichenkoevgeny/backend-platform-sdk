@@ -6,7 +6,7 @@ import org.jetbrains.exposed.v1.core.SortOrder as ExposedSortOrder
 /**
  * Maps the shared foundation listing [SortOrder] to Exposed order direction for `Query.orderBy`.
  */
-fun SortOrder.toExposedSortOrder(): ExposedSortOrder = when (this) {
+public fun SortOrder.toExposedSortOrder(): ExposedSortOrder = when (this) {
     SortOrder.ASC -> ExposedSortOrder.ASC
     SortOrder.DESC -> ExposedSortOrder.DESC
 }

@@ -11,19 +11,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class StorageConfigFactoryImplTest {
-
-    private companion object {
-        private const val S3_ACCESS_KEY_FILE = "/secrets/s3-access"
-        private const val S3_SECRET_KEY_FILE = "/secrets/s3-secret"
-        private const val S3_ENDPOINT = "https://s3.example.com"
-        private const val S3_REGION = "us-east-1"
-        private const val S3_BUCKET_NAME_PRIVATE = "my-bucket-private"
-        private const val S3_BUCKET_NAME_PUBLIC = "my-bucket-public"
-        private const val S3_PUBLIC_URL = "https://cdn.example.com"
-        private const val S3_ACCESS_KEY = "access-key"
-        private const val S3_SECRET_KEY = "secret-key"
-    }
-
     private val envReader = mockk<EnvReader>()
 
     private fun setupDefaultStorageEnvMocks() {
@@ -35,7 +22,11 @@ class StorageConfigFactoryImplTest {
         every { envReader.getByKey(StorageEnvKeys.STORAGE_MAX_PENDING_UPLOADS_OPEN_USER) } returns "10"
         every { envReader.getByKey(StorageEnvKeys.STORAGE_MAX_PENDING_UPLOADS_MANAGEMENT_USER) } returns "100"
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IS_DEDUPLICATION_ENABLED) } returns "true"
-        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS) } returns "86400"
+        every {
+            envReader.getByKeyOrNull(
+                StorageEnvKeys.STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS
+            )
+        } returns "86400"
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_MAINTENANCE_BATCH_SIZE) } returns "100"
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_ENABLED) } returns "true"
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_BASE_URL) } returns "http://localhost:8081"
@@ -43,7 +34,11 @@ class StorageConfigFactoryImplTest {
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_SALT_FILE) } returns null
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_KEY) } returns "testkey"
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_SALT) } returns "testsalt"
-        every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_PRESETS) } returns "thumbnail=150:fill,preview=600:fit"
+        every {
+            envReader.getByKeyOrNull(
+                StorageEnvKeys.STORAGE_IMGPROXY_PRESETS
+            )
+        } returns "thumbnail=150:fill,preview=600:fit"
         every { envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_VIDEO_THUMBNAIL_SECOND) } returns "2"
     }
 
@@ -65,22 +60,76 @@ class StorageConfigFactoryImplTest {
 
         val config: StorageConfig = factory.create()
 
-        assertEquals(S3_ENDPOINT, config.s3Endpoint)
-        assertEquals(S3_REGION, config.s3Region)
-        assertEquals(S3_ACCESS_KEY, config.s3AccessKey)
-        assertEquals(S3_SECRET_KEY, config.s3SecretKey)
-        assertEquals(S3_BUCKET_NAME_PRIVATE, config.s3BucketNamePrivate)
-        assertEquals(S3_BUCKET_NAME_PUBLIC, config.s3BucketNamePublic)
-        assertEquals(S3_PUBLIC_URL, config.s3PublicUrl)
+        assertEquals(
+            S3_ENDPOINT,
+            config.s3Endpoint
+        )
+        assertEquals(
+            S3_REGION,
+            config.s3Region
+        )
+        assertEquals(
+            S3_ACCESS_KEY,
+            config.s3AccessKey
+        )
+        assertEquals(
+            S3_SECRET_KEY,
+            config.s3SecretKey
+        )
+        assertEquals(
+            S3_BUCKET_NAME_PRIVATE,
+            config.s3BucketNamePrivate
+        )
+        assertEquals(
+            S3_BUCKET_NAME_PUBLIC,
+            config.s3BucketNamePublic
+        )
+        assertEquals(
+            S3_PUBLIC_URL,
+            config.s3PublicUrl
+        )
         assertTrue(config.forcePathStyle)
-        assertEquals(100, config.maintenanceBatchSize)
-        assertEquals(86400, config.managementStorageSettings.deletedFilesCleanupIntervalSeconds)
+        assertEquals(
+            100,
+            config.maintenanceBatchSize
+        )
+        assertEquals(
+            86400,
+            config.managementStorageSettings.deletedFilesCleanupIntervalSeconds
+        )
 
         val imgproxyConfig = requireNotNull(config.imgproxyConfig)
-        assertEquals(2, imgproxyConfig.presets.size)
-        assertEquals(150, imgproxyConfig.presets["thumbnail"]?.sizePixels)
-        assertEquals(ImgproxyResizeType.FILL, imgproxyConfig.presets["thumbnail"]?.resizeType)
-        assertEquals(600, imgproxyConfig.presets["preview"]?.sizePixels)
-        assertEquals(ImgproxyResizeType.FIT, imgproxyConfig.presets["preview"]?.resizeType)
+        assertEquals(
+            2,
+            imgproxyConfig.presets.size
+        )
+        assertEquals(
+            150,
+            imgproxyConfig.presets["thumbnail"]?.sizePixels
+        )
+        assertEquals(
+            ImgproxyResizeType.FILL,
+            imgproxyConfig.presets["thumbnail"]?.resizeType
+        )
+        assertEquals(
+            600,
+            imgproxyConfig.presets["preview"]?.sizePixels
+        )
+        assertEquals(
+            ImgproxyResizeType.FIT,
+            imgproxyConfig.presets["preview"]?.resizeType
+        )
+    }
+
+    private companion object {
+        private const val S3_ACCESS_KEY_FILE = "/secrets/s3-access"
+        private const val S3_SECRET_KEY_FILE = "/secrets/s3-secret"
+        private const val S3_ENDPOINT = "https://s3.example.com"
+        private const val S3_REGION = "us-east-1"
+        private const val S3_BUCKET_NAME_PRIVATE = "my-bucket-private"
+        private const val S3_BUCKET_NAME_PUBLIC = "my-bucket-public"
+        private const val S3_PUBLIC_URL = "https://cdn.example.com"
+        private const val S3_ACCESS_KEY = "access-key"
+        private const val S3_SECRET_KEY = "secret-key"
     }
 }

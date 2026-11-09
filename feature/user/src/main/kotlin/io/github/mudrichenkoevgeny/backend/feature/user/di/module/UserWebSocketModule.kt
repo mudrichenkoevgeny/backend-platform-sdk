@@ -20,38 +20,38 @@ import javax.inject.Singleton
  * Uses Dagger set multibindings for [WebSocketMessageHandler] and [WebSocketSessionListener].
  */
 @Module
-interface UserWebSocketModule {
+public interface UserWebSocketModule {
     @Binds
     @Singleton
-    fun bindWebSocketManager(impl: KtorWebSocketManager): WebSocketManager
+    public fun bindWebSocketManager(impl: KtorWebSocketManager): WebSocketManager
 
     @Binds
     @IntoSet
-    fun bindCommonWebSocketMessageHandler(
+    public fun bindCommonWebSocketMessageHandler(
         commonWebSocketMessageHandler: CommonWebSocketMessageHandler
     ): WebSocketMessageHandler
 
     @Binds
     @IntoSet
-    fun bindUserWebSocketMessageHandler(
+    public fun bindUserWebSocketMessageHandler(
         userWebSocketMessageHandler: UserWebSocketMessageHandler
     ): WebSocketMessageHandler
 
     @Binds
     @IntoSet
-    fun bindUserSessionExpirationListener(
+    public fun bindUserSessionExpirationListener(
         userSessionExpirationListener: UserSessionExpirationListener
     ): WebSocketSessionListener
 
     @Binds
     @IntoSet
-    fun bindSecurityWebSocketMessageHandler(
+    public fun bindSecurityWebSocketMessageHandler(
         securityWebSocketMessageHandler: SecurityWebSocketMessageHandler
     ): WebSocketMessageHandler
 
     @Binds
     @IntoSet
-    fun bindSettingsWebSocketMessageHandler(
+    public fun bindSettingsWebSocketMessageHandler(
         settingsWebSocketMessageHandler: SettingsWebSocketMessageHandler
     ): WebSocketMessageHandler
 }

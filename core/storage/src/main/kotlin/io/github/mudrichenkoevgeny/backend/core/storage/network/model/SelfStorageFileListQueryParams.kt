@@ -8,7 +8,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.s
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
 import kotlin.time.Instant
 
-data class SelfStorageFileListQueryParams(
+/**
+ * Query parameters for filtering and paginating storage files owned by current user.
+ */
+public data class SelfStorageFileListQueryParams(
     val listing: ListingQueryParams<StorageFileSortBy>,
     val fileIds: List<FileId> = emptyList(),
     val fileName: String? = null,

@@ -19,7 +19,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
  * Higher layers (typically `AuditManagerImpl` in `feature/user`) build this from the current user’s permission codes;
  * feature modules rarely construct it by hand unless they implement a custom audit listing path.
  */
-data class AuditAccessFilter(
+public data class AuditAccessFilter(
     /** Actor kinds the caller may see. USER rows still require a matching [allowedUserRoles] entry (see class KDoc). */
     val allowedActorTypes: Set<AuditActorType>,
     /** Allowed `actor_user_role` values when USER events are permitted; ignored if USER is not in [allowedActorTypes]. */

@@ -37,6 +37,7 @@ dependencies {
     runtimeOnly(libs.logback)
 
     // Testing
+    testImplementation(testFixtures(project(":core:common")))
     testImplementation(libs.shared.foundation.fixtures)
     testFixturesImplementation(libs.shared.foundation.fixtures)
     testImplementation(libs.junit.jupiter.api)
@@ -44,6 +45,8 @@ dependencies {
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockk)
+    testImplementation(libs.testcontainers.core)
+    testImplementation(libs.testcontainers.junit.jupiter)
     testRuntimeOnly(libs.h2database)
 }
 

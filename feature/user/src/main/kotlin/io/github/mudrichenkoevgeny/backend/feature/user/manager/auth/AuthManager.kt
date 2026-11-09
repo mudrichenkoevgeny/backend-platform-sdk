@@ -6,11 +6,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.pe
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 
 /**
  * Orchestrates authentication operations for the user feature.
@@ -19,7 +19,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
  * This manager serves as the high-level entry point for all authentication flows, including
  * registration, login, and multifactor authentication completion.
  */
-interface AuthManager {
+public interface AuthManager {
     /**
      * Authenticates a user or creates a new one if they don't exist.
      * * If the identifier is not found, a new user and corresponding identifier are created using the provided
@@ -39,7 +39,7 @@ interface AuthManager {
      * @param allowedAccountStatuses Allowed account statuses for the authenticated user.
      * @return [AppResult] with [AuthData] containing user details and the session token.
      */
-    suspend fun authenticateOrCreateUser(
+    public suspend fun authenticateOrCreateUser(
         clientInfo: ClientInfo,
         userAuthProvider: UserAuthProvider,
         identifier: String,
@@ -51,7 +51,10 @@ interface AuthManager {
         authorityLevelForUserCreation: Int = 0,
         permissionCodesForUserCreation: Set<PermissionCode> = setOf(),
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
-        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
     ): AppResult<AuthData>
 
     /**
@@ -69,14 +72,17 @@ interface AuthManager {
      * @param allowedAccountStatuses Allowed account statuses for the authenticated user.
      * @return [AppResult] with [AuthData].
      */
-    suspend fun authenticateExistingUser(
+    public suspend fun authenticateExistingUser(
         clientInfo: ClientInfo,
         userAuthProvider: UserAuthProvider,
         identifier: String,
         password: String? = null,
         externalProviderEmail: String? = null,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
-        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
     ): AppResult<AuthData>
 
     /**
@@ -93,7 +99,7 @@ interface AuthManager {
      * @param permissionCodesForUserCreation Initial permissions.
      * @return [AppResult] with the created [UserInternal].
      */
-    suspend fun createUserAndIdentifier(
+    public suspend fun createUserAndIdentifier(
         userAuthProvider: UserAuthProvider,
         identifier: String,
         password: String? = null,
@@ -116,7 +122,7 @@ interface AuthManager {
      * @param externalProviderDisplayName Optional display name from an external provider.
      * @return [AppResult] with the new [UserIdentifierPrivate].
      */
-    suspend fun createIdentifierForAuthorizedUser(
+    public suspend fun createIdentifierForAuthorizedUser(
         userId: UserId,
         userAuthProvider: UserAuthProvider,
         identifier: String,
@@ -139,7 +145,7 @@ interface AuthManager {
      * @param allowedAccountStatuses Allowed account statuses for the authenticated user.
      * @return [AppResult] containing [AuthData] or an error if the user is banned, locked out, or data is invalid.
      */
-    suspend fun completeMfaAuthentication(
+    public suspend fun completeMfaAuthentication(
         userId: UserId,
         userIdentifierId: UserIdentifierId,
         clientInfo: ClientInfo,

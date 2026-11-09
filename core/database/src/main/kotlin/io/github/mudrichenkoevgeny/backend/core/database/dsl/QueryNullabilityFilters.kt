@@ -13,13 +13,11 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
  * @param isSet `true` to require non-null values (`isNotNull()`), `false` to require null values (`isNull()`), or `null` to ignore
  * @return this [Query] with nullability condition applied
  */
-fun <T> Query.applyNullabilityFilter(
+public fun <T> Query.applyNullabilityFilter(
     column: Expression<T?>,
     isSet: Boolean?
-): Query {
-    return when (isSet) {
-        true -> andWhere { column.isNotNull() }
-        false -> andWhere { column.isNull() }
-        null -> this
-    }
+): Query = when (isSet) {
+    true -> andWhere { column.isNotNull() }
+    false -> andWhere { column.isNull() }
+    null -> this
 }

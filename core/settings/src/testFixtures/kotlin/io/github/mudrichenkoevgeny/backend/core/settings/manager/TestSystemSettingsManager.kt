@@ -7,7 +7,11 @@ import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 class TestSystemSettingsManager(
     private val getAllSettingsResult: AppResult<List<SystemSetting>> = AppResult.Success(emptyList()),
     private val saveSettingResult: AppResult<SystemSetting> = AppResult.Success(
-        SystemSetting(key = "unused", value = "unused", type = SettingType.STRING)
+        SystemSetting(
+            key = "unused",
+            value = "unused",
+            type = SettingType.STRING
+        )
     )
 ) : SystemSettingsManager {
     val saveCalls = mutableListOf<SystemSetting>()

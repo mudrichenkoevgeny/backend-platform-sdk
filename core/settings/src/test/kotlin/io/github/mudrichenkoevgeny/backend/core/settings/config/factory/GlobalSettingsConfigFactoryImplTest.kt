@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class GlobalSettingsConfigFactoryImplTest {
-
     private val envReader = mockk<EnvReader>()
 
     @Test
@@ -28,10 +27,22 @@ class GlobalSettingsConfigFactoryImplTest {
         val config = factory.create()
 
         val settings = config.managementGlobalSettings
-        assertEquals("https://example.com/privacy", settings.privacyPolicyUrl)
-        assertEquals("https://example.com/terms", settings.termsOfServiceUrl)
-        assertEquals("support@example.com", settings.contactSupportEmail)
-        assertEquals("1.0.0", settings.minSupportedAppVersions.values.firstOrNull())
+        assertEquals(
+            "https://example.com/privacy",
+            settings.privacyPolicyUrl
+        )
+        assertEquals(
+            "https://example.com/terms",
+            settings.termsOfServiceUrl
+        )
+        assertEquals(
+            "support@example.com",
+            settings.contactSupportEmail
+        )
+        assertEquals(
+            "1.0.0",
+            settings.minSupportedAppVersions.values.firstOrNull()
+        )
         assertTrue(settings.isTracingEnabled)
         assertTrue(settings.isMetricsEnabled)
         assertFalse(settings.isVerboseLoggingEnabled)

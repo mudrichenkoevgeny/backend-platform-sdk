@@ -11,14 +11,19 @@ import java.io.File
 import kotlin.io.path.createTempDirectory
 
 class PathResolverImplTest {
-
     private val logger = mockk<AppLogger>(relaxed = true)
 
     @Test
     fun `getResolvedPaths returns existing env and secrets paths`() {
         val tempRoot = createTempDirectory().toFile()
-        val secretsDir = File(tempRoot, "secrets").apply { mkdirs() }
-        val envFile = File(tempRoot, ".env").apply { writeText("FOO=bar") }
+        val secretsDir = File(
+            tempRoot,
+            "secrets"
+        ).apply { mkdirs() }
+        val envFile = File(
+            tempRoot,
+            ".env"
+        ).apply { writeText("FOO=bar") }
 
         val config = PathResolverConfig(
             projectRoot = tempRoot,
@@ -26,12 +31,21 @@ class PathResolverImplTest {
             secretsDirPath = secretsDir.name
         )
 
-        val resolver = PathResolverImpl(config, logger)
+        val resolver = PathResolverImpl(
+            config,
+            logger
+        )
 
         val resolved = resolver.getResolvedPaths()
 
-        assertEquals(envFile.absolutePath, resolved.envFile.absolutePath)
-        assertEquals(secretsDir.absolutePath, resolved.secretsDir.absolutePath)
+        assertEquals(
+            envFile.absolutePath,
+            resolved.envFile.absolutePath
+        )
+        assertEquals(
+            secretsDir.absolutePath,
+            resolved.secretsDir.absolutePath
+        )
     }
 
     @Test
@@ -44,7 +58,10 @@ class PathResolverImplTest {
         )
 
         assertThrows(IllegalStateException::class.java) {
-            PathResolverImpl(config, logger)
+            PathResolverImpl(
+                config,
+                logger
+            )
         }
         verify { logger.logError(any<CommonError.Internal>()) }
     }
@@ -52,7 +69,10 @@ class PathResolverImplTest {
     @Test
     fun `missing env file logs and throws`() {
         val tempRoot = createTempDirectory().toFile()
-        val secretsDir = File(tempRoot, "secrets").apply { mkdirs() }
+        val secretsDir = File(
+            tempRoot,
+            "secrets"
+        ).apply { mkdirs() }
 
         val config = PathResolverConfig(
             projectRoot = tempRoot,
@@ -61,9 +81,11 @@ class PathResolverImplTest {
         )
 
         assertThrows(IllegalStateException::class.java) {
-            PathResolverImpl(config, logger)
+            PathResolverImpl(
+                config,
+                logger
+            )
         }
         verify { logger.logError(any<CommonError.Internal>()) }
     }
 }
-

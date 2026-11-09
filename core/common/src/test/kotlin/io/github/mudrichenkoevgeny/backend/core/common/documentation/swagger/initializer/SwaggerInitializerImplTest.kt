@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
  * Tests for [SwaggerInitializerImpl]: ensures `initialize(Application)` runs without throwing when applied to a test application.
  */
 class SwaggerInitializerImplTest {
-
     @Test
     fun `initialize installs OpenApi plugin without throwing`() = testApplication {
         val config = SwaggerConfig(

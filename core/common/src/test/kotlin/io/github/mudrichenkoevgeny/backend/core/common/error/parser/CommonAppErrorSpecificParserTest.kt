@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class CommonAppErrorSpecificParserTest {
-
     private val parser = CommonAppErrorSpecificParser()
     private val stringsEn = CommonModuleStrings(locale = "en")
     private val stringsRu = CommonModuleStrings(locale = "ru")
@@ -25,9 +24,18 @@ class CommonAppErrorSpecificParserTest {
             locale = "en"
         )
         val nonNullResponse = checkNotNull(response)
-        assertEquals(errorId.asHexDashString(), nonNullResponse.id)
-        assertEquals(CommonErrorCodes.MISSING_REQUIRED_FIELD, nonNullResponse.code)
-        assertEquals(stringsEn.errors.missingField("email"), nonNullResponse.message)
+        assertEquals(
+            errorId.asHexDashString(),
+            nonNullResponse.id
+        )
+        assertEquals(
+            CommonErrorCodes.MISSING_REQUIRED_FIELD,
+            nonNullResponse.code
+        )
+        assertEquals(
+            stringsEn.errors.missingField("email"),
+            nonNullResponse.message
+        )
     }
 
     @Test
@@ -39,14 +47,20 @@ class CommonAppErrorSpecificParserTest {
             locale = "ru"
         )
         val nonNullResponse = checkNotNull(response)
-        assertEquals(stringsRu.errors.missingField("email"), nonNullResponse.message)
+        assertEquals(
+            stringsRu.errors.missingField("email"),
+            nonNullResponse.message
+        )
     }
 
     @Test
     fun `getApiErrorResponse returns null for unhandled error code`() {
         val appError = createTestAppError(code = "CUSTOM_FEATURE_ERROR_CODE")
 
-        val response = parser.getApiErrorResponse(appError, "en")
+        val response = parser.getApiErrorResponse(
+            appError,
+            "en"
+        )
 
         assertNull(response)
     }

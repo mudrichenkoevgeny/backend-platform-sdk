@@ -9,7 +9,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.config.swagger.model
  * @param serverUrl base URL of the server where the API is hosted.
  * @param serverDescription human-readable name of the server (e.g. environment label).
  */
-data class SwaggerConfig(
+public data class SwaggerConfig(
     val title: String,
     val description: String,
     val version: String,

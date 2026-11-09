@@ -23,14 +23,13 @@ import kotlin.time.Duration.Companion.seconds
  * 2. [UserManager.unlockExpiredAccountLockouts] on a configurable interval.
  */
 @Singleton
-class UserScheduledJobsImpl @Inject constructor(
+public class UserScheduledJobsImpl @Inject constructor(
     private val userManager: UserManager,
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val authSettingsProvider: AuthSettingsProvider,
     @param:BackgroundScope private val scope: CoroutineScope,
-    private val appLogger: AppLogger,
+    private val appLogger: AppLogger
 ) : UserScheduledJobs {
-
     @Volatile
     private var accountDeletionJob: Job? = null
 

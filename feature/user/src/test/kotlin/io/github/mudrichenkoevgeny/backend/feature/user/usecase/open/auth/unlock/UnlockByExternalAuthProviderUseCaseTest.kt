@@ -8,10 +8,6 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.model.ExternalAuthProviderData
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.accountlockout.createTestAccountLockoutPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestOpenAuthSettings
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
@@ -19,14 +15,18 @@ import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.Au
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.accountlockout.createTestAccountLockoutPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestOpenAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -36,11 +36,13 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class UnlockByExternalAuthProviderUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val externalAuthVerifier = mockk<ExternalAuthVerifier> {
         every { provider } returns UserAuthProvider.GOOGLE
     }
@@ -86,15 +88,41 @@ class UnlockByExternalAuthProviderUseCaseTest {
 
         every { securitySettingsProvider.getAccountLockoutPolicy() } returns lockoutPolicy
         every { authSettingsProvider.getOpenAuthSettings() } returns openAuthSettings
-        coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_TOKEN) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.LOGIN_ATTEMPT,
+                TEST_TOKEN
+            )
+        } returns AppResult.Success(
+            Unit
+        )
         coEvery { externalAuthVerifier.verify(TEST_TOKEN) } returns AppResult.Success(verificationData)
-        coEvery { identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.GOOGLE, TEST_EXTERNAL_ID) } returns AppResult.Success(identifier)
+        coEvery {
+            identifierManager.getUserIdentifierInternalByProvider(
+                UserAuthProvider.GOOGLE,
+                TEST_EXTERNAL_ID
+            )
+        } returns AppResult.Success(identifier)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
-        coEvery { userManager.unlockUserAccount(userId, listOf(TEST_EXTERNAL_ID)) } returns AppResult.Success(userInternal)
+        coEvery {
+            userManager.unlockUserAccount(
+                userId,
+                listOf(TEST_EXTERNAL_ID)
+            )
+        } returns AppResult.Success(
+            userInternal
+        )
 
-        val result = useCase(UserAuthProvider.GOOGLE, TEST_TOKEN, context)
+        val result = useCase(
+            UserAuthProvider.GOOGLE,
+            TEST_TOKEN,
+            context
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorId = userId.asHexDashString(),

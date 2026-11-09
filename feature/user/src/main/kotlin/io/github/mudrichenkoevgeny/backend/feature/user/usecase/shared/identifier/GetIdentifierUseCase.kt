@@ -8,13 +8,16 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.Ident
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to retrieve a specific user identifier by ID.
+ */
 @Singleton
-class GetIdentifierUseCase @Inject constructor(
+public class GetIdentifierUseCase @Inject constructor(
     private val userManager: UserManager,
     private val identifierManager: IdentifierManager
 ) {
@@ -33,7 +36,7 @@ class GetIdentifierUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] containing the [UserIdentifierPrivate] or a [CommonError.NotFound] error.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         identifierId: UserIdentifierId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<UserIdentifierPrivate> {
@@ -47,16 +50,19 @@ class GetIdentifierUseCase @Inject constructor(
             is AppResult.Success -> getCurrentUserResult.data
         }
 
-        if (currentUser.accountStatus !in setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)) {
+        if (currentUser.accountStatus !in setOf(
+                UserAccountStatus.ACTIVE,
+                UserAccountStatus.READ_ONLY
+            )
+        ) {
             return AppResult.Error(UserError.UserForbidden(currentUserId))
         }
 
-        return identifierManager.getUserIdentifierPrivateById(identifierId)
-            .mapNotNullOrError(
-                CommonError.NotFound(
-                    resource = UserIdentifierPrivate::class.java.simpleName,
-                    identifier = identifierId.asHexDashString()
-                )
+        return identifierManager.getUserIdentifierPrivateById(identifierId).mapNotNullOrError(
+            CommonError.NotFound(
+                resource = UserIdentifierPrivate::class.java.simpleName,
+                identifier = identifierId.asHexDashString()
             )
+        )
     }
 }

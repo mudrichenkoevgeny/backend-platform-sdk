@@ -4,11 +4,12 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppErrorSeverity
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.ErrorId
 import io.ktor.http.HttpStatusCode
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AppResultExtensionsTest {
-
     private val testError = object : AppError {
         override val errorId = ErrorId.generate()
         override val code = "test_error"

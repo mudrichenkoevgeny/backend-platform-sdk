@@ -22,9 +22,8 @@ import io.ktor.server.routing.RoutingCall
  *
  * Auth-related fields are populated from the JWT principal when present.
  */
-fun RoutingCall.getRequestContext(): RequestContext {
-    val traceId = request.headers[CommonHttpHeaders.TRACE_HEADER_NAME]
-        ?: getMdcTraceFromMdcOrNull()
+public fun RoutingCall.getRequestContext(): RequestContext {
+    val traceId = request.headers[CommonHttpHeaders.TRACE_HEADER_NAME] ?: getMdcTraceFromMdcOrNull()
 
     val principal = this.getJWTPrincipal()
 
@@ -48,21 +47,16 @@ fun RoutingCall.getRequestContext(): RequestContext {
  *
  * @throws IllegalStateException when JWT principal is missing.
  */
-fun RoutingCall.getAuthenticatedRequestContext(): AuthenticatedRequestContext {
-    val traceId = request.headers[CommonHttpHeaders.TRACE_HEADER_NAME]
-        ?: getMdcTraceFromMdcOrNull()
+public fun RoutingCall.getAuthenticatedRequestContext(): AuthenticatedRequestContext {
+    val traceId = request.headers[CommonHttpHeaders.TRACE_HEADER_NAME] ?: getMdcTraceFromMdcOrNull()
 
-    val principal = this.getJWTPrincipal()
-        ?: throw RequestHandlingException(UserError.InvalidAccessToken())
+    val principal = this.getJWTPrincipal() ?: throw RequestHandlingException(UserError.InvalidAccessToken())
 
-    val userId = principal.getUserId()
-        ?: throw RequestHandlingException(UserError.InvalidAccessToken())
+    val userId = principal.getUserId() ?: throw RequestHandlingException(UserError.InvalidAccessToken())
 
-    val userRole = principal.getUserRole()
-        ?: throw RequestHandlingException(UserError.InvalidAccessToken())
+    val userRole = principal.getUserRole() ?: throw RequestHandlingException(UserError.InvalidAccessToken())
 
-    val sessionId = principal.getSessionId()
-        ?: throw RequestHandlingException(UserError.InvalidAccessToken())
+    val sessionId = principal.getSessionId() ?: throw RequestHandlingException(UserError.InvalidAccessToken())
 
     return AuthenticatedRequestContext(
         traceId = traceId,

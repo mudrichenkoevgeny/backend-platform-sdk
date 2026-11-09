@@ -1,10 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.core.observability.di.module
 
+import dagger.Module
+import dagger.Provides
 import io.github.mudrichenkoevgeny.backend.core.observability.config.model.ObservabilityConfig
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProviderImpl
-import dagger.Module
-import dagger.Provides
 import javax.inject.Singleton
 
 /**
@@ -13,13 +13,11 @@ import javax.inject.Singleton
  * Binds [TelemetryProvider] to [TelemetryProviderImpl]; requires [ObservabilityConfig].
  */
 @Module
-class TelemetryModule {
-
+public class TelemetryModule {
     @Provides
     @Singleton
-    fun provideTelemetryProvider(
-        observabilityConfig: ObservabilityConfig
-    ): TelemetryProvider = TelemetryProviderImpl(
-        observabilityConfig = observabilityConfig
-    )
+    public fun provideTelemetryProvider(observabilityConfig: ObservabilityConfig): TelemetryProvider =
+        TelemetryProviderImpl(
+            observabilityConfig = observabilityConfig
+        )
 }

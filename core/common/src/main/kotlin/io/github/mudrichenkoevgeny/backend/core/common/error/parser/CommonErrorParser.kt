@@ -11,8 +11,7 @@ import javax.inject.Singleton
  * Fallback [AppErrorParser] implementation that uses `shared-foundation` [CommonModuleStrings].
  */
 @Singleton
-class CommonErrorParser @Inject constructor() : AppErrorParser {
-
+public class CommonErrorParser @Inject constructor() : AppErrorParser {
     override fun getApiErrorResponse(
         errorId: ErrorId,
         code: String,
@@ -30,12 +29,13 @@ class CommonErrorParser @Inject constructor() : AppErrorParser {
         )
     }
 
-    override fun getApiErrorResponse(appError: AppError, locale: String): ApiErrorResponse {
-        return getApiErrorResponse(
-            errorId = appError.errorId,
-            code = appError.code,
-            args = appError.publicArgs,
-            locale = locale
-        )
-    }
+    override fun getApiErrorResponse(
+        appError: AppError,
+        locale: String
+    ): ApiErrorResponse = getApiErrorResponse(
+        errorId = appError.errorId,
+        code = appError.code,
+        args = appError.publicArgs,
+        locale = locale
+    )
 }

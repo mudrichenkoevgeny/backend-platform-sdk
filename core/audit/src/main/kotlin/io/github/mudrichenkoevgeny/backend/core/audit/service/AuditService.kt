@@ -8,16 +8,15 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.eve
  * [log] enqueues an event to be persisted asynchronously and returns immediately.
  * Use [awaitAll] in tests or shutdown hooks to wait until all enqueued events are written.
  */
-interface AuditService {
-
+public interface AuditService {
     /**
      * Schedules [auditEvent] to be persisted in the background. Returns immediately.
      */
-    fun log(auditEvent: AuditEventInternal)
+    public fun log(auditEvent: AuditEventInternal)
 
     /**
      * Suspends until all events previously passed to [log] have been processed.
      * Primarily for tests or graceful shutdown.
      */
-    suspend fun awaitAll()
+    public suspend fun awaitAll()
 }

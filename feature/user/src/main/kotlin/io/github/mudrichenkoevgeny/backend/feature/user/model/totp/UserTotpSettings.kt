@@ -17,7 +17,7 @@ import kotlin.time.Instant
  * @property encryptedRecoveryCodes List of backup codes for account recovery, encrypted for storage.
  * @property lastUsedAt Timestamp of the last successful verification to prevent replay attacks and track activity.
  */
-data class UserTotpSettings(
+public data class UserTotpSettings(
     val userId: UserId,
     val encryptedSecret: EncryptedString,
     val isConfirmed: Boolean,

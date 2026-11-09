@@ -19,7 +19,10 @@ dependencyResolutionManagement {
 
 rootProject.name = "backend-platform-sdk"
 
-fun registerModules(group: String, modules: List<String>) {
+fun registerModules(
+    group: String,
+    modules: List<String>
+) {
     modules.forEach { name ->
         val gradlePath = ":$group:$name"
         val folderPath = "$group/$name"
@@ -38,13 +41,22 @@ val coreModules = listOf(
     "events",
     "settings"
 )
-registerModules("core", coreModules)
+registerModules(
+    "core",
+    coreModules
+)
 
 val featureModules = listOf(
     "user"
 )
-registerModules("feature", featureModules)
+registerModules(
+    "feature",
+    featureModules
+)
 
 include(":bom")
 
 include(":sample")
+
+include(":tools:detekt-rules")
+project(":tools:detekt-rules").projectDir = file("tools/detekt-rules")

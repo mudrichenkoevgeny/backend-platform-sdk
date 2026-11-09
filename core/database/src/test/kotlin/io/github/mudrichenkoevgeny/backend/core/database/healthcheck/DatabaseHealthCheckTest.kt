@@ -12,7 +12,6 @@ import java.sql.Connection
 import javax.sql.DataSource
 
 class DatabaseHealthCheckTest {
-
     @Test
     fun `check returns Success when connection is valid`() = runBlocking {
         val connection = mockk<Connection> {

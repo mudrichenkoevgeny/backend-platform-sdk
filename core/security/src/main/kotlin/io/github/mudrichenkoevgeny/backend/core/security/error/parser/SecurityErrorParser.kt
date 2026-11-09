@@ -15,8 +15,7 @@ import javax.inject.Singleton
  * Feature-specific error parser for security-related errors (TOTP, MFA, password policy, OTP retry, etc.).
  */
 @Singleton
-class SecurityErrorParser @Inject constructor() : AppErrorSpecificParser {
-
+public class SecurityErrorParser @Inject constructor() : AppErrorSpecificParser {
     override fun getApiErrorResponse(
         errorId: ErrorId,
         code: String,
@@ -63,12 +62,10 @@ class SecurityErrorParser @Inject constructor() : AppErrorSpecificParser {
     override fun getApiErrorResponse(
         appError: AppError,
         locale: String
-    ): ApiErrorResponse? {
-        return getApiErrorResponse(
-            errorId = appError.errorId,
-            code = appError.code,
-            args = appError.publicArgs,
-            locale = locale
-        )
-    }
+    ): ApiErrorResponse? = getApiErrorResponse(
+        errorId = appError.errorId,
+        code = appError.code,
+        args = appError.publicArgs,
+        locale = locale
+    )
 }

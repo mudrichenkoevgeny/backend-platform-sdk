@@ -10,8 +10,7 @@ import kotlin.time.Instant
  * or security workflow, an identifier can be a specific login credential (e.g., email address, phone number)
  * or a user ID UUID string for account-level, MFA, or TOTP security checks.
  */
-interface LockoutManager {
-
+public interface LockoutManager {
     /**
      * Records a failed authentication attempt of [type] for the specified [identifier].
      *
@@ -22,7 +21,7 @@ interface LockoutManager {
      * @param type The attempt type ([LockoutAttemptType.PASSWORD], [LockoutAttemptType.OTP], or [LockoutAttemptType.TOTP]).
      * @return [AppResult.Success] containing the lockout expiration [Instant] if locked, or `null` if not locked.
      */
-    suspend fun recordFailedAttempt(
+    public suspend fun recordFailedAttempt(
         identifier: String,
         type: LockoutAttemptType
     ): AppResult<Instant?>
@@ -33,9 +32,7 @@ interface LockoutManager {
      * @param identifier Unique key string for tracking attempts (e.g., login email, phone number, or user ID UUID string).
      * @return [AppResult.Success] with `true` if locked, `false` otherwise.
      */
-    suspend fun isLocked(
-        identifier: String
-    ): AppResult<Boolean>
+    public suspend fun isLocked(identifier: String): AppResult<Boolean>
 
     /**
      * Checks if the specified [identifier] has reached the indefinite lockout threshold.
@@ -43,9 +40,7 @@ interface LockoutManager {
      * @param identifier Unique key string for tracking attempts (e.g., login email, phone number, or user ID UUID string).
      * @return [AppResult.Success] with `true` if under indefinite lockout, `false` otherwise.
      */
-    suspend fun isIndefiniteLockout(
-        identifier: String
-    ): AppResult<Boolean>
+    public suspend fun isIndefiniteLockout(identifier: String): AppResult<Boolean>
 
     /**
      * Retrieves the lockout expiration timestamp for the specified [identifier] if it is locked.
@@ -53,9 +48,7 @@ interface LockoutManager {
      * @param identifier Unique key string for tracking attempts (e.g., login email, phone number, or user ID UUID string).
      * @return [AppResult.Success] with the [Instant] when lockout expires, or `null` if not locked.
      */
-    suspend fun getLockoutUntil(
-        identifier: String
-    ): AppResult<Instant?>
+    public suspend fun getLockoutUntil(identifier: String): AppResult<Instant?>
 
     /**
      * Clears all failed attempt counters, consecutive lockouts, indefinite lockout state, and lockout state in Redis for the specified [identifier].
@@ -63,9 +56,7 @@ interface LockoutManager {
      * @param identifier Unique key string for tracking attempts (e.g., login email, phone number, or user ID UUID string).
      * @return [AppResult.Success] with [Unit] or an error.
      */
-    suspend fun clearLockout(
-        identifier: String
-    ): AppResult<Unit>
+    public suspend fun clearLockout(identifier: String): AppResult<Unit>
 
     /**
      * Clears all failed attempt counters, consecutive lockouts, indefinite lockout state, and lockout state in Redis
@@ -74,7 +65,5 @@ interface LockoutManager {
      * @param identifiers List of unique key strings for tracking attempts.
      * @return [AppResult.Success] with [Unit] or an error.
      */
-    suspend fun clearLockoutsBatch(
-        identifiers: List<String>
-    ): AppResult<Unit>
+    public suspend fun clearLockoutsBatch(identifiers: List<String>): AppResult<Unit>
 }

@@ -1,11 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.core.observability.di.module
 
+import dagger.Module
+import dagger.Provides
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.observability.config.factory.ObservabilityConfigFactory
 import io.github.mudrichenkoevgeny.backend.core.observability.config.factory.ObservabilityConfigFactoryImpl
 import io.github.mudrichenkoevgeny.backend.core.observability.config.model.ObservabilityConfig
-import dagger.Module
-import dagger.Provides
 import javax.inject.Singleton
 
 /**
@@ -15,23 +15,16 @@ import javax.inject.Singleton
  * and [ObservabilityConfig] from the factory.
  */
 @Module
-class ObservabilityConfigModule {
-
+public class ObservabilityConfigModule {
     @Provides
     @Singleton
-    fun provideObservabilityConfigFactory(
-        envReader: EnvReader
-    ): ObservabilityConfigFactory {
-        return ObservabilityConfigFactoryImpl(
+    public fun provideObservabilityConfigFactory(envReader: EnvReader): ObservabilityConfigFactory =
+        ObservabilityConfigFactoryImpl(
             envReader = envReader
         )
-    }
 
     @Provides
     @Singleton
-    fun provideObservabilityConfig(
-        observabilityConfigFactory: ObservabilityConfigFactory
-    ): ObservabilityConfig {
-        return observabilityConfigFactory.create()
-    }
+    public fun provideObservabilityConfig(observabilityConfigFactory: ObservabilityConfigFactory): ObservabilityConfig =
+        observabilityConfigFactory.create()
 }

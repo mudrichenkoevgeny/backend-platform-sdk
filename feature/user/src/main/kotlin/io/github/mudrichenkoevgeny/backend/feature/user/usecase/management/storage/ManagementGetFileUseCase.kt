@@ -10,7 +10,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.Authenti
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFilePrivate
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.permission.StoragePermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,11 +23,10 @@ import javax.inject.Singleton
  * @property userManager Manager for retrieving user account status and permissions.
  */
 @Singleton
-class ManagementGetFileUseCase @Inject constructor(
+public class ManagementGetFileUseCase @Inject constructor(
     private val storageManager: StorageManager,
     private val userManager: UserManager
 ) {
-
     /**
      * Retrieves detailed private view of a specific file record for management roles.
      *
@@ -36,7 +34,7 @@ class ManagementGetFileUseCase @Inject constructor(
      * @param authenticatedRequestContext Context containing the authenticated user's ID.
      * @return [AppResult] containing [StorageFilePrivate] or an error.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         fileId: FileId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<StorageFilePrivate> {

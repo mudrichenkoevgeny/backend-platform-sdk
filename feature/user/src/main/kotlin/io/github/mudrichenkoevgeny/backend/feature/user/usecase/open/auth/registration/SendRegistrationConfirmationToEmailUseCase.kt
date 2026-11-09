@@ -17,8 +17,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to send email registration confirmation code or notification.
+ */
 @Singleton
-class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
+public class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val authSettingsProvider: AuthSettingsProvider,
     private val emailRestrictionPolicyValidator: EmailRestrictionPolicyValidator,
@@ -48,7 +51,7 @@ class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
      * @param requestContext The context of the request, used for localization and device info.
      * @return [AppResult] containing [OtpConfirmation] metadata.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         email: String,
         requestContext: RequestContext
     ): AppResult<OtpConfirmation> {
@@ -58,8 +61,9 @@ class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
 
         if (!emailRestrictionPolicyValidator.isEmailAllowed(
                 email = email,
-                policy = authSettingsProvider.getOpenEmailRestrictionPolicy())
-            ) {
+                policy = authSettingsProvider.getOpenEmailRestrictionPolicy()
+            )
+        ) {
             return AppResult.Error(UserError.EmailNotAllowed())
         }
 
@@ -91,9 +95,17 @@ class SendRegistrationConfirmationToEmailUseCase @Inject constructor(
         }
 
         return if (identifier != null) {
-            sendAlreadyRegistered(email, otpConfirmationData, requestContext)
+            sendAlreadyRegistered(
+                email,
+                otpConfirmationData,
+                requestContext
+            )
         } else {
-            sendConfirmationCode(email, otpConfirmationData, requestContext)
+            sendConfirmationCode(
+                email,
+                otpConfirmationData,
+                requestContext
+            )
         }
     }
 

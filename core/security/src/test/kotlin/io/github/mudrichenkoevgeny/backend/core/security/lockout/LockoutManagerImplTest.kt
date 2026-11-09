@@ -3,8 +3,8 @@ package io.github.mudrichenkoevgeny.backend.core.security.lockout
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.accountlockout.createTestAccountLockoutPolicy
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.accountlockout.createTestAccountLockoutPolicy
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -18,10 +18,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class LockoutManagerImplTest {
-
     private val redisManager = mockk<RedisManager>()
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
-    private val lockoutManager = LockoutManagerImpl(redisManager, securitySettingsProvider)
+    private val lockoutManager = LockoutManagerImpl(
+        redisManager,
+        securitySettingsProvider
+    )
 
     private val testPolicy = createTestAccountLockoutPolicy()
 
@@ -36,14 +38,26 @@ class LockoutManagerImplTest {
         val counterKey = "lockout:failed:password:$identifier"
 
         coEvery {
-            redisManager.incrementWithExpiration(counterKey, testPolicy.failedAttemptsWindowSeconds.toLong())
+            redisManager.incrementWithExpiration(
+                counterKey,
+                testPolicy.failedAttemptsWindowSeconds.toLong()
+            )
         } returns AppResult.Success(1L)
 
-        val result = lockoutManager.recordFailedAttempt(identifier, LockoutAttemptType.PASSWORD)
+        val result = lockoutManager.recordFailedAttempt(
+            identifier,
+            LockoutAttemptType.PASSWORD
+        )
 
         assertTrue(result is AppResult.Success)
         assertNull((result as AppResult.Success).data)
-        coVerify(exactly = 0) { redisManager.setWithExpiration(any(), any(), any()) }
+        coVerify(exactly = 0) {
+            redisManager.setWithExpiration(
+                any(),
+                any(),
+                any()
+            )
+        }
     }
 
     @Test
@@ -54,23 +68,40 @@ class LockoutManagerImplTest {
         val consecutiveKey = "lockout:consecutive:$identifier"
 
         coEvery {
-            redisManager.incrementWithExpiration(counterKey, testPolicy.failedAttemptsWindowSeconds.toLong())
+            redisManager.incrementWithExpiration(
+                counterKey,
+                testPolicy.failedAttemptsWindowSeconds.toLong()
+            )
         } returns AppResult.Success(testPolicy.maxFailedOtpAttempts.toLong())
 
         coEvery {
-            redisManager.setWithExpiration(lockoutKey, any(), testPolicy.lockoutDurationSeconds.toLong())
+            redisManager.setWithExpiration(
+                lockoutKey,
+                any(),
+                testPolicy.lockoutDurationSeconds.toLong()
+            )
         } returns AppResult.Success(Unit)
 
         coEvery {
-            redisManager.incrementWithExpiration(consecutiveKey, any())
+            redisManager.incrementWithExpiration(
+                consecutiveKey,
+                any()
+            )
         } returns AppResult.Success(1L)
 
-        val result = lockoutManager.recordFailedAttempt(identifier, LockoutAttemptType.OTP)
+        val result = lockoutManager.recordFailedAttempt(
+            identifier,
+            LockoutAttemptType.OTP
+        )
 
         assertTrue(result is AppResult.Success)
         assertNotNull((result as AppResult.Success).data)
         coVerify(exactly = 1) {
-            redisManager.setWithExpiration(lockoutKey, any(), testPolicy.lockoutDurationSeconds.toLong())
+            redisManager.setWithExpiration(
+                lockoutKey,
+                any(),
+                testPolicy.lockoutDurationSeconds.toLong()
+            )
         }
     }
 
@@ -83,7 +114,10 @@ class LockoutManagerImplTest {
 
         val result = lockoutManager.isLocked(identifier)
 
-        assertEquals(AppResult.Success(true), result)
+        assertEquals(
+            AppResult.Success(true),
+            result
+        )
     }
 
     @Test
@@ -95,7 +129,10 @@ class LockoutManagerImplTest {
 
         val result = lockoutManager.isIndefiniteLockout(identifier)
 
-        assertEquals(AppResult.Success(true), result)
+        assertEquals(
+            AppResult.Success(true),
+            result
+        )
     }
 
     @Test
@@ -120,7 +157,10 @@ class LockoutManagerImplTest {
 
         val result = lockoutManager.getLockoutUntil(identifier)
 
-        assertEquals(AppResult.Success(null), result)
+        assertEquals(
+            AppResult.Success(null),
+            result
+        )
     }
 
     @Test
@@ -131,7 +171,10 @@ class LockoutManagerImplTest {
 
         val result = lockoutManager.clearLockout(identifier)
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
         coVerify { redisManager.delete("lockout:blocked:$identifier") }
         coVerify { redisManager.delete("lockout:indefinite:$identifier") }
         coVerify { redisManager.delete("lockout:consecutive:$identifier") }
@@ -147,11 +190,20 @@ class LockoutManagerImplTest {
         val error = CommonError.Internal(Throwable("Redis error"))
 
         coEvery {
-            redisManager.incrementWithExpiration(counterKey, any())
+            redisManager.incrementWithExpiration(
+                counterKey,
+                any()
+            )
         } returns AppResult.Error(error)
 
-        val result = lockoutManager.recordFailedAttempt(identifier, LockoutAttemptType.TOTP)
+        val result = lockoutManager.recordFailedAttempt(
+            identifier,
+            LockoutAttemptType.TOTP
+        )
 
-        assertEquals(AppResult.Error(error), result)
+        assertEquals(
+            AppResult.Error(error),
+            result
+        )
     }
 }

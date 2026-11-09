@@ -6,13 +6,13 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.contract
  * These keys are written into access tokens and later read by Ktor authentication
  * and WebSocket infrastructure.
  */
-object UserTokenClaims {
+public object UserTokenClaims {
     /**
      * Identifier of the authenticated user session.
      */
-    const val SESSION_ID = "sessionId"
+    public const val SESSION_ID: String = "sessionId"
 
-    const val IDENTIFIER_ID = "identifierId"
+    public const val IDENTIFIER_ID: String = "identifierId"
 
-    const val USER_ROLE = "userRole"
+    public const val USER_ROLE: String = "userRole"
 }

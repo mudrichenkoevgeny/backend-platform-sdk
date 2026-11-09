@@ -5,7 +5,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.PasswordPolicyValidatorResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorArgs
 
-fun PasswordPolicyValidatorResult.Fail.convertPasswordPolicyFailToAppError(): SecurityError.PasswordTooWeak {
+/**
+ * Converts password policy validation failures into a [SecurityError.PasswordTooWeak] instance.
+ */
+public fun PasswordPolicyValidatorResult.Fail.convertPasswordPolicyFailToAppError(): SecurityError.PasswordTooWeak {
     val errorArgs: MutableMap<String, Any> = mutableMapOf()
 
     errorArgs[SecurityErrorArgs.PASSWORD_MIN_LENGTH] = passwordPolicy.minLength
@@ -14,7 +17,9 @@ fun PasswordPolicyValidatorResult.Fail.convertPasswordPolicyFailToAppError(): Se
     errorArgs[SecurityErrorArgs.PASSWORD_FAIL_NO_UPPERCASE] = reasons.contains(PasswordPolicyFailReason.NO_UPPERCASE)
     errorArgs[SecurityErrorArgs.PASSWORD_FAIL_NO_LOWERCASE] = reasons.contains(PasswordPolicyFailReason.NO_LOWERCASE)
     errorArgs[SecurityErrorArgs.PASSWORD_FAIL_NO_DIGIT] = reasons.contains(PasswordPolicyFailReason.NO_DIGIT)
-    errorArgs[SecurityErrorArgs.PASSWORD_FAIL_NO_SPECIAL_CHAR] = reasons.contains(PasswordPolicyFailReason.NO_SPECIAL_CHAR)
+    errorArgs[SecurityErrorArgs.PASSWORD_FAIL_NO_SPECIAL_CHAR] = reasons.contains(
+        PasswordPolicyFailReason.NO_SPECIAL_CHAR
+    )
     errorArgs[SecurityErrorArgs.PASSWORD_FAIL_TOO_COMMON] = reasons.contains(PasswordPolicyFailReason.TOO_COMMON)
 
     return SecurityError.PasswordTooWeak(errorArgs)

@@ -24,14 +24,16 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class AuditManagerImplTest {
-
     private val repository = mockk<AuditEventRepository>()
     private val auditManager = AuditManagerImpl(repository)
     private val userId = UserId.generate()
 
     @BeforeEach
     fun setup() {
-        Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
+        Database.connect(
+            "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;",
+            driver = "org.h2.Driver"
+        )
     }
 
     @Test
@@ -41,10 +43,17 @@ class AuditManagerImplTest {
 
         val permissions = setOf(AuditPermissionCode.AUDIT_GET_FOR_SYSTEM_ACTOR_UNMASKED)
 
-        val result = auditManager.getAuditEventPrivateById(event.id, userId, permissions)
+        val result = auditManager.getAuditEventPrivateById(
+            event.id,
+            userId,
+            permissions
+        )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(event.toAuditEventPrivate(), (result as AppResult.Success).data)
+        assertEquals(
+            event.toAuditEventPrivate(),
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
@@ -52,7 +61,11 @@ class AuditManagerImplTest {
         val event = createTestAuditEventInternal(actorType = AuditActorType.SYSTEM)
         coEvery { repository.getEventById(event.id) } returns AppResult.Success(event)
 
-        val result = auditManager.getAuditEventPrivateById(event.id, userId, emptySet())
+        val result = auditManager.getAuditEventPrivateById(
+            event.id,
+            userId,
+            emptySet()
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.UserMissingPermissions)
@@ -60,11 +73,20 @@ class AuditManagerImplTest {
 
     @Test
     fun `getAuditEventsSummaryPage filters out forbidden events from the list`() = runTest {
-        val eventSystem = createTestAuditEventInternal(id = AuditEventId.generate(), actorType = AuditActorType.SYSTEM)
-        val eventService = createTestAuditEventInternal(id = AuditEventId.generate(), actorType = AuditActorType.SERVICE)
+        val eventSystem = createTestAuditEventInternal(
+            id = AuditEventId.generate(),
+            actorType = AuditActorType.SYSTEM
+        )
+        val eventService = createTestAuditEventInternal(
+            id = AuditEventId.generate(),
+            actorType = AuditActorType.SERVICE
+        )
 
         val pagedResult = createTestPagedResult(
-            items = listOf(eventSystem, eventService),
+            items = listOf(
+                eventSystem,
+                eventService
+            ),
             totalCount = 2,
             pageNumber = ListingDefaultValues.Pagination.PAGE_NUMBER,
             pageSize = ListingDefaultValues.Pagination.PAGE_SIZE,
@@ -82,12 +104,20 @@ class AuditManagerImplTest {
 
         val result = auditManager.getAuditEventsSummaryPage(
             managementUserPermissionCodes = permissions,
-            queryParams = ManagementAuditEventListQueryParams(listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT))
+            queryParams = ManagementAuditEventListQueryParams(
+                listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT)
+            )
         )
 
         assertTrue(result is AppResult.Success)
         val data = (result as AppResult.Success).data
-        assertEquals(1, data.items.size)
-        assertEquals(AuditActorType.SYSTEM, data.items.first().actorType)
+        assertEquals(
+            1,
+            data.items.size
+        )
+        assertEquals(
+            AuditActorType.SYSTEM,
+            data.items.first().actorType
+        )
     }
 }

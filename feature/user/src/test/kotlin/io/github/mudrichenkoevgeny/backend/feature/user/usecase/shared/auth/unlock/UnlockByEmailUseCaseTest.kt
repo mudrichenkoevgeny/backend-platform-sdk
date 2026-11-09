@@ -7,9 +7,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.accountlockout.createTestAccountLockoutPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -18,13 +15,16 @@ import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRa
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.accountlockout.createTestAccountLockoutPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -35,11 +35,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class UnlockByEmailUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val identifierManager = mockk<IdentifierManager>()
     private val otpService = mockk<OtpService>()
@@ -69,15 +71,45 @@ class UnlockByEmailUseCaseTest {
         )
 
         every { securitySettingsProvider.getAccountLockoutPolicy() } returns lockoutPolicy
-        coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_EMAIL) } returns AppResult.Success(Unit)
-        coEvery { otpService.verifyOtp(TEST_EMAIL, UserOtpVerificationType.EMAIL_UNLOCK, TEST_CODE) } returns AppResult.Success(true)
-        coEvery { identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.EMAIL, TEST_EMAIL) } returns AppResult.Success(identifier)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.LOGIN_ATTEMPT,
+                TEST_EMAIL
+            )
+        } returns AppResult.Success(
+            Unit
+        )
+        coEvery {
+            otpService.verifyOtp(
+                TEST_EMAIL,
+                UserOtpVerificationType.EMAIL_UNLOCK,
+                TEST_CODE
+            )
+        } returns AppResult.Success(true)
+        coEvery {
+            identifierManager.getUserIdentifierInternalByProvider(
+                UserAuthProvider.EMAIL,
+                TEST_EMAIL
+            )
+        } returns AppResult.Success(identifier)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
-        coEvery { userManager.unlockUserAccount(userId, listOf(TEST_EMAIL)) } returns AppResult.Success(userInternal)
+        coEvery {
+            userManager.unlockUserAccount(
+                userId,
+                listOf(TEST_EMAIL)
+            )
+        } returns AppResult.Success(userInternal)
 
-        val result = useCase(TEST_EMAIL, TEST_CODE, context)
+        val result = useCase(
+            TEST_EMAIL,
+            TEST_CODE,
+            context
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
@@ -98,7 +130,11 @@ class UnlockByEmailUseCaseTest {
 
         every { securitySettingsProvider.getAccountLockoutPolicy() } returns lockoutPolicy
 
-        val result = useCase(TEST_EMAIL, TEST_CODE, context)
+        val result = useCase(
+            TEST_EMAIL,
+            TEST_CODE,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.SelfServiceUnlockDisabled)

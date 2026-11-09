@@ -1,11 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.core.common.mask
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DataMaskerTest {
-
     @Test
     fun `maskPartialValue trims and masks by length`() {
         assertEquals("", DataMasker.maskPartialValue("   "))

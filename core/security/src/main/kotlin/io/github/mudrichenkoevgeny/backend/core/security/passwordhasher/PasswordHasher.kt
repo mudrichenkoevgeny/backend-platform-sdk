@@ -11,20 +11,23 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
  * - verify a password against a stored hash
  * - perform safe checks when password/hash values may be absent
  */
-interface PasswordHasher {
+public interface PasswordHasher {
     /**
      * Computes a secure hash for the given raw [password].
      *
      * @return [AppResult.Success] with the encoded hash.
      */
-    fun hash(password: String): AppResult<PasswordHash>
+    public fun hash(password: String): AppResult<PasswordHash>
 
     /**
      * Verifies that the provided raw [password] matches the [storedPasswordHash].
      *
      * @return [AppResult.Success] with `true` when password matches, otherwise `false`.
      */
-    fun verify(password: String, storedPasswordHash: PasswordHash): AppResult<Boolean>
+    public fun verify(
+        password: String,
+        storedPasswordHash: PasswordHash
+    ): AppResult<Boolean>
 
     /**
      * Convenience check when [password] and/or [passwordHash] can be null or blank.
@@ -32,7 +35,10 @@ interface PasswordHasher {
      * @return [AppResult.Success] with `false` if any argument is missing; otherwise delegates to
      * [verify].
      */
-    fun isPasswordValid(password: String?, passwordHash: PasswordHash?): AppResult<Boolean>
+    public fun isPasswordValid(
+        password: String?,
+        passwordHash: PasswordHash?
+    ): AppResult<Boolean>
 
     /**
      * Performs a "fake" password verification to make timing and CPU cost closer to a real check.
@@ -42,5 +48,5 @@ interface PasswordHasher {
      *
      * @return [AppResult.Success] when the fake check finishes.
      */
-    fun isPasswordValidFakeCheck(password: String?): AppResult<Unit>
+    public fun isPasswordValidFakeCheck(password: String?): AppResult<Unit>
 }

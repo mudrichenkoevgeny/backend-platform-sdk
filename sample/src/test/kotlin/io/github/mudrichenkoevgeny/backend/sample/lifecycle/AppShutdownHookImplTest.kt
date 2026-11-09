@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 class AppShutdownHookImplTest {
-
     @Test
     fun `register adds shutdown hook that stops server waits audit and shuts down resources`() = runBlocking {
         val registrar = TestShutdownHookRegistrar()
@@ -27,7 +26,12 @@ class AppShutdownHookImplTest {
         val redisManager = mockk<RedisManager>()
         val auditService = mockk<AuditService>()
 
-        every { server.stop(any(), any()) } just runs
+        every {
+            server.stop(
+                any(),
+                any()
+            )
+        } just runs
         every { databaseManager.shutdown() } just runs
         every { redisManager.shutdown() } returns AppSystemResult.Success(Unit)
         coEvery { auditService.awaitAll() } just runs
@@ -47,7 +51,12 @@ class AppShutdownHookImplTest {
         registeredThread.start()
         registeredThread.join(2_000)
 
-        verify(exactly = 1) { server.stop(any(), any()) }
+        verify(exactly = 1) {
+            server.stop(
+                any(),
+                any()
+            )
+        }
         verify(exactly = 1) { databaseManager.shutdown() }
         verify(exactly = 1) { redisManager.shutdown() }
         coVerify(exactly = 1) { auditService.awaitAll() }

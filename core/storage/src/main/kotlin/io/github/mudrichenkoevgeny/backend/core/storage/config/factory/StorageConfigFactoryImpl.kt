@@ -17,10 +17,9 @@ import javax.inject.Singleton
  * [StorageEnvKeys.S3_SECRET_KEY_FILE], using [EnvReader].
  */
 @Singleton
-class StorageConfigFactoryImpl @Inject constructor(
+public class StorageConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader
 ) : StorageConfigFactory {
-
     override fun create(): StorageConfig {
         val s3AccessKeyFile = envReader.getByKey(StorageEnvKeys.S3_ACCESS_KEY_FILE)
         val s3SecretKeyFile = envReader.getByKey(StorageEnvKeys.S3_SECRET_KEY_FILE)
@@ -34,16 +33,40 @@ class StorageConfigFactoryImpl @Inject constructor(
 
         val minUploadSizeBytes = envReader.getByKey(StorageEnvKeys.STORAGE_MIN_UPLOAD_SIZE_BYTES).toLong()
         val maxUploadSizeBytes = envReader.getByKey(StorageEnvKeys.STORAGE_MAX_UPLOAD_SIZE_BYTES).toLong()
-        val totalStorageQuotaForOpenUserBytes = envReader.getByKey(StorageEnvKeys.STORAGE_TOTAL_QUOTA_OPEN_USER_BYTES).toLongOrNull()
-        val totalStorageQuotaForManagementUserBytes = envReader.getByKey(StorageEnvKeys.STORAGE_TOTAL_QUOTA_MANAGEMENT_USER_BYTES).toLongOrNull()
-        val presignedUrlExpirationSeconds = envReader.getByKey(StorageEnvKeys.STORAGE_PRESIGNED_URL_EXPIRATION_SECONDS).toInt()
-        val maxPendingUploadsForOpenUser = envReader.getByKey(StorageEnvKeys.STORAGE_MAX_PENDING_UPLOADS_OPEN_USER).toInt()
-        val maxPendingUploadsForManagementUser = envReader.getByKey(StorageEnvKeys.STORAGE_MAX_PENDING_UPLOADS_MANAGEMENT_USER).toInt()
-        val isDeduplicationEnabled = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IS_DEDUPLICATION_ENABLED)?.toBooleanStrictOrNull() ?: true
-        val deletedFilesCleanupIntervalSeconds = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS)?.toIntOrNull() ?: 86400
-        val maintenanceBatchSize = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_MAINTENANCE_BATCH_SIZE)?.toIntOrNull() ?: 100
+        val totalStorageQuotaForOpenUserBytes = envReader
+            .getByKey(
+                StorageEnvKeys.STORAGE_TOTAL_QUOTA_OPEN_USER_BYTES
+            ).toLongOrNull()
+        val totalStorageQuotaForManagementUserBytes = envReader
+            .getByKey(
+                StorageEnvKeys.STORAGE_TOTAL_QUOTA_MANAGEMENT_USER_BYTES
+            ).toLongOrNull()
+        val presignedUrlExpirationSeconds = envReader
+            .getByKey(
+                StorageEnvKeys.STORAGE_PRESIGNED_URL_EXPIRATION_SECONDS
+            ).toInt()
+        val maxPendingUploadsForOpenUser = envReader
+            .getByKey(
+                StorageEnvKeys.STORAGE_MAX_PENDING_UPLOADS_OPEN_USER
+            ).toInt()
+        val maxPendingUploadsForManagementUser = envReader
+            .getByKey(
+                StorageEnvKeys.STORAGE_MAX_PENDING_UPLOADS_MANAGEMENT_USER
+            ).toInt()
+        val isDeduplicationEnabled = envReader
+            .getByKeyOrNull(StorageEnvKeys.STORAGE_IS_DEDUPLICATION_ENABLED)
+            ?.toBooleanStrictOrNull() ?: true
+        val deletedFilesCleanupIntervalSeconds = envReader
+            .getByKeyOrNull(
+                StorageEnvKeys.STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS
+            )?.toIntOrNull() ?: DEFAULT_CLEANUP_INTERVAL_SECONDS
+        val maintenanceBatchSize = envReader
+            .getByKeyOrNull(StorageEnvKeys.STORAGE_MAINTENANCE_BATCH_SIZE)
+            ?.toIntOrNull() ?: 100
 
-        val isImgproxyEnabled = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_ENABLED)?.toBooleanStrictOrNull() ?: false
+        val isImgproxyEnabled = envReader
+            .getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_ENABLED)
+            ?.toBooleanStrictOrNull() ?: false
         val imgproxyBaseUrl = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_BASE_URL).orEmpty()
 
         val imgproxyKeyFile = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_KEY_FILE)
@@ -60,7 +83,10 @@ class StorageConfigFactoryImpl @Inject constructor(
             envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_SALT).orEmpty()
         }
         val imgproxyPresetsString = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_PRESETS)
-        val imgproxyVideoThumbnailSecond = envReader.getByKeyOrNull(StorageEnvKeys.STORAGE_IMGPROXY_VIDEO_THUMBNAIL_SECOND)?.toIntOrNull() ?: 2
+        val imgproxyVideoThumbnailSecond = envReader
+            .getByKeyOrNull(
+                StorageEnvKeys.STORAGE_IMGPROXY_VIDEO_THUMBNAIL_SECOND
+            )?.toIntOrNull() ?: 2
 
         val s3AccessKey = envReader.readSecret(s3AccessKeyFile)
         val s3SecretKey = envReader.readSecret(s3SecretKeyFile)
@@ -121,9 +147,16 @@ class StorageConfigFactoryImpl @Inject constructor(
             val size = specParts[0].toIntOrNull() ?: continue
             val resizeType = ImgproxyResizeType.fromValueOrNull(specParts[1]) ?: continue
             if (presetKey.isNotBlank() && size > 0) {
-                presets[presetKey] = ImgproxyPreset(sizePixels = size, resizeType = resizeType)
+                presets[presetKey] = ImgproxyPreset(
+                    sizePixels = size,
+                    resizeType = resizeType
+                )
             }
         }
         return presets
+    }
+
+    private companion object {
+        private const val DEFAULT_CLEANUP_INTERVAL_SECONDS: Int = 86_400
     }
 }

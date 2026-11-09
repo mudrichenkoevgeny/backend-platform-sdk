@@ -11,8 +11,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.to
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to retrieve profile of current user.
+ */
 @Singleton
-class GetUserUseCase @Inject constructor(
+public class GetUserUseCase @Inject constructor(
     private val userManager: UserManager
 ) {
     /**
@@ -27,13 +30,12 @@ class GetUserUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] containing [UserPrivate].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<UserPrivate> {
         val currentUserId = authenticatedRequestContext.userId
 
-        return userManager.getUserInternalById(currentUserId)
-            .mapNotNullOrError(UserError.UserForbidden())
+        return userManager.getUserInternalById(currentUserId).mapNotNullOrError(UserError.UserForbidden())
             .mapSuccess { userInternal -> userInternal.toUserPrivate() }
     }
 }

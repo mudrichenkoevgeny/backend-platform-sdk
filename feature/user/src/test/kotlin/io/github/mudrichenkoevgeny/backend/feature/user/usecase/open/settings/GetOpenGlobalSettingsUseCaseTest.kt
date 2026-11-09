@@ -1,8 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.settings
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.settings.domain.model.globalsettings.createTestOpenGlobalSettings
 import io.github.mudrichenkoevgeny.backend.core.settings.global.provider.GlobalSettingsProvider
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.settings.domain.model.globalsettings.createTestOpenGlobalSettings
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class GetOpenGlobalSettingsUseCaseTest {
-
     private val globalSettingsProvider = mockk<GlobalSettingsProvider>()
     private val useCase = GetOpenGlobalSettingsUseCase(globalSettingsProvider)
 
@@ -23,6 +22,9 @@ class GetOpenGlobalSettingsUseCaseTest {
         val result = useCase()
 
         assertTrue(result is AppResult.Success)
-        assertEquals(expectedSettings, (result as AppResult.Success).data)
+        assertEquals(
+            expectedSettings,
+            (result as AppResult.Success).data
+        )
     }
 }

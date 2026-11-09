@@ -6,7 +6,7 @@ import javax.sql.DataSource
  * Applies database schema migrations from classpath or other resources.
  * Implementations (e.g. Flyway) interpret [migrate]'s resource list according to their own conventions.
  */
-interface DatabaseMigrator {
+public interface DatabaseMigrator {
     /**
      * Applies database schema migrations using provided migration resources.
      *
@@ -15,5 +15,8 @@ interface DatabaseMigrator {
      *                  Exact interpretation depends on the concrete migrator implementation
      *                  (Flyway: directories; Liquibase: changelog file paths).
      */
-    fun migrate(dataSource: DataSource, resources: List<String>)
+    public fun migrate(
+        dataSource: DataSource,
+        resources: List<String>
+    )
 }

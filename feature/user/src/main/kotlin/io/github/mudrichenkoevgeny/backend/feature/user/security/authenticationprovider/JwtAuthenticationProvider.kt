@@ -38,14 +38,13 @@ import javax.inject.Singleton
  * challenge through [AppErrorParser]. Authorization checks are applied in [requireUser].
  */
 @Singleton
-class JwtAuthenticationProvider @Inject constructor(
+public class JwtAuthenticationProvider @Inject constructor(
     private val securityConfig: SecurityConfig,
     private val userConfig: UserConfig,
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
     private val appErrorParser: AppErrorParser
 ) : AuthenticationProvider {
-
     override fun configureAuthentication(application: Application) {
         application.install(Authentication) {
             jwt(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
@@ -61,7 +60,10 @@ class JwtAuthenticationProvider @Inject constructor(
 
                     val queryToken = call.request.queryParameters[UserApiQueryParams.ACCESS_TOKEN]
                     if (queryToken != null) {
-                        return@authHeader HttpAuthHeader.Single(UserAuthSpec.TOKEN_TYPE_BEARER, queryToken)
+                        return@authHeader HttpAuthHeader.Single(
+                            UserAuthSpec.TOKEN_TYPE_BEARER,
+                            queryToken
+                        )
                     }
 
                     null
@@ -79,7 +81,12 @@ class JwtAuthenticationProvider @Inject constructor(
                     val authHeader = call.request.parseAuthorizationHeader()
                     var isExpired = false
 
-                    if (authHeader is HttpAuthHeader.Single && authHeader.authScheme.equals(UserAuthSpec.TOKEN_TYPE_BEARER, ignoreCase = true)) {
+                    if (authHeader is HttpAuthHeader.Single &&
+                        authHeader.authScheme.equals(
+                            UserAuthSpec.TOKEN_TYPE_BEARER,
+                            ignoreCase = true
+                        )
+                    ) {
                         try {
                             val jwt = JWT.decode(authHeader.blob)
                             if (jwt.expiresAt != null && jwt.expiresAt.time < System.currentTimeMillis()) {
@@ -96,7 +103,10 @@ class JwtAuthenticationProvider @Inject constructor(
                     }
 
                     val apiError = appErrorParser.getApiErrorResponse(appError)
-                    call.respond(appError.httpStatusCode, apiError)
+                    call.respond(
+                        appError.httpStatusCode,
+                        apiError
+                    )
                 }
             }
         }
@@ -113,6 +123,7 @@ class JwtAuthenticationProvider @Inject constructor(
             is AppResult.Success -> {
                 userIdResult.data
             }
+
             is AppResult.Error -> {
                 return userIdResult
             }
@@ -127,7 +138,10 @@ class JwtAuthenticationProvider @Inject constructor(
             is AppResult.Error -> return userResult
         }
 
-        val validateResult = user.validateAccessEligibility(allowedRoles, allowedAccountStatuses)
+        val validateResult = user.validateAccessEligibility(
+            allowedRoles,
+            allowedAccountStatuses
+        )
         if (validateResult is AppResult.Error) {
             return AppResult.Error(validateResult.error)
         }

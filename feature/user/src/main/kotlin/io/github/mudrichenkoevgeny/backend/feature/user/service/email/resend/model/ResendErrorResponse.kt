@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
  * Resend API error payload returned for non-2xx responses.
  */
 @Serializable
-data class ResendErrorResponse(
+public data class ResendErrorResponse(
     val message: String? = null,
     val name: String? = null
 )

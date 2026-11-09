@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 class HealthCheckerManagerTest {
-
     @Test
     fun `verifyCriticalHealth throws when any critical check fails`() {
         val failingCheck = mockHealthCheck(
@@ -24,7 +23,10 @@ class HealthCheckerManagerTest {
         val appLogger: AppLogger = mockk {
             every { logError(any()) } just Runs
         }
-        val manager = HealthCheckerManager(setOf(failingCheck), appLogger)
+        val manager = HealthCheckerManager(
+            setOf(failingCheck),
+            appLogger
+        )
 
         assertThrows(RuntimeException::class.java) {
             manager.verifyCriticalHealth()
@@ -40,7 +42,10 @@ class HealthCheckerManagerTest {
             result = AppSystemResult.Success(Unit)
         )
         val appLogger: AppLogger = mockk(relaxed = true)
-        val manager = HealthCheckerManager(setOf(okCheck), appLogger)
+        val manager = HealthCheckerManager(
+            setOf(okCheck),
+            appLogger
+        )
 
         manager.verifyCriticalHealth()
 
@@ -57,7 +62,10 @@ class HealthCheckerManagerTest {
         val appLogger: AppLogger = mockk {
             every { logError(error) } just Runs
         }
-        val manager = HealthCheckerManager(setOf(nonCriticalCheck), appLogger)
+        val manager = HealthCheckerManager(
+            setOf(nonCriticalCheck),
+            appLogger
+        )
 
         manager.checkNonCriticalHealth()
 
@@ -71,7 +79,10 @@ class HealthCheckerManagerTest {
             result = AppSystemResult.Success(Unit)
         )
         val appLogger: AppLogger = mockk(relaxed = true)
-        val manager = HealthCheckerManager(setOf(okCheck), appLogger)
+        val manager = HealthCheckerManager(
+            setOf(okCheck),
+            appLogger
+        )
 
         manager.checkNonCriticalHealth()
 
@@ -91,4 +102,3 @@ class HealthCheckerManagerTest {
         call = null
     )
 }
-

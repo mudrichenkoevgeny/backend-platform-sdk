@@ -24,7 +24,7 @@ import kotlinx.serialization.Serializable
  * such as a temporary TOTP secret during the setup phase.
  */
 @Serializable
-data class MfaChallengeData(
+public data class MfaChallengeData(
     val token: String,
     val userId: String,
     val userRole: String,

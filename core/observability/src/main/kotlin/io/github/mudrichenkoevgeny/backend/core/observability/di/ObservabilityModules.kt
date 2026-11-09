@@ -1,10 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.core.observability.di
 
+import dagger.Module
 import io.github.mudrichenkoevgeny.backend.core.observability.config.model.ObservabilityConfig
 import io.github.mudrichenkoevgeny.backend.core.observability.di.module.ObservabilityConfigModule
 import io.github.mudrichenkoevgeny.backend.core.observability.di.module.TelemetryModule
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
-import dagger.Module
 
 /**
  * Aggregate Dagger module for the observability feature.
@@ -13,9 +13,6 @@ import dagger.Module
  * and [TelemetryModule] ([TelemetryProvider] binding).
  */
 @Module(
-    includes = [
-        ObservabilityConfigModule::class,
-        TelemetryModule::class
-    ]
+    includes = [ObservabilityConfigModule::class, TelemetryModule::class]
 )
-interface ObservabilityModules
+public interface ObservabilityModules

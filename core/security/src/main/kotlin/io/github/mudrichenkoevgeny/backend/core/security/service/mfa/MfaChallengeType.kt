@@ -1,7 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.security.service.mfa
 
 import kotlinx.serialization.Serializable
-import kotlin.jvm.JvmInline
 
 /**
  * Defines the specific security context for an MFA challenge.
@@ -11,14 +10,16 @@ import kotlin.jvm.JvmInline
  */
 @Serializable
 @JvmInline
-value class MfaChallengeType(val value: String) {
-    companion object {
+public value class MfaChallengeType(
+    public val value: String
+) {
+    public companion object {
         /**
          * Standard second-factor verification during the login flow.
          *
          * **Session Requirement:** None (sessionId is null).
          */
-        val LOGIN_TOTP = MfaChallengeType("login_totp")
+        public val LOGIN_TOTP: MfaChallengeType = MfaChallengeType("login_totp")
 
         /**
          * Backup-factor verification using a static recovery code when the
@@ -26,20 +27,20 @@ value class MfaChallengeType(val value: String) {
          *
          * **Session Requirement:** None (sessionId is null).
          */
-        val LOGIN_RECOVERY_CODE = MfaChallengeType("login_recovery_code")
+        public val LOGIN_RECOVERY_CODE: MfaChallengeType = MfaChallengeType("login_recovery_code")
 
         /**
          * Initial setup and activation of the TOTP factor.
          *
          * **Session Requirement:** Mandatory (must match the current authenticated session).
          */
-        val SETUP_TOTP = MfaChallengeType("setup_totp")
+        public val SETUP_TOTP: MfaChallengeType = MfaChallengeType("setup_totp")
 
         /**
          * Re-authentication of an existing session to perform sensitive operations.
          *
          * **Session Requirement:** Mandatory (must match the current authenticated session).
          */
-        val STEP_UP = MfaChallengeType("step_up")
+        public val STEP_UP: MfaChallengeType = MfaChallengeType("step_up")
     }
 }

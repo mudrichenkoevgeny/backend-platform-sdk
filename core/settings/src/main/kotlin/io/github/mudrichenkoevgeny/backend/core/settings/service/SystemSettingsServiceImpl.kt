@@ -30,12 +30,11 @@ import kotlin.uuid.Uuid
  * Typed getters read from the in-memory cache and perform parsing locally.
  */
 @Singleton
-class SystemSettingsServiceImpl @Inject constructor(
+public class SystemSettingsServiceImpl @Inject constructor(
     private val systemSettingsManager: SystemSettingsManager,
     private val redisManager: RedisManager,
     @param:BackgroundScope private val scope: CoroutineScope
 ) : SystemSettingsService {
-
     private val isSubscribed = AtomicBoolean(false)
     private val instanceId = Uuid.random().toHexDashString()
     private val cache = ConcurrentHashMap<String, SystemSetting>()
@@ -48,7 +47,11 @@ class SystemSettingsServiceImpl @Inject constructor(
             is AppResult.Success -> {
                 result.data.forEach { cache[it.key] = it }
 
-                if (isSubscribed.compareAndSet(expectedValue = false, newValue = true)) {
+                if (isSubscribed.compareAndSet(
+                        expectedValue = false,
+                        newValue = true
+                    )
+                ) {
                     redisManager.subscribe(SETTINGS_CHANNEL) { message ->
                         val event = FoundationJson.decodeFromString<SettingsUpdateEvent>(message)
                         if (event.senderId != instanceId) {
@@ -59,6 +62,7 @@ class SystemSettingsServiceImpl @Inject constructor(
 
                 AppResult.Success(Unit)
             }
+
             is AppResult.Error -> result
         }
     }
@@ -76,16 +80,25 @@ class SystemSettingsServiceImpl @Inject constructor(
                 broadcastUpdate()
                 AppResult.Success(Unit)
             }
+
             is AppResult.Error -> result
         }
     }
 
-    override suspend fun registerDefault(key: String, value: String, type: SettingType): AppResult<Unit> {
+    override suspend fun registerDefault(
+        key: String,
+        value: String,
+        type: SettingType
+    ): AppResult<Unit> {
         if (cache.containsKey(key)) {
             return AppResult.Success(Unit)
         }
 
-        val newSetting = SystemSetting(key = key, value = value, type = type)
+        val newSetting = SystemSetting(
+            key = key,
+            value = value,
+            type = type
+        )
 
         val result = systemSettingsManager.saveSetting(newSetting)
 
@@ -97,6 +110,7 @@ class SystemSettingsServiceImpl @Inject constructor(
 
                 AppResult.Success(Unit)
             }
+
             is AppResult.Error -> result
         }
     }
@@ -111,7 +125,10 @@ class SystemSettingsServiceImpl @Inject constructor(
 
     override fun getBoolean(key: String): Boolean? = cache[key]?.value?.toBooleanStrictOrNull()
 
-    override fun <T> getJson(key: String, deserializer: (String) -> T): T? {
+    override fun <T> getJson(
+        key: String,
+        deserializer: (String) -> T
+    ): T? {
         val rawValue = cache[key]?.value ?: return null
         return try {
             deserializer(rawValue)
@@ -137,11 +154,16 @@ class SystemSettingsServiceImpl @Inject constructor(
                 broadcastUpdate()
                 AppResult.Success(result.data)
             }
+
             is AppResult.Error -> result
         }
     }
 
-    override suspend fun updateSetting(key: String, value: String, type: SettingType): AppResult<SystemSetting> {
+    override suspend fun updateSetting(
+        key: String,
+        value: String,
+        type: SettingType
+    ): AppResult<SystemSetting> {
         val existing = cache[key]
         val settingToSave = existing?.copy(value = value) ?: SystemSetting(
             key = key,
@@ -156,20 +178,21 @@ class SystemSettingsServiceImpl @Inject constructor(
                 broadcastUpdate()
                 AppResult.Success(result.data)
             }
+
             is AppResult.Error -> result
         }
     }
 
-    override suspend fun deleteSetting(key: String): AppResult<Unit> {
-        return when (val result = systemSettingsManager.deleteSetting(key)) {
+    override suspend fun deleteSetting(key: String): AppResult<Unit> =
+        when (val result = systemSettingsManager.deleteSetting(key)) {
             is AppResult.Success -> {
                 cache.remove(key)
                 broadcastUpdate()
                 AppResult.Success(Unit)
             }
+
             is AppResult.Error -> result
         }
-    }
 
     private suspend fun reloadCache() {
         reloadMutex.withLock {
@@ -186,11 +209,14 @@ class SystemSettingsServiceImpl @Inject constructor(
     private fun broadcastUpdate() {
         val event = SettingsUpdateEvent(senderId = instanceId)
         scope.launch {
-            redisManager.publish(SETTINGS_CHANNEL, FoundationJson.encodeToString(event))
+            redisManager.publish(
+                SETTINGS_CHANNEL,
+                FoundationJson.encodeToString(event)
+            )
         }
     }
 
-    companion object {
+    public companion object {
         private const val SETTINGS_CHANNEL = "system_settings_updates"
     }
 }

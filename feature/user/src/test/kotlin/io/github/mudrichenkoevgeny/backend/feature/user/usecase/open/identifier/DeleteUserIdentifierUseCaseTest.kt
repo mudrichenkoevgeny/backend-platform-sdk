@@ -5,9 +5,6 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorPars
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
@@ -22,6 +19,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -31,11 +31,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DeleteUserIdentifierUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
     private val identifierManager = mockk<IdentifierManager>()
@@ -57,14 +59,23 @@ class DeleteUserIdentifierUseCaseTest {
     fun `successfully deletes identifier and notifies associated sessions`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val currentSession = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
+        val currentSession = createTestUserSessionInternal(
+            id = context.sessionId,
+            userId = context.userId
+        )
 
         val idToDelete = UserIdentifierId.generate()
         val otherId = UserIdentifierId.generate()
 
         val identifiers = listOf(
-            createTestUserIdentifierInternal(id = idToDelete, userId = context.userId),
-            createTestUserIdentifierInternal(id = otherId, userId = context.userId)
+            createTestUserIdentifierInternal(
+                id = idToDelete,
+                userId = context.userId
+            ),
+            createTestUserIdentifierInternal(
+                id = otherId,
+                userId = context.userId
+            )
         )
 
         val sessionToNotifyId = UserSessionId.generate()
@@ -81,24 +92,55 @@ class DeleteUserIdentifierUseCaseTest {
         )
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.USER_IDENTIFIER_DELETE, any())
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.USER_IDENTIFIER_DELETE,
+                any()
+            )
         } returns AppResult.Success(Unit)
 
         coEvery { userManager.getUserInternalById(context.userId) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(context.sessionId) } returns AppResult.Success(currentSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
 
-        coEvery { identifierManager.getUserIdentifiersInternalPageByUserId(context.userId) } returns AppResult.Success(identifiers)
-        coEvery { sessionManager.getAllUserSessionsInternalList(context.userId) } returns AppResult.Success(listOf(sessionToNotify, otherSession))
+        coEvery { identifierManager.getUserIdentifiersInternalPageByUserId(context.userId) } returns AppResult.Success(
+            identifiers
+        )
+        coEvery { sessionManager.getAllUserSessionsInternalList(context.userId) } returns AppResult.Success(
+            listOf(
+                sessionToNotify,
+                otherSession
+            )
+        )
 
         coEvery { identifierManager.deleteUserIdentifier(idToDelete) } returns AppResult.Success(Unit)
 
-        val result = useCase(idToDelete, context)
+        val result = useCase(
+            idToDelete,
+            context
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
 
-        coVerify(exactly = 1) { webSocketManager.sendMessageToUserSession(sessionToNotifyId, any()) }
-        coVerify(exactly = 0) { webSocketManager.sendMessageToUserSession(otherSessionId, any()) }
+        coVerify(exactly = 1) {
+            webSocketManager.sendMessageToUserSession(
+                sessionToNotifyId,
+                any()
+            )
+        }
+        coVerify(exactly = 0) {
+            webSocketManager.sendMessageToUserSession(
+                otherSessionId,
+                any()
+            )
+        }
 
         coVerify(exactly = 1) {
             auditLogger.log(
@@ -119,20 +161,41 @@ class DeleteUserIdentifierUseCaseTest {
     fun `returns error when trying to delete the last identifier`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val currentSession = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
+        val currentSession = createTestUserSessionInternal(
+            id = context.sessionId,
+            userId = context.userId
+        )
         val idToDelete = UserIdentifierId.generate()
 
         val identifiers = listOf(
-            createTestUserIdentifierInternal(id = idToDelete, userId = context.userId)
+            createTestUserIdentifierInternal(
+                id = idToDelete,
+                userId = context.userId
+            )
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(currentSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { identifierManager.getUserIdentifiersInternalPageByUserId(any()) } returns AppResult.Success(identifiers)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery { identifierManager.getUserIdentifiersInternalPageByUserId(any()) } returns AppResult.Success(
+            identifiers
+        )
 
-        val result = useCase(idToDelete, context)
+        val result = useCase(
+            idToDelete,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.CannotDeleteUserIdentifier)
@@ -144,23 +207,47 @@ class DeleteUserIdentifierUseCaseTest {
     fun `returns error when identifier not found in user list`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val currentSession = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
+        val currentSession = createTestUserSessionInternal(
+            id = context.sessionId,
+            userId = context.userId
+        )
         val unknownId = UserIdentifierId.generate()
         val existingId = UserIdentifierId.generate()
         val existingId2 = UserIdentifierId.generate()
 
         val identifiers = listOf(
-            createTestUserIdentifierInternal(id = existingId, userId = context.userId),
-            createTestUserIdentifierInternal(id = existingId2, userId = context.userId)
+            createTestUserIdentifierInternal(
+                id = existingId,
+                userId = context.userId
+            ),
+            createTestUserIdentifierInternal(
+                id = existingId2,
+                userId = context.userId
+            )
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(currentSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { identifierManager.getUserIdentifiersInternalPageByUserId(any()) } returns AppResult.Success(identifiers)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery { identifierManager.getUserIdentifiersInternalPageByUserId(any()) } returns AppResult.Success(
+            identifiers
+        )
 
-        val result = useCase(unknownId, context)
+        val result = useCase(
+            unknownId,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 0) { identifierManager.deleteUserIdentifier(any()) }

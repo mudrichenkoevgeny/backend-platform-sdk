@@ -1,9 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auditevent
 
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventPrivate
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.AuditManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -13,6 +11,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.eve
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -22,15 +22,20 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class GetAuditEventUseCaseTest {
-
     @Test
     fun `returns UserForbidden when current user is not found`() = runTest {
         val userId = UserId.generate()
         val userManager = mockk<UserManager>()
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(null)
-        val useCase = GetAuditEventUseCase(userManager, mockk(relaxed = true))
+        val useCase = GetAuditEventUseCase(
+            userManager,
+            mockk(relaxed = true)
+        )
 
-        val result = useCase(AuditEventId.generate(), createTestAuthenticatedRequestContext(userId = userId))
+        val result = useCase(
+            AuditEventId.generate(),
+            createTestAuthenticatedRequestContext(userId = userId)
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.UserForbidden)
@@ -39,45 +44,85 @@ class GetAuditEventUseCaseTest {
     @Test
     fun `returns NotFound when audit manager returns null event`() = runTest {
         val userId = UserId.generate()
-        val userInternal = createTestUserInternal(id = userId, role = UserRole.ADMIN)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            role = UserRole.ADMIN
+        )
         val eventId = AuditEventId.generate()
         val userManager = mockk<UserManager>()
         val auditManager = mockk<AuditManager>()
 
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery {
-            auditManager.getAuditEventPrivateById(eventId, userId, userInternal.permissionCodes)
+            auditManager.getAuditEventPrivateById(
+                eventId,
+                userId,
+                userInternal.permissionCodes
+            )
         } returns AppResult.Success(null)
 
-        val useCase = GetAuditEventUseCase(userManager, auditManager)
-        val result = useCase(eventId, createTestAuthenticatedRequestContext(userId = userId))
+        val useCase = GetAuditEventUseCase(
+            userManager,
+            auditManager
+        )
+        val result = useCase(
+            eventId,
+            createTestAuthenticatedRequestContext(userId = userId)
+        )
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
         assertTrue(error is CommonError.NotFound)
-        assertEquals(AuditEventPrivate::class.java.simpleName, (error as CommonError.NotFound).resource)
+        assertEquals(
+            AuditEventPrivate::class.java.simpleName,
+            (error as CommonError.NotFound).resource
+        )
     }
 
     @Test
     fun `returns event from audit manager`() = runTest {
         val userId = UserId.generate()
-        val userInternal = createTestUserInternal(id = userId, role = UserRole.ADMIN)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            role = UserRole.ADMIN
+        )
         val eventId = AuditEventId.generate()
-        val event = createTestAuditEventPrivate(id = eventId, actorType = AuditActorType.USER, resourceId = "r1")
+        val event = createTestAuditEventPrivate(
+            id = eventId,
+            actorType = AuditActorType.USER,
+            resourceId = "r1"
+        )
         val userManager = mockk<UserManager>()
         val auditManager = mockk<AuditManager>()
 
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery {
-            auditManager.getAuditEventPrivateById(eventId, userId, userInternal.permissionCodes)
+            auditManager.getAuditEventPrivateById(
+                eventId,
+                userId,
+                userInternal.permissionCodes
+            )
         } returns AppResult.Success(event)
 
-        val useCase = GetAuditEventUseCase(userManager, auditManager)
-        val result = useCase(eventId, createTestAuthenticatedRequestContext(userId = userId))
+        val useCase = GetAuditEventUseCase(
+            userManager,
+            auditManager
+        )
+        val result = useCase(
+            eventId,
+            createTestAuthenticatedRequestContext(userId = userId)
+        )
 
-        assertEquals(AppResult.Success(event), result)
+        assertEquals(
+            AppResult.Success(event),
+            result
+        )
         coVerify(exactly = 1) {
-            auditManager.getAuditEventPrivateById(eventId, userId, userInternal.permissionCodes)
+            auditManager.getAuditEventPrivateById(
+                eventId,
+                userId,
+                userInternal.permissionCodes
+            )
         }
     }
 }

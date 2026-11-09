@@ -11,7 +11,7 @@ package io.github.mudrichenkoevgeny.backend.core.database.config.model
  * @param redisUrl Redis connection URL.
  * @param redisTimeoutSeconds Redis connection timeout in seconds.
  */
-data class DatabaseConfig(
+public data class DatabaseConfig(
     val dbUrl: String,
     val dbUser: String,
     val dbPassword: String,
@@ -20,9 +20,8 @@ data class DatabaseConfig(
     val redisUrl: String,
     val redisTimeoutSeconds: Long
 ) {
-
-    companion object {
+    public companion object {
         /** Default Flyway locations when migrationPaths is not overridden. */
-        val defaultMigrationPaths = listOf("classpath:db/migration")
+        public val defaultMigrationPaths: List<String> = listOf("classpath:db/migration")
     }
 }

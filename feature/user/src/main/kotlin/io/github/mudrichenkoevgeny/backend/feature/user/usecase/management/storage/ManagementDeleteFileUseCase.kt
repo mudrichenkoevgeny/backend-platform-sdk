@@ -34,13 +34,12 @@ import javax.inject.Singleton
  * @property userManager Manager for retrieving user account status and permissions.
  */
 @Singleton
-class ManagementDeleteFileUseCase @Inject constructor(
+public class ManagementDeleteFileUseCase @Inject constructor(
     private val storageManager: StorageManager,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val userManager: UserManager
 ) {
-
     /**
      * Executes administrative file deletion in the database.
      *
@@ -48,7 +47,7 @@ class ManagementDeleteFileUseCase @Inject constructor(
      * @param authenticatedRequestContext Context containing the authenticated user's ID.
      * @return [AppResult.Success] on completion, or [AppResult.Error] on failure.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         fileId: FileId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
@@ -106,6 +105,7 @@ class ManagementDeleteFileUseCase @Inject constructor(
                 )
                 deleteResult
             }
+
             is AppResult.Error -> handleError(
                 error = deleteResult.error,
                 actorId = auditActorId,

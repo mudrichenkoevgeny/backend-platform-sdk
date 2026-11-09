@@ -41,7 +41,7 @@ import kotlin.uuid.Uuid
  * with [SettingsWebSocketEventTypes.OPEN_GLOBAL_SETTINGS_UPDATED] and [SettingsWebSocketEventTypes.MANAGEMENT_GLOBAL_SETTINGS_UPDATED] frames.
  */
 @Singleton
-class UpdateGlobalSettingsUseCase @Inject constructor(
+public class UpdateGlobalSettingsUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -71,7 +71,7 @@ class UpdateGlobalSettingsUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] indicating success or the specific [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         managementGlobalSettings: ManagementGlobalSettings,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<ManagementGlobalSettings> {
@@ -89,6 +89,7 @@ class UpdateGlobalSettingsUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 
@@ -120,7 +121,9 @@ class UpdateGlobalSettingsUseCase @Inject constructor(
             )
         }
 
-        val updateGlobalSettingsResult = globalSettingsProvider.updateManagementGlobalSettings(managementGlobalSettings)
+        val updateGlobalSettingsResult = globalSettingsProvider.updateManagementGlobalSettings(
+            managementGlobalSettings
+        )
 
         if (updateGlobalSettingsResult is AppResult.Error) {
             return handleError(
@@ -155,7 +158,8 @@ class UpdateGlobalSettingsUseCase @Inject constructor(
             )
         )
 
-        val managementGlobalSettingsPayload = globalSettingsProvider.getManagementGlobalSettings().toManagementGlobalSettingsPayload()
+        val managementGlobalSettingsPayload = globalSettingsProvider.getManagementGlobalSettings()
+            .toManagementGlobalSettingsPayload()
         webSocketManager.sendMessageToScope(
             scope = ApiScope.MANAGEMENT,
             frame = SocketFrame(

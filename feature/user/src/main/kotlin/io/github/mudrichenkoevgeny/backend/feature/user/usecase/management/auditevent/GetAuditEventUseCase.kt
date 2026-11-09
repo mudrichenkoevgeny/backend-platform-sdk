@@ -3,8 +3,8 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.audi
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.AuditManager
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.AuditManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
@@ -14,8 +14,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to get an audit event.
+ */
 @Singleton
-class GetAuditEventUseCase @Inject constructor(
+public class GetAuditEventUseCase @Inject constructor(
     private val userManager: UserManager,
     private val auditManager: AuditManager
 ) {
@@ -40,7 +43,7 @@ class GetAuditEventUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management caller.
      * @return [AppResult] containing the [AuditEventPrivate] if found and authorized.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         auditEventId: AuditEventId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<AuditEventPrivate> {

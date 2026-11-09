@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test
  * The resulting instance has status [AuditStatus.FAILED] and includes error ID and code in metadata.
  */
 class CommonAuditErrorParserTest {
-
     private val parser = CommonAuditErrorParser()
 
     @Test
@@ -29,10 +28,16 @@ class CommonAuditErrorParserTest {
 
         val idMeta = result.metadata.find { it.key == CommonAuditMetadataKey.ERROR_ID }
         val idMetaValue = checkNotNull(idMeta).value
-        assertEquals(appError.errorId.asHexDashString(), idMetaValue)
+        assertEquals(
+            appError.errorId.asHexDashString(),
+            idMetaValue
+        )
 
         val codeMeta = result.metadata.find { it.key == CommonAuditMetadataKey.ERROR_CODE }
         val codeMetaValue = checkNotNull(codeMeta).value
-        assertEquals("CUSTOM_ERROR_CODE", codeMetaValue)
+        assertEquals(
+            "CUSTOM_ERROR_CODE",
+            codeMetaValue
+        )
     }
 }

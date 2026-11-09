@@ -12,9 +12,8 @@ import javax.inject.Singleton
  * Configures [StorageScheduledJobs] as a singleton by binding its concrete implementation [StorageScheduledJobsImpl].
  */
 @Module
-interface StorageScheduledJobsModule {
-
+public interface StorageScheduledJobsModule {
     @Binds
     @Singleton
-    fun bindStorageScheduledJobs(impl: StorageScheduledJobsImpl): StorageScheduledJobs
+    public fun bindStorageScheduledJobs(impl: StorageScheduledJobsImpl): StorageScheduledJobs
 }

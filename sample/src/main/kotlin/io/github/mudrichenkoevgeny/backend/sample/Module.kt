@@ -41,9 +41,7 @@ import kotlinx.coroutines.launch
  * On [ApplicationStarted], runs health checks and seeds default data/settings via the corresponding
  * injected use cases.
  */
-fun Application.module(
-    appComponent: AppComponent
-) {
+public fun Application.module(appComponent: AppComponent) {
     val commonConfig = appComponent.commonConfig()
     val telemetryProvider = appComponent.telemetryProvider()
     val appLogger = appComponent.appLogger()
@@ -64,12 +62,13 @@ fun Application.module(
 
             launch {
                 appComponent.seedAdminAccountsUseCase()(
-                    permissionCodesForUserCreation = setOf(SettingsPermissionCode.GLOBAL_SETTINGS_UPDATE)
-                            + setOf(SecurityPermissionCode.SECURITY_SETTINGS_UPDATE)
-                            + setOf(AuthSettingsPermissionCode.AUTH_SETTINGS_UPDATE)
-                            + StoragePermissionCode.ALL
-                            + AuditPermissionCode.ALL + UserPermissionCode.ALL + IdentifierPermissionCode.ALL +
-                            SessionPermissionCode.ALL
+                    permissionCodesForUserCreation = setOf(SettingsPermissionCode.GLOBAL_SETTINGS_UPDATE) + setOf(
+                        SecurityPermissionCode.SECURITY_SETTINGS_UPDATE
+                    ) + setOf(
+                        AuthSettingsPermissionCode.AUTH_SETTINGS_UPDATE
+                    ) + StoragePermissionCode.ALL + AuditPermissionCode.ALL + UserPermissionCode.ALL +
+                        IdentifierPermissionCode.ALL +
+                        SessionPermissionCode.ALL
                 )
                 appComponent.seedGlobalSettingsUseCase()()
                 appComponent.seedSecuritySettingsUseCase()()
@@ -82,7 +81,10 @@ fun Application.module(
     appComponent.authenticationProvider().configureAuthentication(this)
 
     configureSerialization()
-    configureObservability(telemetryProvider, appLogger)
+    configureObservability(
+        telemetryProvider,
+        appLogger
+    )
     configureStatusPages(
         appErrorParser = appComponent.appErrorParser(),
         appLogger = appLogger
@@ -117,10 +119,12 @@ fun Application.module(
                 appComponent.openWebSocketRouter().register(this)
                 appComponent.openCoreUserRouter().register(this)
             }
+
             AppInstanceMode.MANAGEMENT -> {
                 appComponent.managementWebSocketRouter().register(this)
                 appComponent.managementCoreUserRouter().register(this)
             }
+
             AppInstanceMode.FULL -> {
                 appComponent.openWebSocketRouter().register(this)
                 appComponent.managementWebSocketRouter().register(this)

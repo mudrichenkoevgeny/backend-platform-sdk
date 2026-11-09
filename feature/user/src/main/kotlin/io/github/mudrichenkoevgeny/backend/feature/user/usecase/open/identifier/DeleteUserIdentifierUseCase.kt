@@ -19,10 +19,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.met
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
@@ -30,8 +30,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
 
+/**
+ * Use case to delete a user authentication identifier.
+ */
 @Singleton
-class DeleteUserIdentifierUseCase @Inject constructor(
+public class DeleteUserIdentifierUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -62,7 +65,7 @@ class DeleteUserIdentifierUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] indicating successful deletion.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         userIdentifierId: UserIdentifierId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
@@ -95,8 +98,7 @@ class DeleteUserIdentifierUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserInternalById(currentUserId)
-            .mapNotNullOrError(UserError.UserForbidden())
+        val userResult = userManager.getUserInternalById(currentUserId).mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (userResult) {
             is AppResult.Error -> return handleError(
@@ -106,6 +108,7 @@ class DeleteUserIdentifierUseCase @Inject constructor(
                 resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 
@@ -188,6 +191,7 @@ class DeleteUserIdentifierUseCase @Inject constructor(
                     baseMetadata = auditMetadata
                 )
             }
+
             is AppResult.Success -> {
                 val sessionsToDelete = userSessions.filter { it.identifierId == userIdentifierId }
                 sessionsToDelete.forEach { session ->

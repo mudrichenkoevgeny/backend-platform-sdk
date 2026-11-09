@@ -20,10 +20,10 @@ import javax.inject.Singleton
  * returns [UserError.ExternalIdentifierLinkageFailed].
  */
 @Singleton
-class GoogleAuthVerifier @Inject constructor(
+public class GoogleAuthVerifier @Inject constructor(
     @param:GoogleWebClientId private val webClientId: String?
 ) : ExternalAuthVerifier {
-    override val provider = UserAuthProvider.GOOGLE
+    public override val provider: UserAuthProvider = UserAuthProvider.GOOGLE
 
     private val verifier by lazy {
         webClientId?.let {
@@ -32,8 +32,7 @@ class GoogleAuthVerifier @Inject constructor(
     }
 
     override suspend fun verify(token: String): AppResult<ExternalAuthProviderData> {
-        val authVerifier = verifier
-            ?: return AppResult.Error(UserError.ExternalIdentifierLinkageFailed())
+        val authVerifier = verifier ?: return AppResult.Error(UserError.ExternalIdentifierLinkageFailed())
 
         return withContext(Dispatchers.IO) {
             try {
@@ -47,8 +46,11 @@ class GoogleAuthVerifier @Inject constructor(
                     null
                 }
 
-                val displayName = (payload.get("name") as? String)?.takeIf { it.isNotBlank() }
-                    ?: (payload.get("given_name") as? String)?.takeIf { it.isNotBlank() }
+                val displayName = (payload.get("name") as? String)?.takeIf { it.isNotBlank() } ?: (
+                    payload.get(
+                        "given_name"
+                    ) as? String
+                    )?.takeIf { it.isNotBlank() }
 
                 if (externalId == null) {
                     AppResult.Error(UserError.ExternalIdentifierLinkageFailed())

@@ -5,8 +5,6 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorPars
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserPrivate
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
@@ -18,6 +16,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserPrivate
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -30,11 +30,13 @@ private const val TEST_EMAIL = "test@example.com"
 private const val TEST_PASSWORD = "password123"
 
 class LoginByEmailUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val authManager = mockk<AuthManager>()
 
     private val useCase = LoginByEmailUseCase(
@@ -48,11 +50,17 @@ class LoginByEmailUseCaseTest {
     fun `successfully authenticates user and logs audit`() = runTest {
         val context = createTestRequestContext()
         val userId = UserId.generate()
-        val userPrivate = createTestUserPrivate(id = userId, role = UserRole.USER)
+        val userPrivate = createTestUserPrivate(
+            id = userId,
+            role = UserRole.USER
+        )
         val authData = createTestAuthData(userPrivate = userPrivate)
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_EMAIL)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.LOGIN_ATTEMPT,
+                TEST_EMAIL
+            )
         } returns AppResult.Success(Unit)
 
         coEvery {
@@ -66,9 +74,16 @@ class LoginByEmailUseCaseTest {
             )
         } returns AppResult.Success(authData)
 
-        val result = useCase(TEST_EMAIL, TEST_PASSWORD, context)
+        val result = useCase(
+            TEST_EMAIL,
+            TEST_PASSWORD,
+            context
+        )
 
-        assertEquals(AppResult.Success(authData), result)
+        assertEquals(
+            AppResult.Success(authData),
+            result
+        )
 
         coVerify(exactly = 1) {
             auditLogger.log(
@@ -91,10 +106,17 @@ class LoginByEmailUseCaseTest {
         val error = UserError.InvalidCredentials()
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_EMAIL)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.LOGIN_ATTEMPT,
+                TEST_EMAIL
+            )
         } returns AppResult.Error(error)
 
-        val result = useCase(TEST_EMAIL, TEST_PASSWORD, context)
+        val result = useCase(
+            TEST_EMAIL,
+            TEST_PASSWORD,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {
@@ -117,7 +139,12 @@ class LoginByEmailUseCaseTest {
         val context = createTestRequestContext()
         val authError = UserError.InvalidCredentials()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery {
             authManager.authenticateExistingUser(
                 clientInfo = any(),
@@ -130,7 +157,11 @@ class LoginByEmailUseCaseTest {
             )
         } returns AppResult.Error(authError)
 
-        val result = useCase(TEST_EMAIL, TEST_PASSWORD, context)
+        val result = useCase(
+            TEST_EMAIL,
+            TEST_PASSWORD,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {

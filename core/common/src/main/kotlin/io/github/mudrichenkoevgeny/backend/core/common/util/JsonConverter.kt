@@ -10,8 +10,7 @@ import kotlin.uuid.Uuid
 /**
  * Helpers for converting arbitrary Kotlin values into kotlinx.serialization [JsonElement] trees.
  */
-object JsonConverter {
-
+public object JsonConverter {
     /**
      * Converts a single [value] into a [JsonElement] using the following rules:
      * - `null` → [JsonNull]
@@ -22,7 +21,7 @@ object JsonConverter {
      * - [Map] → [JsonObject] with keys converted to strings and values converted recursively
      * - any other type → [JsonPrimitive] with `value.toString()`
      */
-    fun toElement(value: Any?): JsonElement = when (value) {
+    public fun toElement(value: Any?): JsonElement = when (value) {
         null -> JsonNull
         is JsonElement -> value
         is String -> JsonPrimitive(value)
@@ -37,9 +36,7 @@ object JsonConverter {
     /**
      * Converts a [map] of arbitrary values into a [JsonObject] using [toElement] for each entry.
      */
-    fun toJsonObject(map: Map<String, Any?>): JsonObject {
-        return JsonObject(map.mapValues { toElement(it.value) })
-    }
+    public fun toJsonObject(map: Map<String, Any?>): JsonObject = JsonObject(map.mapValues { toElement(it.value) })
 }
 
 /**
@@ -47,9 +44,7 @@ object JsonConverter {
  *
  * Entries whose value would result in `null` are dropped.
  */
-fun Map<String, Any?>.toJsonElementMap(): Map<String, JsonElement> =
-    mapNotNull { (key, value) ->
-        val jsonValue = value?.let { JsonConverter.toElement(it) }
-        jsonValue?.let { key to it }
-    }.toMap()
-
+public fun Map<String, Any?>.toJsonElementMap(): Map<String, JsonElement> = mapNotNull { (key, value) ->
+    val jsonValue = value?.let { JsonConverter.toElement(it) }
+    jsonValue?.let { key to it }
+}.toMap()

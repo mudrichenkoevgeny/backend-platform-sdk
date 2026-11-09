@@ -11,13 +11,11 @@ import javax.inject.Singleton
  * Delegates to [GlobalSettingsProvider.initialize].
  */
 @Singleton
-class SeedGlobalSettingsUseCase @Inject constructor(
+public class SeedGlobalSettingsUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider
 ) {
     /**
      * Seeds default values (if any) and returns the result.
      */
-    suspend operator fun invoke(): AppResult<Unit> {
-        return globalSettingsProvider.initialize()
-    }
+    public suspend operator fun invoke(): AppResult<Unit> = globalSettingsProvider.initialize()
 }

@@ -34,7 +34,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ApplicationStatusPagesTest {
-
     private lateinit var appErrorParser: AppErrorParser
     private lateinit var appLogger: AppLogger
 
@@ -58,7 +57,10 @@ class ApplicationStatusPagesTest {
 
         application {
             install(ContentNegotiation) { json() }
-            configureStatusPages(appErrorParser, appLogger)
+            configureStatusPages(
+                appErrorParser,
+                appLogger
+            )
             routing {
                 get("/test") { throw RequestHandlingException(expectedError) }
             }
@@ -66,7 +68,10 @@ class ApplicationStatusPagesTest {
 
         val response = client.get("/test")
 
-        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals(
+            HttpStatusCode.BadRequest,
+            response.status
+        )
         coVerify { appErrorParser.getApiErrorResponse(expectedError) }
         verify { appLogger.logError(expectedError) }
     }
@@ -84,11 +89,17 @@ class ApplicationStatusPagesTest {
 
         application {
             install(ContentNegotiation) { json() }
-            configureStatusPages(appErrorParser, appLogger)
+            configureStatusPages(
+                appErrorParser,
+                appLogger
+            )
             routing {
                 post("/test") {
                     val body = call.receive<Map<String, String>>()
-                    call.respond(status = HttpStatusCode.OK, message = body)
+                    call.respond(
+                        status = HttpStatusCode.OK,
+                        message = body
+                    )
                 }
             }
         }
@@ -98,7 +109,10 @@ class ApplicationStatusPagesTest {
             setBody("{invalid json}")
         }
 
-        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals(
+            HttpStatusCode.BadRequest,
+            response.status
+        )
         coVerify { appErrorParser.getApiErrorResponse(any()) }
         verify { appLogger.logError(any()) }
     }
@@ -116,7 +130,10 @@ class ApplicationStatusPagesTest {
 
         application {
             install(ContentNegotiation) { json() }
-            configureStatusPages(appErrorParser, appLogger)
+            configureStatusPages(
+                appErrorParser,
+                appLogger
+            )
             routing {
                 get("/bad-request") { throw BadRequestException("bad request") }
             }
@@ -124,7 +141,10 @@ class ApplicationStatusPagesTest {
 
         val response = client.get("/bad-request")
 
-        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals(
+            HttpStatusCode.BadRequest,
+            response.status
+        )
         coVerify { appErrorParser.getApiErrorResponse(any<CommonError.BadRequest>()) }
         verify { appLogger.logError(any<CommonError.BadRequest>()) }
     }
@@ -142,7 +162,10 @@ class ApplicationStatusPagesTest {
 
         application {
             install(ContentNegotiation) { json() }
-            configureStatusPages(appErrorParser, appLogger)
+            configureStatusPages(
+                appErrorParser,
+                appLogger
+            )
             routing {
                 get("/throw") { throw RuntimeException("boom") }
             }
@@ -150,7 +173,10 @@ class ApplicationStatusPagesTest {
 
         val response = client.get("/throw")
 
-        assertEquals(HttpStatusCode.InternalServerError, response.status)
+        assertEquals(
+            HttpStatusCode.InternalServerError,
+            response.status
+        )
         coVerify { appErrorParser.getApiErrorResponse(any<CommonError.Internal>()) }
         verify { appLogger.logError(any<CommonError.Internal>()) }
     }

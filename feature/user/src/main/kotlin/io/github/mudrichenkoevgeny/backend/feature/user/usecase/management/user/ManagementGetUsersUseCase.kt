@@ -14,8 +14,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.to
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to get users.
+ */
 @Singleton
-class ManagementGetUsersUseCase @Inject constructor(
+public class ManagementGetUsersUseCase @Inject constructor(
     private val userManager: UserManager
 ) {
     /**
@@ -37,7 +40,7 @@ class ManagementGetUsersUseCase @Inject constructor(
      * @param authenticatedRequestContext Context containing the ID of the manager performing the search.
      * @return [AppResult] containing [PagedResult] of [UserSummary].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         queryParams: UserListQueryParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<UserSummary>> {

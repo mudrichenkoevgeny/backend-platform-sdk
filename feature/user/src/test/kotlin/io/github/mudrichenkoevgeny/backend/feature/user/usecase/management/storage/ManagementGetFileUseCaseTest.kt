@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test
 import kotlin.time.Clock
 
 class ManagementGetFileUseCaseTest {
-
     private val storageManager = mockk<StorageManager>()
     private val userManager = mockk<UserManager>()
 
@@ -68,16 +67,25 @@ class ManagementGetFileUseCaseTest {
             )
         } returns AppResult.Success(filePrivate)
 
-        val result = useCase(fileId, context)
+        val result = useCase(
+            fileId,
+            context
+        )
 
-        assertEquals(AppResult.Success(filePrivate), result)
+        assertEquals(
+            AppResult.Success(filePrivate),
+            result
+        )
     }
 
     @Test
     fun `returns UserForbidden error when management user is not found`() = runTest {
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(null)
 
-        val result = useCase(fileId, context)
+        val result = useCase(
+            fileId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserForbidden)
     }
@@ -93,7 +101,10 @@ class ManagementGetFileUseCaseTest {
 
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
 
-        val result = useCase(fileId, context)
+        val result = useCase(
+            fileId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserMissingPermissions)
     }
@@ -115,7 +126,10 @@ class ManagementGetFileUseCaseTest {
             )
         } returns AppResult.Success(null)
 
-        val result = useCase(fileId, context)
+        val result = useCase(
+            fileId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is CommonError.NotFound)
     }

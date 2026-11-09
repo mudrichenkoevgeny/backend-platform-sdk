@@ -2,9 +2,9 @@ package io.github.mudrichenkoevgeny.backend.feature.user.network.query
 
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.firstNonBlankQueryValue
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseBooleanQueryOrNull
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseTimestampQueryOrNull
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseValidatedQueryList
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfIdentifierListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserIdentifierFilterValues
@@ -15,7 +15,7 @@ import kotlin.uuid.Uuid
 /**
  * Parses self-service user-identifier list query parameters with strict validation.
  */
-fun ApplicationCall.parseSelfIdentifiersListQueryParams(): SelfIdentifierListQueryParams {
+public fun ApplicationCall.parseSelfIdentifiersListQueryParams(): SelfIdentifierListQueryParams {
     val filterNames = UserIdentifierFilterValues
 
     return SelfIdentifierListQueryParams(
@@ -24,8 +24,14 @@ fun ApplicationCall.parseSelfIdentifiersListQueryParams(): SelfIdentifierListQue
             parseSortByOrNull = UserIdentifierSortBy::fromValueOrNull
         ),
         identifierIds = parseValidatedQueryList(filterNames.IDENTIFIER_ID) { Uuid.parseOrNull(it)?.toString() },
-        userAuthProviders = parseValidatedQueryList(filterNames.USER_AUTH_PROVIDER, UserAuthProvider::fromValueOrNull),
-        excludeUserAuthProviders = parseValidatedQueryList(filterNames.EXCLUDE_USER_AUTH_PROVIDER, UserAuthProvider::fromValueOrNull),
+        userAuthProviders = parseValidatedQueryList(
+            filterNames.USER_AUTH_PROVIDER,
+            UserAuthProvider::fromValueOrNull
+        ),
+        excludeUserAuthProviders = parseValidatedQueryList(
+            filterNames.EXCLUDE_USER_AUTH_PROVIDER,
+            UserAuthProvider::fromValueOrNull
+        ),
         identifier = firstNonBlankQueryValue(filterNames.IDENTIFIER),
         displayName = firstNonBlankQueryValue(filterNames.DISPLAY_NAME),
         externalProviderEmail = firstNonBlankQueryValue(filterNames.EXTERNAL_PROVIDER_EMAIL),

@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
  * @property payload specific command or key associated with the update, defaults to "refresh"
  */
 @Serializable
-data class SettingsUpdateEvent(
+public data class SettingsUpdateEvent(
     val senderId: String,
     val payload: String = "refresh"
 )

@@ -14,6 +14,7 @@ import io.github.mudrichenkoevgeny.backend.core.database.dsl.applyPagination
 import io.github.mudrichenkoevgeny.backend.core.database.dsl.applyTimestampFilter
 import io.github.mudrichenkoevgeny.backend.core.database.dsl.jsonbContainsAllStrings
 import io.github.mudrichenkoevgeny.backend.core.database.dsl.substringSqlLikePattern
+import io.github.mudrichenkoevgeny.backend.core.database.error.PostgreSqlErrorCodes
 import io.github.mudrichenkoevgeny.backend.core.database.mapper.toExposedSortOrder
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UsersTable
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
@@ -25,12 +26,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.pe
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSortBy
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserStorageConfiguration
 import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
@@ -39,20 +41,18 @@ import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.core.lowerCase
+import org.jetbrains.exposed.v1.core.not
 import org.jetbrains.exposed.v1.core.notInList
 import org.jetbrains.exposed.v1.core.or
-import org.jetbrains.exposed.v1.core.dao.id.EntityID
-import org.jetbrains.exposed.v1.core.not
-import io.github.mudrichenkoevgeny.backend.core.database.error.PostgreSqlErrorCodes
 import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
-import kotlin.uuid.Uuid
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.uuid.Uuid
 import java.time.Instant as JavaInstant
 import kotlin.time.Instant as KotlinInstant
 
@@ -63,8 +63,7 @@ import kotlin.time.Instant as KotlinInstant
  * Returns [CommonError.Database] when inserts/updates report no affected rows.
  */
 @Singleton
-class UserRepositoryImpl @Inject constructor() : UserRepository {
-
+public class UserRepositoryImpl @Inject constructor() : UserRepository {
     override suspend fun createUser(user: UserInternal): AppResult<UserInternal> {
         try {
             val inserted = UsersTable.insert { row ->
@@ -102,7 +101,10 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             return AppResult.Success(user)
         } catch (e: ExposedSQLException) {
             val isUniqueViolation = e.sqlState == PostgreSqlErrorCodes.UNIQUE_VIOLATION
-            val isNicknameConstraint = e.message?.contains(UsersTable.NICKNAME_UNIQUE_INDEX_NAME, ignoreCase = true) == true
+            val isNicknameConstraint = e.message?.contains(
+                UsersTable.NICKNAME_UNIQUE_INDEX_NAME,
+                ignoreCase = true
+            ) == true
 
             if (isUniqueViolation && isNicknameConstraint) {
                 val nick = user.nickname ?: ""
@@ -124,19 +126,28 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         updateUserParams: UpdateUserParams
     ): AppResult<UserInternal> {
         val accountStatusToSet = if (updateUserParams.accountStatus is UpdateField.Set) {
-            updateUserParams.accountStatus.value
-                ?: return AppResult.Error(CommonError.Database("Status cannot be null"))
-        } else null
+            updateUserParams.accountStatus.value ?: return AppResult.Error(
+                CommonError.Database("Status cannot be null")
+            )
+        } else {
+            null
+        }
 
         val authorityLevelToSet = if (updateUserParams.authorityLevel is UpdateField.Set) {
-            updateUserParams.authorityLevel.value
-                ?: return AppResult.Error(CommonError.Database("Authority level cannot be null"))
-        } else null
+            updateUserParams.authorityLevel.value ?: return AppResult.Error(
+                CommonError.Database("Authority level cannot be null")
+            )
+        } else {
+            null
+        }
 
         val isTotpEnabledToSet = if (updateUserParams.isTotpEnabled is UpdateField.Set) {
-            updateUserParams.isTotpEnabled.value
-                ?: return AppResult.Error(CommonError.Database("isTotpEnabled cannot be null"))
-        } else null
+            updateUserParams.isTotpEnabled.value ?: return AppResult.Error(
+                CommonError.Database("isTotpEnabled cannot be null")
+            )
+        } else {
+            null
+        }
 
         val updatedAtJavaInstant = JavaInstant.now()
 
@@ -171,7 +182,8 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
                 }
 
                 updateUserParams.scheduledPermanentDeletionAt.onSet { scheduledPermanentDeletionAt ->
-                    updateStatement[UsersTable.scheduledPermanentDeletionAt] = scheduledPermanentDeletionAt?.toJavaInstant()
+                    updateStatement[UsersTable.scheduledPermanentDeletionAt] =
+                        scheduledPermanentDeletionAt?.toJavaInstant()
                 }
 
                 updateUserParams.lockoutType.onSet { accountLockoutType ->
@@ -210,7 +222,10 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             }
         } catch (e: ExposedSQLException) {
             val isUniqueViolation = e.sqlState == PostgreSqlErrorCodes.UNIQUE_VIOLATION
-            val isNicknameConstraint = e.message?.contains(UsersTable.NICKNAME_UNIQUE_INDEX_NAME, ignoreCase = true) == true
+            val isNicknameConstraint = e.message?.contains(
+                UsersTable.NICKNAME_UNIQUE_INDEX_NAME,
+                ignoreCase = true
+            ) == true
 
             if (isUniqueViolation && isNicknameConstraint) {
                 val newNick = (updateUserParams.nickname as? UpdateField.Set)?.value ?: ""
@@ -224,44 +239,32 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         return getUserInternalById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
     }
 
-    override suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?> {
-        return try {
-            AppResult.Success(getUserResultRow(userId)?.toUserInternal())
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error retrieving user by id: ${e.message}"))
-        }
+    override suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?> = try {
+        AppResult.Success(getUserResultRow(userId)?.toUserInternal())
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving user by id: ${e.message}"))
     }
 
-    override suspend fun getUserInternalByNickname(nickname: String): AppResult<UserInternal?> {
-        return try {
-            val resultRow = UsersTable
-                .selectAll()
-                .where { UsersTable.nickname.lowerCase() eq nickname.lowercase() }
-                .singleOrNull()
-
-            AppResult.Success(resultRow?.toUserInternal())
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error retrieving user by nickname: ${e.message}"))
-        }
-    }
-
-    private fun getUserResultRow(userId: UserId): ResultRow? {
-        return UsersTable
-            .selectAll()
-            .where { UsersTable.id eq userId.value }
+    override suspend fun getUserInternalByNickname(nickname: String): AppResult<UserInternal?> = try {
+        val resultRow = UsersTable.selectAll().where { UsersTable.nickname.lowerCase() eq nickname.lowercase() }
             .singleOrNull()
+
+        AppResult.Success(resultRow?.toUserInternal())
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving user by nickname: ${e.message}"))
     }
+
+    private fun getUserResultRow(userId: UserId): ResultRow? =
+        UsersTable.selectAll().where { UsersTable.id eq userId.value }.singleOrNull()
 
     override suspend fun getUsersPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter,
         queryParams: UserListQueryParams
-    ): AppResult<PagedResult<UserInternal>> {
-        return try {
-            val query = UsersTable.selectAll()
+    ): AppResult<PagedResult<UserInternal>> = try {
+        val query = UsersTable.selectAll()
 
         query.andWhere {
-            val roleConditions = accessFilter.allowedUserRoles
-                .map { allowedRole -> UsersTable.role eq allowedRole }
+            val roleConditions = accessFilter.allowedUserRoles.map { allowedRole -> UsersTable.role eq allowedRole }
             roleConditions.reduceOrNull { acc, op -> acc or op } ?: Op.FALSE
         }
 
@@ -292,7 +295,9 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             query.andWhere { UsersTable.accountStatusOnRestore inList queryParams.accountStatusesOnRestore }
         }
         if (queryParams.excludeAccountStatusesOnRestore.isNotEmpty()) {
-            query.andWhere { UsersTable.accountStatusOnRestore notInList queryParams.excludeAccountStatusesOnRestore }
+            query.andWhere {
+                UsersTable.accountStatusOnRestore notInList queryParams.excludeAccountStatusesOnRestore
+            }
         }
         query.applyNullabilityFilter(UsersTable.accountStatusOnRestore, queryParams.isAccountStatusOnRestoreSet)
 
@@ -381,10 +386,14 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         }
 
         if (queryParams.storageMaxUploadSizeBytesFrom != null) {
-            query.andWhere { UsersTable.storageMaxUploadSizeBytes greaterEq queryParams.storageMaxUploadSizeBytesFrom }
+            query.andWhere {
+                UsersTable.storageMaxUploadSizeBytes greaterEq queryParams.storageMaxUploadSizeBytesFrom
+            }
         }
         if (queryParams.storageMaxUploadSizeBytesTo != null) {
-            query.andWhere { UsersTable.storageMaxUploadSizeBytes lessEq queryParams.storageMaxUploadSizeBytesTo }
+            query.andWhere {
+                UsersTable.storageMaxUploadSizeBytes lessEq queryParams.storageMaxUploadSizeBytesTo
+            }
         }
         if (queryParams.isStorageMaxUploadSizeBytesSet == true) {
             query.andWhere { UsersTable.storageMaxUploadSizeBytes.isNotNull() }
@@ -393,23 +402,26 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         }
 
         if (queryParams.storageMaxPendingUploadsFrom != null) {
-            query.andWhere { UsersTable.storageMaxPendingUploads greaterEq queryParams.storageMaxPendingUploadsFrom }
+            query.andWhere {
+                UsersTable.storageMaxPendingUploads greaterEq queryParams.storageMaxPendingUploadsFrom
+            }
         }
         if (queryParams.storageMaxPendingUploadsTo != null) {
             query.andWhere { UsersTable.storageMaxPendingUploads lessEq queryParams.storageMaxPendingUploadsTo }
         }
-        query.applyNullabilityFilter(UsersTable.storageMaxPendingUploads, queryParams.isStorageMaxPendingUploadsSet)
+        query.applyNullabilityFilter(
+            UsersTable.storageMaxPendingUploads,
+            queryParams.isStorageMaxPendingUploadsSet
+        )
 
         if (queryParams.isStorageConfigurationSet == true) {
             query.andWhere {
-                UsersTable.storageQuotaBytes.isNotNull() or
-                    UsersTable.storageMaxUploadSizeBytes.isNotNull() or
+                UsersTable.storageQuotaBytes.isNotNull() or UsersTable.storageMaxUploadSizeBytes.isNotNull() or
                     UsersTable.storageMaxPendingUploads.isNotNull()
             }
         } else if (queryParams.isStorageConfigurationSet == false) {
             query.andWhere {
-                UsersTable.storageQuotaBytes.isNull() and
-                    UsersTable.storageMaxUploadSizeBytes.isNull() and
+                UsersTable.storageQuotaBytes.isNull() and UsersTable.storageMaxUploadSizeBytes.isNull() and
                     UsersTable.storageMaxPendingUploads.isNull()
             }
         }
@@ -417,19 +429,22 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
         if (!queryParams.searchQuery.isNullOrBlank()) {
             val pattern = substringSqlLikePattern(queryParams.searchQuery.lowercase())
             query.andWhere {
-                (UsersTable.nickname.lowerCase() like pattern) or
-                        (UsersTable.displayName.lowerCase() like pattern)
+                (UsersTable.nickname.lowerCase() like pattern) or (UsersTable.displayName.lowerCase() like pattern)
             }
         }
 
         if (queryParams.requiredPermissionCodes.isNotEmpty()) {
             query.andWhere {
-                UsersTable.permissionCodes jsonbContainsAllStrings queryParams.requiredPermissionCodes.mapToSet { it.value }
+                UsersTable.permissionCodes jsonbContainsAllStrings
+                    queryParams.requiredPermissionCodes.mapToSet { it.value }
             }
         }
         if (queryParams.excludePermissionCodes.isNotEmpty()) {
             query.andWhere {
-                not(UsersTable.permissionCodes jsonbContainsAllStrings queryParams.excludePermissionCodes.mapToSet { it.value })
+                not(
+                    UsersTable.permissionCodes jsonbContainsAllStrings
+                        queryParams.excludePermissionCodes.mapToSet { it.value }
+                )
             }
         }
 
@@ -448,10 +463,8 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
             UserSortBy.UPDATED_AT -> UsersTable.updatedAt
         }
 
-        val users = query
-            .orderBy(sortColumn to queryParams.listing.sortOrder.toExposedSortOrder())
-            .applyPagination(queryParams.listing.pageParams)
-            .map { it.toUserInternal() }
+        val users = query.orderBy(sortColumn to queryParams.listing.sortOrder.toExposedSortOrder())
+            .applyPagination(queryParams.listing.pageParams).map { it.toUserInternal() }
 
         val totalPages = getNumOfTotalPages(totalCount, queryParams.listing.pageParams.size)
 
@@ -464,37 +477,29 @@ class UserRepositoryImpl @Inject constructor() : UserRepository {
                 totalPages = totalPages
             )
         )
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error retrieving users page: ${e.message}"))
-        }
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving users page: ${e.message}"))
     }
 
-    override suspend fun deleteUsersDueForPermanentDeletion(asOf: KotlinInstant): AppResult<Int> {
-        return try {
-            val asOfJavaInstant = asOf.toJavaInstant()
-            val deletedCount = UsersTable.deleteWhere {
-                UsersTable.scheduledPermanentDeletionAt lessEq asOfJavaInstant
-            }
-            AppResult.Success(deletedCount)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error deleting users due for deletion: ${e.message}"))
+    override suspend fun deleteUsersDueForPermanentDeletion(asOf: KotlinInstant): AppResult<Int> = try {
+        val asOfJavaInstant = asOf.toJavaInstant()
+        val deletedCount = UsersTable.deleteWhere {
+            UsersTable.scheduledPermanentDeletionAt lessEq asOfJavaInstant
         }
+        AppResult.Success(deletedCount)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error deleting users due for deletion: ${e.message}"))
     }
 
-    override suspend fun getExpiredTemporaryLockouts(asOf: KotlinInstant): AppResult<List<UserId>> {
-        return try {
-            val asOfJavaInstant = asOf.toJavaInstant()
-            val userIds = UsersTable
-                .selectAll()
-                .where {
-                    (UsersTable.accountLockoutType eq AccountLockoutType.TEMPORARY) and
-                        (UsersTable.temporaryLockoutUntil lessEq asOfJavaInstant)
-                }
-                .map { UserId(it[UsersTable.id].value) }
-            AppResult.Success(userIds)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error retrieving expired temporary lockouts: ${e.message}"))
-        }
+    override suspend fun getExpiredTemporaryLockouts(asOf: KotlinInstant): AppResult<List<UserId>> = try {
+        val asOfJavaInstant = asOf.toJavaInstant()
+        val userIds = UsersTable.selectAll().where {
+            (UsersTable.accountLockoutType eq AccountLockoutType.TEMPORARY) and
+                (UsersTable.temporaryLockoutUntil lessEq asOfJavaInstant)
+        }.map { UserId(it[UsersTable.id].value) }
+        AppResult.Success(userIds)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving expired temporary lockouts: ${e.message}"))
     }
 
     override suspend fun unlockUsersBatch(userIds: List<UserId>): AppResult<Unit> {

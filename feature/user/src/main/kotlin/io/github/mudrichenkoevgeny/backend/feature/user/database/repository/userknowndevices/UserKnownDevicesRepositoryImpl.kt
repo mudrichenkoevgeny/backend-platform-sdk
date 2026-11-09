@@ -18,11 +18,11 @@ import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
-import java.time.Instant as JavaInstant
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.time.Instant as KotlinInstant
 import kotlin.uuid.Uuid
+import java.time.Instant as JavaInstant
+import kotlin.time.Instant as KotlinInstant
 
 /**
  * Default [UserKnownDevicesRepository] implementation backed by Exposed and [UserKnownDevicesTable].
@@ -31,11 +31,8 @@ import kotlin.uuid.Uuid
  * Returns [CommonError.Database] when an operation reports no affected rows or fails to retrieve records.
  */
 @Singleton
-class UserKnownDevicesRepositoryImpl @Inject constructor() : UserKnownDevicesRepository {
-
-    override suspend fun createKnownDevice(
-        userKnownDevice: UserKnownDevice
-    ): AppResult<UserKnownDevice> {
+public class UserKnownDevicesRepositoryImpl @Inject constructor() : UserKnownDevicesRepository {
+    override suspend fun createKnownDevice(userKnownDevice: UserKnownDevice): AppResult<UserKnownDevice> {
         return try {
             val inserted = UserKnownDevicesTable.insert { row ->
                 row[id] = Uuid.random()
@@ -52,7 +49,7 @@ class UserKnownDevicesRepositoryImpl @Inject constructor() : UserKnownDevicesRep
                 return AppResult.Error(
                     CommonError.Database(
                         "UserKnownDevice creation failed for userId=${userKnownDevice.userId.value}, " +
-                                "deviceId=${userKnownDevice.deviceId.asHexDashString()}"
+                            "deviceId=${userKnownDevice.deviceId.asHexDashString()}"
                     )
                 )
             }
@@ -79,7 +76,10 @@ class UserKnownDevicesRepositoryImpl @Inject constructor() : UserKnownDevicesRep
 
         return try {
             val updatedRows = UserKnownDevicesTable.update(
-                { (UserKnownDevicesTable.userId eq userId.value) and (UserKnownDevicesTable.deviceId eq deviceId.value) }
+                {
+                    (UserKnownDevicesTable.userId eq userId.value) and
+                        (UserKnownDevicesTable.deviceId eq deviceId.value)
+                }
             ) { updateStatement ->
                 lastIpAddress.onSet { ip ->
                     updateStatement[UserKnownDevicesTable.lastIpAddress] = ip
@@ -94,11 +94,16 @@ class UserKnownDevicesRepositoryImpl @Inject constructor() : UserKnownDevicesRep
 
             if (updatedRows == 0) {
                 return AppResult.Error(
-                    CommonError.Database("Failed to update known device for userId=${userId.value}, deviceId=${deviceId.asHexDashString()}")
+                    CommonError.Database(
+                        "Failed to update known device for userId=${userId.value}, deviceId=${deviceId.asHexDashString()}"
+                    )
                 )
             }
 
-            getKnownDevice(userId, deviceId).mapNotNullOrError(
+            getKnownDevice(
+                userId,
+                deviceId
+            ).mapNotNullOrError(
                 CommonError.Database("Failed to retrieve updated known device")
             )
         } catch (e: ExposedSQLException) {
@@ -109,24 +114,23 @@ class UserKnownDevicesRepositoryImpl @Inject constructor() : UserKnownDevicesRep
     override suspend fun getKnownDevice(
         userId: UserId,
         deviceId: ClientDeviceId
-    ): AppResult<UserKnownDevice?> {
-        return try {
-            AppResult.Success(
-                getKnownDeviceResultRow(userId, deviceId)?.toUserKnownDevice()
-            )
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error retrieving known device: ${e.message}"))
-        }
+    ): AppResult<UserKnownDevice?> = try {
+        AppResult.Success(
+            getKnownDeviceResultRow(
+                userId,
+                deviceId
+            )?.toUserKnownDevice()
+        )
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving known device: ${e.message}"))
     }
 
     private fun getKnownDeviceResultRow(
         userId: UserId,
         deviceId: ClientDeviceId
-    ): ResultRow? = UserKnownDevicesTable
-        .selectAll()
-        .where { (UserKnownDevicesTable.userId eq userId.value) and (UserKnownDevicesTable.deviceId eq deviceId.value) }
-        .limit(1)
-        .singleOrNull()
+    ): ResultRow? = UserKnownDevicesTable.selectAll().where {
+        (UserKnownDevicesTable.userId eq userId.value) and (UserKnownDevicesTable.deviceId eq deviceId.value)
+    }.limit(1).singleOrNull()
 
     private fun ResultRow.toUserKnownDevice(): UserKnownDevice = UserKnownDevice(
         userId = UserId(this[UserKnownDevicesTable.userId].value),

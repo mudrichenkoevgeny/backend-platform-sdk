@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class SecurityAuditErrorParserTest {
-
     private val parser = SecurityAuditErrorParser()
 
     @Test
@@ -29,7 +28,11 @@ class SecurityAuditErrorParserTest {
 
         assertNotNull(result)
         assertEquals(AuditStatus.DENIED, result?.status)
-        assertMetadataContains(result?.metadata, CommonAuditMetadataKey.DENIED_REASON, SecurityAuditMetadataDeniedReasonValues.RATE_LIMIT)
+        assertMetadataContains(
+            result?.metadata,
+            CommonAuditMetadataKey.DENIED_REASON,
+            SecurityAuditMetadataDeniedReasonValues.RATE_LIMIT
+        )
         assertMetadataContains(result?.metadata, CommonAuditMetadataKey.ERROR_ID, error.errorId.asHexDashString())
     }
 
@@ -39,7 +42,11 @@ class SecurityAuditErrorParserTest {
 
         val result = parser.parse(error)
 
-        assertMetadataContains(result?.metadata, CommonAuditMetadataKey.DENIED_REASON, SecurityAuditMetadataDeniedReasonValues.RATE_LIMIT)
+        assertMetadataContains(
+            result?.metadata,
+            CommonAuditMetadataKey.DENIED_REASON,
+            SecurityAuditMetadataDeniedReasonValues.RATE_LIMIT
+        )
     }
 
     @Test
@@ -48,7 +55,11 @@ class SecurityAuditErrorParserTest {
 
         val result = parser.parse(error)
 
-        assertMetadataContains(result?.metadata, CommonAuditMetadataKey.DENIED_REASON, SecurityAuditMetadataDeniedReasonValues.PASSWORD_TOO_WEAK)
+        assertMetadataContains(
+            result?.metadata,
+            CommonAuditMetadataKey.DENIED_REASON,
+            SecurityAuditMetadataDeniedReasonValues.PASSWORD_TOO_WEAK
+        )
     }
 
     @Test
@@ -57,7 +68,11 @@ class SecurityAuditErrorParserTest {
 
         val result = parser.parse(error)
 
-        assertMetadataContains(result?.metadata, CommonAuditMetadataKey.DENIED_REASON, SecurityAuditMetadataDeniedReasonValues.MFA_TOKEN_EXPIRED)
+        assertMetadataContains(
+            result?.metadata,
+            CommonAuditMetadataKey.DENIED_REASON,
+            SecurityAuditMetadataDeniedReasonValues.MFA_TOKEN_EXPIRED
+        )
     }
 
     @Test
@@ -66,7 +81,11 @@ class SecurityAuditErrorParserTest {
 
         val result = parser.parse(error)
 
-        assertMetadataContains(result?.metadata, CommonAuditMetadataKey.DENIED_REASON, SecurityAuditMetadataDeniedReasonValues.TOTP_ALREADY_ENABLED)
+        assertMetadataContains(
+            result?.metadata,
+            CommonAuditMetadataKey.DENIED_REASON,
+            SecurityAuditMetadataDeniedReasonValues.TOTP_ALREADY_ENABLED
+        )
     }
 
     @Test
@@ -75,7 +94,11 @@ class SecurityAuditErrorParserTest {
 
         val result = parser.parse(error)
 
-        assertMetadataContains(result?.metadata, CommonAuditMetadataKey.DENIED_REASON, SecurityAuditMetadataDeniedReasonValues.TOTP_NOT_ENABLED)
+        assertMetadataContains(
+            result?.metadata,
+            CommonAuditMetadataKey.DENIED_REASON,
+            SecurityAuditMetadataDeniedReasonValues.TOTP_NOT_ENABLED
+        )
     }
 
     @Test
@@ -84,7 +107,11 @@ class SecurityAuditErrorParserTest {
 
         val result = parser.parse(error)
 
-        assertMetadataContains(result?.metadata, CommonAuditMetadataKey.DENIED_REASON, SecurityAuditMetadataDeniedReasonValues.RECOVERY_CODE_ALREADY_USED)
+        assertMetadataContains(
+            result?.metadata,
+            CommonAuditMetadataKey.DENIED_REASON,
+            SecurityAuditMetadataDeniedReasonValues.RECOVERY_CODE_ALREADY_USED
+        )
     }
 
     @Test
@@ -93,7 +120,11 @@ class SecurityAuditErrorParserTest {
 
         val result = parser.parse(error)
 
-        assertMetadataContains(result?.metadata, CommonAuditMetadataKey.DENIED_REASON, SecurityAuditMetadataDeniedReasonValues.MFA_REQUIRED)
+        assertMetadataContains(
+            result?.metadata,
+            CommonAuditMetadataKey.DENIED_REASON,
+            SecurityAuditMetadataDeniedReasonValues.MFA_REQUIRED
+        )
     }
 
     @Test
@@ -102,7 +133,11 @@ class SecurityAuditErrorParserTest {
 
         val result = parser.parse(error)
 
-        assertMetadataContains(result?.metadata, CommonAuditMetadataKey.DENIED_REASON, SecurityAuditMetadataDeniedReasonValues.INVALID_TOTP_CODE)
+        assertMetadataContains(
+            result?.metadata,
+            CommonAuditMetadataKey.DENIED_REASON,
+            SecurityAuditMetadataDeniedReasonValues.INVALID_TOTP_CODE
+        )
     }
 
     @Test

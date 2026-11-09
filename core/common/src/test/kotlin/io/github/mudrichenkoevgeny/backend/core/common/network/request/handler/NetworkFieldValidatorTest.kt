@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
-class FieldValueValidatorTest {
-
+class NetworkFieldValidatorTest {
     @Test
     fun `validateFieldValue returns parsed value when parser succeeds`() {
         val input = "123"
@@ -14,7 +13,10 @@ class FieldValueValidatorTest {
 
         val result: Int = input.validateFieldValue(fieldName) { it.toIntOrNull() }
 
-        assertEquals(123, result)
+        assertEquals(
+            123,
+            result
+        )
     }
 
     @Test
@@ -27,7 +29,10 @@ class FieldValueValidatorTest {
         }
 
         val error = ex.error as CommonError.InvalidFieldValue
-        assertEquals(fieldName, error.fieldName)
+        assertEquals(
+            fieldName,
+            error.fieldName
+        )
     }
 
     @Test
@@ -39,10 +44,14 @@ class FieldValueValidatorTest {
             runCatching { TestEnum.valueOf(it) }.getOrNull()
         }
 
-        assertEquals(TestEnum.ACTIVE, result)
+        assertEquals(
+            TestEnum.ACTIVE,
+            result
+        )
     }
 
     private enum class TestEnum {
-        ACTIVE, INACTIVE
+        ACTIVE,
+        INACTIVE
     }
 }

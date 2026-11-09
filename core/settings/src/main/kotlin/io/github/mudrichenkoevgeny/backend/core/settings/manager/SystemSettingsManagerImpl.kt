@@ -2,20 +2,19 @@ package io.github.mudrichenkoevgeny.backend.core.settings.manager
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.util.dbQuery
-import io.github.mudrichenkoevgeny.backend.core.settings.database.repository.SystemSettingRepository
+import io.github.mudrichenkoevgeny.backend.core.settings.database.repository.SystemSettingsRepository
 import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Default [SystemSettingsManager] implementation that delegates to [SystemSettingRepository]
+ * Default [SystemSettingsManager] implementation that delegates to [SystemSettingsRepository]
  * and wraps calls into [dbQuery].
  */
 @Singleton
-class SystemSettingsManagerImpl @Inject constructor(
-    private val repository: SystemSettingRepository
+public class SystemSettingsManagerImpl @Inject constructor(
+    private val repository: SystemSettingsRepository
 ) : SystemSettingsManager {
-
     override suspend fun saveSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>> = dbQuery {
         repository.saveSettings(settings)
     }

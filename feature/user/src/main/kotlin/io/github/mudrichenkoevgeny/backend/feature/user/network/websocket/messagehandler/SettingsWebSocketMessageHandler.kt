@@ -13,15 +13,13 @@ import javax.inject.Singleton
  * handled to prevent "unknown event" processing in the common WebSocket pipeline.
  */
 @Singleton
-class SettingsWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
+public class SettingsWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
     override suspend fun handle(
         frame: SocketFrame,
         webSocketSessionContext: WebSocketSessionContext
-    ): WebSocketMessageHandlerResult {
-        return when (frame.type) {
-            SettingsWebSocketEventTypes.OPEN_GLOBAL_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
-            SettingsWebSocketEventTypes.MANAGEMENT_GLOBAL_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
-            else -> WebSocketMessageHandlerResult.NotHandled
-        }
+    ): WebSocketMessageHandlerResult = when (frame.type) {
+        SettingsWebSocketEventTypes.OPEN_GLOBAL_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
+        SettingsWebSocketEventTypes.MANAGEMENT_GLOBAL_SETTINGS_UPDATED -> WebSocketMessageHandlerResult.Handled
+        else -> WebSocketMessageHandlerResult.NotHandled
     }
 }

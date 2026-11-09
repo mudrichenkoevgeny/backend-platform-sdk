@@ -29,7 +29,7 @@ import kotlin.system.exitProcess
  * - start [KtorServer] with [module]
  * - register graceful shutdown via [AppShutdownHook]
  */
-fun main(args: Array<String>) {
+public fun main(args: Array<String>) {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
 
     PathResolverConfigHolder.set(PathResolverConfig())

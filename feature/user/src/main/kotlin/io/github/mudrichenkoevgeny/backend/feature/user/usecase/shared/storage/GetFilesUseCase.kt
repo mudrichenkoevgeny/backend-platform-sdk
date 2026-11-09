@@ -11,8 +11,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to retrieve user storage files page.
+ */
 @Singleton
-class GetFilesUseCase @Inject constructor(
+public class GetFilesUseCase @Inject constructor(
     private val storageManager: StorageManager
 ) {
     /**
@@ -29,7 +32,7 @@ class GetFilesUseCase @Inject constructor(
      * @param queryParams Structured filter and pagination parameters ([SelfStorageFileListQueryParams]).
      * @return [AppResult] with [PagedResult] of [StorageFileSummary].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext,
         queryParams: SelfStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileSummary>> {

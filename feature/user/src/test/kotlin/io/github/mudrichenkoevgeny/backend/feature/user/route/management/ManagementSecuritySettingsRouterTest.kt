@@ -4,8 +4,6 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupManagementTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
@@ -16,11 +14,12 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.secur
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.security.GetOpenSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toManagementSecuritySettingsPayload
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.route.management.security.settings.ManagementSecuritySettingsRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.securitysettings.ManagementSecuritySettingsPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.route.management.security.settings.ManagementSecuritySettingsRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -38,12 +37,15 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
-
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val updateSecuritySettingsUseCase = mockk<UpdateSecuritySettingsUseCase>()
     private val getManagementSecuritySettingsUseCase = mockk<GetManagementSecuritySettingsUseCase>()
     private val resetSecuritySettingsUseCase = mockk<ResetSecuritySettingsUseCase>()
@@ -63,7 +65,11 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
 
     @BeforeEach
     fun setUp() {
-        clearMocks(updateSecuritySettingsUseCase, getManagementSecuritySettingsUseCase, resetSecuritySettingsUseCase)
+        clearMocks(
+            updateSecuritySettingsUseCase,
+            getManagementSecuritySettingsUseCase,
+            resetSecuritySettingsUseCase
+        )
     }
 
     @Test
@@ -76,13 +82,18 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
         }
 
         authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
-        every { getManagementSecuritySettingsUseCase() } returns AppResult.Success(createTestManagementSecuritySettings())
+        every { getManagementSecuritySettingsUseCase() } returns AppResult.Success(
+            createTestManagementSecuritySettings()
+        )
 
         val response = jsonClient.get(ManagementSecuritySettingsRoutes.GET_MANAGEMENT_SECURITY_SETTINGS) {
             bearerAuth(token)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
@@ -95,7 +106,14 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
         }
 
         authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
-        coEvery { updateSecuritySettingsUseCase(any(), any()) } returns AppResult.Success(createTestManagementSecuritySettings())
+        coEvery {
+            updateSecuritySettingsUseCase(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(
+            createTestManagementSecuritySettings()
+        )
 
         val response = jsonClient.put(ManagementSecuritySettingsRoutes.UPDATE_MANAGEMENT_SECURITY_SETTINGS) {
             bearerAuth(token)
@@ -103,9 +121,15 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
             setBody(createTestManagementSecuritySettings().toManagementSecuritySettingsPayload())
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
         val responseBody = response.body<ManagementSecuritySettingsPayload>()
-        assertEquals(createTestManagementSecuritySettings().toManagementSecuritySettingsPayload(), responseBody)
+        assertEquals(
+            createTestManagementSecuritySettings().toManagementSecuritySettingsPayload(),
+            responseBody
+        )
     }
 
     @Test
@@ -126,7 +150,10 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
             setBody(createTestManagementSecuritySettings().toManagementSecuritySettingsPayload())
         }
 
-        assertEquals(HttpStatusCode.Forbidden, response.status)
+        assertEquals(
+            HttpStatusCode.Forbidden,
+            response.status
+        )
     }
 
     @Test
@@ -147,7 +174,10 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
             setBody(createTestManagementSecuritySettings().toManagementSecuritySettingsPayload())
         }
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        assertEquals(
+            HttpStatusCode.Unauthorized,
+            response.status
+        )
     }
 
     @Test
@@ -160,12 +190,17 @@ class ManagementSecuritySettingsRouterTest : BaseRouterTest() {
         }
 
         authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
-        coEvery { resetSecuritySettingsUseCase(any()) } returns AppResult.Success(createTestManagementSecuritySettings())
+        coEvery { resetSecuritySettingsUseCase(any()) } returns AppResult.Success(
+            createTestManagementSecuritySettings()
+        )
 
         val response = jsonClient.post(ManagementSecuritySettingsRoutes.RESET_MANAGEMENT_SECURITY_SETTINGS) {
             bearerAuth(token)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 }

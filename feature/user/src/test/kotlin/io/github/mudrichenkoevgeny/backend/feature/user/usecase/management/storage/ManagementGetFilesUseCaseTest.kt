@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ManagementGetFilesUseCaseTest {
-
     private val storageManager = mockk<StorageManager>()
     private val userManager = mockk<UserManager>()
 
@@ -78,9 +77,15 @@ class ManagementGetFilesUseCaseTest {
             )
         } returns AppResult.Success(pagedResult)
 
-        val result = useCase(context, queryParams)
+        val result = useCase(
+            context,
+            queryParams
+        )
 
-        assertEquals(AppResult.Success(pagedResult), result)
+        assertEquals(
+            AppResult.Success(pagedResult),
+            result
+        )
     }
 
     @Test
@@ -94,7 +99,10 @@ class ManagementGetFilesUseCaseTest {
                 sortOrder = SortOrder.DEFAULT
             )
         )
-        val result = useCase(context, queryParams)
+        val result = useCase(
+            context,
+            queryParams
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserForbidden)
     }
@@ -117,7 +125,10 @@ class ManagementGetFilesUseCaseTest {
                 sortOrder = SortOrder.DEFAULT
             )
         )
-        val result = useCase(context, queryParams)
+        val result = useCase(
+            context,
+            queryParams
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserMissingPermissions)
     }

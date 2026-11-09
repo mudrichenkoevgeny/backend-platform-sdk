@@ -1,9 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.di.module
 
-import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
-import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditServiceImpl
 import dagger.Binds
 import dagger.Module
+import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
+import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditServiceImpl
 import javax.inject.Singleton
 
 /**
@@ -12,9 +12,8 @@ import javax.inject.Singleton
  * Binds [AuditService] to [AuditServiceImpl].
  */
 @Module
-interface AuditServicesModule {
-
+public interface AuditServicesModule {
     @Binds
     @Singleton
-    fun bindAuditService(auditServiceImpl: AuditServiceImpl): AuditService
+    public fun bindAuditService(auditServiceImpl: AuditServiceImpl): AuditService
 }

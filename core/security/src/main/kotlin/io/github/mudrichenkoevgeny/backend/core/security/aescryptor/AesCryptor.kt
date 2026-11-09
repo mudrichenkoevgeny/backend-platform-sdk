@@ -9,15 +9,14 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
  * * Primarily used to secure secrets before storage in persistent databases
  * to ensure that compromised data remains unreadable without the master key.
  */
-interface AesCryptor {
-
+public interface AesCryptor {
     /**
      * Encrypts the given plain text using AES-256-GCM.
      *
      * @param decryptedString The raw string to be encrypted.
      * @return [AppResult.Success] containing the [EncryptedString].
      */
-    fun encrypt(decryptedString: DecryptedString): AppResult<EncryptedString>
+    public fun encrypt(decryptedString: DecryptedString): AppResult<EncryptedString>
 
     /**
      * Decrypts the given cipher text back to its original plain text.
@@ -25,5 +24,5 @@ interface AesCryptor {
      * @param encryptedString The [EncryptedString] produced by [encrypt].
      * @return [AppResult.Success] containing the [DecryptedString].
      */
-    fun decrypt(encryptedString: EncryptedString): AppResult<DecryptedString>
+    public fun decrypt(encryptedString: EncryptedString): AppResult<DecryptedString>
 }

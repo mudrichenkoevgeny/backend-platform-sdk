@@ -36,8 +36,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
 
+/**
+ * Use case for updating an existing user's management details.
+ */
 @Singleton
-class ManagementUpdateUserUseCase @Inject constructor(
+public class ManagementUpdateUserUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -74,7 +77,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] containing the updated [UserPrivate].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         userId: UserId,
         updateUserParams: UpdateUserParams,
         authenticatedRequestContext: AuthenticatedRequestContext
@@ -134,8 +137,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
             )
         }
 
-        val targetUserResult = userManager.getUserInternalById(userId)
-            .mapNotNullOrError(UserError.UserNotFound(userId))
+        val targetUserResult = userManager.getUserInternalById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
 
         val targetUser = when (targetUserResult) {
             is AppResult.Success -> targetUserResult.data
@@ -332,6 +334,7 @@ class ManagementUpdateUserUseCase @Inject constructor(
                 )
                 AppResult.Success(updateResult.data.toUserPrivate())
             }
+
             is AppResult.Error -> handleError(
                 error = updateResult.error,
                 actorId = auditActorId,

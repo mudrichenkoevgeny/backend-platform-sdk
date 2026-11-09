@@ -13,8 +13,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.f
  *
  * Methods return [AppResult] to provide a consistent error model across SDK modules.
  */
-interface StorageService {
-
+public interface StorageService {
     /**
      * Saves a file to storage and returns its storage key.
      *
@@ -25,7 +24,7 @@ interface StorageService {
      * @param isPublic indicates if the file should be stored in the public bucket.
      * @return [AppResult.Success] with the stored key, or [AppResult.Error] on failure.
      */
-    suspend fun save(
+    public suspend fun save(
         fileName: String,
         content: ByteArray,
         contentType: String,
@@ -41,7 +40,11 @@ interface StorageService {
      * @param isPublic indicates if the file is in the public bucket.
      * @return [AppResult.Success] with `true` when deletion was successful, otherwise `false`; or [AppResult.Error] on failure.
      */
-    suspend fun delete(key: String, bucket: String? = null, isPublic: Boolean = false): AppResult<Boolean>
+    public suspend fun delete(
+        key: String,
+        bucket: String? = null,
+        isPublic: Boolean = false
+    ): AppResult<Boolean>
 
     /**
      * Deletes multiple objects by keys in a single batch operation.
@@ -51,7 +54,11 @@ interface StorageService {
      * @param isPublic indicates if the files are in the public bucket.
      * @return [AppResult.Success] on successful batch deletion, or [AppResult.Error] on failure.
      */
-    suspend fun deleteBatch(keys: List<String>, bucket: String? = null, isPublic: Boolean = false): AppResult<Unit> =
+    public suspend fun deleteBatch(
+        keys: List<String>,
+        bucket: String? = null,
+        isPublic: Boolean = false
+    ): AppResult<Unit> =
         AppResult.Error(CommonError.Internal(UnsupportedOperationException("deleteBatch is not implemented")))
 
     /**
@@ -61,28 +68,35 @@ interface StorageService {
      * @param bucket optional bucket name override; when null, default public bucket from configuration is used.
      * @return [AppResult.Success] with the public URL string, or [AppResult.Error] on failure.
      */
-    fun getPublicUrl(key: String, bucket: String? = null): AppResult<String>
+    public fun getPublicUrl(
+        key: String,
+        bucket: String? = null
+    ): AppResult<String>
 
     /**
      * Generates a short-lived presigned URL for direct client upload (PUT).
      */
-    fun generatePresignedPutUrl(
+    public fun generatePresignedPutUrl(
         key: String,
         contentType: String,
         expirationSeconds: Int,
         bucket: String? = null,
         isPublic: Boolean = false
-    ): AppResult<String> = AppResult.Error(CommonError.Internal(UnsupportedOperationException("generatePresignedPutUrl is not implemented")))
+    ): AppResult<String> = AppResult.Error(
+        CommonError.Internal(UnsupportedOperationException("generatePresignedPutUrl is not implemented"))
+    )
 
     /**
      * Generates a short-lived presigned URL for direct client download (GET).
      */
-    fun generatePresignedGetUrl(
+    public fun generatePresignedGetUrl(
         key: String,
         expirationSeconds: Int,
         bucket: String? = null,
         isPublic: Boolean = false
-    ): AppResult<String> = AppResult.Error(CommonError.Internal(UnsupportedOperationException("generatePresignedGetUrl is not implemented")))
+    ): AppResult<String> = AppResult.Error(
+        CommonError.Internal(UnsupportedOperationException("generatePresignedGetUrl is not implemented"))
+    )
 
     /**
      * Retrieves object metadata (including size in bytes and content hash/ETag) from the storage provider.
@@ -92,7 +106,11 @@ interface StorageService {
      * @param isPublic indicates if the file is in the public bucket.
      * @return [AppResult] containing [S3ObjectMetadata] on success or an error on failure.
      */
-    suspend fun getObjectMetadata(key: String, bucket: String? = null, isPublic: Boolean = false): AppResult<S3ObjectMetadata> =
+    public suspend fun getObjectMetadata(
+        key: String,
+        bucket: String? = null,
+        isPublic: Boolean = false
+    ): AppResult<S3ObjectMetadata> =
         AppResult.Error(CommonError.Internal(UnsupportedOperationException("getObjectMetadata is not implemented")))
 
     /**
@@ -102,7 +120,7 @@ interface StorageService {
      * @param file target internal storage file record.
      * @return [FileUrls] containing original, thumbnail, and preview URLs.
      */
-    fun resolveFileUrls(file: StorageFileInternal): FileUrls
+    public fun resolveFileUrls(file: StorageFileInternal): FileUrls
 
     /**
      * Ensures that the specified target bucket exists in storage, creating it if necessary.
@@ -111,5 +129,8 @@ interface StorageService {
      * @param isPublic indicates if the public bucket should be ensured.
      * @return [AppResult.Success] when the bucket exists or was successfully created, otherwise [AppResult.Error].
      */
-    suspend fun ensureBucketExists(bucket: String? = null, isPublic: Boolean = false): AppResult<Unit> = AppResult.Success(Unit)
+    public suspend fun ensureBucketExists(
+        bucket: String? = null,
+        isPublic: Boolean = false
+    ): AppResult<Unit> = AppResult.Success(Unit)
 }

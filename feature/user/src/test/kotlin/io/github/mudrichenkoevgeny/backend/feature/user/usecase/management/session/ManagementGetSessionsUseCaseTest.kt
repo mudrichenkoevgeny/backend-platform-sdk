@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ManagementGetSessionsUseCaseTest {
-
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
 
@@ -72,7 +71,10 @@ class ManagementGetSessionsUseCaseTest {
             authenticatedRequestContext = defaultContext
         )
 
-        assertEquals(AppResult.Success(pagedResult), result)
+        assertEquals(
+            AppResult.Success(pagedResult),
+            result
+        )
     }
 
     @Test

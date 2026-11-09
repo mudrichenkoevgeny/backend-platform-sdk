@@ -10,8 +10,7 @@ import kotlinx.serialization.KSerializer
  * The implementation is chosen by [EventsType] from configuration; the typical implementation is [EventPublisherImpl] (Kafka).
  * Events are serialized to JSON using the provided [KSerializer].
  */
-interface EventPublisher {
-
+public interface EventPublisher {
     /**
      * Publishes an event to the specified topic.
      *
@@ -20,7 +19,7 @@ interface EventPublisher {
      * @param serializer serializer for type [T]; used for JSON serialization of the message body.
      * @param metadata optional metadata (e.g. message headers); defaults to an empty map.
      */
-    suspend fun <T : AppEvent> publish(
+    public suspend fun <T : AppEvent> publish(
         topic: String,
         event: T,
         serializer: KSerializer<T>,

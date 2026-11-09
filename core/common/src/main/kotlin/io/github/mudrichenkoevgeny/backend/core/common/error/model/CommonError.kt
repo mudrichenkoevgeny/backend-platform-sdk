@@ -12,7 +12,7 @@ import io.ktor.server.application.ApplicationCall
  * from [secretArgs] (for logs only). Each variant has a stable [code] for i18n and
  * a unique [errorId] for correlation.
  */
-sealed class CommonError(
+public sealed class CommonError(
     override val errorId: ErrorId,
     override val code: String,
     override val publicArgs: Map<String, Any>? = null,
@@ -26,8 +26,8 @@ sealed class CommonError(
      *
      * @param message Optional internal description; stored in [secretArgs], not sent to the client.
      */
-    class Unknown(
-        val message: String? = null
+    public class Unknown(
+        public val message: String? = null
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.UNKNOWN,
@@ -42,9 +42,9 @@ sealed class CommonError(
      * @param throwable The caught exception; its message is stored in [secretArgs].
      * @param call Optional request context for logging; not exposed to the client.
      */
-    class Internal(
-        val throwable: Throwable,
-        val call: ApplicationCall? = null
+    public class Internal(
+        public val throwable: Throwable,
+        public val call: ApplicationCall? = null
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.INTERNAL,
@@ -58,8 +58,8 @@ sealed class CommonError(
      *
      * @param message Optional internal description; stored in [secretArgs], not sent to the client.
      */
-    class Database(
-        val message: String? = null
+    public class Database(
+        public val message: String? = null
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.INTERNAL,
@@ -73,8 +73,8 @@ sealed class CommonError(
      *
      * @param message Optional internal description; stored in [secretArgs], not sent to the client.
      */
-    class ServiceUnavailable(
-        val message: String? = null
+    public class ServiceUnavailable(
+        public val message: String? = null
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.SERVICE_UNAVAILABLE,
@@ -91,9 +91,9 @@ sealed class CommonError(
      * @param resource Logical resource name.
      * @param identifier Optional identifier value used for lookup.
      */
-    class NotFound(
-        val resource: String,
-        val identifier: String? = null
+    public class NotFound(
+        public val resource: String,
+        public val identifier: String? = null
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.NOT_FOUND,
@@ -113,7 +113,7 @@ sealed class CommonError(
      * @param identifier Client or user identifier; in [secretArgs].
      * @param retryAfterSeconds Seconds until the client may retry; in [publicArgs], used in localized message.
      */
-    class TooManyRequests(
+    public class TooManyRequests(
         rateLimitActionCode: String,
         limit: Int,
         identifier: String,
@@ -138,8 +138,8 @@ sealed class CommonError(
      *
      * @param parameterName Name of the missing parameter; in [publicArgs], used in localized message.
      */
-    class MissingRequiredParameter(
-        val parameterName: String
+    public class MissingRequiredParameter(
+        public val parameterName: String
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.MISSING_REQUIRED_PARAMETER,
@@ -155,8 +155,8 @@ sealed class CommonError(
      *
      * @param parameterName Name of the invalid parameter; in [publicArgs], used in localized message.
      */
-    class InvalidParameterValue(
-        val parameterName: String
+    public class InvalidParameterValue(
+        public val parameterName: String
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.INVALID_PARAMETER_VALUE,
@@ -172,8 +172,8 @@ sealed class CommonError(
      *
      * @param fieldName Name of the missing field; in [publicArgs], used in localized message.
      */
-    class MissingRequiredField(
-        val fieldName: String
+    public class MissingRequiredField(
+        public val fieldName: String
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.MISSING_REQUIRED_FIELD,
@@ -189,8 +189,8 @@ sealed class CommonError(
      *
      * @param fieldName Name of the field; in [publicArgs], used in localized message.
      */
-    class BlankStringField(
-        val fieldName: String
+    public class BlankStringField(
+        public val fieldName: String
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.BLANK_STRING_FIELD,
@@ -206,8 +206,8 @@ sealed class CommonError(
      *
      * @param fieldName Name of the field; in [publicArgs], used in localized message.
      */
-    class EmptyCollectionField(
-        val fieldName: String
+    public class EmptyCollectionField(
+        public val fieldName: String
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.EMPTY_COLLECTION_FIELD,
@@ -223,8 +223,8 @@ sealed class CommonError(
      *
      * @param fieldName Name of the field; in [publicArgs], used in localized message.
      */
-    class InvalidFieldValue(
-        val fieldName: String
+    public class InvalidFieldValue(
+        public val fieldName: String
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.INVALID_FIELD_VALUE,
@@ -240,8 +240,8 @@ sealed class CommonError(
      *
      * @param message Optional internal description; stored in [secretArgs], not sent to the client.
      */
-    class BadRequest(
-        val message: String? = null
+    public class BadRequest(
+        public val message: String? = null
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.BAD_REQUEST,
@@ -255,8 +255,8 @@ sealed class CommonError(
      *
      * @param message Optional parse/schema error details; stored in [secretArgs], not sent to the client.
      */
-    class InvalidJsonBody(
-        val message: String? = null
+    public class InvalidJsonBody(
+        public val message: String? = null
     ) : CommonError(
         errorId = ErrorId.generate(),
         code = CommonErrorCodes.INVALID_JSON_BODY,

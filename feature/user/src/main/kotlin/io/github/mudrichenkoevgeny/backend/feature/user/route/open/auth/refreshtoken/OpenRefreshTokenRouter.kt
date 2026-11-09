@@ -3,10 +3,10 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.refresh
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
-import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
-import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
+import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
+import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
@@ -33,7 +33,7 @@ import javax.inject.Singleton
  * 1. [OpenRefreshTokenRoutes.REFRESH_TOKEN] — issues new access and refresh tokens using an existing valid refresh token via [RefreshTokenUseCase].
  */
 @Singleton
-class OpenRefreshTokenRouter @Inject constructor(
+public class OpenRefreshTokenRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val refreshTokenUseCase: RefreshTokenUseCase
@@ -44,12 +44,26 @@ class OpenRefreshTokenRouter @Inject constructor(
 
     private fun registerRefreshTokenRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenRefreshTokenRoutes.REFRESH_TOKEN,
-            builder = { refreshTokenDocs(allowedRoles, allowedAccountStatuses) },
-            body = { refreshToken(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                refreshTokenDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                refreshToken(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -89,15 +103,19 @@ class OpenRefreshTokenRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { sessionToken ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { sessionToken ->
             sessionToken.toSessionTokenPayload()
         }
     }
 
-    companion object {
-        const val REFRESH_TOKEN_ROUTE_SUMMARY = "refresh auth token"
-        const val REFRESH_TOKEN_ROUTE_DESCRIPTION = "Initiates refresh token process."
-        const val REFRESH_TOKEN_ROUTE_OPERATION_ID = "openRefreshToken"
-        const val REFRESH_TOKEN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Token refreshed."
+    public companion object {
+        private const val REFRESH_TOKEN_ROUTE_SUMMARY = "refresh auth token"
+        private const val REFRESH_TOKEN_ROUTE_DESCRIPTION = "Initiates refresh token process."
+        private const val REFRESH_TOKEN_ROUTE_OPERATION_ID = "openRefreshToken"
+        private const val REFRESH_TOKEN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Token refreshed."
     }
 }

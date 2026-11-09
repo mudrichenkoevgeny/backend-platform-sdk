@@ -29,16 +29,16 @@ import io.github.mudrichenkoevgeny.backend.core.storage.usecase.system.storagese
 import io.github.mudrichenkoevgeny.backend.feature.user.di.UserModules
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.ManagementWebSocketRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.router.OpenWebSocketRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.management.audit.ManagementAuditRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.ManagementCoreUserRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.management.settings.ManagementGlobalSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.audit.ManagementAuditRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.security.ManagementSecuritySettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.management.settings.ManagementGlobalSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.storage.ManagementStorageRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.storage.ManagementStorageSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.management.storage.SelfManagementStorageRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.OpenCoreUserRouter
-import io.github.mudrichenkoevgeny.backend.feature.user.route.open.settings.OpenGlobalSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.security.OpenSecuritySettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.route.open.settings.OpenGlobalSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.storage.OpenStorageRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.storage.OpenStorageSettingsRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.scheduled.UserScheduledJobs
@@ -59,88 +59,100 @@ import javax.sql.DataSource
  */
 @Singleton
 @Component(
-    modules = [
-        CommonModules::class,
-        ObservabilityModules::class,
-        DatabaseModules::class,
-        SettingsModules::class,
-        SecurityModules::class,
-        AuditModules::class,
-        EventsModules::class,
-        StorageModules::class,
-        UserModules::class,
-        AuditParsersModule::class,
-        AppModule::class
-    ]
+    modules = [CommonModules::class, ObservabilityModules::class, DatabaseModules::class, SettingsModules::class, SecurityModules::class, AuditModules::class, EventsModules::class, StorageModules::class, UserModules::class, AuditParsersModule::class, AppModule::class]
 )
-interface AppComponent {
-
+public interface AppComponent {
     @Component.Factory
-    interface Factory {
+    public interface Factory {
         /**
          * Creates the application component.
          *
          * @param backgroundScope application-wide background CoroutineScope
          * that will be used by core/feature modules (audit, websockets, etc.).
          */
-        fun create(
-            @BindsInstance
-            @BackgroundScope
-            backgroundScope: CoroutineScope
+        public fun create(
+            @BindsInstance @BackgroundScope backgroundScope: CoroutineScope
         ): AppComponent
     }
 
-    // common
-    fun commonConfig(): CommonConfig
-    fun appLogger(): AppLogger
-    fun appErrorParser(): AppErrorParser
-    fun healthCheckerManager(): HealthCheckerManager
-    fun managementHealthRouter(): ManagementHealthRouter
+    // --- Common ---
+    public fun commonConfig(): CommonConfig
 
-    // observability
-    fun telemetryProvider(): TelemetryProvider
-    fun swaggerInitializer(): SwaggerInitializer
+    public fun appLogger(): AppLogger
 
-    // database
-    fun databaseMigrator(): DatabaseMigrator
-    fun databaseConfig(): DatabaseConfig
-    fun dataSource(): DataSource
+    public fun appErrorParser(): AppErrorParser
 
-    // audit
-    fun managementAuditRouter(): ManagementAuditRouter
+    public fun healthCheckerManager(): HealthCheckerManager
 
-    // settings
-    fun seedGlobalSettingsUseCase(): SeedGlobalSettingsUseCase
-    fun openGlobalSettingsSettingsRouter(): OpenGlobalSettingsRouter
-    fun managementGlobalSettingsRouter(): ManagementGlobalSettingsRouter
+    public fun managementHealthRouter(): ManagementHealthRouter
 
-    // security
-    fun securitySettingsProvider(): SecuritySettingsProvider
-    fun seedSecuritySettingsUseCase(): SeedSecuritySettingsUseCase
-    fun ipRestrictionPolicyValidator(): IpRestrictionPolicyValidator
-    fun openSecuritySettingsRouter(): OpenSecuritySettingsRouter
-    fun managementSecuritySettingsRouter(): ManagementSecuritySettingsRouter
+    // --- Observability ---
+    public fun telemetryProvider(): TelemetryProvider
 
-    // storage
-    fun seedStorageSettingsUseCase(): SeedStorageSettingsUseCase
-    fun openStorageSettingsRouter(): OpenStorageSettingsRouter
-    fun managementStorageSettingsRouter(): ManagementStorageSettingsRouter
-    fun openStorageRouter(): OpenStorageRouter
-    fun selfManagementStorageRouter(): SelfManagementStorageRouter
-    fun managementStorageRouter(): ManagementStorageRouter
-    fun storageScheduledJobs(): StorageScheduledJobs
+    public fun swaggerInitializer(): SwaggerInitializer
 
-    // user
-    fun authenticationProvider(): AuthenticationProvider
-    fun seedAdminAccountsUseCase(): SeedAdminAccountsUseCase
-    fun seedAuthSettingsUseCase(): SeedAuthSettingsUseCase
-    fun openCoreUserRouter(): OpenCoreUserRouter
-    fun managementCoreUserRouter(): ManagementCoreUserRouter
-    fun openWebSocketRouter(): OpenWebSocketRouter
-    fun managementWebSocketRouter(): ManagementWebSocketRouter
-    fun userScheduledJobs(): UserScheduledJobs
+    // --- Database ---
+    public fun databaseMigrator(): DatabaseMigrator
 
-    // app
-    fun appBootstrap(): AppBootstrap
-    fun appShutdownHook(): AppShutdownHook
+    public fun databaseConfig(): DatabaseConfig
+
+    public fun dataSource(): DataSource
+
+    // --- Audit ---
+    public fun managementAuditRouter(): ManagementAuditRouter
+
+    // --- Settings ---
+    public fun seedGlobalSettingsUseCase(): SeedGlobalSettingsUseCase
+
+    public fun openGlobalSettingsSettingsRouter(): OpenGlobalSettingsRouter
+
+    public fun managementGlobalSettingsRouter(): ManagementGlobalSettingsRouter
+
+    // --- Security ---
+    public fun securitySettingsProvider(): SecuritySettingsProvider
+
+    public fun seedSecuritySettingsUseCase(): SeedSecuritySettingsUseCase
+
+    public fun ipRestrictionPolicyValidator(): IpRestrictionPolicyValidator
+
+    public fun openSecuritySettingsRouter(): OpenSecuritySettingsRouter
+
+    public fun managementSecuritySettingsRouter(): ManagementSecuritySettingsRouter
+
+    // --- Storage ---
+    public fun seedStorageSettingsUseCase(): SeedStorageSettingsUseCase
+
+    public fun openStorageSettingsRouter(): OpenStorageSettingsRouter
+
+    public fun managementStorageSettingsRouter(): ManagementStorageSettingsRouter
+
+    public fun openStorageRouter(): OpenStorageRouter
+
+    public fun selfManagementStorageRouter(): SelfManagementStorageRouter
+
+    public fun managementStorageRouter(): ManagementStorageRouter
+
+    public fun storageScheduledJobs(): StorageScheduledJobs
+
+    // --- User ---
+    public fun authenticationProvider(): AuthenticationProvider
+
+    public fun seedAdminAccountsUseCase(): SeedAdminAccountsUseCase
+
+    public fun seedAuthSettingsUseCase(): SeedAuthSettingsUseCase
+
+    public fun openCoreUserRouter(): OpenCoreUserRouter
+
+    public fun managementCoreUserRouter(): ManagementCoreUserRouter
+
+    public fun openWebSocketRouter(): OpenWebSocketRouter
+
+    public fun managementWebSocketRouter(): ManagementWebSocketRouter
+
+    public fun userScheduledJobs(): UserScheduledJobs
+
+    // --- App ---
+    public fun appBootstrap(): AppBootstrap
+
+    public fun appShutdownHook(): AppShutdownHook
 }

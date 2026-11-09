@@ -8,8 +8,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.totpcryptoprocessor.TotpCryptoProcessor
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
@@ -18,7 +16,6 @@ import io.github.mudrichenkoevgeny.backend.feature.user.model.totp.UserTotpSetti
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.security.RegenerateRecoveryCodesUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
@@ -26,6 +23,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -35,11 +34,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class RegenerateRecoveryCodesUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
     private val totpManager = mockk<TotpManager>()
@@ -63,8 +64,14 @@ class RegenerateRecoveryCodesUseCaseTest {
 
     @Test
     fun `successfully regenerates recovery codes`() = runTest {
-        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = true)
-        val userSessionInternal = createTestUserSessionInternal(id = sessionId, userId = userId)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            isTotpEnabled = true
+        )
+        val userSessionInternal = createTestUserSessionInternal(
+            id = sessionId,
+            userId = userId
+        )
         val settings = UserTotpSettings(
             userId = userId,
             encryptedSecret = EncryptedString("secret"),
@@ -78,20 +85,42 @@ class RegenerateRecoveryCodesUseCaseTest {
         )
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.USER_REGENERATE_RECOVERY_CODES, any())
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.USER_REGENERATE_RECOVERY_CODES,
+                any()
+            )
         } returns AppResult.Success(Unit)
 
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(userSessionInternal)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { totpManager.getSettings(userId) } returns AppResult.Success(settings)
         coEvery { totpCryptoProcessor.generateRecoveryCodes() } returns AppResult.Success(newDecryptedCodes)
-        coEvery { totpManager.updateRecoveryCodes(userId, newDecryptedCodes) } returns AppResult.Success(newDecryptedCodes)
+        coEvery {
+            totpManager.updateRecoveryCodes(
+                userId,
+                newDecryptedCodes
+            )
+        } returns AppResult.Success(
+            newDecryptedCodes
+        )
 
         val result = useCase(context)
 
         assertTrue(result is AppResult.Success)
-        assertEquals(listOf("new1", "new2"), (result as AppResult.Success).data.codes)
+        assertEquals(
+            listOf(
+                "new1",
+                "new2"
+            ),
+            (result as AppResult.Success).data.codes
+        )
 
         coVerify {
             auditLogger.log(
@@ -111,13 +140,19 @@ class RegenerateRecoveryCodesUseCaseTest {
     fun `returns error when rate limit is exceeded`() = runTest {
         val error = CommonError.Unknown()
         coEvery {
-            rateLimiter.checkRateLimit(any(), any())
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
         } returns AppResult.Error(error)
 
         val result = useCase(context)
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
 
         coVerify {
             auditLogger.log(
@@ -135,7 +170,12 @@ class RegenerateRecoveryCodesUseCaseTest {
 
     @Test
     fun `returns error when user not found`() = runTest {
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(null)
 
         val result = useCase(context)
@@ -146,8 +186,16 @@ class RegenerateRecoveryCodesUseCaseTest {
 
     @Test
     fun `returns error when totp not enabled in user details`() = runTest {
-        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = false)
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            isTotpEnabled = false
+        )
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = useCase(context)
@@ -158,7 +206,10 @@ class RegenerateRecoveryCodesUseCaseTest {
 
     @Test
     fun `returns error when totp settings are not confirmed`() = runTest {
-        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = true)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            isTotpEnabled = true
+        )
         val settings = UserTotpSettings(
             userId = userId,
             encryptedSecret = EncryptedString("secret"),
@@ -166,10 +217,21 @@ class RegenerateRecoveryCodesUseCaseTest {
             encryptedRecoveryCodes = null,
             lastUsedAt = null
         )
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(mockk())
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { totpManager.getSettings(userId) } returns AppResult.Success(settings)
 
         val result = useCase(context)
@@ -180,34 +242,76 @@ class RegenerateRecoveryCodesUseCaseTest {
 
     @Test
     fun `returns error when session confirmation fails`() = runTest {
-        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = true)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            isTotpEnabled = true
+        )
         val error = CommonError.Unknown()
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(mockk())
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Error(error)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Error(
+            error
+        )
 
         val result = useCase(context)
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
     }
 
     @Test
     fun `returns error when recovery codes generation fails`() = runTest {
-        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = true)
-        val settings = UserTotpSettings(userId, EncryptedString("s"), true, null, null)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            isTotpEnabled = true
+        )
+        val settings = UserTotpSettings(
+            userId,
+            EncryptedString("s"),
+            true,
+            null,
+            null
+        )
         val error = CommonError.Unknown()
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(mockk())
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { totpManager.getSettings(userId) } returns AppResult.Success(settings)
         coEvery { totpCryptoProcessor.generateRecoveryCodes() } returns AppResult.Error(error)
 
         val result = useCase(context)
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
     }
 }

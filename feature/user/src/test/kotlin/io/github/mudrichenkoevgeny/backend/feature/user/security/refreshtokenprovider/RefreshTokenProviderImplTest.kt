@@ -10,7 +10,6 @@ import java.security.MessageDigest
 import java.util.Base64
 
 class RefreshTokenProviderImplTest {
-
     private val provider = RefreshTokenProviderImpl()
 
     @Test
@@ -24,10 +23,16 @@ class RefreshTokenProviderImplTest {
         val token1 = (result1 as AppResult.Success).data
         val token2 = (result2 as AppResult.Success).data
 
-        assertNotEquals(token1.value, token2.value)
+        assertNotEquals(
+            token1.value,
+            token2.value
+        )
 
         val parts = token1.value.split(".")
-        assertEquals(2, parts.size)
+        assertEquals(
+            2,
+            parts.size
+        )
         assertTrue(token1.value.contains("."))
     }
 
@@ -43,7 +48,10 @@ class RefreshTokenProviderImplTest {
         val result = provider.getRefreshTokenHash(refreshToken)
 
         assertTrue(result is AppResult.Success)
-        assertEquals(expectedHash, (result as AppResult.Success).data.value)
+        assertEquals(
+            expectedHash,
+            (result as AppResult.Success).data.value
+        )
     }
 
     @Test

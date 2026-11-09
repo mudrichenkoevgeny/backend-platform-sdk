@@ -13,17 +13,24 @@ import javax.inject.Singleton
  * can detect misconfiguration early.
  */
 @Singleton
-class UnconfiguredEmailService @Inject constructor() : EmailService {
+public class UnconfiguredEmailService @Inject constructor() : EmailService {
     private val error = CommonError.Internal(
         throwable = IllegalStateException(
             "Email service is not configured"
         )
     )
-    override suspend fun sendVerificationCode(email: String, code: String, language: String?): AppResult<Unit> =
-        AppResult.Error(error)
 
-    override suspend fun sendResetPasswordVerificationCode(email: String, code: String, language: String?): AppResult<Unit> =
-        AppResult.Error(error)
+    override suspend fun sendVerificationCode(
+        email: String,
+        code: String,
+        language: String?
+    ): AppResult<Unit> = AppResult.Error(error)
+
+    override suspend fun sendResetPasswordVerificationCode(
+        email: String,
+        code: String,
+        language: String?
+    ): AppResult<Unit> = AppResult.Error(error)
 
     override suspend fun sendUnlockAccountVerificationCode(
         email: String,
@@ -36,34 +43,28 @@ class UnconfiguredEmailService @Inject constructor() : EmailService {
         ipAddress: String?,
         deviceName: String?,
         language: String?
-    ): AppResult<Unit> =
-        AppResult.Error(error)
+    ): AppResult<Unit> = AppResult.Error(error)
 
-    override suspend fun sendSuccessfulRegistrationEmail(email: String): AppResult<Unit> =
-        AppResult.Error(error)
+    override suspend fun sendSuccessfulRegistrationEmail(email: String): AppResult<Unit> = AppResult.Error(error)
 
     override suspend fun sendSuccessfulLoginEmail(
         email: String,
         ipAddress: String?,
         deviceName: String?
-    ): AppResult<Unit> =
-        AppResult.Error(error)
+    ): AppResult<Unit> = AppResult.Error(error)
 
     override suspend fun sendNewDeviceLoginEmail(
         email: String,
         ipAddress: String?,
         deviceName: String?,
         userAgent: String?
-    ): AppResult<Unit> =
-        AppResult.Error(error)
+    ): AppResult<Unit> = AppResult.Error(error)
 
     override suspend fun sendPasswordSuccessfullyChangedEmail(
         email: String,
         ipAddress: String?,
         deviceName: String?
-    ): AppResult<Unit> =
-        AppResult.Error(error)
+    ): AppResult<Unit> = AppResult.Error(error)
 
-    override suspend fun fakeSendEmail(): AppResult<Unit> =
-        AppResult.Error(error)
+    override suspend fun fakeSendEmail(): AppResult<Unit> = AppResult.Error(error)
 }

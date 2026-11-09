@@ -13,11 +13,10 @@ import javax.inject.Singleton
  * If no specific parser returns a result, delegates to [commonParser].
  */
 @Singleton
-class AppErrorParserResolver @Inject constructor(
+public class AppErrorParserResolver @Inject constructor(
     private val commonParser: CommonErrorParser,
     private val specificParsers: Set<@JvmSuppressWildcards AppErrorSpecificParser>
 ) : AppErrorParser {
-
     override fun getApiErrorResponse(
         errorId: ErrorId,
         code: String,
@@ -25,12 +24,22 @@ class AppErrorParserResolver @Inject constructor(
         locale: String
     ): ApiErrorResponse {
         for (parser in specificParsers) {
-            val apiErrorResponse = parser.getApiErrorResponse(errorId, code, args, locale)
+            val apiErrorResponse = parser.getApiErrorResponse(
+                errorId,
+                code,
+                args,
+                locale
+            )
             if (apiErrorResponse != null) {
                 return apiErrorResponse
             }
         }
-        return commonParser.getApiErrorResponse(errorId, code, args, locale)
+        return commonParser.getApiErrorResponse(
+            errorId,
+            code,
+            args,
+            locale
+        )
     }
 
     override fun getApiErrorResponse(
@@ -38,11 +47,17 @@ class AppErrorParserResolver @Inject constructor(
         locale: String
     ): ApiErrorResponse {
         for (parser in specificParsers) {
-            val apiErrorResponse = parser.getApiErrorResponse(appError, locale)
+            val apiErrorResponse = parser.getApiErrorResponse(
+                appError,
+                locale
+            )
             if (apiErrorResponse != null) {
                 return apiErrorResponse
             }
         }
-        return commonParser.getApiErrorResponse(appError, locale)
+        return commonParser.getApiErrorResponse(
+            appError,
+            locale
+        )
     }
 }

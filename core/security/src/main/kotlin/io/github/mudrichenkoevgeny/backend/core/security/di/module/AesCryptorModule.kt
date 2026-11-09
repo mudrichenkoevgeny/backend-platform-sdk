@@ -12,9 +12,8 @@ import javax.inject.Singleton
  * Binds [AesCryptor] to [AesCryptorImpl] for secure data persistence.
  */
 @Module
-interface AesCryptorModule {
-
+public interface AesCryptorModule {
     @Binds
     @Singleton
-    fun bindAesCryptor(aesCryptorImpl: AesCryptorImpl): AesCryptor
+    public fun bindAesCryptor(aesCryptorImpl: AesCryptorImpl): AesCryptor
 }

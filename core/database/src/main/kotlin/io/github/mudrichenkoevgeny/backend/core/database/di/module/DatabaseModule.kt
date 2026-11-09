@@ -1,5 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.database.di.module
 
+import dagger.Binds
+import dagger.Module
+import dagger.Provides
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import io.github.mudrichenkoevgeny.backend.core.database.datasource.DataSourceCreator
@@ -10,9 +13,6 @@ import io.github.mudrichenkoevgeny.backend.core.database.manager.database.Databa
 import io.github.mudrichenkoevgeny.backend.core.database.migrator.DatabaseMigrator
 import io.github.mudrichenkoevgeny.backend.core.database.migrator.FlywayDatabaseMigrator
 import io.github.mudrichenkoevgeny.backend.core.observability.telemetry.TelemetryProvider
-import dagger.Binds
-import dagger.Module
-import dagger.Provides
 import org.jetbrains.exposed.v1.jdbc.Database
 import javax.inject.Singleton
 import javax.sql.DataSource
@@ -25,21 +25,20 @@ import javax.sql.DataSource
  * [DataSource] from config, [DatabaseManager] (→ [DatabaseManagerImpl]), and Exposed [Database] from the manager.
  */
 @Module
-interface DatabaseModule {
-
+public interface DatabaseModule {
     @Binds
     @Singleton
-    fun bindDatabaseMigrator(flywayDatabaseMigrator: FlywayDatabaseMigrator): DatabaseMigrator
+    public fun bindDatabaseMigrator(flywayDatabaseMigrator: FlywayDatabaseMigrator): DatabaseMigrator
 
-    companion object {
+    public companion object {
         @Provides
         @Singleton
         @DriverClassName
-        fun provideDataSourceDriverClassName(): String = "org.postgresql.Driver"
+        public fun provideDataSourceDriverClassName(): String = "org.postgresql.Driver"
 
         @Provides
         @Singleton
-        fun provideDataSourceCreator(
+        public fun provideDataSourceCreator(
             @DriverClassName driverClassName: String,
             telemetryProvider: TelemetryProvider,
             appLogger: AppLogger
@@ -51,37 +50,31 @@ interface DatabaseModule {
 
         @Provides
         @Singleton
-        fun provideDataSource(
+        public fun provideDataSource(
             dataSourceCreator: DataSourceCreator,
             databaseConfig: DatabaseConfig
-        ): DataSource {
-            return dataSourceCreator.create(
-                url = databaseConfig.dbUrl,
-                user = databaseConfig.dbUser,
-                password = databaseConfig.dbPassword
-            )
-        }
+        ): DataSource = dataSourceCreator.create(
+            url = databaseConfig.dbUrl,
+            user = databaseConfig.dbUser,
+            password = databaseConfig.dbPassword
+        )
 
         @Provides
         @Singleton
-        fun provideDatabaseManager(
+        public fun provideDatabaseManager(
             dataSource: DataSource,
             databaseMigrator: DatabaseMigrator,
             databaseConfig: DatabaseConfig,
             appLogger: AppLogger
-        ): DatabaseManager {
-            return DatabaseManagerImpl(
-                dataSource = dataSource,
-                databaseMigrator = databaseMigrator,
-                databaseConfig = databaseConfig,
-                appLogger = appLogger
-            )
-        }
+        ): DatabaseManager = DatabaseManagerImpl(
+            dataSource = dataSource,
+            databaseMigrator = databaseMigrator,
+            databaseConfig = databaseConfig,
+            appLogger = appLogger
+        )
 
         @Provides
         @Singleton
-        fun provideDatabase(factory: DatabaseManager): Database {
-            return factory.create()
-        }
+        public fun provideDatabase(factory: DatabaseManager): Database = factory.create()
     }
 }

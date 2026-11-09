@@ -23,8 +23,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to authenticate user via email and password credentials.
+ */
 @Singleton
-class LoginByEmailUseCase @Inject constructor(
+public class LoginByEmailUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -50,12 +53,15 @@ class LoginByEmailUseCase @Inject constructor(
      * @param requestContext The context of the public request.
      * @return [AppResult] containing [AuthData] or an MFA challenge.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         email: String,
         password: String,
         requestContext: RequestContext,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
-        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
     ): AppResult<AuthData> {
         val auditMetadata = requestContext.clientInfo.toAuditMetadata().toMutableSet()
         auditMetadata.add(
@@ -97,6 +103,7 @@ class LoginByEmailUseCase @Inject constructor(
                 )
                 authenticateUserResult
             }
+
             is AppResult.Error -> handleError(
                 error = authenticateUserResult.error,
                 baseMetadata = auditMetadata

@@ -41,7 +41,7 @@ import kotlin.uuid.Uuid
  * with [StorageWebSocketEventTypes.OPEN_STORAGE_SETTINGS_UPDATED] and [StorageWebSocketEventTypes.MANAGEMENT_STORAGE_SETTINGS_UPDATED] frames.
  */
 @Singleton
-class UpdateStorageSettingsUseCase @Inject constructor(
+public class UpdateStorageSettingsUseCase @Inject constructor(
     private val storageSettingsProvider: StorageSettingsProvider,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -71,7 +71,7 @@ class UpdateStorageSettingsUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] indicating success or the specific [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         managementStorageSettings: ManagementStorageSettings,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<ManagementStorageSettings> {
@@ -89,6 +89,7 @@ class UpdateStorageSettingsUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 
@@ -120,7 +121,9 @@ class UpdateStorageSettingsUseCase @Inject constructor(
             )
         }
 
-        val updateStorageSettingsResult = storageSettingsProvider.updateManagementStorageSettings(managementStorageSettings)
+        val updateStorageSettingsResult = storageSettingsProvider.updateManagementStorageSettings(
+            managementStorageSettings
+        )
 
         if (updateStorageSettingsResult is AppResult.Error) {
             return handleError(
@@ -155,7 +158,8 @@ class UpdateStorageSettingsUseCase @Inject constructor(
             )
         )
 
-        val managementSettingsPayload = storageSettingsProvider.getManagementStorageSettings().toManagementStorageSettingsPayload()
+        val managementSettingsPayload = storageSettingsProvider.getManagementStorageSettings()
+            .toManagementStorageSettingsPayload()
         webSocketManager.sendMessageToScope(
             scope = ApiScope.MANAGEMENT,
             frame = SocketFrame(

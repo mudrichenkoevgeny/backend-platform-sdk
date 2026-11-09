@@ -17,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ValidatePasswordUseCaseTest {
-
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val passwordPolicyValidator = PasswordPolicyValidatorImpl()
     private lateinit var useCase: ValidatePasswordUseCase
@@ -44,7 +43,10 @@ class ValidatePasswordUseCaseTest {
 
         val result = useCase("StrongPass123")
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
         verify(exactly = 1) { securitySettingsProvider.getManagementPasswordPolicy() }
     }
 
@@ -59,13 +61,22 @@ class ValidatePasswordUseCaseTest {
         val error = (result as AppResult.Error).error as SecurityError.PasswordTooWeak
 
         val args = checkNotNull(error.publicArgs)
-        assertEquals(true, args[SecurityErrorArgs.PASSWORD_FAIL_TOO_SHORT])
-        assertEquals(10, args[SecurityErrorArgs.PASSWORD_MIN_LENGTH])
+        assertEquals(
+            true,
+            args[SecurityErrorArgs.PASSWORD_FAIL_TOO_SHORT]
+        )
+        assertEquals(
+            10,
+            args[SecurityErrorArgs.PASSWORD_MIN_LENGTH]
+        )
     }
 
     @Test
     fun `invoke returns error when password misses required character types`() {
-        val policy = defaultPolicy.copy(requireUpperCase = true, requireDigit = true)
+        val policy = defaultPolicy.copy(
+            requireUpperCase = true,
+            requireDigit = true
+        )
         every { securitySettingsProvider.getManagementPasswordPolicy() } returns policy
 
         val result = useCase("onlylower")
@@ -74,15 +85,24 @@ class ValidatePasswordUseCaseTest {
         val error = (result as AppResult.Error).error as SecurityError.PasswordTooWeak
 
         val args = checkNotNull(error.publicArgs)
-        assertEquals(true, args[SecurityErrorArgs.PASSWORD_FAIL_NO_UPPERCASE])
-        assertEquals(true, args[SecurityErrorArgs.PASSWORD_FAIL_NO_DIGIT])
+        assertEquals(
+            true,
+            args[SecurityErrorArgs.PASSWORD_FAIL_NO_UPPERCASE]
+        )
+        assertEquals(
+            true,
+            args[SecurityErrorArgs.PASSWORD_FAIL_NO_DIGIT]
+        )
         assertTrue(args[SecurityErrorArgs.PASSWORD_FAIL_NO_LOWERCASE] != true)
     }
 
     @Test
     fun `invoke handles validator failures correctly`() {
         val fakeValidator = PasswordPolicyValidatorMock(failReasons = listOf(PasswordPolicyFailReason.TOO_SHORT))
-        val customUseCase = ValidatePasswordUseCase(securitySettingsProvider, fakeValidator)
+        val customUseCase = ValidatePasswordUseCase(
+            securitySettingsProvider,
+            fakeValidator
+        )
 
         every { securitySettingsProvider.getManagementPasswordPolicy() } returns defaultPolicy
 

@@ -16,15 +16,14 @@ import kotlin.time.Instant
  * Implementations are responsible for storing file records and returning paginated lists
  * with optional filters.
  */
-interface StorageFilesRepository {
-
+public interface StorageFilesRepository {
     /**
      * Persists a storage file metadata record.
      *
      * @param storageFile internal file model to create or update.
      * @return [AppResult] containing the saved [StorageFileInternal] or an error.
      */
-    suspend fun createStorageFile(storageFile: StorageFileInternal): AppResult<StorageFileInternal>
+    public suspend fun createStorageFile(storageFile: StorageFileInternal): AppResult<StorageFileInternal>
 
     /**
      * Deletes a file record by the unique file identifier.
@@ -32,7 +31,7 @@ interface StorageFilesRepository {
      * @param fileId unique file identifier.
      * @return [AppResult] containing [Unit] on success or an error.
      */
-    suspend fun deleteStorageFile(fileId: FileId): AppResult<Unit>
+    public suspend fun deleteStorageFile(fileId: FileId): AppResult<Unit>
 
     /**
      * Soft deletes a file record by the unique file identifier, optionally scoped to an owner.
@@ -41,7 +40,10 @@ interface StorageFilesRepository {
      * @param ownerUserId Optional owner user ID to ensure only the user's file is deleted.
      * @return [AppResult] containing [Unit] on success or an error.
      */
-    suspend fun deleteStorageFile(fileId: FileId, ownerUserId: String? = null): AppResult<Unit>
+    public suspend fun deleteStorageFile(
+        fileId: FileId,
+        ownerUserId: String? = null
+    ): AppResult<Unit>
 
     /**
      * Deletes multiple file records in a single batch operation by their unique file identifiers.
@@ -49,7 +51,7 @@ interface StorageFilesRepository {
      * @param fileIds list of unique file identifiers.
      * @return [AppResult] containing [Unit] on success or an error.
      */
-    suspend fun deleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit>
+    public suspend fun deleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit>
 
     /**
      * Deletes multiple file records in a single batch operation.
@@ -59,7 +61,10 @@ interface StorageFilesRepository {
      * @param ownerUserId Optional owner user ID to ensure only the user's files are deleted.
      * @return [AppResult] containing [Unit] on success or an error.
      */
-    suspend fun deleteStorageFilesBatch(fileIds: List<FileId>, ownerUserId: String? = null): AppResult<Unit>
+    public suspend fun deleteStorageFilesBatch(
+        fileIds: List<FileId>,
+        ownerUserId: String? = null
+    ): AppResult<Unit>
 
     /**
      * Updates storage file fields.
@@ -70,7 +75,7 @@ interface StorageFilesRepository {
      * @param contentHash optional hash of the content.
      * @return [AppResult] containing the updated [StorageFileInternal].
      */
-    suspend fun updateStorageFile(
+    public suspend fun updateStorageFile(
         fileId: FileId,
         status: UpdateField<StorageFileStatus> = UpdateField.Ignore,
         fileSizeBytes: UpdateField<Long> = UpdateField.Ignore,
@@ -83,7 +88,7 @@ interface StorageFilesRepository {
      * @param ownerUserId unique owner user identifier string.
      * @return [AppResult] containing the count of pending uploads or an error.
      */
-    suspend fun countPendingUploadsForUser(ownerUserId: String): AppResult<Long>
+    public suspend fun countPendingUploadsForUser(ownerUserId: String): AppResult<Long>
 
     /**
      * Calculates the cumulative total file size in bytes for active files owned by a user.
@@ -91,7 +96,7 @@ interface StorageFilesRepository {
      * @param ownerUserId unique owner user identifier string.
      * @return [AppResult] containing used storage size in bytes or an error.
      */
-    suspend fun calculateUsedStorageForUser(ownerUserId: String): AppResult<Long>
+    public suspend fun calculateUsedStorageForUser(ownerUserId: String): AppResult<Long>
 
     /**
      * Retrieves a file record by its unique identifier.
@@ -99,7 +104,7 @@ interface StorageFilesRepository {
      * @param fileId unique file identifier.
      * @return [AppResult] containing [StorageFileInternal] when found, `null` when missing, or an error.
      */
-    suspend fun getStorageFileById(fileId: FileId): AppResult<StorageFileInternal?>
+    public suspend fun getStorageFileById(fileId: FileId): AppResult<StorageFileInternal?>
 
     /**
      * Retrieves a paginated list of storage files for management purposes.
@@ -107,7 +112,7 @@ interface StorageFilesRepository {
      * @param queryParams structured filter and pagination parameters ([ManagementStorageFileListQueryParams]).
      * @return [AppResult] containing [PagedResult] of [StorageFileInternal] records or an error.
      */
-    suspend fun getStorageFilesPageForManagement(
+    public suspend fun getStorageFilesPageForManagement(
         queryParams: ManagementStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileInternal>>
 
@@ -118,7 +123,7 @@ interface StorageFilesRepository {
      * @param queryParams structured filter and pagination parameters ([SelfStorageFileListQueryParams]).
      * @return [AppResult] containing [PagedResult] of [StorageFileInternal] records or an error.
      */
-    suspend fun getStorageFilesPageByOwnerUserId(
+    public suspend fun getStorageFilesPageByOwnerUserId(
         ownerUserId: String,
         queryParams: SelfStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileInternal>>
@@ -130,7 +135,7 @@ interface StorageFilesRepository {
      * @param limit Maximum number of records to return.
      * @return [AppResult] containing list of [StorageFileInternal] records or an error.
      */
-    suspend fun getStorageFilesByStatus(
+    public suspend fun getStorageFilesByStatus(
         status: StorageFileStatus,
         limit: Int
     ): AppResult<List<StorageFileInternal>>
@@ -141,7 +146,7 @@ interface StorageFilesRepository {
      * @param fileIds List of unique file identifiers to delete.
      * @return [AppResult] containing [Unit] on success or an error.
      */
-    suspend fun hardDeleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit>
+    public suspend fun hardDeleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit>
 
     /**
      * Retrieves a list of storage file records in PENDING_UPLOAD status created before the specified timestamp.
@@ -150,7 +155,7 @@ interface StorageFilesRepository {
      * @param limit Maximum number of records to return.
      * @return [AppResult] containing list of [StorageFileInternal] records or an error.
      */
-    suspend fun getExpiredPendingUploadFiles(
+    public suspend fun getExpiredPendingUploadFiles(
         createdBefore: Instant,
         limit: Int
     ): AppResult<List<StorageFileInternal>>
@@ -161,5 +166,5 @@ interface StorageFilesRepository {
      * @param files List of [StorageFileInternal] records to update.
      * @return [AppResult] containing [Unit] on success or an error.
      */
-    suspend fun updateStorageFilesBatch(files: List<StorageFileInternal>): AppResult<Unit>
+    public suspend fun updateStorageFilesBatch(files: List<StorageFileInternal>): AppResult<Unit>
 }

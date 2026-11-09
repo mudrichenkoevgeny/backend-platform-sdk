@@ -7,20 +7,19 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.security.DisableTotpUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -30,11 +29,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DisableTotpUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
     private val totpManager = mockk<TotpManager>()
@@ -56,18 +57,38 @@ class DisableTotpUseCaseTest {
 
     @Test
     fun `successfully disables TOTP`() = runTest {
-        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = true)
-        val userSessionInternal = createTestUserSessionInternal(id = sessionId, userId = userId)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            isTotpEnabled = true
+        )
+        val userSessionInternal = createTestUserSessionInternal(
+            id = sessionId,
+            userId = userId
+        )
 
-        coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.USER_DISABLE_TOTP, userId.asHexDashString()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.USER_DISABLE_TOTP,
+                userId.asHexDashString()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(userSessionInternal)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { totpManager.disableTotp(userId) } returns AppResult.Success(Unit)
 
         val result = useCase(context)
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
 
         coVerify {
             auditLogger.log(
@@ -85,9 +106,17 @@ class DisableTotpUseCaseTest {
 
     @Test
     fun `returns error when TOTP is not enabled`() = runTest {
-        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = false)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            isTotpEnabled = false
+        )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
 
         val result = useCase(context)
@@ -98,18 +127,40 @@ class DisableTotpUseCaseTest {
 
     @Test
     fun `returns error when mfa confirmation fails`() = runTest {
-        val userInternal = createTestUserInternal(id = userId, isTotpEnabled = true)
-        val userSessionInternal = createTestUserSessionInternal(id = sessionId, userId = userId)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            isTotpEnabled = true
+        )
+        val userSessionInternal = createTestUserSessionInternal(
+            id = sessionId,
+            userId = userId
+        )
         val error = CommonError.Unknown()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(userSessionInternal)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(any(), any(), any()) } returns AppResult.Error(error)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Error(
+            error
+        )
 
         val result = useCase(context)
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
     }
 }

@@ -15,7 +15,7 @@ import io.ktor.server.application.ApplicationCall
  * @param parseSortByOrNull returns null when the raw `sort_by` value is not recognized
  * @throws RequestHandlingException when a present parameter has an invalid value
  */
-fun <SortBy> ApplicationCall.parseListingQueryParams(
+public fun <SortBy> ApplicationCall.parseListingQueryParams(
     defaultSortBy: SortBy,
     parseSortByOrNull: (String) -> SortBy?
 ): ListingQueryParams<SortBy> {
@@ -32,20 +32,25 @@ fun <SortBy> ApplicationCall.parseListingQueryParams(
     val sortBy = if (sortByRaw == null) {
         defaultSortBy
     } else {
-        parseSortByOrNull(sortByRaw)
-            ?: throw RequestHandlingException(CommonError.InvalidParameterValue(ListingParamNames.Sort.SORT_BY))
+        parseSortByOrNull(sortByRaw) ?: throw RequestHandlingException(
+            CommonError.InvalidParameterValue(ListingParamNames.Sort.SORT_BY)
+        )
     }
 
     val sortOrderRaw = firstNonBlankQueryValue(ListingParamNames.Sort.SORT_ORDER)
     val sortOrder = if (sortOrderRaw == null) {
         SortOrder.DEFAULT
     } else {
-        SortOrder.fromValueOrNull(sortOrderRaw)
-            ?: throw RequestHandlingException(CommonError.InvalidParameterValue(ListingParamNames.Sort.SORT_ORDER))
+        SortOrder.fromValueOrNull(sortOrderRaw) ?: throw RequestHandlingException(
+            CommonError.InvalidParameterValue(ListingParamNames.Sort.SORT_ORDER)
+        )
     }
 
     return ListingQueryParams(
-        pageParams = PageParams(page = pageNumber, size = pageSize),
+        pageParams = PageParams(
+            page = pageNumber,
+            size = pageSize
+        ),
         sortBy = sortBy,
         sortOrder = sortOrder
     )

@@ -1,24 +1,24 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager
 
+import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.RequestHandlingException
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateDto
 import io.github.mudrichenkoevgeny.backend.core.common.network.utils.extractClientInfo
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
+import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandler
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.messagehandler.WebSocketMessageHandlerResult
-import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener.WebSocketSessionListener
-import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
-import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.model.WebSocketPubSubMessage
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener.WebSocketSessionListener
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.websocket.mergeClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonApiFields
-import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contract.CommonWebSocketCloseReasons
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
@@ -30,8 +30,10 @@ import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.decodeFromJsonElement
 import java.util.concurrent.ConcurrentHashMap
@@ -51,22 +53,18 @@ import kotlin.uuid.Uuid
  * any instance hosting the target socket can deliver the frame.
  */
 @Singleton
-class KtorWebSocketManager @Inject constructor(
+public class KtorWebSocketManager @Inject constructor(
     private val appLogger: AppLogger,
     private val webSocketMessageHandlers: Set<@JvmSuppressWildcards WebSocketMessageHandler>,
     private val webSocketSessionListeners: Set<@JvmSuppressWildcards WebSocketSessionListener>,
     private val redisManager: RedisManager,
     @param:BackgroundScope private val scope: CoroutineScope
 ) : WebSocketManager {
-
-    companion object {
-        private const val REDIS_PUB_SUB_CHANNEL = "websocket_messages"
-    }
-
     private val webSocketSessionToContext = ConcurrentHashMap<DefaultWebSocketServerSession, WebSocketSessionContext>()
     private val socketIdToWebSocketSession = ConcurrentHashMap<String, DefaultWebSocketServerSession>()
     private val userIdToWebSocketSessions = ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()
-    private val userSessionIdToWebSocketSessions = ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()
+    private val userSessionIdToWebSocketSessions =
+        ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()
 
     init {
         redisManager.subscribe(REDIS_PUB_SUB_CHANNEL) { messageStr ->
@@ -85,34 +83,53 @@ class KtorWebSocketManager @Inject constructor(
         when (message.targetType) {
             WebSocketPubSubMessage.TargetType.ALL -> {
                 webSocketSessionToContext.keys.forEach { session ->
-                    sendMessageToSession(session, message.frame)
+                    sendMessageToSession(
+                        session,
+                        message.frame
+                    )
                 }
             }
+
             WebSocketPubSubMessage.TargetType.SCOPE -> {
                 webSocketSessionToContext.forEach { (session, context) ->
                     if (context.apiScope == message.apiScope) {
-                        sendMessageToSession(session, message.frame)
+                        sendMessageToSession(
+                            session,
+                            message.frame
+                        )
                     }
                 }
             }
+
             WebSocketPubSubMessage.TargetType.USER -> {
                 message.targetId?.let { uid ->
                     userIdToWebSocketSessions[uid]?.forEach { session ->
-                        sendMessageToSession(session, message.frame)
+                        sendMessageToSession(
+                            session,
+                            message.frame
+                        )
                     }
                 }
             }
+
             WebSocketPubSubMessage.TargetType.SESSION -> {
                 message.targetId?.let { sid ->
                     userSessionIdToWebSocketSessions[sid]?.forEach { session ->
-                        sendMessageToSession(session, message.frame)
+                        sendMessageToSession(
+                            session,
+                            message.frame
+                        )
                     }
                 }
             }
+
             WebSocketPubSubMessage.TargetType.SOCKET -> {
                 message.targetId?.let { sid ->
                     socketIdToWebSocketSession[sid]?.let { session ->
-                        sendMessageToSession(session, message.frame)
+                        sendMessageToSession(
+                            session,
+                            message.frame
+                        )
                     }
                 }
             }
@@ -143,13 +160,11 @@ class KtorWebSocketManager @Inject constructor(
         socketIdToWebSocketSession[socketId] = webSocketSession
 
         userId?.let {
-            userIdToWebSocketSessions
-                .computeIfAbsent(it.asHexDashString()) { ConcurrentHashMap.newKeySet() }
+            userIdToWebSocketSessions.computeIfAbsent(it.asHexDashString()) { ConcurrentHashMap.newKeySet() }
                 .add(webSocketSession)
         }
         userSessionId?.let {
-            userSessionIdToWebSocketSessions
-                .computeIfAbsent(it.asHexDashString()) { ConcurrentHashMap.newKeySet() }
+            userSessionIdToWebSocketSessions.computeIfAbsent(it.asHexDashString()) { ConcurrentHashMap.newKeySet() }
                 .add(webSocketSession)
         }
 
@@ -165,7 +180,10 @@ class KtorWebSocketManager @Inject constructor(
         try {
             webSocketSession.handleIncoming(context)
         } finally {
-            cleanup(webSocketSession, context)
+            cleanup(
+                webSocketSession,
+                context
+            )
             webSocketSessionListeners.forEach { webSocketSessionListener ->
                 webSocketSessionListener.onSessionClosed(context)
             }
@@ -173,23 +191,70 @@ class KtorWebSocketManager @Inject constructor(
     }
 
     override suspend fun sendMessageToAll(frame: SocketFrame) {
-        publishMessage(WebSocketPubSubMessage(WebSocketPubSubMessage.TargetType.ALL, null, null, frame))
+        publishMessage(
+            WebSocketPubSubMessage(
+                WebSocketPubSubMessage.TargetType.ALL,
+                null,
+                null,
+                frame
+            )
+        )
     }
 
-    override suspend fun sendMessageToScope(scope: ApiScope, frame: SocketFrame) {
-        publishMessage(WebSocketPubSubMessage(WebSocketPubSubMessage.TargetType.SCOPE, null, scope, frame))
+    override suspend fun sendMessageToScope(
+        scope: ApiScope,
+        frame: SocketFrame
+    ) {
+        publishMessage(
+            WebSocketPubSubMessage(
+                WebSocketPubSubMessage.TargetType.SCOPE,
+                null,
+                scope,
+                frame
+            )
+        )
     }
 
-    override suspend fun sendMessageToUser(userId: UserId, frame: SocketFrame) {
-        publishMessage(WebSocketPubSubMessage(WebSocketPubSubMessage.TargetType.USER, userId.asHexDashString(), null, frame))
+    override suspend fun sendMessageToUser(
+        userId: UserId,
+        frame: SocketFrame
+    ) {
+        publishMessage(
+            WebSocketPubSubMessage(
+                WebSocketPubSubMessage.TargetType.USER,
+                userId.asHexDashString(),
+                null,
+                frame
+            )
+        )
     }
 
-    override suspend fun sendMessageToUserSession(userSessionId: UserSessionId, frame: SocketFrame) {
-        publishMessage(WebSocketPubSubMessage(WebSocketPubSubMessage.TargetType.SESSION, userSessionId.asHexDashString(), null, frame))
+    override suspend fun sendMessageToUserSession(
+        userSessionId: UserSessionId,
+        frame: SocketFrame
+    ) {
+        publishMessage(
+            WebSocketPubSubMessage(
+                WebSocketPubSubMessage.TargetType.SESSION,
+                userSessionId.asHexDashString(),
+                null,
+                frame
+            )
+        )
     }
 
-    override suspend fun sendMessageToSocket(socketId: String, frame: SocketFrame) {
-        publishMessage(WebSocketPubSubMessage(WebSocketPubSubMessage.TargetType.SOCKET, socketId, null, frame))
+    override suspend fun sendMessageToSocket(
+        socketId: String,
+        frame: SocketFrame
+    ) {
+        publishMessage(
+            WebSocketPubSubMessage(
+                WebSocketPubSubMessage.TargetType.SOCKET,
+                socketId,
+                null,
+                frame
+            )
+        )
     }
 
     override suspend fun disconnectSocket(socketId: String) {
@@ -199,7 +264,10 @@ class KtorWebSocketManager @Inject constructor(
     private fun publishMessage(message: WebSocketPubSubMessage) {
         scope.launch {
             val str = FoundationJson.encodeToString(message)
-            redisManager.publish(REDIS_PUB_SUB_CHANNEL, str)
+            redisManager.publish(
+                REDIS_PUB_SUB_CHANNEL,
+                str
+            )
         }
     }
 
@@ -214,7 +282,11 @@ class KtorWebSocketManager @Inject constructor(
                         handleSocketError(e)
                         continue
                     }
-                    processSocketFrame(this, socketFrame, context)
+                    processSocketFrame(
+                        this,
+                        socketFrame,
+                        context
+                    )
                 }
             }
         } catch (e: CancellationException) {
@@ -233,9 +305,16 @@ class KtorWebSocketManager @Inject constructor(
     ) {
         var isHandled = false
         for (handler in webSocketMessageHandlers) {
-            val result = handler.handle(socketFrame, context)
+            val result = handler.handle(
+                socketFrame,
+                context
+            )
             if (result !is WebSocketMessageHandlerResult.NotHandled) {
-                processResult(session, context, result)
+                processResult(
+                    session,
+                    context,
+                    result
+                )
                 isHandled = true
                 break
             }
@@ -255,15 +334,26 @@ class KtorWebSocketManager @Inject constructor(
             is WebSocketMessageHandlerResult.InitializeClient -> {
                 val payload = result.payload
                 context.clientInfo = payload.mergeClientInfo(context.clientInfo)
-                sendMessageToSession(session, result.socketFrame)
+                sendMessageToSession(
+                    session,
+                    result.socketFrame
+                )
             }
-            is WebSocketMessageHandlerResult.SendSocketFrame -> sendMessageToSession(session, result.socketFrame)
+
+            is WebSocketMessageHandlerResult.SendSocketFrame -> sendMessageToSession(
+                session,
+                result.socketFrame
+            )
+
             is WebSocketMessageHandlerResult.Error -> appLogger.logError(result.appError)
             else -> Unit
         }
     }
 
-    private fun cleanup(session: DefaultWebSocketServerSession, context: WebSocketSessionContext) {
+    private fun cleanup(
+        session: DefaultWebSocketServerSession,
+        context: WebSocketSessionContext
+    ) {
         webSocketSessionToContext.remove(session)
         socketIdToWebSocketSession.remove(context.socketSessionId)
 
@@ -282,7 +372,10 @@ class KtorWebSocketManager @Inject constructor(
         }
     }
 
-    private suspend fun sendMessageToSession(session: DefaultWebSocketServerSession, frame: SocketFrame) {
+    private suspend fun sendMessageToSession(
+        session: DefaultWebSocketServerSession,
+        frame: SocketFrame
+    ) {
         try {
             if (session.isActive) {
                 session.send(Frame.Text(FoundationJson.encodeToString(frame)))
@@ -292,15 +385,14 @@ class KtorWebSocketManager @Inject constructor(
                 if (frame.type == UserWebSocketEventTypes.USER_UPDATED) {
                     frame.payload?.let { payload ->
                         val userPrivatePayload = FoundationJson.decodeFromJsonElement<UserPrivatePayload>(payload)
-                        val userAccountStatus = UserAccountStatus
-                            .fromValueOrNull(userPrivatePayload.accountStatus)
+                        val userAccountStatus = UserAccountStatus.fromValueOrNull(userPrivatePayload.accountStatus)
                         val accountLockoutType = AccountLockoutType.fromValueOrNull(userPrivatePayload.lockoutType)
 
-                        if (userAccountStatus == UserAccountStatus.BANNED
-                            || userAccountStatus == UserAccountStatus.SECURITY_HOLD
-                            || userAccountStatus == UserAccountStatus.PENDING_DELETION
-                            || accountLockoutType == AccountLockoutType.INDEFINITE
-                            || accountLockoutType == AccountLockoutType.TEMPORARY
+                        if (userAccountStatus == UserAccountStatus.BANNED ||
+                            userAccountStatus == UserAccountStatus.SECURITY_HOLD ||
+                            userAccountStatus == UserAccountStatus.PENDING_DELETION ||
+                            accountLockoutType == AccountLockoutType.INDEFINITE ||
+                            accountLockoutType == AccountLockoutType.TEMPORARY
                         ) {
                             session.closeNormal()
                         }
@@ -309,7 +401,8 @@ class KtorWebSocketManager @Inject constructor(
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+        }
     }
 
     private fun handleSocketError(e: Throwable) {
@@ -328,5 +421,9 @@ class KtorWebSocketManager @Inject constructor(
                 message = CommonWebSocketCloseReasons.NORMAL
             )
         )
+    }
+
+    public companion object {
+        private const val REDIS_PUB_SUB_CHANNEL = "websocket_messages"
     }
 }

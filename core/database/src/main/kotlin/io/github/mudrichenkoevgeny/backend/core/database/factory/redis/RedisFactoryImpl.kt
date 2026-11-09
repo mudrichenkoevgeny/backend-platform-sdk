@@ -13,21 +13,18 @@ import javax.inject.Singleton
  * and [DatabaseConfig.redisTimeoutSeconds]. On failure logs via [AppLogger] and rethrows.
  */
 @Singleton
-class RedisFactoryImpl @Inject constructor(
+public class RedisFactoryImpl @Inject constructor(
     private val redisClientCreator: RedisClientCreator,
     private val appLogger: AppLogger,
     private val databaseConfig: DatabaseConfig
-): RedisFactory {
-
-    override fun create(): RedisClient {
-        return try {
-            redisClientCreator.create(
-                url = databaseConfig.redisUrl,
-                timeoutSeconds = databaseConfig.redisTimeoutSeconds
-            )
-        } catch (e: Exception) {
-            appLogger.logError(CommonError.Internal(e))
-            throw e
-        }
+) : RedisFactory {
+    override fun create(): RedisClient = try {
+        redisClientCreator.create(
+            url = databaseConfig.redisUrl,
+            timeoutSeconds = databaseConfig.redisTimeoutSeconds
+        )
+    } catch (e: Exception) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
     }
 }

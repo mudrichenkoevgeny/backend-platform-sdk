@@ -11,15 +11,14 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
  * Handles the lifecycle of TOTP secrets including generation, secure storage
  * via encryption, and verification of time-based tokens.
  */
-interface TotpCryptoProcessor {
-
+public interface TotpCryptoProcessor {
     /**
      * Generates a new random TOTP secret and prepares it for both the user and storage.
      *
      * @param accountName The identifier (e.g., email) to be displayed in the authenticator app.
      * @return [AppResult.Success] with [GeneratedTotpSecret].
      */
-    fun generateNewSecret(accountName: String): AppResult<GeneratedTotpSecret>
+    public fun generateNewSecret(accountName: String): AppResult<GeneratedTotpSecret>
 
     /**
      * Verifies a 6-digit TOTP code against a stored encrypted secret.
@@ -28,7 +27,10 @@ interface TotpCryptoProcessor {
      * @param encryptedSecret The encrypted secret retrieved from the database.
      * @return [AppResult.Success] with `true` if the code is valid for the current time window.
      */
-    fun isCodeValid(code: String, encryptedSecret: EncryptedString): AppResult<Boolean>
+    public fun isCodeValid(
+        code: String,
+        encryptedSecret: EncryptedString
+    ): AppResult<Boolean>
 
     /**
      * Reconstructs the `otpauth://` URI from a stored encrypted secret.
@@ -37,7 +39,10 @@ interface TotpCryptoProcessor {
      * @param encryptedSecret The encrypted secret retrieved from the database.
      * @return [AppResult.Success] with the formatted URI string.
      */
-    fun getOtpAuthUrl(accountName: String, encryptedSecret: EncryptedString): AppResult<String>
+    public fun getOtpAuthUrl(
+        accountName: String,
+        encryptedSecret: EncryptedString
+    ): AppResult<String>
 
     /**
      * Generates a set of high-entropy recovery codes for emergency account access.
@@ -45,5 +50,5 @@ interface TotpCryptoProcessor {
      * @param count The number of codes to generate.
      * @return [AppResult.Success] with a list of [DecryptedString] containing recovery codes.
      */
-    fun generateRecoveryCodes(count: Int = 10): AppResult<List<DecryptedString>>
+    public fun generateRecoveryCodes(count: Int = 10): AppResult<List<DecryptedString>>
 }

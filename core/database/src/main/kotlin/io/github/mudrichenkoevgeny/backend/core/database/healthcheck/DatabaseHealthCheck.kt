@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheckSe
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppSystemResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.sql.Connection
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.sql.DataSource
@@ -14,31 +15,28 @@ import kotlin.coroutines.cancellation.CancellationException
 /**
  * [HealthCheck] implementation that verifies the JDBC [DataSource] connection is valid.
  *
- * Runs [DataSource.getConnection] and [java.sql.Connection.isValid] on [Dispatchers.IO];
+ * Runs [DataSource.getConnection] and [Connection.isValid] on [Dispatchers.IO];
  * returns [AppSystemResult.Success] if valid, [AppSystemResult.Error] on failure. Severity is [HealthCheckSeverity.CRITICAL].
  */
 @Singleton
-class DatabaseHealthCheck @Inject constructor(
+public class DatabaseHealthCheck @Inject constructor(
     private val dataSource: DataSource
 ) : HealthCheck {
-
     override val severity: HealthCheckSeverity = HealthCheckSeverity.CRITICAL
 
-    override suspend fun check(): AppSystemResult<Unit> {
-        return withContext(Dispatchers.IO) {
-            try {
-                dataSource.connection.use { connection ->
-                    if (connection.isValid(1)) {
-                        AppSystemResult.Success(Unit)
-                    } else {
-                        throw RuntimeException("Database connection is invalid")
-                    }
+    override suspend fun check(): AppSystemResult<Unit> = withContext(Dispatchers.IO) {
+        try {
+            dataSource.connection.use { connection ->
+                if (connection.isValid(1)) {
+                    AppSystemResult.Success(Unit)
+                } else {
+                    throw RuntimeException("Database connection is invalid")
                 }
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                AppSystemResult.Error(CommonError.Internal(e))
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            AppSystemResult.Error(CommonError.Internal(e))
         }
     }
 }

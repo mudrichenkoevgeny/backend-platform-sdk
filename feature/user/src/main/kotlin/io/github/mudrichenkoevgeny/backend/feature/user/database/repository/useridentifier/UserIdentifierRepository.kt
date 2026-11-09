@@ -8,22 +8,21 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfIdenti
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 
 /**
  * Persistence API for login identifiers linked to a user (email, phone, external provider id).
  */
-interface UserIdentifierRepository {
-
+public interface UserIdentifierRepository {
     /**
      * Persists a new user identifier entry.
      *
      * @param userIdentifier identifier model to create
      * @return created identifier or an error
      */
-    suspend fun createUserIdentifier(userIdentifier: UserIdentifierInternal): AppResult<UserIdentifierInternal>
+    public suspend fun createUserIdentifier(userIdentifier: UserIdentifierInternal): AppResult<UserIdentifierInternal>
 
     /**
      * Deletes an identifier entry by id.
@@ -31,7 +30,7 @@ interface UserIdentifierRepository {
      * @param userIdentifierId identifier id to delete
      * @return success or an error
      */
-    suspend fun deleteUserIdentifier(userIdentifierId: UserIdentifierId): AppResult<Unit>
+    public suspend fun deleteUserIdentifier(userIdentifierId: UserIdentifierId): AppResult<Unit>
 
     /**
      * Updates selected fields of the provided [userIdentifier].
@@ -44,7 +43,7 @@ interface UserIdentifierRepository {
      * @param newPasswordHash new password hash.
      * @return updated identifier snapshot or an error.
      */
-    suspend fun updatePasswordHash(
+    public suspend fun updatePasswordHash(
         userIdentifier: UserIdentifierInternal,
         newPasswordHash: PasswordHash?
     ): AppResult<UserIdentifierInternal>
@@ -55,7 +54,9 @@ interface UserIdentifierRepository {
      * @param userIdentifierId identifier id to look up
      * @return identifier when found, `null` when missing, or an error
      */
-    suspend fun getUserIdentifierInternalById(userIdentifierId: UserIdentifierId): AppResult<UserIdentifierInternal?>
+    public suspend fun getUserIdentifierInternalById(
+        userIdentifierId: UserIdentifierId
+    ): AppResult<UserIdentifierInternal?>
 
     /**
      * Returns identifiers for a user, optionally filtered by [userAuthProvider].
@@ -64,7 +65,7 @@ interface UserIdentifierRepository {
      * @param userAuthProvider optional auth provider filter
      * @return list of identifiers or an error
      */
-    suspend fun getUserIdentifiersListByUserId(
+    public suspend fun getUserIdentifiersListByUserId(
         userId: UserId,
         userAuthProvider: UserAuthProvider? = null
     ): AppResult<List<UserIdentifierInternal>>
@@ -76,7 +77,7 @@ interface UserIdentifierRepository {
      * @param identifier identifier value (email, phone number, external id)
      * @return identifier when found, `null` when missing, or an error
      */
-    suspend fun getUserIdentifierInternalByProvider(
+    public suspend fun getUserIdentifierInternalByProvider(
         userAuthProvider: UserAuthProvider,
         identifier: String
     ): AppResult<UserIdentifierInternal?>
@@ -91,7 +92,7 @@ interface UserIdentifierRepository {
      * @param queryParams structured filter and pagination parameters
      * @return paged result of matching identifiers or a database error
      */
-    suspend fun getUserIdentifiersPageWithAccessFilter(
+    public suspend fun getUserIdentifiersPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter = UserRoleAccessFilter(emptySet()),
         queryParams: ManagementIdentifierListQueryParams
     ): AppResult<PagedResult<UserIdentifierInternal>>
@@ -105,7 +106,7 @@ interface UserIdentifierRepository {
      * @param queryParams structured filter and pagination parameters
      * @return paged result of matching identifiers or a database error
      */
-    suspend fun getUserIdentifiersPageByUserId(
+    public suspend fun getUserIdentifiersPageByUserId(
         userId: UserId,
         queryParams: SelfIdentifierListQueryParams
     ): AppResult<PagedResult<UserIdentifierInternal>>

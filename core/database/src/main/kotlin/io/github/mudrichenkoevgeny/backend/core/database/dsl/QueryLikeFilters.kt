@@ -18,7 +18,7 @@ import org.jetbrains.exposed.v1.jdbc.andWhere
  * @param rawValues list of search fragments
  * @return this [Query] with applied `LIKE` conditions
  */
-fun <T : String?> Query.addOrLikeFilter(
+public fun <T : String?> Query.addOrLikeFilter(
     column: Column<T>,
     rawValues: List<String>
 ): Query {
@@ -27,12 +27,10 @@ fun <T : String?> Query.addOrLikeFilter(
         return this
     }
 
-    @Suppress("UNCHECKED_CAST")
-    val predicate = nonBlank
+    @Suppress("UNCHECKED_CAST") val predicate = nonBlank
         .map { value ->
             (column.lowerCase() like substringSqlLikePattern(value.lowercase())) as Op<Boolean>
-        }
-        .reduce { acc, condition -> acc or condition }
+        }.reduce { acc, condition -> acc or condition }
 
     return this.andWhere { predicate }
 }

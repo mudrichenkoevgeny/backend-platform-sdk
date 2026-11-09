@@ -31,41 +31,74 @@ import javax.inject.Singleton
  * Management HTTP router for self-service unlocking of administrative/staff accounts.
  *
  * Registered routes:
- * 1. [SelfManagementUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION] — triggers delivery of an unlock verification code to email via [SendUnlockConfirmationToEmailUseCase].
- * 2. [SelfManagementUnlockRoutes.UNLOCK_BY_EMAIL] — unlocks management account using email confirmation code via [UnlockByEmailUseCase].
+ * 1. [SelfManagementUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION] — triggers delivery of an unlock
+ * verification code to email via [SendUnlockConfirmationToEmailUseCase].
+ * 2. [SelfManagementUnlockRoutes.UNLOCK_BY_EMAIL] — unlocks management account using email
+ * confirmation code via [UnlockByEmailUseCase].
  */
 @Singleton
-class SelfManagementUnlockRouter @Inject constructor(
+public class SelfManagementUnlockRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val sendUnlockConfirmationToEmailUseCase: SendUnlockConfirmationToEmailUseCase,
     private val unlockByEmailUseCase: UnlockByEmailUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         registerSendUnlockEmailConfirmationRoute(route)
         registerUnlockByEmailRoute(route)
     }
 
     private fun registerSendUnlockEmailConfirmationRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = SelfManagementUnlockRoutes.SEND_UNLOCK_EMAIL_CONFIRMATION,
-            builder = { sendUnlockEmailConfirmationDocs(allowedRoles, allowedAccountStatuses) },
-            body = { sendUnlockEmailConfirmation(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                sendUnlockEmailConfirmationDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                sendUnlockEmailConfirmation(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerUnlockByEmailRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = SelfManagementUnlockRoutes.UNLOCK_BY_EMAIL,
-            builder = { unlockByEmailDocs(allowedRoles, allowedAccountStatuses) },
-            body = { unlockByEmail(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                unlockByEmailDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                unlockByEmail(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -104,7 +137,11 @@ class SelfManagementUnlockRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { otpConfirmation ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { otpConfirmation ->
             otpConfirmation.toOtpConfirmationPayload()
         }
     }
@@ -144,18 +181,25 @@ class SelfManagementUnlockRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser, successStatus = HttpStatusCode.OK)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser,
+            successStatus = HttpStatusCode.OK
+        )
     }
 
-    companion object {
-        const val SEND_UNLOCK_EMAIL_CONFIRMATION_SUMMARY = "Send management unlock confirmation code to email"
-        const val SEND_UNLOCK_EMAIL_CONFIRMATION_DESCRIPTION = "Sends a verification code to the email to unlock a locked management account."
-        const val SEND_UNLOCK_EMAIL_CONFIRMATION_OPERATION_ID = "sendManagementUnlockEmailConfirmation"
+    public companion object {
+        private const val SEND_UNLOCK_EMAIL_CONFIRMATION_SUMMARY = "Send management unlock confirmation code to email"
+        private const val SEND_UNLOCK_EMAIL_CONFIRMATION_DESCRIPTION =
+            "Sends a verification code to the email to unlock a locked management account."
+        private const val SEND_UNLOCK_EMAIL_CONFIRMATION_OPERATION_ID = "sendManagementUnlockEmailConfirmation"
 
-        const val UNLOCK_BY_EMAIL_SUMMARY = "Unlock management account by email confirmation code"
-        const val UNLOCK_BY_EMAIL_DESCRIPTION = "Unlocks a temporarily locked management user account using email confirmation code."
-        const val UNLOCK_BY_EMAIL_OPERATION_ID = "unlockManagementByEmail"
+        private const val UNLOCK_BY_EMAIL_SUMMARY = "Unlock management account by email confirmation code"
+        private const val UNLOCK_BY_EMAIL_DESCRIPTION =
+            "Unlocks a temporarily locked management user account using email confirmation code."
+        private const val UNLOCK_BY_EMAIL_OPERATION_ID = "unlockManagementByEmail"
 
-        const val OK_RESPONSE_DESCRIPTION = "Success."
+        private const val OK_RESPONSE_DESCRIPTION = "Success."
     }
 }

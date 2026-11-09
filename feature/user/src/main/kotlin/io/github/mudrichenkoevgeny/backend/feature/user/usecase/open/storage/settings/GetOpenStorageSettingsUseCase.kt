@@ -6,8 +6,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.s
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to retrieve public storage settings snapshot.
+ */
 @Singleton
-class GetOpenStorageSettingsUseCase @Inject constructor(
+public class GetOpenStorageSettingsUseCase @Inject constructor(
     private val storageSettingsProvider: StorageSettingsProvider
 ) {
     /**
@@ -25,7 +28,6 @@ class GetOpenStorageSettingsUseCase @Inject constructor(
      *
      * @return [AppResult] containing the [OpenStorageSettings].
      */
-    operator fun invoke(): AppResult<OpenStorageSettings> {
-        return AppResult.Success(storageSettingsProvider.getOpenStorageSettings())
-    }
+    public operator fun invoke(): AppResult<OpenStorageSettings> =
+        AppResult.Success(storageSettingsProvider.getOpenStorageSettings())
 }

@@ -5,19 +5,19 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpVerifica
 /**
  * Defines standard OTP verification types used across user authentication and account management flows.
  */
-object UserOtpVerificationType {
+public object UserOtpVerificationType {
     /** Confirms email address ownership. */
-    val EMAIL_VERIFICATION = OtpVerificationType("email_verification")
+    public val EMAIL_VERIFICATION: OtpVerificationType = OtpVerificationType("email_verification")
 
     /** Confirms phone number ownership. */
-    val PHONE_VERIFICATION = OtpVerificationType("phone_verification")
+    public val PHONE_VERIFICATION: OtpVerificationType = OtpVerificationType("phone_verification")
 
     /** Used for password recovery flows via email. */
-    val EMAIL_PASSWORD_RESET = OtpVerificationType("email_password_reset")
+    public val EMAIL_PASSWORD_RESET: OtpVerificationType = OtpVerificationType("email_password_reset")
 
     /** Used for account unlock flows via email. */
-    val EMAIL_UNLOCK = OtpVerificationType("email_unlock")
+    public val EMAIL_UNLOCK: OtpVerificationType = OtpVerificationType("email_unlock")
 
     /** Used for account unlock flows via phone. */
-    val PHONE_UNLOCK = OtpVerificationType("phone_unlock")
+    public val PHONE_UNLOCK: OtpVerificationType = OtpVerificationType("phone_unlock")
 }

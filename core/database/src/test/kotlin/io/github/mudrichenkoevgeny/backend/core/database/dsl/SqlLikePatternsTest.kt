@@ -4,13 +4,15 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class SqlLikePatternsTest {
-
     @Test
     fun `substringSqlLikePattern builds simple pattern`() {
         val needle = "fragment"
         val pattern = substringSqlLikePattern(needle)
 
-        assertEquals("%fragment%", pattern.pattern)
+        assertEquals(
+            "%fragment%",
+            pattern.pattern
+        )
     }
 
     @Test
@@ -18,7 +20,10 @@ class SqlLikePatternsTest {
         val needle = "100%"
         val pattern = substringSqlLikePattern(needle)
 
-        assertEquals("%100\\%%", pattern.pattern)
+        assertEquals(
+            "%100\\%%",
+            pattern.pattern
+        )
     }
 
     @Test
@@ -26,7 +31,10 @@ class SqlLikePatternsTest {
         val needle = "user_name"
         val pattern = substringSqlLikePattern(needle)
 
-        assertEquals("%user\\_name%", pattern.pattern)
+        assertEquals(
+            "%user\\_name%",
+            pattern.pattern
+        )
     }
 
     @Test
@@ -34,7 +42,10 @@ class SqlLikePatternsTest {
         val needle = "path\\to"
         val pattern = substringSqlLikePattern(needle)
 
-        assertEquals("%path\\\\to%", pattern.pattern)
+        assertEquals(
+            "%path\\\\to%",
+            pattern.pattern
+        )
     }
 
     @Test
@@ -42,16 +53,28 @@ class SqlLikePatternsTest {
         val needle = "%_\\"
         val pattern = substringSqlLikePattern(needle)
 
-        assertEquals("%\\%\\_\\\\%", pattern.pattern)
+        assertEquals(
+            "%\\%\\_\\\\%",
+            pattern.pattern
+        )
     }
 
     @Test
     fun `substringSqlLikePattern uses custom escape character`() {
         val needle = "100%"
         val escapeChar = '!'
-        val pattern = substringSqlLikePattern(needle, escapeChar)
+        val pattern = substringSqlLikePattern(
+            needle,
+            escapeChar
+        )
 
-        assertEquals("%100\\%%", pattern.pattern)
-        assertEquals(escapeChar, pattern.escapeChar)
+        assertEquals(
+            "%100\\%%",
+            pattern.pattern
+        )
+        assertEquals(
+            escapeChar,
+            pattern.escapeChar
+        )
     }
 }

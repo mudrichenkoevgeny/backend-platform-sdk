@@ -22,7 +22,7 @@ import javax.inject.Singleton
  * Enforces character constraints, length boundaries, and global uniqueness via [UserManager].
  */
 @Singleton
-class UserUpdateValidator @Inject constructor(
+public class UserUpdateValidator @Inject constructor(
     private val nicknameValidator: NicknameValidator,
     private val displayNameValidator: DisplayNameValidator,
     private val userManager: UserManager,
@@ -35,7 +35,7 @@ class UserUpdateValidator @Inject constructor(
      * @param updateUserParams The structured parameters for the intended update.
      * @return [AppResult.Success] if all parameters pass validation, or [AppResult.Error] wrapping the [UserError].
      */
-    suspend fun validate(
+    public suspend fun validate(
         user: UserInternal,
         updateUserParams: UpdateUserParams
     ): AppResult<Unit> {
@@ -63,6 +63,7 @@ class UserUpdateValidator @Inject constructor(
                     }
                     return AppResult.Error(error)
                 }
+
                 is NicknameValidatorResult.Success -> {
                     val existingByNick = userManager.getUserInternalByNickname(newNickname).dataOrNull()
                     if (existingByNick != null && existingByNick.id != user.id) {

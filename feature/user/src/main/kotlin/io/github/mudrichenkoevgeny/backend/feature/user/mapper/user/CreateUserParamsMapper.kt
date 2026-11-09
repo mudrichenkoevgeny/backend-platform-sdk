@@ -22,16 +22,19 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.reques
  * @return [CreateUserParams] domain model containing validated and mapped values.
  * @throws [RequestHandlingException] if any string field cannot be parsed into its domain representation.
  */
-fun CreateByEmailRequest.toCreateUserParams(): CreateUserParams {
-    val userRole = UserRole.fromValueOrNull(role)
-        ?: throw RequestHandlingException(CommonError.InvalidParameterValue(UserApiFields.ROLE))
+public fun CreateByEmailRequest.toCreateUserParams(): CreateUserParams {
+    val userRole = UserRole.fromValueOrNull(role) ?: throw RequestHandlingException(
+        CommonError.InvalidParameterValue(UserApiFields.ROLE)
+    )
 
-    val userAccountStatus = UserAccountStatus.fromValueOrNull(status)
-        ?: throw RequestHandlingException(CommonError.InvalidParameterValue(UserApiFields.ACCOUNT_STATUS))
+    val userAccountStatus = UserAccountStatus.fromValueOrNull(status) ?: throw RequestHandlingException(
+        CommonError.InvalidParameterValue(UserApiFields.ACCOUNT_STATUS)
+    )
 
     val parsedAvatarFileId = avatarFileId?.let { fileIdStr ->
-        fileIdStr.toFileIdOrNull()
-            ?: throw RequestHandlingException(CommonError.InvalidParameterValue(UserApiFields.AVATAR_FILE_ID))
+        fileIdStr.toFileIdOrNull() ?: throw RequestHandlingException(
+            CommonError.InvalidParameterValue(UserApiFields.AVATAR_FILE_ID)
+        )
     }
 
     return CreateUserParams(

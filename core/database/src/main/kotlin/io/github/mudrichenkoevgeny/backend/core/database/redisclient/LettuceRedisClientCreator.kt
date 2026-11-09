@@ -14,20 +14,20 @@ import javax.inject.Singleton
  * Builds [RedisURI] from the URL with the given timeout; on failure logs via [AppLogger] and rethrows.
  */
 @Singleton
-class LettuceRedisClientCreator @Inject constructor(
+public class LettuceRedisClientCreator @Inject constructor(
     private val appLogger: AppLogger
-): RedisClientCreator {
-
-    override fun create(url: String, timeoutSeconds: Long): RedisClient {
-        return try {
-            val uri = RedisURI.create(url).apply {
-                timeout = Duration.ofSeconds(timeoutSeconds)
-            }
-
-            RedisClient.create(uri)
-        } catch (e: Exception) {
-            appLogger.logError(CommonError.Internal(e))
-            throw e
+) : RedisClientCreator {
+    override fun create(
+        url: String,
+        timeoutSeconds: Long
+    ): RedisClient = try {
+        val uri = RedisURI.create(url).apply {
+            timeout = Duration.ofSeconds(timeoutSeconds)
         }
+
+        RedisClient.create(uri)
+    } catch (e: Exception) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
     }
 }

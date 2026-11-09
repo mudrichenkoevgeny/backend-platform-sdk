@@ -13,18 +13,18 @@ import io.ktor.server.auth.jwt.jwt
 fun Application.installTestAuth() {
     install(Authentication) {
         jwt(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
-            val verifier = JWT
-                .require(Algorithm.HMAC256("test-secret"))
-                .build()
+            val verifier = JWT.require(Algorithm.HMAC256("test-secret")).build()
 
             verifier(verifier)
 
             validate { credential ->
-                val testToken = JWT.create()
-                    .withSubject(credential.payload.subject)
-                    .withClaim(UserTokenClaims.USER_ROLE, UserRole.ADMIN.value)
-                    .withClaim(UserTokenClaims.SESSION_ID, "00000000-0000-0000-0000-000000000001")
-                    .sign(Algorithm.HMAC256("test-secret"))
+                val testToken = JWT.create().withSubject(credential.payload.subject).withClaim(
+                    UserTokenClaims.USER_ROLE,
+                    UserRole.ADMIN.value
+                ).withClaim(
+                    UserTokenClaims.SESSION_ID,
+                    "00000000-0000-0000-0000-000000000001"
+                ).sign(Algorithm.HMAC256("test-secret"))
 
                 val decoded = JWT.decode(testToken)
                 JWTPrincipal(decoded)

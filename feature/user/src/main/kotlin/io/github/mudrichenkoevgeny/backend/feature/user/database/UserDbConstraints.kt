@@ -5,6 +5,6 @@ package io.github.mudrichenkoevgeny.backend.feature.user.database
  *
  * These constants should stay aligned with the corresponding column definitions and migrations.
  */
-object UserDbConstraints {
-    const val PASSWORD_HASH_MAX_LENGTH = 255
+public object UserDbConstraints {
+    public const val PASSWORD_HASH_MAX_LENGTH: Int = 255
 }

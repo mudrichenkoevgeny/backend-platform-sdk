@@ -25,7 +25,6 @@ private const val GOOGLE_PROVIDER = "google"
 private const val INVALID_PROVIDER = "unknown"
 
 class ManagementIdentifierListQueryParameterParserTest {
-
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()
     private val filterNames = UserIdentifierFilterValues
@@ -36,7 +35,7 @@ class ManagementIdentifierListQueryParameterParserTest {
     }
 
     @Test
-    fun `parseManagementIdentifiersListQueryParams should extract and parse all wire keys defined in UserIdentifierFilterValues`() {
+    fun `parseManagementIdentifiersListQueryParams parses all wire keys defined in UserIdentifierFilterValues`() {
         assertExhaustiveFilterKeysParsed(
             filterKeysClass = UserIdentifierFilterValues::class,
             sampleValueProvider = ::getSampleValidValueForIdentifierFilterKey,
@@ -51,13 +50,18 @@ class ManagementIdentifierListQueryParameterParserTest {
             wireValueExtractor = { sortByEntry -> sortByEntry.value },
             parseFunction = { mockCall -> mockCall.parseManagementIdentifiersListQueryParams() },
             assertSortByFunction = { parsedQueryParams, expectedSortBy ->
-                assertEquals(expectedSortBy, parsedQueryParams.listing.sortBy)
+                assertEquals(
+                    expectedSortBy,
+                    parsedQueryParams.listing.sortBy
+                )
             }
         )
     }
 
     private fun getSampleValidValueForIdentifierFilterKey(key: String): String = when {
-        key == filterNames.USER_AUTH_PROVIDER || key == filterNames.EXCLUDE_USER_AUTH_PROVIDER -> UserAuthProvider.GOOGLE.value
+        key == filterNames.USER_AUTH_PROVIDER || key == filterNames.EXCLUDE_USER_AUTH_PROVIDER ->
+            UserAuthProvider.GOOGLE.value
+
         key == filterNames.USER_ID || key == filterNames.IDENTIFIER_ID -> "00000000-0000-0000-0000-000000000001"
         key.endsWith("_from") || key.endsWith("_to") -> "2026-01-01T00:00:00Z"
         key.startsWith("is_") -> "true"
@@ -76,10 +80,22 @@ class ManagementIdentifierListQueryParameterParserTest {
 
         val result = call.parseManagementIdentifiersListQueryParams()
 
-        assertEquals(TEST_USER_ID, result.userIds.first())
-        assertEquals(UserAuthProvider.GOOGLE, result.userAuthProviders.first())
-        assertEquals(TEST_IDENTIFIER, result.identifier)
-        assertEquals(UserIdentifierSortBy.DEFAULT, result.listing.sortBy)
+        assertEquals(
+            TEST_USER_ID,
+            result.userIds.first()
+        )
+        assertEquals(
+            UserAuthProvider.GOOGLE,
+            result.userAuthProviders.first()
+        )
+        assertEquals(
+            TEST_IDENTIFIER,
+            result.identifier
+        )
+        assertEquals(
+            UserIdentifierSortBy.DEFAULT,
+            result.listing.sortBy
+        )
     }
 
     @Test
@@ -113,12 +129,20 @@ class ManagementIdentifierListQueryParameterParserTest {
         }
 
         val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.USER_AUTH_PROVIDER, error.parameterName)
+        assertEquals(
+            filterNames.USER_AUTH_PROVIDER,
+            error.parameterName
+        )
     }
 
     private fun setupMockParameters(params: Map<String, List<String>>) {
         val parameters = Parameters.build {
-            params.forEach { (key, values) -> appendAll(key, values) }
+            params.forEach { (key, values) ->
+                appendAll(
+                    key,
+                    values
+                )
+            }
         }
         every { request.queryParameters } returns parameters
     }

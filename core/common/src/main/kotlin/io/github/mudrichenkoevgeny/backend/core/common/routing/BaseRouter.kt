@@ -9,10 +9,9 @@ import io.ktor.server.routing.Route
  * Typical usage is to inject implementations and call [register] from a central
  * routing module to keep feature routes isolated and testable.
  */
-interface BaseRouter {
-
+public interface BaseRouter {
     /**
      * Registers all routes belonging to this router under the given [route].
      */
-    fun register(route: Route)
+    public fun register(route: Route)
 }

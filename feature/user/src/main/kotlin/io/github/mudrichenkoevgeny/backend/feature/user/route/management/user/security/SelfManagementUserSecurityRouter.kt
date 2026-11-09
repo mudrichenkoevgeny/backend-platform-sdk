@@ -47,20 +47,23 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.RoutingContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.collections.plus
 
 /**
  * Management HTTP routes for self-service user security and Multi-Factor Authentication (MFA).
  *
  * Registered routes:
  * 1. [SelfManagementUserSecurityRoutes.SETUP_TOTP] — initiates TOTP setup and generates secrets via [SetupTotpUseCase].
- * 2. [SelfManagementUserSecurityRoutes.ENABLE_TOTP] — finalizes and activates TOTP for the account via [EnableTotpUseCase].
- * 3. [SelfManagementUserSecurityRoutes.DISABLE_TOTP] — removes TOTP protection and invalidates recovery codes via [DisableTotpUseCase].
- * 4. [SelfManagementUserSecurityRoutes.GET_RECOVERY_CODES] — retrieves the current list of active recovery codes via [GetRecoveryCodesUseCase].
- * 5. [SelfManagementUserSecurityRoutes.REGENERATE_RECOVERY_CODES] — replaces existing recovery codes with a new set via [RegenerateRecoveryCodesUseCase].
+ * 2. [SelfManagementUserSecurityRoutes.ENABLE_TOTP] — finalizes and activates TOTP for the account via
+ * [EnableTotpUseCase].
+ * 3. [SelfManagementUserSecurityRoutes.DISABLE_TOTP] — removes TOTP protection and invalidates recovery codes via
+ * [DisableTotpUseCase].
+ * 4. [SelfManagementUserSecurityRoutes.GET_RECOVERY_CODES] — retrieves the current list of active recovery codes via
+ * [GetRecoveryCodesUseCase].
+ * 5. [SelfManagementUserSecurityRoutes.REGENERATE_RECOVERY_CODES] — replaces existing recovery codes with a new set via
+ * [RegenerateRecoveryCodesUseCase].
  */
 @Singleton
-class SelfManagementUserSecurityRouter @Inject constructor(
+public class SelfManagementUserSecurityRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -72,7 +75,6 @@ class SelfManagementUserSecurityRouter @Inject constructor(
     private val getRecoveryCodesUseCase: GetRecoveryCodesUseCase,
     private val regenerateRecoveryCodesUseCase: RegenerateRecoveryCodesUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerSetupTotpRoute(this)
@@ -431,30 +433,35 @@ class SelfManagementUserSecurityRouter @Inject constructor(
         )
     }
 
-    companion object {
-        const val SETUP_TOTP_SUMMARY = "Initiate TOTP setup"
-        const val SETUP_TOTP_DESCRIPTION = "Generates a new TOTP secret and returns setup data (secret key, otpauth URL, and challenge token)."
-        const val SETUP_TOTP_OPERATION_ID = "setupManagementTotp"
-        const val SETUP_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP setup data generated"
+    public companion object {
+        private const val SETUP_TOTP_SUMMARY = "Initiate TOTP setup"
+        private const val SETUP_TOTP_DESCRIPTION =
+            "Generates a new TOTP secret and returns setup data (secret key, otpauth URL, and challenge token)."
+        private const val SETUP_TOTP_OPERATION_ID = "setupManagementTotp"
+        private const val SETUP_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP setup data generated"
 
-        const val ENABLE_TOTP_SUMMARY = "Finalize TOTP activation"
-        const val ENABLE_TOTP_DESCRIPTION = "Finalizes TOTP activation by verifying the first code from the authenticator app."
-        const val ENABLE_TOTP_OPERATION_ID = "enableManagementTotp"
-        const val ENABLE_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP enabled successfully"
+        private const val ENABLE_TOTP_SUMMARY = "Finalize TOTP activation"
+        private const val ENABLE_TOTP_DESCRIPTION =
+            "Finalizes TOTP activation by verifying the first code from the authenticator app."
+        private const val ENABLE_TOTP_OPERATION_ID = "enableManagementTotp"
+        private const val ENABLE_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP enabled successfully"
 
-        const val DISABLE_TOTP_SUMMARY = "Disable TOTP"
-        const val DISABLE_TOTP_DESCRIPTION = "Disables TOTP and invalidates all associated recovery codes for the authenticated account."
-        const val DISABLE_TOTP_OPERATION_ID = "disableSelfManagementTotp"
-        const val DISABLE_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP disabled successfully"
+        private const val DISABLE_TOTP_SUMMARY = "Disable TOTP"
+        private const val DISABLE_TOTP_DESCRIPTION =
+            "Disables TOTP and invalidates all associated recovery codes for the authenticated account."
+        private const val DISABLE_TOTP_OPERATION_ID = "disableSelfManagementTotp"
+        private const val DISABLE_TOTP_RESPONSE_OK_DESCRIPTION = "TOTP disabled successfully"
 
-        const val GET_RECOVERY_CODES_SUMMARY = "Get recovery codes"
-        const val GET_RECOVERY_CODES_DESCRIPTION = "Returns the current active recovery codes for the authenticated user."
-        const val GET_RECOVERY_CODES_OPERATION_ID = "getManagementRecoveryCodes"
-        const val GET_RECOVERY_CODES_RESPONSE_OK_DESCRIPTION = "Current recovery codes"
+        private const val GET_RECOVERY_CODES_SUMMARY = "Get recovery codes"
+        private const val GET_RECOVERY_CODES_DESCRIPTION =
+            "Returns the current active recovery codes for the authenticated user."
+        private const val GET_RECOVERY_CODES_OPERATION_ID = "getManagementRecoveryCodes"
+        private const val GET_RECOVERY_CODES_RESPONSE_OK_DESCRIPTION = "Current recovery codes"
 
-        const val REGENERATE_RECOVERY_CODES_SUMMARY = "Regenerate recovery codes"
-        const val REGENERATE_RECOVERY_CODES_DESCRIPTION = "Invalidates all existing recovery codes and generates a new set for the account."
-        const val REGENERATE_RECOVERY_CODES_OPERATION_ID = "regenerateManagementRecoveryCodes"
-        const val REGENERATE_RECOVERY_CODES_RESPONSE_OK_DESCRIPTION = "New recovery codes generated"
+        private const val REGENERATE_RECOVERY_CODES_SUMMARY = "Regenerate recovery codes"
+        private const val REGENERATE_RECOVERY_CODES_DESCRIPTION =
+            "Invalidates all existing recovery codes and generates a new set for the account."
+        private const val REGENERATE_RECOVERY_CODES_OPERATION_ID = "regenerateManagementRecoveryCodes"
+        private const val REGENERATE_RECOVERY_CODES_RESPONSE_OK_DESCRIPTION = "New recovery codes generated"
     }
 }

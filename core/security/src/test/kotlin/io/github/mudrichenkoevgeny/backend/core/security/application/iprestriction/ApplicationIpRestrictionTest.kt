@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ApplicationIpRestrictionTest {
-
     private val commonConfig = createTestCommonConfig(
         ktorServerPort = 8080,
         ktorManagementPort = 9090
@@ -49,8 +48,15 @@ class ApplicationIpRestrictionTest {
             this.install(ContentNegotiation) {
                 json(FoundationJson)
             }
-            configureStatusPages(errorParser, mockLogger)
-            configureIpRestriction(commonConfig, securitySettingsProvider, validator)
+            configureStatusPages(
+                errorParser,
+                mockLogger
+            )
+            configureIpRestriction(
+                commonConfig,
+                securitySettingsProvider,
+                validator
+            )
             routing {
                 get("/test") {
                     call.respondText("ok")
@@ -59,15 +65,24 @@ class ApplicationIpRestrictionTest {
         }
 
         val response = client.get("/test")
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals("ok", response.bodyAsText())
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
+        assertEquals(
+            "ok",
+            response.bodyAsText()
+        )
     }
 
     @Test
     fun `rejects request with 403 Forbidden when ip is blacklisted on open contour`() = testApplication {
         securitySettingsProvider.currentOpenIpRestrictionPolicy = IpRestrictionPolicy(
             isBlacklistEnabled = true,
-            blacklist = listOf("127.0.0.1", "localhost"),
+            blacklist = listOf(
+                "127.0.0.1",
+                "localhost"
+            ),
             isWhitelistEnabled = false,
             whitelist = emptyList()
         )
@@ -76,8 +91,15 @@ class ApplicationIpRestrictionTest {
             this.install(ContentNegotiation) {
                 json(FoundationJson)
             }
-            configureStatusPages(errorParser, mockLogger)
-            configureIpRestriction(commonConfig, securitySettingsProvider, validator)
+            configureStatusPages(
+                errorParser,
+                mockLogger
+            )
+            configureIpRestriction(
+                commonConfig,
+                securitySettingsProvider,
+                validator
+            )
             routing {
                 get("/test") {
                     call.respondText("ok")
@@ -86,7 +108,10 @@ class ApplicationIpRestrictionTest {
         }
 
         val response = client.get("/test")
-        assertEquals(HttpStatusCode.Forbidden, response.status)
+        assertEquals(
+            HttpStatusCode.Forbidden,
+            response.status
+        )
         assertTrue(response.bodyAsText().contains(SecurityErrorCodes.IP_NOT_ALLOWED))
     }
 
@@ -100,7 +125,10 @@ class ApplicationIpRestrictionTest {
         )
         securitySettingsProvider.currentManagementIpRestrictionPolicy = IpRestrictionPolicy(
             isBlacklistEnabled = true,
-            blacklist = listOf("127.0.0.1", "localhost"),
+            blacklist = listOf(
+                "127.0.0.1",
+                "localhost"
+            ),
             isWhitelistEnabled = false,
             whitelist = emptyList()
         )
@@ -109,8 +137,15 @@ class ApplicationIpRestrictionTest {
             this.install(ContentNegotiation) {
                 json(FoundationJson)
             }
-            configureStatusPages(errorParser, mockLogger)
-            configureIpRestriction(commonConfig, securitySettingsProvider, validator)
+            configureStatusPages(
+                errorParser,
+                mockLogger
+            )
+            configureIpRestriction(
+                commonConfig,
+                securitySettingsProvider,
+                validator
+            )
             routing {
                 get("/management/test") {
                     call.respondText("ok")
@@ -119,7 +154,10 @@ class ApplicationIpRestrictionTest {
         }
 
         val response = client.get("/management/test")
-        assertEquals(HttpStatusCode.Forbidden, response.status)
+        assertEquals(
+            HttpStatusCode.Forbidden,
+            response.status
+        )
         assertTrue(response.bodyAsText().contains(SecurityErrorCodes.IP_NOT_ALLOWED))
     }
 
@@ -138,7 +176,10 @@ class ApplicationIpRestrictionTest {
         )
         securitySettingsProvider.currentManagementIpRestrictionPolicy = IpRestrictionPolicy(
             isBlacklistEnabled = true,
-            blacklist = listOf("127.0.0.1", "localhost"),
+            blacklist = listOf(
+                "127.0.0.1",
+                "localhost"
+            ),
             isWhitelistEnabled = false,
             whitelist = emptyList()
         )
@@ -147,8 +188,15 @@ class ApplicationIpRestrictionTest {
             this.install(ContentNegotiation) {
                 json(FoundationJson)
             }
-            configureStatusPages(errorParser, mockLogger)
-            configureIpRestriction(managementConfig, securitySettingsProvider, validator)
+            configureStatusPages(
+                errorParser,
+                mockLogger
+            )
+            configureIpRestriction(
+                managementConfig,
+                securitySettingsProvider,
+                validator
+            )
             routing {
                 get("/custom/path") {
                     call.respondText("ok")
@@ -157,7 +205,10 @@ class ApplicationIpRestrictionTest {
         }
 
         val response = client.get("/custom/path")
-        assertEquals(HttpStatusCode.Forbidden, response.status)
+        assertEquals(
+            HttpStatusCode.Forbidden,
+            response.status
+        )
         assertTrue(response.bodyAsText().contains(SecurityErrorCodes.IP_NOT_ALLOWED))
     }
 }

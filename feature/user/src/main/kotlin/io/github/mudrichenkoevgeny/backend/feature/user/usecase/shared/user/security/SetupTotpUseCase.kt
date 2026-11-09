@@ -23,9 +23,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.met
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.totpsetup.TotpSetup
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
@@ -33,8 +33,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.s
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to initiate TOTP setup and generate secret/QR code URL.
+ */
 @Singleton
-class SetupTotpUseCase @Inject constructor(
+public class SetupTotpUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -62,9 +65,7 @@ class SetupTotpUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] containing [TotpSetup] with the secret key, QR code URL, and MFA token.
      */
-    suspend operator fun invoke(
-        authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<TotpSetup> {
+    public suspend operator fun invoke(authenticatedRequestContext: AuthenticatedRequestContext): AppResult<TotpSetup> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
         val auditActorUserRole = authenticatedRequestContext.userRole
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata()
@@ -83,8 +84,7 @@ class SetupTotpUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserInternalById(currentUserId)
-            .mapNotNullOrError(UserError.UserForbidden())
+        val userResult = userManager.getUserInternalById(currentUserId).mapNotNullOrError(UserError.UserForbidden())
 
         val user = when (userResult) {
             is AppResult.Error -> return handleError(
@@ -93,6 +93,7 @@ class SetupTotpUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 
@@ -120,6 +121,7 @@ class SetupTotpUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userSessionResult.data
         }
 
@@ -131,6 +133,7 @@ class SetupTotpUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> accountNameResult.data
         }
 
@@ -145,6 +148,7 @@ class SetupTotpUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> generatedTotpResult.data
         }
 
@@ -176,6 +180,7 @@ class SetupTotpUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> mfaChallengeResult.data
         }
 
@@ -195,11 +200,10 @@ class SetupTotpUseCase @Inject constructor(
         )
     }
 
-    private suspend fun getAccountName(
-        userSession: UserSessionInternal
-    ): AppResult<String> {
-        if (userSession.identifierAuthProvider == UserAuthProvider.EMAIL
-            || userSession.identifierAuthProvider == UserAuthProvider.PHONE) {
+    private suspend fun getAccountName(userSession: UserSessionInternal): AppResult<String> {
+        if (userSession.identifierAuthProvider == UserAuthProvider.EMAIL ||
+            userSession.identifierAuthProvider == UserAuthProvider.PHONE
+        ) {
             return AppResult.Success(userSession.identifier)
         }
 
@@ -211,9 +215,7 @@ class SetupTotpUseCase @Inject constructor(
             is AppResult.Success -> userIdentifierResult.data?.externalProviderEmail
         }
 
-        val providerName = userSession.identifierAuthProvider.value
-            .lowercase()
-            .replaceFirstChar { it.uppercase() }
+        val providerName = userSession.identifierAuthProvider.value.lowercase().replaceFirstChar { it.uppercase() }
 
         val detail = if (!externalIdentifierEmail.isNullOrBlank()) {
             externalIdentifierEmail

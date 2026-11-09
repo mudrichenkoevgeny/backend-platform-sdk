@@ -59,13 +59,14 @@ import javax.inject.Singleton
  * Router for administrative storage file management endpoints.
  *
  * Registered routes:
- * 1. [ManagementStorageRoutes.GET_FILES] — retrieves paged list of files across all users via [ManagementGetFilesUseCase].
+ * 1. [ManagementStorageRoutes.GET_FILES] — retrieves paged list of files across all users via
+ * [ManagementGetFilesUseCase].
  * 2. [ManagementStorageRoutes.GET_FILE] — retrieves detailed file record via [ManagementGetFileUseCase].
  * 3. [ManagementStorageRoutes.DELETE_FILES_BATCH] — deletes multiple files via [ManagementDeleteFilesUseCase].
  * 4. [ManagementStorageRoutes.DELETE_FILE] — deletes single file via [ManagementDeleteFileUseCase].
  */
 @Singleton
-class ManagementStorageRouter @Inject constructor(
+public class ManagementStorageRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -76,7 +77,6 @@ class ManagementStorageRouter @Inject constructor(
     private val managementDeleteFileUseCase: ManagementDeleteFileUseCase,
     private val managementDeleteFilesUseCase: ManagementDeleteFilesUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetFilesRoute(this)
@@ -87,14 +87,32 @@ class ManagementStorageRouter @Inject constructor(
     }
 
     private fun registerGetFilesRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
         val requiredPermissions = setOf(StoragePermissionCode.STORAGE_VIEW_OTHER_USERS_FILES)
 
         route.get(
             path = ManagementStorageRoutes.GET_FILES,
-            builder = { getFilesDocs(allowedRoles, allowedAccountStatuses, requiredPermissions) },
-            body = { getFiles(allowedRoles, allowedAccountStatuses, requiredPermissions) }
+            builder = {
+                getFilesDocs(
+                    allowedRoles,
+                    allowedAccountStatuses,
+                    requiredPermissions
+                )
+            },
+            body = {
+                getFiles(
+                    allowedRoles,
+                    allowedAccountStatuses,
+                    requiredPermissions
+                )
+            }
         )
     }
 
@@ -139,7 +157,11 @@ class ManagementStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -148,20 +170,42 @@ class ManagementStorageRouter @Inject constructor(
             queryParams = queryParams
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { pagedFiles ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { pagedFiles ->
             pagedFiles.mapItems { storageFileSummary -> storageFileSummary.toStorageFileSummaryPayload() }
         }
     }
 
     private fun registerGetFileRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
         val requiredPermissions = setOf(StoragePermissionCode.STORAGE_VIEW_OTHER_USERS_FILES)
 
         route.get(
             path = ManagementStorageRoutes.GET_FILE,
-            builder = { getFileDocs(allowedRoles, allowedAccountStatuses, requiredPermissions) },
-            body = { getFile(allowedRoles, allowedAccountStatuses, requiredPermissions) }
+            builder = {
+                getFileDocs(
+                    allowedRoles,
+                    allowedAccountStatuses,
+                    requiredPermissions
+                )
+            },
+            body = {
+                getFile(
+                    allowedRoles,
+                    allowedAccountStatuses,
+                    requiredPermissions
+                )
+            }
         )
     }
 
@@ -215,7 +259,11 @@ class ManagementStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -224,20 +272,39 @@ class ManagementStorageRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { storageFilePrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { storageFilePrivate ->
             storageFilePrivate.toStorageFilePrivatePayload()
         }
     }
 
     private fun registerDeleteFilesBatchRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
         val requiredPermissions = setOf(StoragePermissionCode.STORAGE_DELETE_OTHER_USERS_FILES)
 
         route.post(
             path = ManagementStorageRoutes.DELETE_FILES_BATCH,
-            builder = { deleteFilesBatchDocs(allowedRoles, allowedAccountStatuses, requiredPermissions) },
-            body = { deleteFilesBatch(allowedRoles, allowedAccountStatuses, requiredPermissions) }
+            builder = {
+                deleteFilesBatchDocs(
+                    allowedRoles,
+                    allowedAccountStatuses,
+                    requiredPermissions
+                )
+            },
+            body = {
+                deleteFilesBatch(
+                    allowedRoles,
+                    allowedAccountStatuses,
+                    requiredPermissions
+                )
+            }
         )
     }
 
@@ -291,7 +358,11 @@ class ManagementStorageRouter @Inject constructor(
                 resourceIds = request.fileIds,
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -304,18 +375,37 @@ class ManagementStorageRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun registerDeleteFileRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
         val requiredPermissions = setOf(StoragePermissionCode.STORAGE_DELETE_OTHER_USERS_FILES)
 
         route.delete(
             path = ManagementStorageRoutes.DELETE_FILE,
-            builder = { deleteFileDocs(allowedRoles, allowedAccountStatuses, requiredPermissions) },
-            body = { deleteFile(allowedRoles, allowedAccountStatuses, requiredPermissions) }
+            builder = {
+                deleteFileDocs(
+                    allowedRoles,
+                    allowedAccountStatuses,
+                    requiredPermissions
+                )
+            },
+            body = {
+                deleteFile(
+                    allowedRoles,
+                    allowedAccountStatuses,
+                    requiredPermissions
+                )
+            }
         )
     }
 
@@ -374,7 +464,11 @@ class ManagementStorageRouter @Inject constructor(
                 resourceIds = listOf(fileId.asHexDashString()),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -383,7 +477,11 @@ class ManagementStorageRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun logErrorToAudit(
@@ -422,27 +520,30 @@ class ManagementStorageRouter @Inject constructor(
         }
     }
 
-    companion object {
-        const val GET_FILES_ROUTE_SUMMARY = "Get all platform files (management)"
-        const val GET_FILES_ROUTE_DESCRIPTION = "Returns a paged list of all storage files across the platform for administrative inspection."
-        const val GET_FILES_ROUTE_OPERATION_ID = "managementGetStorageFiles"
-        const val GET_FILES_ROUTE_RESPONSE_OK_DESCRIPTION = "Storage files retrieved successfully"
+    public companion object {
+        private const val GET_FILES_ROUTE_SUMMARY = "Get all platform files (management)"
+        private const val GET_FILES_ROUTE_DESCRIPTION =
+            "Returns a paged list of all storage files across the platform for administrative inspection."
+        private const val GET_FILES_ROUTE_OPERATION_ID = "managementGetStorageFiles"
+        private const val GET_FILES_ROUTE_RESPONSE_OK_DESCRIPTION = "Storage files retrieved successfully"
 
-        const val GET_FILE_ROUTE_SUMMARY = "Get storage file (management)"
-        const val GET_FILE_ROUTE_DESCRIPTION = "Retrieves detailed private view of any specific storage file in the platform."
-        const val GET_FILE_ROUTE_OPERATION_ID = "managementGetStorageFile"
-        const val GET_FILE_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to retrieve."
-        const val GET_FILE_ROUTE_RESPONSE_OK_DESCRIPTION = "Storage file retrieved successfully"
+        private const val GET_FILE_ROUTE_SUMMARY = "Get storage file (management)"
+        private const val GET_FILE_ROUTE_DESCRIPTION =
+            "Retrieves detailed private view of any specific storage file in the platform."
+        private const val GET_FILE_ROUTE_OPERATION_ID = "managementGetStorageFile"
+        private const val GET_FILE_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to retrieve."
+        private const val GET_FILE_ROUTE_RESPONSE_OK_DESCRIPTION = "Storage file retrieved successfully"
 
-        const val DELETE_FILES_BATCH_ROUTE_SUMMARY = "Batch delete files (management)"
-        const val DELETE_FILES_BATCH_ROUTE_DESCRIPTION = "Deletes multiple specified files across the platform."
-        const val DELETE_FILES_BATCH_ROUTE_OPERATION_ID = "managementDeleteStorageFilesBatch"
-        const val DELETE_FILES_BATCH_ROUTE_RESPONSE_OK_DESCRIPTION = "Batch delete operation completed"
+        private const val DELETE_FILES_BATCH_ROUTE_SUMMARY = "Batch delete files (management)"
+        private const val DELETE_FILES_BATCH_ROUTE_DESCRIPTION = "Deletes multiple specified files across the platform."
+        private const val DELETE_FILES_BATCH_ROUTE_OPERATION_ID = "managementDeleteStorageFilesBatch"
+        private const val DELETE_FILES_BATCH_ROUTE_RESPONSE_OK_DESCRIPTION = "Batch delete operation completed"
 
-        const val DELETE_FILE_ROUTE_SUMMARY = "Delete storage file (management)"
-        const val DELETE_FILE_ROUTE_DESCRIPTION = "Deletes a specific file and removes its binary from S3, ignoring ownership."
-        const val DELETE_FILE_ROUTE_OPERATION_ID = "managementDeleteStorageFile"
-        const val DELETE_FILE_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to delete."
-        const val DELETE_FILE_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Storage file deleted successfully"
+        private const val DELETE_FILE_ROUTE_SUMMARY = "Delete storage file (management)"
+        private const val DELETE_FILE_ROUTE_DESCRIPTION =
+            "Deletes a specific file and removes its binary from S3, ignoring ownership."
+        private const val DELETE_FILE_ROUTE_OPERATION_ID = "managementDeleteStorageFile"
+        private const val DELETE_FILE_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to delete."
+        private const val DELETE_FILE_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Storage file deleted successfully"
     }
 }

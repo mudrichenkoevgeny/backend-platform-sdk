@@ -10,16 +10,21 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Service implementation for managing user account lockouts.
+ */
 @Singleton
-class UserLockoutServiceImpl @Inject constructor(
+public class UserLockoutServiceImpl @Inject constructor(
     private val lockoutManager: LockoutManager,
     private val userManager: UserManager
 ) : UserLockoutService {
-
     override suspend fun checkLockout(
         identifier: String,
         userId: UserId?
-    ): AppResult<Unit> = checkLockout(listOf(identifier), userId)
+    ): AppResult<Unit> = checkLockout(
+        listOf(identifier),
+        userId
+    )
 
     override suspend fun checkLockout(
         identifiers: List<String>,
@@ -62,7 +67,11 @@ class UserLockoutServiceImpl @Inject constructor(
         identifier: String,
         type: LockoutAttemptType,
         userId: UserId?
-    ): AppResult<Unit> = recordFailedAttempt(listOf(identifier), type, userId)
+    ): AppResult<Unit> = recordFailedAttempt(
+        listOf(identifier),
+        type,
+        userId
+    )
 
     override suspend fun recordFailedAttempt(
         identifiers: List<String>,
@@ -70,13 +79,21 @@ class UserLockoutServiceImpl @Inject constructor(
         userId: UserId?
     ): AppResult<Unit> {
         val lockouts = identifiers.mapNotNull { id ->
-            (lockoutManager.recordFailedAttempt(id, type) as? AppResult.Success)?.data
+            (
+                lockoutManager.recordFailedAttempt(
+                    id,
+                    type
+                ) as? AppResult.Success
+                )?.data
         }
         val maxLockoutUntil = lockouts.maxOrNull()
 
         if (maxLockoutUntil != null) {
             if (userId != null) {
-                userManager.lockUserAccount(userId, maxLockoutUntil)
+                userManager.lockUserAccount(
+                    userId,
+                    maxLockoutUntil
+                )
             }
             return AppResult.Error(
                 UserError.UserLocked(

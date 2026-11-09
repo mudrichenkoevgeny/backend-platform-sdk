@@ -1,13 +1,13 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.di.module
 
+import dagger.Binds
+import dagger.Module
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.refreshtokenprovider.RefreshTokenProviderImpl
 import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.JwtTokenProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.tokenprovider.TokenProvider
-import dagger.Binds
-import dagger.Module
 import javax.inject.Singleton
 
 /**
@@ -19,17 +19,16 @@ import javax.inject.Singleton
  * - [TokenProvider] via [JwtTokenProvider]
  */
 @Module
-interface UserAuthInfrastructureModule {
+public interface UserAuthInfrastructureModule {
+    @Binds
+    @Singleton
+    public fun bindAuthenticationProvider(jwtAuthenticationProvider: JwtAuthenticationProvider): AuthenticationProvider
 
     @Binds
     @Singleton
-    fun bindAuthenticationProvider(jwtAuthenticationProvider: JwtAuthenticationProvider): AuthenticationProvider
+    public fun bindRefreshTokenProvider(refreshTokenProviderImpl: RefreshTokenProviderImpl): RefreshTokenProvider
 
     @Binds
     @Singleton
-    fun bindRefreshTokenProvider(refreshTokenProviderImpl: RefreshTokenProviderImpl): RefreshTokenProvider
-
-    @Binds
-    @Singleton
-    fun bindTokenProvider(jwtTokenProvider: JwtTokenProvider): TokenProvider
+    public fun bindTokenProvider(jwtTokenProvider: JwtTokenProvider): TokenProvider
 }

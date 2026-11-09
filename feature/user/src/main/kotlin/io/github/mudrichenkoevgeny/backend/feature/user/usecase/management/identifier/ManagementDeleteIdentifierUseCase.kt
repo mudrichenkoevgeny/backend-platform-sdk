@@ -25,8 +25,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
@@ -35,8 +35,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
 
+/**
+ * Use case to delete an identifier.
+ */
 @Singleton
-class ManagementDeleteIdentifierUseCase @Inject constructor(
+public class ManagementDeleteIdentifierUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -77,7 +80,7 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] indicating success or the specific [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         userIdentifierId: UserIdentifierId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
@@ -126,13 +129,12 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
             )
         }
 
-        val userIdentifierResult = identifierManager.getUserIdentifierInternalById(userIdentifierId)
-            .mapNotNullOrError(
-                CommonError.NotFound(
-                    resource = UserIdentifierPrivate::class.java.simpleName,
-                    identifier = userIdentifierId.asHexDashString()
-                )
+        val userIdentifierResult = identifierManager.getUserIdentifierInternalById(userIdentifierId).mapNotNullOrError(
+            CommonError.NotFound(
+                resource = UserIdentifierPrivate::class.java.simpleName,
+                identifier = userIdentifierId.asHexDashString()
             )
+        )
 
         val userIdentifier = when (userIdentifierResult) {
             is AppResult.Success -> userIdentifierResult.data
@@ -291,6 +293,7 @@ class ManagementDeleteIdentifierUseCase @Inject constructor(
                 )
                 deleteResult
             }
+
             is AppResult.Error -> handleError(
                 error = deleteResult.error,
                 actorId = auditActorId,

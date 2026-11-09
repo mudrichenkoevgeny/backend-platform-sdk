@@ -29,11 +29,15 @@ dependencies {
     implementation(libs.apache.kafka)
 
     // Testing
+    testImplementation(testFixtures(project(":core:common")))
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.core) // Transitive for Project Modules
+    testImplementation(libs.testcontainers.core)
+    testImplementation(libs.testcontainers.kafka)
+    testImplementation(libs.testcontainers.junit.jupiter)
 }
 
 tasks.test {

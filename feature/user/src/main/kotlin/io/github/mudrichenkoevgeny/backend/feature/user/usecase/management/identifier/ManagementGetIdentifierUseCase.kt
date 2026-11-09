@@ -8,13 +8,16 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.Ident
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to get an identifier.
+ */
 @Singleton
-class ManagementGetIdentifierUseCase @Inject constructor(
+public class ManagementGetIdentifierUseCase @Inject constructor(
     private val userManager: UserManager,
     private val identifierManager: IdentifierManager
 ) {
@@ -38,7 +41,7 @@ class ManagementGetIdentifierUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] containing the [UserIdentifierPrivate] if found and authorized.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         userIdentifierId: UserIdentifierId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<UserIdentifierPrivate> {

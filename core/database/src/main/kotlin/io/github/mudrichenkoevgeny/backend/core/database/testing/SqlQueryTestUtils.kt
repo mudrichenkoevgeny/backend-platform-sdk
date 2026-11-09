@@ -3,11 +3,8 @@ package io.github.mudrichenkoevgeny.backend.core.database.testing
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
-import org.jetbrains.exposed.v1.core.SqlLogger
-import org.jetbrains.exposed.v1.core.Transaction
-import org.jetbrains.exposed.v1.core.statements.StatementContext
-import org.jetbrains.exposed.v1.core.statements.expandArgs
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
+import java.lang.reflect.Proxy
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KType
@@ -18,22 +15,6 @@ import kotlin.reflect.full.primaryConstructor
 import kotlin.time.Clock
 import kotlin.time.Instant
 import kotlin.uuid.Uuid
-
-/**
- * Custom [SqlLogger] that captures all generated SQL statements and expanded arguments
- * during transaction execution.
- */
-class CapturingSqlLogger : SqlLogger {
-    val statements = mutableListOf<String>()
-
-    override fun log(context: StatementContext, transaction: Transaction) {
-        statements.add(context.expandArgs(transaction))
-    }
-
-    fun clear() {
-        statements.clear()
-    }
-}
 
 /**
  * Asserts that every property in [queryParamsClass] (excluding [ignoredProperties]) alters
@@ -47,7 +28,7 @@ class CapturingSqlLogger : SqlLogger {
  * @param ignoredProperties property names that do not directly alter SQL queries (e.g. `"parser"`)
  * @param executeRepoCall suspend lambda executing the repository query method with given [QueryParams]
  */
-suspend fun <QueryParams : Any> assertAllQueryParamsApplied(
+public suspend fun <QueryParams : Any> assertAllQueryParamsApplied(
     queryParamsClass: KClass<QueryParams>,
     defaultInstance: QueryParams,
     ignoredProperties: Set<String> = emptySet(),
@@ -56,24 +37,26 @@ suspend fun <QueryParams : Any> assertAllQueryParamsApplied(
     val logger = CapturingSqlLogger()
     TransactionManager.current().addLogger(logger)
 
-    // Step 1: Capture baseline SQL statement with default QueryParams
     logger.clear()
     executeRepoCall(defaultInstance)
     val baselineSql = logger.statements.joinToString("\n")
 
-    // Step 2: Iterate through all member properties and test each property mutation
-    val properties = queryParamsClass.memberProperties
-        .filter { it.name !in ignoredProperties }
+    val properties = queryParamsClass.memberProperties.filter { it.name !in ignoredProperties }
 
     check(properties.isNotEmpty()) {
         "QueryParams class ${queryParamsClass.simpleName} must have properties to test"
     }
 
     for (prop in properties) {
-        val sampleValue = createSampleValueForType(prop.returnType, prop.name)
-            ?: continue
+        val sampleValue = createSampleValueForType(
+            prop.returnType,
+            prop.name
+        ) ?: continue
 
-        val mutatedInstance = defaultInstance.copyValue(prop, sampleValue)
+        val mutatedInstance = defaultInstance.copyValue(
+            prop,
+            sampleValue
+        )
 
         logger.clear()
         executeRepoCall(mutatedInstance)
@@ -81,9 +64,9 @@ suspend fun <QueryParams : Any> assertAllQueryParamsApplied(
 
         check(baselineSql != mutatedSql) {
             "Property '${prop.name}' in ${queryParamsClass.simpleName} did NOT alter the generated SQL query!\n" +
-                    "Did you forget to apply this parameter in the repository query builder?\n" +
-                    "Baseline SQL: $baselineSql\n" +
-                    "Mutated SQL: $mutatedSql"
+                "Did you forget to apply this parameter in the repository query builder?\n" +
+                "Baseline SQL: $baselineSql\n" +
+                "Mutated SQL: $mutatedSql"
         }
     }
 }
@@ -91,11 +74,14 @@ suspend fun <QueryParams : Any> assertAllQueryParamsApplied(
 /**
  * Creates a new instance of a data class [T] with [property] set to [newValue].
  */
-@Suppress("UNCHECKED_CAST")
-fun <T : Any> T.copyValue(property: KProperty1<T, *>, newValue: Any?): T {
-    val kClass = this::class as KClass<T>
-    val primaryConstructor = kClass.primaryConstructor
-        ?: throw IllegalArgumentException("Class ${kClass.simpleName} must have a primary constructor")
+public fun <T : Any> T.copyValue(
+    property: KProperty1<T, *>,
+    newValue: Any?
+): T {
+    @Suppress("UNCHECKED_CAST") val kClass = this::class as KClass<T>
+    val primaryConstructor = kClass.primaryConstructor ?: throw IllegalArgumentException(
+        "Class ${kClass.simpleName} must have a primary constructor"
+    )
 
     val args = primaryConstructor.parameters.associateWith { parameter ->
         if (parameter.name == property.name) {
@@ -111,17 +97,29 @@ fun <T : Any> T.copyValue(property: KProperty1<T, *>, newValue: Any?): T {
 /**
  * Generates a non-default sample value for a given [KType] and [propertyName].
  */
-fun createSampleValueForType(type: KType, propertyName: String): Any? {
+public fun createSampleValueForType(
+    type: KType,
+    propertyName: String
+): Any? {
     val classifier = type.classifier as? KClass<*> ?: return null
 
     return when {
         classifier == String::class -> {
-            if (propertyName.endsWith("Id", ignoreCase = true) || propertyName.endsWith("Ids", ignoreCase = true)) {
+            if (propertyName.endsWith(
+                    "Id",
+                    ignoreCase = true
+                ) ||
+                propertyName.endsWith(
+                    "Ids",
+                    ignoreCase = true
+                )
+            ) {
                 "00000000-0000-0000-0000-000000000001"
             } else {
                 "sample_${propertyName}_val"
             }
         }
+
         classifier == Int::class -> 9999
         classifier == Long::class -> 8888L
         classifier == Boolean::class -> true
@@ -129,8 +127,12 @@ fun createSampleValueForType(type: KType, propertyName: String): Any? {
         classifier.java.isEnum -> classifier.java.enumConstants.let { constants ->
             if (constants.size > 1) constants[1] else constants.firstOrNull()
         }
+
         classifier == ListingQueryParams::class -> {
-            val sortByType = type.arguments.firstOrNull()?.type?.classifier as? KClass<*>
+            val sortByType = type.arguments
+                .firstOrNull()
+                ?.type
+                ?.classifier as? KClass<*>
             val sortBySample = if (sortByType != null && sortByType.java.isEnum) {
                 val constants = sortByType.java.enumConstants
                 if (constants.size > 1) constants[1] else constants.firstOrNull()
@@ -140,7 +142,10 @@ fun createSampleValueForType(type: KType, propertyName: String): Any? {
 
             if (sortBySample != null) {
                 ListingQueryParams(
-                    pageParams = PageParams(page = 2, size = 15),
+                    pageParams = PageParams(
+                        page = 2,
+                        size = 15
+                    ),
                     sortBy = sortBySample,
                     sortOrder = SortOrder.DESC
                 )
@@ -148,10 +153,25 @@ fun createSampleValueForType(type: KType, propertyName: String): Any? {
                 null
             }
         }
+
         classifier == List::class || classifier == Set::class -> {
-            val elementType = type.arguments.firstOrNull()?.type?.classifier as? KClass<*>
+            val elementType = type.arguments
+                .firstOrNull()
+                ?.type
+                ?.classifier as? KClass<*>
             val sampleElement = if (elementType != null) {
-                if (elementType == String::class && (propertyName.endsWith("Id", ignoreCase = true) || propertyName.endsWith("Ids", ignoreCase = true))) {
+                if (elementType == String::class &&
+                    (
+                        propertyName.endsWith(
+                            "Id",
+                            ignoreCase = true
+                        ) ||
+                            propertyName.endsWith(
+                                "Ids",
+                                ignoreCase = true
+                            )
+                        )
+                ) {
                     "00000000-0000-0000-0000-000000000001"
                 } else {
                     createSampleInstanceForClass(elementType)
@@ -166,6 +186,7 @@ fun createSampleValueForType(type: KType, propertyName: String): Any? {
                 null
             }
         }
+
         else -> createSampleInstanceForClass(classifier)
     }
 }
@@ -173,7 +194,7 @@ fun createSampleValueForType(type: KType, propertyName: String): Any? {
 /**
  * Creates a non-null sample instance of [kClass] for reflection-based query testing.
  */
-fun createSampleInstanceForClass(kClass: KClass<*>): Any? {
+public fun createSampleInstanceForClass(kClass: KClass<*>): Any? {
     if (kClass == String::class) return "sample_item"
     if (kClass == Int::class) return 9999
     if (kClass == Long::class) return 8888L
@@ -183,7 +204,7 @@ fun createSampleInstanceForClass(kClass: KClass<*>): Any? {
 
     if (kClass.java.isInterface) {
         try {
-            return java.lang.reflect.Proxy.newProxyInstance(
+            return Proxy.newProxyInstance(
                 kClass.java.classLoader,
                 arrayOf(kClass.java)
             ) { _, method, _ ->
@@ -215,7 +236,9 @@ fun createSampleInstanceForClass(kClass: KClass<*>): Any? {
     try {
         val constructor = kClass.primaryConstructor
         if (constructor != null && constructor.parameters.size == 1) {
-            val paramType = constructor.parameters.first().type.classifier as? KClass<*>
+            val paramType = constructor.parameters
+                .first()
+                .type.classifier as? KClass<*>
             if (paramType != null) {
                 val paramSample = createSampleInstanceForClass(paramType)
                 if (paramSample != null) {

@@ -55,12 +55,15 @@ import javax.inject.Singleton
  * Management HTTP routes for self-service identifier management and security updates.
  *
  * Registered routes:
- * 1. [SelfManagementIdentifierRoutes.GET_IDENTIFIER] — retrieves specific identifier details via [GetIdentifierUseCase].
- * 2. [SelfManagementIdentifierRoutes.GET_IDENTIFIERS] — retrieves identifiers linked to the current account via [GetIdentifiersUseCase].
- * 3. [SelfManagementIdentifierRoutes.IDENTIFIER_EMAIL_CHANGE_PASSWORD] — handles password updates for email identifiers via [IdentifierEmailChangePasswordUseCase].
+ * 1. [SelfManagementIdentifierRoutes.GET_IDENTIFIER] — retrieves specific identifier details via
+ * [GetIdentifierUseCase].
+ * 2. [SelfManagementIdentifierRoutes.GET_IDENTIFIERS] — retrieves identifiers linked to the current account via
+ * [GetIdentifiersUseCase].
+ * 3. [SelfManagementIdentifierRoutes.IDENTIFIER_EMAIL_CHANGE_PASSWORD] — handles password updates for email
+ * identifiers via [IdentifierEmailChangePasswordUseCase].
  */
 @Singleton
-class SelfManagementIdentifierRouter @Inject constructor(
+public class SelfManagementIdentifierRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -70,7 +73,6 @@ class SelfManagementIdentifierRouter @Inject constructor(
     private val getIdentifiersUseCase: GetIdentifiersUseCase,
     private val identifierEmailChangePasswordUseCase: IdentifierEmailChangePasswordUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetIdentifierRoute(this)
@@ -80,35 +82,80 @@ class SelfManagementIdentifierRouter @Inject constructor(
     }
 
     private fun registerGetIdentifierRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = UserAccountStatus.entries.toSet()
 
         route.get(
             path = SelfManagementIdentifierRoutes.GET_IDENTIFIER,
-            builder = { getIdentifierDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getIdentifier(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getIdentifierDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getIdentifier(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerGetIdentifiersRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = SelfManagementIdentifierRoutes.GET_IDENTIFIERS,
-            builder = { getIdentifiersDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getIdentifiers(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getIdentifiersDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getIdentifiers(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerIdentifierEmailChangePasswordRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = SelfManagementIdentifierRoutes.IDENTIFIER_EMAIL_CHANGE_PASSWORD,
-            builder = { identifierEmailChangePasswordDocs(allowedRoles, allowedAccountStatuses) },
-            body = { identifierEmailChangePassword(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                identifierEmailChangePasswordDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                identifierEmailChangePassword(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -153,7 +200,11 @@ class SelfManagementIdentifierRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -162,7 +213,11 @@ class SelfManagementIdentifierRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userIdentifier ->
             userIdentifier.toUserIdentifierPrivatePayload()
         }
     }
@@ -201,7 +256,11 @@ class SelfManagementIdentifierRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -210,8 +269,14 @@ class SelfManagementIdentifierRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { pagedIdentifiers ->
-            pagedIdentifiers.mapItems { userIdentifierSummary -> userIdentifierSummary.toUserIdentifierSummaryPayload() }
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { pagedIdentifiers ->
+            pagedIdentifiers.mapItems { userIdentifierSummary ->
+                userIdentifierSummary.toUserIdentifierSummaryPayload()
+            }
         }
     }
 
@@ -265,7 +330,11 @@ class SelfManagementIdentifierRouter @Inject constructor(
                 resourceId = identifierId.asHexDashString(),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -276,7 +345,11 @@ class SelfManagementIdentifierRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userIdentifier ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userIdentifier ->
             userIdentifier.toUserIdentifierPrivatePayload()
         }
     }
@@ -302,22 +375,25 @@ class SelfManagementIdentifierRouter @Inject constructor(
         )
     }
 
-    companion object {
-        const val GET_IDENTIFIER_SUMMARY = "Get specific identifier details"
-        const val GET_IDENTIFIER_OPERATION_ID = "getSelfManagementIdentifier"
-        const val GET_IDENTIFIER_DESCRIPTION = "Retrieves specific identifier details linked to the current account."
-        const val GET_IDENTIFIER_PATH_PARAMETER_DESCRIPTION = "The unique identifier ID"
-        const val GET_IDENTIFIER_RESPONSE_DESCRIPTION = "Identifier details"
+    public companion object {
+        private const val GET_IDENTIFIER_SUMMARY = "Get specific identifier details"
+        private const val GET_IDENTIFIER_OPERATION_ID = "getSelfManagementIdentifier"
+        private const val GET_IDENTIFIER_DESCRIPTION =
+            "Retrieves specific identifier details linked to the current account."
+        private const val GET_IDENTIFIER_PATH_PARAMETER_DESCRIPTION = "The unique identifier ID"
+        private const val GET_IDENTIFIER_RESPONSE_DESCRIPTION = "Identifier details"
 
-        const val GET_IDENTIFIERS_SUMMARY = "Get current management identifiers"
-        const val GET_IDENTIFIERS_OPERATION_ID = "getSelfManagementIdentifiers"
-        const val GET_IDENTIFIERS_DESCRIPTION = "Returns identifiers linked to the current authenticated management account."
-        const val GET_IDENTIFIERS_RESPONSE_DESCRIPTION = "Paged management identifiers"
+        private const val GET_IDENTIFIERS_SUMMARY = "Get current management identifiers"
+        private const val GET_IDENTIFIERS_OPERATION_ID = "getSelfManagementIdentifiers"
+        private const val GET_IDENTIFIERS_DESCRIPTION =
+            "Returns identifiers linked to the current authenticated management account."
+        private const val GET_IDENTIFIERS_RESPONSE_DESCRIPTION = "Paged management identifiers"
 
-        const val CHANGE_PASSWORD_SUMMARY = "Change management password"
-        const val CHANGE_PASSWORD_OPERATION_ID = "selfManagementChangePassword"
-        const val CHANGE_PASSWORD_DESCRIPTION = "Updates the management account password using current credentials."
-        const val CHANGE_PASSWORD_PATH_PARAMETER_DESCRIPTION = "The unique identifier ID"
-        const val CHANGE_PASSWORD_RESPONSE_DESCRIPTION = "Identifier updated"
+        private const val CHANGE_PASSWORD_SUMMARY = "Change management password"
+        private const val CHANGE_PASSWORD_OPERATION_ID = "selfManagementChangePassword"
+        private const val CHANGE_PASSWORD_DESCRIPTION =
+            "Updates the management account password using current credentials."
+        private const val CHANGE_PASSWORD_PATH_PARAMETER_DESCRIPTION = "The unique identifier ID"
+        private const val CHANGE_PASSWORD_RESPONSE_DESCRIPTION = "Identifier updated"
     }
 }

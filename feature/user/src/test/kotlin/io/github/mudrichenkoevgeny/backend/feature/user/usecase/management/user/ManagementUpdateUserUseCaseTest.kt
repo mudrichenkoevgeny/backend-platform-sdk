@@ -29,14 +29,17 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ManagementUpdateUserUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
     private val webSocketManager = mockk<WebSocketManager>(relaxed = true)
@@ -59,9 +62,14 @@ class ManagementUpdateUserUseCaseTest {
     private val targetId = UserId.generate()
     private val sessionId = context.sessionId
 
-    @org.junit.jupiter.api.BeforeEach
+    @BeforeEach
     fun setup() {
-        coEvery { userUpdateValidator.validate(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            userUpdateValidator.validate(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
     }
 
     @Test
@@ -72,30 +80,59 @@ class ManagementUpdateUserUseCaseTest {
             id = managerId,
             accountStatus = UserAccountStatus.ACTIVE,
             authorityLevel = 100,
-            permissionCodes = setOf(permission, newPermission)
+            permissionCodes = setOf(
+                permission,
+                newPermission
+            )
         )
         val targetInternal = createTestUserInternal(
             id = targetId,
             role = UserRole.USER,
             authorityLevel = 50
         )
-        val updatedUserInternal = createTestUserInternal(id = targetId, permissionCodes = setOf(newPermission))
-        val expectedUserPrivate = createTestUserPrivate(id = targetId, permissionCodes = setOf(newPermission))
-        val managerSession = createTestUserSessionInternal(id = sessionId, userId = managerId)
+        val updatedUserInternal = createTestUserInternal(
+            id = targetId,
+            permissionCodes = setOf(newPermission)
+        )
+        val expectedUserPrivate = createTestUserPrivate(
+            id = targetId,
+            permissionCodes = setOf(newPermission)
+        )
+        val managerSession = createTestUserSessionInternal(
+            id = sessionId,
+            userId = managerId
+        )
 
         val targetSessionId = UserSessionId.generate()
-        val targetSession = createTestUserSessionInternal(id = targetSessionId, userId = targetId)
+        val targetSession = createTestUserSessionInternal(
+            id = targetSessionId,
+            userId = targetId
+        )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
         coEvery { sessionManager.getUserSessionInternal(sessionId) } returns AppResult.Success(managerSession)
         coEvery {
-            authenticationChallengeService.ensureSessionConfirmed(any(), any(), any())
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any(),
+                any()
+            )
         } returns AppResult.Success(Unit)
-        coEvery { sessionManager.getAllUserSessionsInternalList(targetId) } returns AppResult.Success(listOf(targetSession))
+        coEvery { sessionManager.getAllUserSessionsInternalList(targetId) } returns AppResult.Success(
+            listOf(targetSession)
+        )
         coEvery {
-            userManager.updateUser(any(), any())
+            userManager.updateUser(
+                any(),
+                any()
+            )
         } returns AppResult.Success(updatedUserInternal)
 
         val request = ManagementUpdateUserRequest(permissionCodes = PatchField.Value(setOf(newPermission.value)))
@@ -105,7 +142,10 @@ class ManagementUpdateUserUseCaseTest {
             authenticatedRequestContext = context
         )
 
-        assertEquals(AppResult.Success(expectedUserPrivate), result)
+        assertEquals(
+            AppResult.Success(expectedUserPrivate),
+            result
+        )
 
         coVerify {
             hint(UserSessionId::class)
@@ -128,7 +168,12 @@ class ManagementUpdateUserUseCaseTest {
             authorityLevel = 50
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
 
@@ -158,7 +203,12 @@ class ManagementUpdateUserUseCaseTest {
             authorityLevel = 50
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
 
@@ -186,7 +236,12 @@ class ManagementUpdateUserUseCaseTest {
             authorityLevel = 50
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
 
@@ -212,7 +267,12 @@ class ManagementUpdateUserUseCaseTest {
             authorityLevel = 50
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery { userManager.getUserInternalById(targetId) } returns AppResult.Success(targetInternal)
 

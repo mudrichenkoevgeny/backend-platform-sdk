@@ -6,8 +6,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAcc
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import kotlin.time.Instant
 
 /**
@@ -16,15 +16,14 @@ import kotlin.time.Instant
  * Implementations are responsible for storing user rows and returning paginated lists
  * with optional filters.
  */
-interface UserRepository {
-
+public interface UserRepository {
     /**
      * Persists a new user record.
      *
      * @param user user internal model to create.
      * @return [AppResult] containing the created [UserInternal] or an error.
      */
-    suspend fun createUser(user: UserInternal): AppResult<UserInternal>
+    public suspend fun createUser(user: UserInternal): AppResult<UserInternal>
 
     /**
      * Deletes a user record by the unique user identifier.
@@ -32,7 +31,7 @@ interface UserRepository {
      * @param userId unique user identifier.
      * @return [AppResult] containing [Unit] on success or an error.
      */
-    suspend fun deleteUser(userId: UserId): AppResult<Unit>
+    public suspend fun deleteUser(userId: UserId): AppResult<Unit>
 
     /**
      * Updates user account fields using [updateUserParams].
@@ -44,7 +43,7 @@ interface UserRepository {
      * @param updateUserParams structured holder containing all field update parameters.
      * @return [AppResult] containing the updated [UserInternal].
      */
-    suspend fun updateUser(
+    public suspend fun updateUser(
         userId: UserId,
         updateUserParams: UpdateUserParams
     ): AppResult<UserInternal>
@@ -55,7 +54,7 @@ interface UserRepository {
      * @param nickname user nickname string.
      * @return [AppResult] containing [UserInternal] when found, `null` when missing, or an error.
      */
-    suspend fun getUserInternalByNickname(nickname: String): AppResult<UserInternal?>
+    public suspend fun getUserInternalByNickname(nickname: String): AppResult<UserInternal?>
 
     /**
      * Retrieves user internal model by the unique user identifier.
@@ -63,7 +62,7 @@ interface UserRepository {
      * @param userId unique user identifier.
      * @return [AppResult] containing [UserInternal] when found, `null` when missing, or an error.
      */
-    suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?>
+    public suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?>
 
     /**
      * Returns a page of [UserInternal] rows matching optional filters in [queryParams].
@@ -72,7 +71,7 @@ interface UserRepository {
      * @param queryParams Structured filter and pagination parameters.
      * @return [PagedResult] of matching users or an error.
      */
-    suspend fun getUsersPageWithAccessFilter(
+    public suspend fun getUsersPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter = UserRoleAccessFilter(emptySet()),
         queryParams: UserListQueryParams
     ): AppResult<PagedResult<UserInternal>>
@@ -86,7 +85,7 @@ interface UserRepository {
      * @param asOf Upper bound instant for eligibility (inclusive).
      * @return Count of deleted rows, or an error when persistence fails.
      */
-    suspend fun deleteUsersDueForPermanentDeletion(asOf: Instant): AppResult<Int>
+    public suspend fun deleteUsersDueForPermanentDeletion(asOf: Instant): AppResult<Int>
 
     /**
      * Finds users with an active temporary lockout whose [UserInternal.temporaryLockoutUntil] has passed relative to [asOf].
@@ -94,7 +93,7 @@ interface UserRepository {
      * @param asOf Upper bound instant for lockout expiration (inclusive).
      * @return List of matching [UserId]s, or an error.
      */
-    suspend fun getExpiredTemporaryLockouts(asOf: Instant): AppResult<List<UserId>>
+    public suspend fun getExpiredTemporaryLockouts(asOf: Instant): AppResult<List<UserId>>
 
     /**
      * Unlocks temporary account lockouts for a batch of users in a single SQL operation.
@@ -102,5 +101,5 @@ interface UserRepository {
      * @param userIds list of user IDs to unlock.
      * @return [AppResult] containing [Unit] on success or an error.
      */
-    suspend fun unlockUsersBatch(userIds: List<UserId>): AppResult<Unit>
+    public suspend fun unlockUsersBatch(userIds: List<UserId>): AppResult<Unit>
 }

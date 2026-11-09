@@ -5,8 +5,11 @@ import io.github.mudrichenkoevgeny.backend.core.storage.settings.provider.Storag
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to seed initial system storage settings and defaults.
+ */
 @Singleton
-class SeedStorageSettingsUseCase @Inject constructor(
+public class SeedStorageSettingsUseCase @Inject constructor(
     private val storageSettingsProvider: StorageSettingsProvider
 ) {
     /**
@@ -22,5 +25,5 @@ class SeedStorageSettingsUseCase @Inject constructor(
      *
      * @return [AppResult] indicating whether the initialization was successful.
      */
-    suspend operator fun invoke(): AppResult<Unit> = storageSettingsProvider.initialize()
+    public suspend operator fun invoke(): AppResult<Unit> = storageSettingsProvider.initialize()
 }

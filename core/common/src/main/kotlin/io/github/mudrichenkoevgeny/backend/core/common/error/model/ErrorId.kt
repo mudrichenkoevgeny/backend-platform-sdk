@@ -12,18 +12,18 @@ import kotlin.uuid.Uuid
  * @param value UUID backing the id; use [asHexDashString] for serialization (e.g. in JSON).
  */
 @JvmInline
-value class ErrorId(val value: Uuid) {
-
+public value class ErrorId(
+    public val value: Uuid
+) {
     /**
      * Returns the id as a canonical hex string (e.g. for API response or logging).
      */
-    fun asHexDashString(): String = value.toHexDashString()
+    public fun asHexDashString(): String = value.toHexDashString()
 
-    companion object {
-
+    public companion object {
         /**
          * Creates a new unique [ErrorId] (random UUID).
          */
-        fun generate() = ErrorId(Uuid.random())
+        public fun generate(): ErrorId = ErrorId(Uuid.random())
     }
 }

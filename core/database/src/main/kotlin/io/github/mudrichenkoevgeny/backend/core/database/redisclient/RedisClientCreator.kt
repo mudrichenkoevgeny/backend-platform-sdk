@@ -5,8 +5,7 @@ import io.lettuce.core.RedisClient
 /**
  * Creates a Lettuce [RedisClient] from a URL and connection timeout.
  */
-interface RedisClientCreator {
-
+public interface RedisClientCreator {
     /**
      * Builds a [RedisClient] for the given Redis URL and timeout.
      *
@@ -14,5 +13,8 @@ interface RedisClientCreator {
      * @param timeoutSeconds connection timeout in seconds.
      * @return configured [RedisClient] (caller is responsible for lifecycle).
      */
-    fun create(url: String, timeoutSeconds: Long): RedisClient
+    public fun create(
+        url: String,
+        timeoutSeconds: Long
+    ): RedisClient
 }

@@ -29,12 +29,11 @@ import javax.inject.Singleton
  * 1. [OpenGlobalSettingsRoutes.GET_OPEN_GLOBAL_SETTINGS] — retrieves global settings via [GetOpenGlobalSettingsUseCase].
  */
 @Singleton
-class OpenGlobalSettingsRouter @Inject constructor(
+public class OpenGlobalSettingsRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val getOpenGlobalSettingsUseCase: GetOpenGlobalSettingsUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         registerGetGlobalSettingsRoute(route)
     }
@@ -45,7 +44,12 @@ class OpenGlobalSettingsRouter @Inject constructor(
 
         route.get(
             path = OpenGlobalSettingsRoutes.GET_OPEN_GLOBAL_SETTINGS,
-            builder = { getGlobalSettingsDocs(allowedRoles, allowedAccountStatuses) },
+            builder = {
+                getGlobalSettingsDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
             body = { getGlobalSettings() }
         )
     }
@@ -76,15 +80,19 @@ class OpenGlobalSettingsRouter @Inject constructor(
     private suspend fun RoutingContext.getGlobalSettings() {
         val result = getOpenGlobalSettingsUseCase()
 
-        call.respondResult(result, appLogger, appErrorParser) { globalSettings ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { globalSettings ->
             globalSettings.toOpenGlobalSettingsPayload()
         }
     }
 
-    companion object {
-        const val GET_GLOBAL_SETTINGS_ROUTE_SUMMARY = "Get global settings"
-        const val GET_GLOBAL_SETTINGS_ROUTE_DESCRIPTION = "Returns global system settings."
-        const val GET_GLOBAL_SETTINGS_ROUTE_OPERATION_ID = "getGlobalSettings"
-        const val GET_GLOBAL_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Global settings data"
+    public companion object {
+        private const val GET_GLOBAL_SETTINGS_ROUTE_SUMMARY = "Get global settings"
+        private const val GET_GLOBAL_SETTINGS_ROUTE_DESCRIPTION = "Returns global system settings."
+        private const val GET_GLOBAL_SETTINGS_ROUTE_OPERATION_ID = "getGlobalSettings"
+        private const val GET_GLOBAL_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Global settings data"
     }
 }

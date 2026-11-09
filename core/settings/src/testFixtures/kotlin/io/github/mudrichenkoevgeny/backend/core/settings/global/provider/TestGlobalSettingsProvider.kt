@@ -22,15 +22,22 @@ class TestGlobalSettingsProvider : GlobalSettingsProvider {
     }
 
     override fun getPrivacyPolicyUrl(): String? = null
+
     override fun getTermsOfServiceUrl(): String? = null
+
     override fun getContactSupportEmail(): String? = null
+
     override fun getMinSupportedAppVersions(): Map<ClientType, String> = emptyMap()
+
     override fun getIsTracingEnabled(): Boolean = false
+
     override fun getIsMetricsEnabled(): Boolean = false
+
     override fun getIsVerboseLoggingEnabled(): Boolean = false
 
-    override suspend fun updateManagementGlobalSettings(managementGlobalSettings: ManagementGlobalSettings): AppResult<Unit> =
-        AppResult.Success(Unit)
+    override suspend fun updateManagementGlobalSettings(
+        managementGlobalSettings: ManagementGlobalSettings
+    ): AppResult<Unit> = AppResult.Success(Unit)
 
     override suspend fun resetManagementGlobalSettings(): AppResult<ManagementGlobalSettings> {
         error("Not used")

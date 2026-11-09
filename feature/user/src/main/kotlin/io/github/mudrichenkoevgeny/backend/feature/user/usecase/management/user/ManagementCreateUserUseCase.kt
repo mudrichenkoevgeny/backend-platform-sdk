@@ -32,8 +32,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permiss
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case for management user creation.
+ */
 @Singleton
-class ManagementCreateUserUseCase @Inject constructor(
+public class ManagementCreateUserUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val authSettingsProvider: AuthSettingsProvider,
     private val emailRestrictionPolicyValidator: EmailRestrictionPolicyValidator,
@@ -71,7 +74,7 @@ class ManagementCreateUserUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] containing the [UserInternal] of the created user.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         createUserParams: CreateUserParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<UserInternal> {
@@ -110,6 +113,7 @@ class ManagementCreateUserUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> managementUserResult.data
         }
 
@@ -134,7 +138,7 @@ class ManagementCreateUserUseCase @Inject constructor(
         val requiredPermission = when (createUserParams.role) {
             UserRole.USER -> UserPermissionCode.USER_CREATE_AS_USER
             UserRole.STAFF -> UserPermissionCode.USER_CREATE_AS_STAFF
-            else -> return handleError(
+            UserRole.ADMIN -> return handleError(
                 error = UserError.UserForbidden(managementUserId),
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
@@ -142,8 +146,10 @@ class ManagementCreateUserUseCase @Inject constructor(
             )
         }
 
-        if (requiredPermission !in managementUser.permissionCodes
-            || !managementUser.permissionCodes.containsAll(createUserParams.permissions)
+        if (requiredPermission !in managementUser.permissionCodes ||
+            !managementUser.permissionCodes.containsAll(
+                createUserParams.permissions
+            )
         ) {
             return handleError(
                 error = UserError.UserMissingPermissions(managementUserId),
@@ -171,7 +177,11 @@ class ManagementCreateUserUseCase @Inject constructor(
             else -> authSettingsProvider.getManagementEmailRestrictionPolicy()
         }
 
-        if (!emailRestrictionPolicyValidator.isEmailAllowed(createUserParams.email, policy)) {
+        if (!emailRestrictionPolicyValidator.isEmailAllowed(
+                createUserParams.email,
+                policy
+            )
+        ) {
             return handleError(
                 error = UserError.EmailNotAllowed(),
                 actorId = auditActorId,
@@ -229,6 +239,7 @@ class ManagementCreateUserUseCase @Inject constructor(
                 )
                 createUserResult
             }
+
             is AppResult.Error -> handleError(
                 error = createUserResult.error,
                 actorId = auditActorId,

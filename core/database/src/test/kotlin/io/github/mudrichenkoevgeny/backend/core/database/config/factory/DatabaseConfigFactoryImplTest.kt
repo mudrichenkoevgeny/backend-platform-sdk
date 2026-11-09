@@ -10,19 +10,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DatabaseConfigFactoryImplTest {
-
-    private companion object {
-        private const val DB_URL = "jdbc:postgresql://localhost:5432/test"
-        private const val DB_USER = "user"
-        private const val DB_PASSWORD = "secret"
-        private const val MIGRATION_PATHS = "classpath:db/migration,classpath:app/migration"
-        private const val REDIS_URL = "redis://localhost:6379"
-        private const val REDIS_TIMEOUT = "5"
-        private const val DB_USER_FILE = "db_user.txt"
-        private const val DB_PASSWORD_FILE = "db_password.txt"
-        private const val REDIS_URL_FILE = "redis_url.txt"
-    }
-
     private val envReader = mockk<EnvReader>()
 
     @Test
@@ -42,13 +29,34 @@ class DatabaseConfigFactoryImplTest {
 
         val config: DatabaseConfig = factory.create()
 
-        assertEquals(DB_URL, config.dbUrl)
-        assertEquals(DB_USER, config.dbUser)
-        assertEquals(DB_PASSWORD, config.dbPassword)
-        assertEquals(listOf("classpath:db/migration", "classpath:app/migration"), config.migrationPaths)
+        assertEquals(
+            DB_URL,
+            config.dbUrl
+        )
+        assertEquals(
+            DB_USER,
+            config.dbUser
+        )
+        assertEquals(
+            DB_PASSWORD,
+            config.dbPassword
+        )
+        assertEquals(
+            listOf(
+                "classpath:db/migration",
+                "classpath:app/migration"
+            ),
+            config.migrationPaths
+        )
         assertTrue(config.isMigrationEnabled)
-        assertEquals(REDIS_URL, config.redisUrl)
-        assertEquals(5L, config.redisTimeoutSeconds)
+        assertEquals(
+            REDIS_URL,
+            config.redisUrl
+        )
+        assertEquals(
+            5L,
+            config.redisTimeoutSeconds
+        )
     }
 
     @Test
@@ -68,7 +76,22 @@ class DatabaseConfigFactoryImplTest {
 
         val config: DatabaseConfig = factory.create()
 
-        assertEquals(DatabaseConfig.defaultMigrationPaths, config.migrationPaths)
+        assertEquals(
+            DatabaseConfig.defaultMigrationPaths,
+            config.migrationPaths
+        )
         assertTrue(config.isMigrationEnabled)
+    }
+
+    private companion object {
+        private const val DB_URL = "jdbc:postgresql://localhost:5432/test"
+        private const val DB_USER = "user"
+        private const val DB_PASSWORD = "secret"
+        private const val MIGRATION_PATHS = "classpath:db/migration,classpath:app/migration"
+        private const val REDIS_URL = "redis://localhost:6379"
+        private const val REDIS_TIMEOUT = "5"
+        private const val DB_USER_FILE = "db_user.txt"
+        private const val DB_PASSWORD_FILE = "db_password.txt"
+        private const val REDIS_URL_FILE = "redis_url.txt"
     }
 }

@@ -17,8 +17,13 @@ import io.ktor.server.application.ApplicationCall
  * requested), and **account status** (when constrained), mapping failures to [UserError] via
  * [AppResult].
  */
-interface AuthenticationProvider {
-    fun configureAuthentication(application: Application)
+public interface AuthenticationProvider {
+    /**
+     * Configures authentication strategies (e.g. JWT) in the Ktor application.
+     *
+     * @param application The Ktor Application to apply configuration to.
+     */
+    public fun configureAuthentication(application: Application)
 
     /**
      * Resolves the authenticated user for [call] and enforces access rules before returning
@@ -39,7 +44,7 @@ interface AuthenticationProvider {
      * @return [AppResult.Success] with the loaded user, or [AppResult.Error] (token, not found,
      * forbidden, banned, locked, read-only, security hold, pending deletion, etc.).
      */
-    suspend fun requireUser(
+    public suspend fun requireUser(
         call: ApplicationCall,
         allowedRoles: Set<UserRole>,
         allowedAccountStatuses: Set<UserAccountStatus>,

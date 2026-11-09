@@ -20,15 +20,18 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.met
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.totprecoverycodes.TotpRecoveryCodes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to finalize TOTP activation and generate recovery codes.
+ */
 @Singleton
-class EnableTotpUseCase @Inject constructor(
+public class EnableTotpUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -56,7 +59,7 @@ class EnableTotpUseCase @Inject constructor(
      * @param code The 6-digit TOTP code from the user's authenticator app.
      * @return [AppResult] containing the initial [TotpRecoveryCodes].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext,
         mfaToken: String,
         code: String
@@ -79,8 +82,7 @@ class EnableTotpUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserInternalById(currentUserId)
-            .mapNotNullOrError(UserError.UserForbidden())
+        val userResult = userManager.getUserInternalById(currentUserId).mapNotNullOrError(UserError.UserForbidden())
 
         val user = when (userResult) {
             is AppResult.Error -> return handleError(
@@ -89,6 +91,7 @@ class EnableTotpUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 
@@ -112,6 +115,7 @@ class EnableTotpUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> mfaChallengeResult.data
         }
 
@@ -124,8 +128,7 @@ class EnableTotpUseCase @Inject constructor(
             )
         }
 
-        val settingsResult = totpManager.getSettings(currentUserId)
-            .mapNotNullOrError(SecurityError.TotpNotEnabled())
+        val settingsResult = totpManager.getSettings(currentUserId).mapNotNullOrError(SecurityError.TotpNotEnabled())
 
         val settings = when (settingsResult) {
             is AppResult.Error -> return handleError(
@@ -134,6 +137,7 @@ class EnableTotpUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> settingsResult.data
         }
 
@@ -157,6 +161,7 @@ class EnableTotpUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> validationResult.data
         }
 
@@ -177,6 +182,7 @@ class EnableTotpUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> recoveryCodesResult.data
         }
 

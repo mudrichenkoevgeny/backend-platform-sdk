@@ -58,13 +58,14 @@ import javax.inject.Singleton
  * Registered routes:
  * 1. [SelfManagementStorageRoutes.GET_FILES] — retrieves staff member's paged file list via [GetFilesUseCase].
  * 2. [SelfManagementStorageRoutes.GET_FILE] — retrieves specific file payload via [GetFileUseCase].
- * 3. [SelfManagementStorageRoutes.POST_PRESIGNED_UPLOAD_URL] — generates presigned S3 upload URL via [GeneratePresignedUploadUrlUseCase].
+ * 3. [SelfManagementStorageRoutes.POST_PRESIGNED_UPLOAD_URL] — generates presigned S3 upload URL via
+ * [GeneratePresignedUploadUrlUseCase].
  * 4. [SelfManagementStorageRoutes.CONFIRM_UPLOAD] — finalizes upload session via [ConfirmUploadUseCase].
  * 5. [SelfManagementStorageRoutes.DELETE_FILE] — deletes staff file via [DeleteFileUseCase].
  * 6. [SelfManagementStorageRoutes.DELETE_FILES_BATCH] — batch deletes staff files via [DeleteFilesUseCase].
  */
 @Singleton
-class SelfManagementStorageRouter @Inject constructor(
+public class SelfManagementStorageRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val getFilesUseCase: GetFilesUseCase,
     private val getFileUseCase: GetFileUseCase,
@@ -75,7 +76,6 @@ class SelfManagementStorageRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser
 ) : BaseRouter {
-
     override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetFilesRoute(this)
@@ -88,13 +88,29 @@ class SelfManagementStorageRouter @Inject constructor(
     }
 
     private fun registerGetFilesRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = SelfManagementStorageRoutes.GET_FILES,
-            builder = { getFilesDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getFiles(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getFilesDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getFiles(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -135,7 +151,11 @@ class SelfManagementStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -144,19 +164,39 @@ class SelfManagementStorageRouter @Inject constructor(
             queryParams = queryParams
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { pagedFiles ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { pagedFiles ->
             pagedFiles.mapItems { storageFileSummary -> storageFileSummary.toStorageFileSummaryPayload() }
         }
     }
 
     private fun registerGetFileRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = SelfManagementStorageRoutes.GET_FILE,
-            builder = { getFileDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getFile(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getFileDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getFile(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -206,7 +246,11 @@ class SelfManagementStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -215,19 +259,36 @@ class SelfManagementStorageRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { storageFilePrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { storageFilePrivate ->
             storageFilePrivate.toStorageFilePrivatePayload()
         }
     }
 
     private fun registerPostPresignedUrlRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.post(
             path = SelfManagementStorageRoutes.POST_PRESIGNED_UPLOAD_URL,
-            builder = { postPresignedUrlDocs(allowedRoles, allowedAccountStatuses) },
-            body = { postPresignedUrl(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                postPresignedUrlDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                postPresignedUrl(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -272,16 +333,19 @@ class SelfManagementStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
-        val storageCategory = StorageCategory.fromValueOrNull(request.category)
-            ?: throw RequestHandlingException(
-                CommonError.InvalidFieldValue(
-                    fieldName = StorageApiFields.CATEGORY
-                )
+        val storageCategory = StorageCategory.fromValueOrNull(request.category) ?: throw RequestHandlingException(
+            CommonError.InvalidFieldValue(
+                fieldName = StorageApiFields.CATEGORY
             )
+        )
 
         val storageFileVisibility = StorageFileVisibility.fromValueOrNull(request.visibility)
             ?: throw RequestHandlingException(
@@ -300,19 +364,36 @@ class SelfManagementStorageRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { presignedUrl ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { presignedUrl ->
             presignedUrl.toPresignedUrlPayload()
         }
     }
 
     private fun registerConfirmUploadRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.post(
             path = SelfManagementStorageRoutes.CONFIRM_UPLOAD,
-            builder = { confirmUploadDocs(allowedRoles, allowedAccountStatuses) },
-            body = { confirmUpload(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                confirmUploadDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                confirmUpload(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -362,7 +443,11 @@ class SelfManagementStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -371,19 +456,36 @@ class SelfManagementStorageRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { storageFilePrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { storageFilePrivate ->
             storageFilePrivate.toStorageFilePrivatePayload()
         }
     }
 
     private fun registerDeleteFileRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.delete(
             path = SelfManagementStorageRoutes.DELETE_FILE,
-            builder = { deleteFileDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteFile(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteFileDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteFile(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -432,7 +534,11 @@ class SelfManagementStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -441,17 +547,34 @@ class SelfManagementStorageRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun registerDeleteFilesBatchRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.post(
             path = SelfManagementStorageRoutes.DELETE_FILES_BATCH,
-            builder = { deleteFilesBatchDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteFilesBatch(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteFilesBatchDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteFilesBatch(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -495,7 +618,11 @@ class SelfManagementStorageRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -508,41 +635,52 @@ class SelfManagementStorageRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
-    companion object {
-        const val GET_FILES_ROUTE_SUMMARY = "Get staff files (self-service)"
-        const val GET_FILES_ROUTE_DESCRIPTION = "Retrieves a paged list of summary storage files uploaded by the current staff member."
-        const val GET_FILES_ROUTE_OPERATION_ID = "selfManagementGetStorageFiles"
-        const val GET_FILES_ROUTE_RESPONSE_OK_DESCRIPTION = "Storage files retrieved successfully"
+    public companion object {
+        private const val GET_FILES_ROUTE_SUMMARY = "Get staff files (self-service)"
+        private const val GET_FILES_ROUTE_DESCRIPTION =
+            "Retrieves a paged list of summary storage files uploaded by the current staff member."
+        private const val GET_FILES_ROUTE_OPERATION_ID = "selfManagementGetStorageFiles"
+        private const val GET_FILES_ROUTE_RESPONSE_OK_DESCRIPTION = "Storage files retrieved successfully"
 
-        const val GET_FILE_ROUTE_SUMMARY = "Get staff file details (self-service)"
-        const val GET_FILE_ROUTE_DESCRIPTION = "Retrieves detailed private view of a specific file uploaded by the current staff member."
-        const val GET_FILE_ROUTE_OPERATION_ID = "selfManagementGetStorageFile"
-        const val GET_FILE_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to retrieve."
-        const val GET_FILE_ROUTE_RESPONSE_OK_DESCRIPTION = "Storage file retrieved successfully"
+        private const val GET_FILE_ROUTE_SUMMARY = "Get staff file details (self-service)"
+        private const val GET_FILE_ROUTE_DESCRIPTION =
+            "Retrieves detailed private view of a specific file uploaded by the current staff member."
+        private const val GET_FILE_ROUTE_OPERATION_ID = "selfManagementGetStorageFile"
+        private const val GET_FILE_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to retrieve."
+        private const val GET_FILE_ROUTE_RESPONSE_OK_DESCRIPTION = "Storage file retrieved successfully"
 
-        const val POST_PRESIGNED_URL_ROUTE_SUMMARY = "Request staff upload presigned URL"
-        const val POST_PRESIGNED_URL_ROUTE_DESCRIPTION = "Requests a short-lived presigned S3 PUT URL for a file uploaded by staff."
-        const val POST_PRESIGNED_URL_ROUTE_OPERATION_ID = "selfManagementPostPresignedUrl"
-        const val POST_PRESIGNED_URL_ROUTE_RESPONSE_OK_DESCRIPTION = "Presigned URL payload"
+        private const val POST_PRESIGNED_URL_ROUTE_SUMMARY = "Request staff upload presigned URL"
+        private const val POST_PRESIGNED_URL_ROUTE_DESCRIPTION =
+            "Requests a short-lived presigned S3 PUT URL for a file uploaded by staff."
+        private const val POST_PRESIGNED_URL_ROUTE_OPERATION_ID = "selfManagementPostPresignedUrl"
+        private const val POST_PRESIGNED_URL_ROUTE_RESPONSE_OK_DESCRIPTION = "Presigned URL payload"
 
-        const val CONFIRM_UPLOAD_ROUTE_SUMMARY = "Confirm staff file upload"
-        const val CONFIRM_UPLOAD_ROUTE_DESCRIPTION = "Finalizes upload session after binary upload to S3 completes for a staff member file."
-        const val CONFIRM_UPLOAD_ROUTE_OPERATION_ID = "selfManagementConfirmUpload"
-        const val CONFIRM_UPLOAD_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to confirm."
-        const val CONFIRM_UPLOAD_ROUTE_RESPONSE_OK_DESCRIPTION = "Confirmed file record payload"
+        private const val CONFIRM_UPLOAD_ROUTE_SUMMARY = "Confirm staff file upload"
+        private const val CONFIRM_UPLOAD_ROUTE_DESCRIPTION =
+            "Finalizes upload session after binary upload to S3 completes for a staff member file."
+        private const val CONFIRM_UPLOAD_ROUTE_OPERATION_ID = "selfManagementConfirmUpload"
+        private const val CONFIRM_UPLOAD_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to confirm."
+        private const val CONFIRM_UPLOAD_ROUTE_RESPONSE_OK_DESCRIPTION = "Confirmed file record payload"
 
-        const val DELETE_FILE_ROUTE_SUMMARY = "Delete staff file (self-service)"
-        const val DELETE_FILE_ROUTE_DESCRIPTION = "Deletes a specific file uploaded by the current staff member."
-        const val DELETE_FILE_ROUTE_OPERATION_ID = "selfManagementDeleteStorageFile"
-        const val DELETE_FILE_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to delete."
-        const val DELETE_FILE_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Storage file deleted successfully"
+        private const val DELETE_FILE_ROUTE_SUMMARY = "Delete staff file (self-service)"
+        private const val DELETE_FILE_ROUTE_DESCRIPTION =
+            "Deletes a specific file uploaded by the current staff member."
+        private const val DELETE_FILE_ROUTE_OPERATION_ID = "selfManagementDeleteStorageFile"
+        private const val DELETE_FILE_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the storage file to delete."
+        private const val DELETE_FILE_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Storage file deleted successfully"
 
-        const val DELETE_FILES_BATCH_ROUTE_SUMMARY = "Delete multiple staff files (self-service)"
-        const val DELETE_FILES_BATCH_ROUTE_DESCRIPTION = "Deletes multiple specific files uploaded by the current staff member in a single batch operation."
-        const val DELETE_FILES_BATCH_ROUTE_OPERATION_ID = "selfManagementDeleteStorageFilesBatch"
-        const val DELETE_FILES_BATCH_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION = "Storage files deleted successfully"
+        private const val DELETE_FILES_BATCH_ROUTE_SUMMARY = "Delete multiple staff files (self-service)"
+        private const val DELETE_FILES_BATCH_ROUTE_DESCRIPTION =
+            "Deletes multiple specific files uploaded by the current staff member in a single batch operation."
+        private const val DELETE_FILES_BATCH_ROUTE_OPERATION_ID = "selfManagementDeleteStorageFilesBatch"
+        private const val DELETE_FILES_BATCH_ROUTE_RESPONSE_NO_CONTENT_DESCRIPTION =
+            "Storage files deleted successfully"
     }
 }

@@ -1,0 +1,19 @@
+# todo uncomment
+#name: 'Setup Environment & JVM Toolchains'
+#description: 'Makes gradlew executable, sets up Java 25, and configures Gradle cache'
+#
+#runs:
+#  using: 'composite'
+#  steps:
+#    - name: Make Gradlew Executable
+#      shell: bash
+#      run: chmod +x gradlew
+#
+#    - name: Setup Java 25
+#      uses: actions/setup-java@v5
+#      with:
+#        distribution: 'temurin'
+#        java-version: '25'
+#
+#    - name: Setup Gradle
+#      uses: gradle/actions/setup-gradle@v4

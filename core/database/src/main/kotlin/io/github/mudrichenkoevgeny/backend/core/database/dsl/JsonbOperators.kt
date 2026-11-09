@@ -7,11 +7,21 @@ import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.QueryBuilder
 import org.jetbrains.exposed.v1.jdbc.transactions.TransactionManager
 
-infix fun Column<Set<String>>.jsonbContainsSingleString(value: String): Op<Boolean> {
-    val jsonArray = buildJsonArray { add(JsonPrimitive(value)) }.toString().replace("'", "''")
+/**
+ * Checks whether a JSONB array column contains [value].
+ */
+public infix fun Column<Set<String>>.jsonbContainsSingleString(value: String): Op<Boolean> {
+    val jsonArray = buildJsonArray { add(JsonPrimitive(value)) }.toString().replace(
+        "'",
+        "''"
+    )
     return object : Op<Boolean>() {
         override fun toQueryBuilder(queryBuilder: QueryBuilder) {
-            val isH2 = TransactionManager.current().db.vendor.lowercase().contains("h2")
+            val isH2 = TransactionManager
+                .current()
+                .db.vendor
+                .lowercase()
+                .contains("h2")
             queryBuilder.append("(")
             if (isH2) {
                 queryBuilder.append(this@jsonbContainsSingleString)
@@ -28,14 +38,24 @@ infix fun Column<Set<String>>.jsonbContainsSingleString(value: String): Op<Boole
     }
 }
 
-infix fun Column<Set<String>>.jsonbContainsAllStrings(values: Set<String>): Op<Boolean> {
+/**
+ * Checks whether a JSONB array column contains all string values in [values].
+ */
+public infix fun Column<Set<String>>.jsonbContainsAllStrings(values: Set<String>): Op<Boolean> {
     val jsonArray = buildJsonArray {
         values.forEach { add(JsonPrimitive(it)) }
-    }.toString().replace("'", "''")
+    }.toString().replace(
+        "'",
+        "''"
+    )
 
     return object : Op<Boolean>() {
         override fun toQueryBuilder(queryBuilder: QueryBuilder) {
-            val isH2 = TransactionManager.current().db.vendor.lowercase().contains("h2")
+            val isH2 = TransactionManager
+                .current()
+                .db.vendor
+                .lowercase()
+                .contains("h2")
             queryBuilder.append("(")
             if (isH2) {
                 if (values.isEmpty()) {

@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SeedAuthSettingsUseCaseTest {
-
     @Test
     fun `invoke delegates to provider initialize`() = runBlocking {
         val provider = TestAuthSettingsProvider()

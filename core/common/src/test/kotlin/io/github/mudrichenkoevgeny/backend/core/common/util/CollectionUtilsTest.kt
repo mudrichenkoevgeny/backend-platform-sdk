@@ -6,10 +6,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class CollectionUtilsTest {
-
     @Test
     fun `all args null returns true`() {
-        val args: Array<Any?> = arrayOf(null, null, null)
+        val args: Array<Any?> = arrayOf(
+            null,
+            null,
+            null
+        )
 
         val result = isAllArgsNull(*args)
 
@@ -18,7 +21,11 @@ class CollectionUtilsTest {
 
     @Test
     fun `arg not null returns false`() {
-        val args: Array<Any?> = arrayOf(null, "text", null)
+        val args: Array<Any?> = arrayOf(
+            null,
+            "text",
+            null
+        )
 
         val result = isAllArgsNull(*args)
 
@@ -34,7 +41,11 @@ class CollectionUtilsTest {
 
     @Test
     fun `different types including non null returns false`() {
-        val args: Array<Any?> = arrayOf(null, 42, Any())
+        val args: Array<Any?> = arrayOf(
+            null,
+            42,
+            Any()
+        )
 
         val result = isAllArgsNull(*args)
 
@@ -43,11 +54,23 @@ class CollectionUtilsTest {
 
     @Test
     fun `mapToSet transforms list to set`() {
-        val list = listOf(1, 2, 2, 3)
+        val list = listOf(
+            1,
+            2,
+            2,
+            3
+        )
 
         val result = list.mapToSet { it * 10 }
 
-        assertEquals(setOf(10, 20, 30), result)
+        assertEquals(
+            setOf(
+                10,
+                20,
+                30
+            ),
+            result
+        )
         assertTrue(result is LinkedHashSet)
     }
 
@@ -62,10 +85,22 @@ class CollectionUtilsTest {
 
     @Test
     fun `mapToSet maintains order for LinkedHashSet`() {
-        val list = listOf("c", "a", "b", "a")
+        val list = listOf(
+            "c",
+            "a",
+            "b",
+            "a"
+        )
 
         val result = list.mapToSet { it }
 
-        assertEquals(listOf("c", "a", "b"), result.toList())
+        assertEquals(
+            listOf(
+                "c",
+                "a",
+                "b"
+            ),
+            result.toList()
+        )
     }
 }

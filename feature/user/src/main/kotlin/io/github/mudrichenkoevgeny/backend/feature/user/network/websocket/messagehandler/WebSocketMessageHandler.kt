@@ -10,12 +10,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.w
  * [WebSocketMessageHandlerResult] or [WebSocketMessageHandlerResult.NotHandled]
  * to let other handlers try.
  */
-interface WebSocketMessageHandler {
-
+public interface WebSocketMessageHandler {
     /**
      * Attempts to handle the incoming [frame] for the given [webSocketSessionContext].
      */
-    suspend fun handle(
+    public suspend fun handle(
         frame: SocketFrame,
         webSocketSessionContext: WebSocketSessionContext
     ): WebSocketMessageHandlerResult

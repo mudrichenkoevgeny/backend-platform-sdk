@@ -5,32 +5,35 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
-import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
-import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
+import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to link an external auth provider identifier to an existing user account.
+ */
 @Singleton
-class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
+public class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -64,7 +67,7 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] containing the newly created [UserIdentifierPrivate].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         authProvider: UserAuthProvider,
         token: String,
         authenticatedRequestContext: AuthenticatedRequestContext
@@ -110,8 +113,7 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserInternalById(currentUserId)
-            .mapNotNullOrError(UserError.UserForbidden())
+        val userResult = userManager.getUserInternalById(currentUserId).mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (userResult) {
             is AppResult.Error -> return handleError(
@@ -120,6 +122,7 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 
@@ -160,6 +163,7 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
                     baseMetadata = auditMetadata
                 )
             }
+
             is AppResult.Success -> verificationResult.data
         }
 
@@ -187,6 +191,7 @@ class AddUserIdentifierExternalAuthProviderUseCase @Inject constructor(
                     baseMetadata = auditMetadata
                 )
             }
+
             is AppResult.Success -> {
                 logAudit(
                     actorId = auditActorId,

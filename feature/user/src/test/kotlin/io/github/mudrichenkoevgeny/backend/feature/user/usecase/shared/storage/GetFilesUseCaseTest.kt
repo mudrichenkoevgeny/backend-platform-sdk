@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class GetFilesUseCaseTest {
-
     private val storageManager = mockk<StorageManager>()
     private val useCase = GetFilesUseCase(storageManager)
 
@@ -59,8 +58,14 @@ class GetFilesUseCaseTest {
             )
         } returns AppResult.Success(pagedResult)
 
-        val result = useCase(context, queryParams)
+        val result = useCase(
+            context,
+            queryParams
+        )
 
-        assertEquals(AppResult.Success(pagedResult), result)
+        assertEquals(
+            AppResult.Success(pagedResult),
+            result
+        )
     }
 }

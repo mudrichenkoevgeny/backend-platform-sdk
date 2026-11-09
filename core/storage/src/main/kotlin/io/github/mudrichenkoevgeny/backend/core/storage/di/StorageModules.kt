@@ -30,4 +30,4 @@ import io.github.mudrichenkoevgeny.backend.core.storage.service.StorageService
         StorageScheduledJobsModule::class
     ]
 )
-interface StorageModules
+public interface StorageModules

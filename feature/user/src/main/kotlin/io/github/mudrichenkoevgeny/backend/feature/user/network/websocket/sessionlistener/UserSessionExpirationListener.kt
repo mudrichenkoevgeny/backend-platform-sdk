@@ -1,8 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.sessionlistener
 
 import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
-import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.WebSocketSessionContext
+import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import io.ktor.server.websocket.DefaultWebSocketServerSession
@@ -28,10 +28,9 @@ import kotlin.uuid.Uuid
  * The scheduled job is canceled when the socket closes to avoid leaking coroutines.
  */
 @Singleton
-class UserSessionExpirationListener @Inject constructor(
+public class UserSessionExpirationListener @Inject constructor(
     @param:BackgroundScope private val scope: CoroutineScope
 ) : WebSocketSessionListener {
-
     private val expirationJobs = ConcurrentHashMap<String, Job>()
 
     override fun onSessionRegistered(
@@ -75,7 +74,7 @@ class UserSessionExpirationListener @Inject constructor(
         expirationJobs.remove(context.socketSessionId)?.cancel()
     }
 
-    companion object {
+    public companion object {
         private const val TOKEN_EXPIRATION_BUFFER_MS = 5000L
         private const val NOTIFY_BEFORE_CLOSE_DELAY_MS = 2000L
     }

@@ -28,7 +28,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ManagementGetUsersUseCaseTest {
-
     private val userManager = mockk<UserManager>()
     private val useCase = ManagementGetUsersUseCase(userManager)
 
@@ -57,7 +56,10 @@ class ManagementGetUsersUseCaseTest {
 
     @Test
     fun `successfully returns paged users when manager is active`() = runTest {
-        val managerInternal = createTestUserInternal(id = managerId, accountStatus = UserAccountStatus.ACTIVE)
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.ACTIVE
+        )
         val userInternal = createTestUserInternal()
         val pagedInternalResult = PagedResult(
             items = listOf(userInternal),
@@ -87,12 +89,18 @@ class ManagementGetUsersUseCaseTest {
             authenticatedRequestContext = context
         )
 
-        assertEquals(AppResult.Success(expectedPagedResult), result)
+        assertEquals(
+            AppResult.Success(expectedPagedResult),
+            result
+        )
     }
 
     @Test
     fun `returns error when manager is not active`() = runTest {
-        val managerInternal = createTestUserInternal(id = managerId, accountStatus = UserAccountStatus.BANNED)
+        val managerInternal = createTestUserInternal(
+            id = managerId,
+            accountStatus = UserAccountStatus.BANNED
+        )
 
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 

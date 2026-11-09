@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class AuditEventsListQueryParameterParserTest {
-
     private val actionParser = CompositeAuditActionTypeParser(listOf(UserAuditActionType::fromValueOrNull))
     private val resourceParser = CompositeAuditResourceTypeParser(listOf(UserAuditResourceType::fromValueOrNull))
     private val call = mockk<ApplicationCall>()
@@ -112,7 +111,15 @@ class AuditEventsListQueryParameterParserTest {
         val mockResource = UserAuditResourceType.USER
 
         val actionParser = CompositeAuditActionTypeParser(listOf { if (it == "create_user") mockAction else null })
-        val resourceParser = CompositeAuditResourceTypeParser(listOf { if (it == "user_profile") mockResource else null })
+        val resourceParser = CompositeAuditResourceTypeParser(
+            listOf {
+                if (it == "user_profile") {
+                    mockResource
+                } else {
+                    null
+                }
+            }
+        )
 
         val queryParameters = Parameters.build {
             append(params.ACTION, "create_user")

@@ -22,7 +22,7 @@ import io.ktor.server.request.path
  * @param securitySettingsProvider Provider for open and management IP restriction policies.
  * @param validator Validator for evaluating IP addresses against restriction policies.
  */
-fun Application.configureIpRestriction(
+public fun Application.configureIpRestriction(
     commonConfig: CommonConfig,
     securitySettingsProvider: SecuritySettingsProvider,
     validator: IpRestrictionPolicyValidator
@@ -34,7 +34,9 @@ fun Application.configureIpRestriction(
                 AppInstanceMode.MANAGEMENT -> true
                 AppInstanceMode.FULL -> {
                     call.request.local.localPort == commonConfig.ktorManagementPort ||
-                        call.request.path().startsWith("/management")
+                        call.request
+                            .path()
+                            .startsWith("/management")
                 }
             }
 
@@ -45,7 +47,11 @@ fun Application.configureIpRestriction(
             }
 
             val clientIp = call.request.local.remoteHost
-            if (!validator.isIpAllowed(clientIp, policy)) {
+            if (!validator.isIpAllowed(
+                    clientIp,
+                    policy
+                )
+            ) {
                 throw RequestHandlingException(SecurityError.IpNotAllowed())
             }
         }

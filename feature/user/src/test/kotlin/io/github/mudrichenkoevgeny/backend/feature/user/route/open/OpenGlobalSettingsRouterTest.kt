@@ -1,12 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.open
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.settings.domain.model.globalsettings.createTestOpenGlobalSettings
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.settings.GetOpenGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.settings.OpenGlobalSettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.settings.GetOpenGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.route.open.globalsettings.OpenGlobalSettingsRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.settings.domain.model.globalsettings.createTestOpenGlobalSettings
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
@@ -18,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class OpenGlobalSettingsRouterTest : BaseRouterTest() {
-
     private val getOpenGlobalSettingsUseCase = mockk<GetOpenGlobalSettingsUseCase>()
 
     private val router = OpenGlobalSettingsRouter(
@@ -46,6 +45,9 @@ class OpenGlobalSettingsRouterTest : BaseRouterTest() {
 
         val response = client.get(OpenGlobalSettingsRoutes.GET_OPEN_GLOBAL_SETTINGS)
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 }

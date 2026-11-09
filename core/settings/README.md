@@ -60,8 +60,8 @@ The app must include this path in its Flyway migration locations.
 [SettingsConfigFactoryImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/config/factory/SettingsConfigFactoryImpl.kt
 
 [SystemSettingsTable]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/database/table/SystemSettingsTable.kt
-[SystemSettingRepository]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/database/repository/SystemSettingRepository.kt
-[SystemSettingRepositoryImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/database/repository/SystemSettingRepositoryImpl.kt
+[SystemSettingRepository]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/database/repository/SystemSettingsRepository.kt
+[SystemSettingRepositoryImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/database/repository/SystemSettingsRepositoryImpl.kt
 [SystemSettingsManager]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/manager/SystemSettingsManager.kt
 [SystemSettingsManagerImpl]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/manager/SystemSettingsManagerImpl.kt
 [SystemSettingsService]: src/main/kotlin/io/github/mudrichenkoevgeny/backend/core/settings/service/SystemSettingsService.kt

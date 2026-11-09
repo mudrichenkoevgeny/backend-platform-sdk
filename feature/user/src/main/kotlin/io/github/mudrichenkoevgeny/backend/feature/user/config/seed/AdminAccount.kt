@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
  * @param password plaintext password that will be hashed during seeding.
  */
 @Serializable
-data class AdminAccount(
+public data class AdminAccount(
     val email: String,
     val password: String
 )

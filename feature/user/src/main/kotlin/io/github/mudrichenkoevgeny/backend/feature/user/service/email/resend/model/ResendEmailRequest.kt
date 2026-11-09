@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
  * Resend API request payload for sending an email.
  */
 @Serializable
-data class ResendEmailRequest(
+public data class ResendEmailRequest(
     val from: String,
     val to: List<String>,
     val subject: String,

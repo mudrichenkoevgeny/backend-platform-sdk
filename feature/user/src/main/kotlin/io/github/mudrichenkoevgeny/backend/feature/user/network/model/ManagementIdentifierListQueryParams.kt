@@ -8,7 +8,7 @@ import kotlin.time.Instant
 /**
  * Query parameters for management user identifiers list endpoint.
  */
-data class ManagementIdentifierListQueryParams(
+public data class ManagementIdentifierListQueryParams(
     val listing: ListingQueryParams<UserIdentifierSortBy>,
     val identifierIds: List<String> = emptyList(),
     val userIds: List<String> = emptyList(),

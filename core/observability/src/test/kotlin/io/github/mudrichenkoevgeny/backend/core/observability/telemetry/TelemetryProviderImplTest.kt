@@ -5,13 +5,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 class TelemetryProviderImplTest {
-
-    private companion object {
-        private const val SERVICE_NAME = "test-service"
-        private const val ENDPOINT = "http://localhost:4318"
-        private const val METRIC_INTERVAL = 60L
-    }
-
     private val config = ObservabilityConfig(
         telemetryServiceName = SERVICE_NAME,
         telemetryEndpoint = ENDPOINT,
@@ -33,5 +26,11 @@ class TelemetryProviderImplTest {
         assertNotNull(provider.tracer)
         assertNotNull(provider.meter)
         assertNotNull(provider.prometheusMeterRegistry)
+    }
+
+    private companion object {
+        private const val SERVICE_NAME = "test-service"
+        private const val ENDPOINT = "http://localhost:4318"
+        private const val METRIC_INTERVAL = 60L
     }
 }

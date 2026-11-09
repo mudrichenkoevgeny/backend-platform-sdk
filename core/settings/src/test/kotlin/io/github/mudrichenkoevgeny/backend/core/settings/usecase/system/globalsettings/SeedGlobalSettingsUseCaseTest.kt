@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SeedGlobalSettingsUseCaseTest {
-
     @Test
     fun `execute delegates to provider initialize`() = runBlocking {
         val provider = TestGlobalSettingsProvider()

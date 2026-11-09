@@ -12,6 +12,6 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
  * This ensures consistent serialization settings (naming, defaults, polymorphism, etc.)
  * across all services using the SDK.
  */
-fun Application.configureSerialization() {
+public fun Application.configureSerialization() {
     install(ContentNegotiation) { json(FoundationJson) }
 }

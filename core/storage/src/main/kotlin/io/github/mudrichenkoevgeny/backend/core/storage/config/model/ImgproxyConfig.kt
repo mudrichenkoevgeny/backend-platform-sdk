@@ -12,7 +12,7 @@ package io.github.mudrichenkoevgeny.backend.core.storage.config.model
  * @param presets map of preset keys (such as "thumbnail" or "avatar_sm") to [ImgproxyPreset] specifications.
  * @param videoThumbnailSecond default seek time in seconds when extracting thumbnail frames from video files.
  */
-data class ImgproxyConfig(
+public data class ImgproxyConfig(
     val isEnabled: Boolean,
     val baseUrl: String,
     val key: String,

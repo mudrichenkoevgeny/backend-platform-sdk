@@ -11,10 +11,9 @@ import javax.inject.Singleton
  * from environment variables using [EnvReader] and keys from [ObservabilityEnvKeys].
  */
 @Singleton
-class ObservabilityConfigFactoryImpl @Inject constructor(
+public class ObservabilityConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader
-): ObservabilityConfigFactory {
-
+) : ObservabilityConfigFactory {
     override fun create(): ObservabilityConfig {
         val telemetryEndpoint = envReader.getByKey(ObservabilityEnvKeys.TELEMETRY_ENDPOINT)
         val telemetryServiceName = envReader.getByKey(ObservabilityEnvKeys.TELEMETRY_SERVICE_NAME)

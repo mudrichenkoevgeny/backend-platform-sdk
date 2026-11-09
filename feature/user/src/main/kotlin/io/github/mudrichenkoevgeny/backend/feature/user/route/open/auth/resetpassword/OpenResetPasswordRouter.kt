@@ -3,10 +3,10 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.resetpa
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
@@ -35,7 +35,7 @@ import javax.inject.Singleton
  * 2. [OpenResetPasswordRoutes.RESET_EMAIL_PASSWORD] — updates the account password using a valid confirmation code via [ResetPasswordUseCase].
  */
 @Singleton
-class OpenResetPasswordRouter @Inject constructor(
+public class OpenResetPasswordRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val sendResetPasswordConfirmationUseCase: SendResetPasswordConfirmationUseCase,
@@ -48,23 +48,51 @@ class OpenResetPasswordRouter @Inject constructor(
 
     private fun registerSendResetPasswordConfirmationRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenResetPasswordRoutes.SEND_RESET_EMAIL_PASSWORD_CONFIRMATION,
-            builder = { sendResetPasswordConfirmationDocs(allowedRoles, allowedAccountStatuses) },
-            body = { sendResetPasswordConfirmation(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                sendResetPasswordConfirmationDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                sendResetPasswordConfirmation(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerResetPasswordRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY, UserAccountStatus.PENDING_DELETION)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY,
+            UserAccountStatus.PENDING_DELETION
+        )
 
         route.post(
             path = OpenResetPasswordRoutes.RESET_EMAIL_PASSWORD,
-            builder = { resetPasswordDocs(allowedRoles, allowedAccountStatuses) },
-            body = { resetPassword(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                resetPasswordDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                resetPassword(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -107,7 +135,11 @@ class OpenResetPasswordRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { otpConfirmation ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { otpConfirmation ->
             otpConfirmation.toOtpConfirmationPayload()
         }
     }
@@ -152,19 +184,23 @@ class OpenResetPasswordRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
-    companion object {
-        const val SEND_RESET_PASSWORD_CONFIRMATION_SUMMARY = "Send reset password confirmation"
-        const val SEND_RESET_PASSWORD_CONFIRMATION_DESCRIPTION =
+    public companion object {
+        private const val SEND_RESET_PASSWORD_CONFIRMATION_SUMMARY = "Send reset password confirmation"
+        private const val SEND_RESET_PASSWORD_CONFIRMATION_DESCRIPTION =
             "Sends a confirmation code to the user's email for reset password."
-        const val SEND_RESET_PASSWORD_CONFIRMATION_OPERATION_ID = "openSendResetPasswordConfirmationToEmail"
-        const val SEND_RESET_PASSWORD_CONFIRMATION_RESPONSE_DESCRIPTION = "Confirmation sent successfully."
+        private const val SEND_RESET_PASSWORD_CONFIRMATION_OPERATION_ID = "openSendResetPasswordConfirmationToEmail"
+        private const val SEND_RESET_PASSWORD_CONFIRMATION_RESPONSE_DESCRIPTION = "Confirmation sent successfully."
 
-        const val RESET_PASSWORD_SUMMARY = "Reset password"
-        const val RESET_PASSWORD_DESCRIPTION = "Resets the user's password using a confirmation code."
-        const val RESET_PASSWORD_OPERATION_ID = "openResetPassword"
-        const val RESET_PASSWORD_RESPONSE_DESCRIPTION = "Reset password successfully."
+        private const val RESET_PASSWORD_SUMMARY = "Reset password"
+        private const val RESET_PASSWORD_DESCRIPTION = "Resets the user's password using a confirmation code."
+        private const val RESET_PASSWORD_OPERATION_ID = "openResetPassword"
+        private const val RESET_PASSWORD_RESPONSE_DESCRIPTION = "Reset password successfully."
     }
 }

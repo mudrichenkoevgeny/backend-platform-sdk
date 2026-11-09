@@ -8,7 +8,7 @@ import kotlin.time.Instant
 /**
  * Query parameters for self-service user identifiers list endpoint.
  */
-data class SelfIdentifierListQueryParams(
+public data class SelfIdentifierListQueryParams(
     val listing: ListingQueryParams<UserIdentifierSortBy>,
     val identifierIds: List<String> = emptyList(),
     val userAuthProviders: List<UserAuthProvider> = emptyList(),

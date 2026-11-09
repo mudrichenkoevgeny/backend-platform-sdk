@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test
 import kotlin.uuid.Uuid
 
 class CommonWebSocketMessageHandlerTest {
-
     private val handler = CommonWebSocketMessageHandler()
     private val dummyContext = WebSocketSessionContext(
         socketSessionId = "socket-1",
@@ -40,19 +39,34 @@ class CommonWebSocketMessageHandlerTest {
             metadata = emptyMap()
         )
 
-        val result = handler.handle(frame, dummyContext)
+        val result = handler.handle(
+            frame,
+            dummyContext
+        )
 
-        val send = Assertions.assertInstanceOf(WebSocketMessageHandlerResult.SendSocketFrame::class.java, result)
-        assertEquals(CommonWebSocketEventTypes.PONG, send.socketFrame.type)
+        val send = Assertions.assertInstanceOf(
+            WebSocketMessageHandlerResult.SendSocketFrame::class.java,
+            result
+        )
+        assertEquals(
+            CommonWebSocketEventTypes.PONG,
+            send.socketFrame.type
+        )
     }
 
     @Test
     fun `PONG is treated as handled`() = runSuspend {
         val frame = socketFrame(type = CommonWebSocketEventTypes.PONG)
 
-        val result = handler.handle(frame, dummyContext)
+        val result = handler.handle(
+            frame,
+            dummyContext
+        )
 
-        assertEquals(WebSocketMessageHandlerResult.Handled, result)
+        assertEquals(
+            WebSocketMessageHandlerResult.Handled,
+            result
+        )
     }
 
     @Test
@@ -62,12 +76,24 @@ class CommonWebSocketMessageHandlerTest {
             payload = null
         )
 
-        val result = handler.handle(frame, dummyContext)
+        val result = handler.handle(
+            frame,
+            dummyContext
+        )
 
-        val error = Assertions.assertInstanceOf(WebSocketMessageHandlerResult.Error::class.java, result)
-        Assertions.assertInstanceOf(CommonError.MissingRequiredField::class.java, error.appError)
+        val error = Assertions.assertInstanceOf(
+            WebSocketMessageHandlerResult.Error::class.java,
+            result
+        )
+        Assertions.assertInstanceOf(
+            CommonError.MissingRequiredField::class.java,
+            error.appError
+        )
         val missing = error.appError as CommonError.MissingRequiredField
-        assertEquals(CommonApiFields.PAYLOAD, missing.fieldName)
+        assertEquals(
+            CommonApiFields.PAYLOAD,
+            missing.fieldName
+        )
     }
 
     @Test
@@ -77,10 +103,19 @@ class CommonWebSocketMessageHandlerTest {
             payload = JsonNull
         )
 
-        val result = handler.handle(frame, dummyContext)
+        val result = handler.handle(
+            frame,
+            dummyContext
+        )
 
-        val error = Assertions.assertInstanceOf(WebSocketMessageHandlerResult.Error::class.java, result)
-        Assertions.assertInstanceOf(CommonError.InvalidJsonBody::class.java, error.appError)
+        val error = Assertions.assertInstanceOf(
+            WebSocketMessageHandlerResult.Error::class.java,
+            result
+        )
+        Assertions.assertInstanceOf(
+            CommonError.InvalidJsonBody::class.java,
+            error.appError
+        )
     }
 
     @Test
@@ -94,40 +129,60 @@ class CommonWebSocketMessageHandlerTest {
             operationSystemVersion = "Android 15",
             apiVersion = "1"
         )
-        val payloadElement = FoundationJson.encodeToJsonElement(WebSocketInitializePayload.serializer(), payload)
+        val payloadElement = FoundationJson.encodeToJsonElement(
+            WebSocketInitializePayload.serializer(),
+            payload
+        )
 
         val frame = socketFrame(
             type = CommonWebSocketEventTypes.INITIALIZE,
             payload = payloadElement
         )
 
-        val result = handler.handle(frame, dummyContext)
+        val result = handler.handle(
+            frame,
+            dummyContext
+        )
 
-        val init = Assertions.assertInstanceOf(WebSocketMessageHandlerResult.InitializeClient::class.java, result)
-        assertEquals(CommonWebSocketEventTypes.INITIALIZED_SUCCESS, init.socketFrame.type)
-        assertEquals(payload, init.payload)
+        val init = Assertions.assertInstanceOf(
+            WebSocketMessageHandlerResult.InitializeClient::class.java,
+            result
+        )
+        assertEquals(
+            CommonWebSocketEventTypes.INITIALIZED_SUCCESS,
+            init.socketFrame.type
+        )
+        assertEquals(
+            payload,
+            init.payload
+        )
     }
 
     @Test
     fun `unknown type is not handled`() = runSuspend {
         val frame = socketFrame(type = "UNKNOWN_TYPE")
 
-        val result = handler.handle(frame, dummyContext)
+        val result = handler.handle(
+            frame,
+            dummyContext
+        )
 
-        assertEquals(WebSocketMessageHandlerResult.NotHandled, result)
+        assertEquals(
+            WebSocketMessageHandlerResult.NotHandled,
+            result
+        )
     }
 
     private fun socketFrame(
         type: String,
         payload: JsonElement? = buildJsonObject { }
-    ): SocketFrame =
-        SocketFrame(
-            id = Uuid.random().toHexDashString(),
-            type = type,
-            timestamp = System.currentTimeMillis(),
-            payload = payload,
-            metadata = emptyMap()
-        )
+    ): SocketFrame = SocketFrame(
+        id = Uuid.random().toHexDashString(),
+        type = type,
+        timestamp = System.currentTimeMillis(),
+        payload = payload,
+        metadata = emptyMap()
+    )
 
     private fun runSuspend(block: suspend () -> Unit) {
         runBlocking { block() }

@@ -10,11 +10,7 @@ import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier.UserIdentifierRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.userknowndevices.UserKnownDevicesRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession.UserSessionRepository
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.client.createTestClientInfo
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.token.RotatedRefreshTokenData
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.model.device.UserKnownDevice
@@ -34,12 +30,15 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.i
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
-import kotlin.time.Duration.Companion.days
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.AccessToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.SessionToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.client.createTestClientInfo
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -47,6 +46,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -55,10 +55,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
 class SessionManagerImplTest {
-
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val appLogger = mockk<AppLogger>(relaxed = true)
@@ -87,7 +87,7 @@ class SessionManagerImplTest {
         redisManager = redisManager,
         auditLogger = auditLogger,
         userRepository = userRepository,
-        scope = CoroutineScope(kotlinx.coroutines.Dispatchers.Unconfined)
+        scope = CoroutineScope(Dispatchers.Unconfined)
     )
 
     private val userId = UserId.generate()
@@ -97,7 +97,10 @@ class SessionManagerImplTest {
 
     @BeforeEach
     fun setup() {
-        Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;", driver = "org.h2.Driver")
+        Database.connect(
+            "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;",
+            driver = "org.h2.Driver"
+        )
         every { securitySettingsProvider.getRefreshTokenRotationGracePeriodSeconds() } returns 30
     }
 
@@ -111,11 +114,18 @@ class SessionManagerImplTest {
         val now = Clock.System.now()
         val expiresAt = now + 3600.seconds
 
-        val currentSession = createSampleInternalSession(userId, oldHash).copy(
+        val currentSession = createSampleInternalSession(
+            userId,
+            oldHash
+        ).copy(
             clientDeviceInfo = clientInfo.clientDeviceInfo,
             expiresAt = expiresAt
         )
-        val userInternal = createTestUserInternal(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            role = UserRole.USER,
+            accountStatus = UserAccountStatus.ACTIVE
+        )
 
         coEvery { refreshTokenProvider.getRefreshTokenHash(oldRefreshToken) } returns AppResult.Success(oldHash)
         coEvery { userSessionRepository.getUserSessionByHash(oldHash) } returns AppResult.Success(currentSession)
@@ -124,11 +134,28 @@ class SessionManagerImplTest {
 
         every { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
         every { authSettingsProvider.getRefreshTokenExpirationSeconds() } returns 86400
-        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any(), any()) } returns AppResult.Success(newAccessToken)
+        coEvery {
+            jwtTokenProvider.generateAccessToken(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(newAccessToken)
         coEvery { refreshTokenProvider.getRefreshToken() } returns AppResult.Success(newRefreshToken)
         coEvery { refreshTokenProvider.getRefreshTokenHash(newRefreshToken) } returns AppResult.Success(newHash)
-        coEvery { userSessionRepository.createUserSession(any()) } returns AppResult.Success(currentSession.copy(expiresAt = expiresAt))
-        coEvery { redisManager.setWithExpiration(any(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery { userSessionRepository.createUserSession(any()) } returns AppResult.Success(
+            currentSession.copy(expiresAt = expiresAt)
+        )
+        coEvery {
+            redisManager.setWithExpiration(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
 
         val mockDevice = UserKnownDevice(
             userId = userId,
@@ -139,16 +166,41 @@ class SessionManagerImplTest {
             firstSeenAt = now,
             lastSeenAt = now
         )
-        coEvery { userKnownDevicesRepository.getKnownDevice(any(), any()) } returns AppResult.Success(mockDevice)
-        coEvery { userKnownDevicesRepository.updateKnownDevice(any(), any(), any(), any()) } returns AppResult.Success(mockDevice)
-        coEvery { userIdentifierRepository.getUserIdentifiersListByUserId(any()) } returns AppResult.Success(emptyList())
+        coEvery {
+            userKnownDevicesRepository.getKnownDevice(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(mockDevice)
+        coEvery {
+            userKnownDevicesRepository.updateKnownDevice(
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(
+            mockDevice
+        )
+        coEvery { userIdentifierRepository.getUserIdentifiersListByUserId(any()) } returns AppResult.Success(
+            emptyList()
+        )
 
-        val result = manager.refreshSession(oldRefreshToken, clientInfo)
+        val result = manager.refreshSession(
+            oldRefreshToken,
+            clientInfo
+        )
 
         assertTrue(result is AppResult.Success)
         val token = (result as AppResult.Success).data
-        assertEquals(newAccessToken, token.accessToken)
-        assertEquals(newRefreshToken, token.refreshToken)
+        assertEquals(
+            newAccessToken,
+            token.accessToken
+        )
+        assertEquals(
+            newRefreshToken,
+            token.refreshToken
+        )
     }
 
     @Test
@@ -170,18 +222,30 @@ class SessionManagerImplTest {
             userId = userId,
             rotatedAt = Clock.System.now() - 5.seconds
         )
-        val jsonString = FoundationJson.encodeToString(RotatedRefreshTokenData.serializer(), rotatedData)
+        val jsonString = FoundationJson.encodeToString(
+            RotatedRefreshTokenData.serializer(),
+            rotatedData
+        )
 
         coEvery { refreshTokenProvider.getRefreshTokenHash(rotatedRefreshToken) } returns AppResult.Success(rotatedHash)
         coEvery { userSessionRepository.getUserSessionByHash(rotatedHash) } returns AppResult.Success(null)
         coEvery { redisManager.get("auth:rotated_refresh:${rotatedHash.value}") } returns AppResult.Success(jsonString)
 
-        val result = manager.refreshSession(rotatedRefreshToken, clientInfo)
+        val result = manager.refreshSession(
+            rotatedRefreshToken,
+            clientInfo
+        )
 
         assertTrue(result is AppResult.Success)
         val token = (result as AppResult.Success).data
-        assertEquals(newAccessToken, token.accessToken)
-        assertEquals(newRefreshToken, token.refreshToken)
+        assertEquals(
+            newAccessToken,
+            token.accessToken
+        )
+        assertEquals(
+            newRefreshToken,
+            token.refreshToken
+        )
     }
 
     @Test
@@ -202,23 +266,42 @@ class SessionManagerImplTest {
             userId = userId,
             rotatedAt = Clock.System.now() - 60.seconds
         )
-        val jsonString = FoundationJson.encodeToString(RotatedRefreshTokenData.serializer(), rotatedData)
+        val jsonString = FoundationJson.encodeToString(
+            RotatedRefreshTokenData.serializer(),
+            rotatedData
+        )
 
-        val userSession = createSampleInternalSession(userId, rotatedHash)
+        val userSession = createSampleInternalSession(
+            userId,
+            rotatedHash
+        )
 
         coEvery { refreshTokenProvider.getRefreshTokenHash(rotatedRefreshToken) } returns AppResult.Success(rotatedHash)
         coEvery { userSessionRepository.getUserSessionByHash(rotatedHash) } returns AppResult.Success(null)
         coEvery { redisManager.get("auth:rotated_refresh:${rotatedHash.value}") } returns AppResult.Success(jsonString)
         coEvery { userSessionRepository.getUserSessionInternalById(sessionId) } returns AppResult.Success(userSession)
         coEvery { userSessionRepository.deleteAllUserSessions(userId) } returns AppResult.Success(Unit)
-        coEvery { userRepository.updateUser(userId, updateUserParams = any()) } returns AppResult.Success(mockk())
+        coEvery {
+            userRepository.updateUser(
+                userId,
+                updateUserParams = any()
+            )
+        } returns AppResult.Success(mockk())
 
-        val result = manager.refreshSession(rotatedRefreshToken, clientInfo)
+        val result = manager.refreshSession(
+            rotatedRefreshToken,
+            clientInfo
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.InvalidRefreshToken)
         coVerify { userSessionRepository.deleteAllUserSessions(userId) }
-        coVerify { userRepository.updateUser(userId, updateUserParams = any()) }
+        coVerify {
+            userRepository.updateUser(
+                userId,
+                updateUserParams = any()
+            )
+        }
         coVerify { redisManager.delete("auth:rotated_refresh:${rotatedHash.value}") }
         verify {
             auditLogger.log(
@@ -242,7 +325,10 @@ class SessionManagerImplTest {
         coEvery { userSessionRepository.getUserSessionByHash(oldHash) } returns AppResult.Success(null)
         coEvery { redisManager.get("auth:rotated_refresh:${oldHash.value}") } returns AppResult.Success(null)
 
-        val result = manager.refreshSession(oldRefreshToken, clientInfo)
+        val result = manager.refreshSession(
+            oldRefreshToken,
+            clientInfo
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.InvalidRefreshToken)
@@ -268,39 +354,75 @@ class SessionManagerImplTest {
 
     @Test
     fun `deleteAllUserSessionsExceptOne returns list of deleted ids`() = runTest {
-        val deletedIds = listOf(UserSessionId.generate(), UserSessionId.generate())
+        val deletedIds = listOf(
+            UserSessionId.generate(),
+            UserSessionId.generate()
+        )
         coEvery {
-            userSessionRepository.deleteAllUserSessionsExceptOne(userId, sessionId)
+            userSessionRepository.deleteAllUserSessionsExceptOne(
+                userId,
+                sessionId
+            )
         } returns AppResult.Success(deletedIds)
 
-        val result = manager.deleteAllUserSessionsExceptOne(userId, sessionId)
+        val result = manager.deleteAllUserSessionsExceptOne(
+            userId,
+            sessionId
+        )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(deletedIds, (result as AppResult.Success).data.deletedSessionIds)
+        assertEquals(
+            deletedIds,
+            (result as AppResult.Success).data.deletedSessionIds
+        )
     }
 
     @Test
     fun `getUserSessionsInternalListByIdentifierId returns list of internal sessions`() = runTest {
         val identifierId = UserIdentifierId.generate()
         val sessions = listOf(
-            createSampleInternalSession(userId, RefreshTokenHash("hash-1")),
-            createSampleInternalSession(userId, RefreshTokenHash("hash-2"))
+            createSampleInternalSession(
+                userId,
+                RefreshTokenHash("hash-1")
+            ),
+            createSampleInternalSession(
+                userId,
+                RefreshTokenHash("hash-2")
+            )
         )
 
         coEvery {
-            userSessionRepository.getUserSessionsByIdentifierId(identifierId, userId)
+            userSessionRepository.getUserSessionsByIdentifierId(
+                identifierId,
+                userId
+            )
         } returns AppResult.Success(sessions)
 
-        val result = manager.getUserSessionsInternalListByIdentifierId(identifierId, userId)
+        val result = manager.getUserSessionsInternalListByIdentifierId(
+            identifierId,
+            userId
+        )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(2, (result as AppResult.Success).data.size)
+        assertEquals(
+            2,
+            (result as AppResult.Success).data.size
+        )
     }
 
     @Test
     fun `getUserSessionsSummaryPage returns paged sessions for current user`() = runTest {
-        val internalSession = createSampleInternalSession(userId, RefreshTokenHash("hash-1"))
-        val paged = PagedResult(listOf(internalSession), 1, 1, 10, 1)
+        val internalSession = createSampleInternalSession(
+            userId,
+            RefreshTokenHash("hash-1")
+        )
+        val paged = PagedResult(
+            listOf(internalSession),
+            1,
+            1,
+            10,
+            1
+        )
 
         coEvery {
             userSessionRepository.getUserSessionsPageByUserId(
@@ -311,24 +433,37 @@ class SessionManagerImplTest {
 
         val result = manager.getUserSessionsSummaryPage(
             userId = userId,
-            queryParams = SelfSessionListQueryParams(listing = ListingQueryParams(sortBy = UserSessionSortBy.DEFAULT))
+            queryParams = SelfSessionListQueryParams(
+                listing = ListingQueryParams(sortBy = UserSessionSortBy.DEFAULT)
+            )
         )
 
         assertTrue(result is AppResult.Success)
         val success = result as AppResult.Success
-        assertEquals(1, success.data.items.size)
-        assertEquals(internalSession.id, success.data.items.first().id)
+        assertEquals(
+            1,
+            success.data.items.size
+        )
+        assertEquals(
+            internalSession.id,
+            success.data.items.first().id
+        )
     }
 
     @Test
     fun `deleteLeastRecentlyUsedUserSession returns deleted session id`() = runTest {
         val deletedId = UserSessionId.generate()
-        coEvery { userSessionRepository.deleteLeastRecentlyUsedUserSession(userId) } returns AppResult.Success(deletedId)
+        coEvery { userSessionRepository.deleteLeastRecentlyUsedUserSession(userId) } returns AppResult.Success(
+            deletedId
+        )
 
         val result = manager.deleteLeastRecentlyUsedUserSession(userId)
 
         assertTrue(result is AppResult.Success)
-        assertEquals(deletedId, (result as AppResult.Success).data)
+        assertEquals(
+            deletedId,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
@@ -341,12 +476,26 @@ class SessionManagerImplTest {
 
         coEvery { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
         coEvery { authSettingsProvider.getRefreshTokenExpirationSeconds() } returns 86400
-        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any(), any()) } returns AppResult.Success(accessToken)
+        coEvery {
+            jwtTokenProvider.generateAccessToken(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(accessToken)
         coEvery { refreshTokenProvider.getRefreshToken() } returns AppResult.Success(refreshToken)
         coEvery { refreshTokenProvider.getRefreshTokenHash(refreshToken) } returns AppResult.Success(refreshHash)
         coEvery { userSessionRepository.createUserSession(any()) } returns AppResult.Success(internalSession)
 
-        coEvery { userKnownDevicesRepository.getKnownDevice(userId, any()) } returns AppResult.Success(null)
+        coEvery {
+            userKnownDevicesRepository.getKnownDevice(
+                userId,
+                any()
+            )
+        } returns AppResult.Success(null)
         coEvery { userKnownDevicesRepository.createKnownDevice(any()) } returns AppResult.Success(mockk(relaxed = true))
         coEvery { userIdentifierRepository.getUserIdentifiersListByUserId(userId) } returns AppResult.Success(
             listOf(
@@ -424,14 +573,26 @@ class SessionManagerImplTest {
 
         every { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
         every { authSettingsProvider.getRefreshTokenExpirationSeconds() } returns 86400
-        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any(), any()) } returns AppResult.Success(accessToken)
+        coEvery {
+            jwtTokenProvider.generateAccessToken(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(accessToken)
         coEvery { refreshTokenProvider.getRefreshToken() } returns AppResult.Success(refreshToken)
         coEvery { refreshTokenProvider.getRefreshTokenHash(refreshToken) } returns AppResult.Success(refreshHash)
         coEvery { userSessionRepository.createUserSession(any()) } returns AppResult.Success(internalSession)
 
         val capturedDeviceIdSlot = slot<ClientDeviceId>()
         coEvery {
-            userKnownDevicesRepository.getKnownDevice(userId, capture(capturedDeviceIdSlot))
+            userKnownDevicesRepository.getKnownDevice(
+                userId,
+                capture(capturedDeviceIdSlot)
+            )
         } returns AppResult.Success(null)
         coEvery { userKnownDevicesRepository.createKnownDevice(any()) } returns AppResult.Success(mockk(relaxed = true))
         coEvery { userIdentifierRepository.getUserIdentifiersListByUserId(userId) } returns AppResult.Success(
@@ -445,7 +606,12 @@ class SessionManagerImplTest {
             )
         )
         coEvery {
-            emailService.sendNewDeviceLoginEmail(any(), any(), any(), any())
+            emailService.sendNewDeviceLoginEmail(
+                any(),
+                any(),
+                any(),
+                any()
+            )
         } returns AppResult.Success(Unit)
 
         val result = manager.createSession(
@@ -461,7 +627,10 @@ class SessionManagerImplTest {
         assertTrue(result is AppResult.Success)
         assertNotNull(capturedDeviceIdSlot.captured)
 
-        coVerify(timeout = 2000, exactly = 1) {
+        coVerify(
+            timeout = 2000,
+            exactly = 1
+        ) {
             emailService.sendNewDeviceLoginEmail(
                 email = "test@example.com",
                 ipAddress = any(),
@@ -478,12 +647,22 @@ class SessionManagerImplTest {
         val newAccessToken = AccessToken("new-access-token")
         val newRefreshToken = RefreshToken("new-refresh-token")
         val newHash = RefreshTokenHash("new-hash")
-        val currentSession = createSampleInternalSession(userId, oldHash).copy(
+        val currentSession = createSampleInternalSession(
+            userId,
+            oldHash
+        ).copy(
             clientDeviceInfo = clientInfo.clientDeviceInfo,
             expiresAt = Clock.System.now() + 1.days
         )
-        val newInternalSession = createSampleInternalSession(userId, newHash)
-        val userInternal = createTestUserInternal(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
+        val newInternalSession = createSampleInternalSession(
+            userId,
+            newHash
+        )
+        val userInternal = createTestUserInternal(
+            id = userId,
+            role = UserRole.USER,
+            accountStatus = UserAccountStatus.ACTIVE
+        )
 
         coEvery { refreshTokenProvider.getRefreshTokenHash(oldRefreshToken) } returns AppResult.Success(oldHash)
         coEvery { userSessionRepository.getUserSessionByHash(oldHash) } returns AppResult.Success(currentSession)
@@ -492,20 +671,46 @@ class SessionManagerImplTest {
 
         every { authSettingsProvider.getAccessTokenExpirationSeconds() } returns 900
         every { authSettingsProvider.getRefreshTokenExpirationSeconds() } returns 86400
-        coEvery { jwtTokenProvider.generateAccessToken(any(), any(), any(), any(), any(), any()) } returns AppResult.Success(newAccessToken)
+        coEvery {
+            jwtTokenProvider.generateAccessToken(
+                any(),
+                any(),
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(newAccessToken)
         coEvery { refreshTokenProvider.getRefreshToken() } returns AppResult.Success(newRefreshToken)
         coEvery { refreshTokenProvider.getRefreshTokenHash(newRefreshToken) } returns AppResult.Success(newHash)
         coEvery { userSessionRepository.createUserSession(any()) } returns AppResult.Success(newInternalSession)
-        coEvery { redisManager.setWithExpiration(any(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            redisManager.setWithExpiration(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
 
-        val result = manager.refreshSession(oldRefreshToken, clientInfo)
+        val result = manager.refreshSession(
+            oldRefreshToken,
+            clientInfo
+        )
 
         assertTrue(result is AppResult.Success)
         coVerify(exactly = 0) {
-            emailService.sendNewDeviceLoginEmail(any(), any(), any(), any())
+            emailService.sendNewDeviceLoginEmail(
+                any(),
+                any(),
+                any(),
+                any()
+            )
         }
         coVerify(exactly = 0) {
-            userKnownDevicesRepository.getKnownDevice(any(), any())
+            userKnownDevicesRepository.getKnownDevice(
+                any(),
+                any()
+            )
         }
     }
 
@@ -516,11 +721,18 @@ class SessionManagerImplTest {
         val now = Clock.System.now()
         val expiresAt = now + 3600.seconds
 
-        val currentSession = createSampleInternalSession(userId, oldHash).copy(
+        val currentSession = createSampleInternalSession(
+            userId,
+            oldHash
+        ).copy(
             clientDeviceInfo = clientInfo.clientDeviceInfo,
             expiresAt = expiresAt
         )
-        val userInternal = createTestUserInternal(id = userId, role = UserRole.USER, accountStatus = UserAccountStatus.ACTIVE)
+        val userInternal = createTestUserInternal(
+            id = userId,
+            role = UserRole.USER,
+            accountStatus = UserAccountStatus.ACTIVE
+        )
 
         coEvery { refreshTokenProvider.getRefreshTokenHash(oldRefreshToken) } returns AppResult.Success(oldHash)
         coEvery { userSessionRepository.getUserSessionByHash(oldHash) } returns AppResult.Success(currentSession)
@@ -529,14 +741,20 @@ class SessionManagerImplTest {
         val result = manager.refreshSession(
             refreshToken = oldRefreshToken,
             clientInfo = clientInfo,
-            allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+            allowedRoles = setOf(
+                UserRole.STAFF,
+                UserRole.ADMIN
+            )
         )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.UserRoleNotAllowed)
     }
 
-    private fun createSampleInternalSession(uId: UserId, hash: RefreshTokenHash) = createTestUserSessionInternal(
+    private fun createSampleInternalSession(
+        uId: UserId,
+        hash: RefreshTokenHash
+    ) = createTestUserSessionInternal(
         userId = uId,
         refreshTokenHash = hash
     )

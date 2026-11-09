@@ -12,8 +12,8 @@ import io.github.mudrichenkoevgeny.backend.core.security.audit.error.SecurityAud
  * Binds [SecurityAuditErrorParser] into a set of [AuditErrorParser].
  */
 @Module
-interface SecurityAuditErrorParserModule {
+public interface SecurityAuditErrorParserModule {
     @Binds
     @IntoSet
-    fun bindSecurityAuditErrorParser(parser: SecurityAuditErrorParser): AuditErrorParser
+    public fun bindSecurityAuditErrorParser(parser: SecurityAuditErrorParser): AuditErrorParser
 }

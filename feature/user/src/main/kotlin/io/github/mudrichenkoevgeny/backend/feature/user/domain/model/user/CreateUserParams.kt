@@ -22,7 +22,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.
  * @property displayName optional profile display name
  * @property avatarFileId optional avatar image file identifier
  */
-data class CreateUserParams(
+public data class CreateUserParams(
     val email: String,
     val password: String? = null,
     val role: UserRole,

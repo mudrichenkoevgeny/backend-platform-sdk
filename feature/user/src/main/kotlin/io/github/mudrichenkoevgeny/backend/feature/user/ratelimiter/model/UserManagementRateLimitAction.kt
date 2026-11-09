@@ -5,17 +5,41 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateL
 /**
  * Rate limit policies for management operations in the user feature.
  */
-enum class UserManagementRateLimitAction(
+public enum class UserManagementRateLimitAction(
     override val id: String,
     override val limit: Int,
     override val windowSeconds: Int
 ) : RateLimitAction {
-    MANAGEMENT_IDENTIFIER_DELETE("management_identifier_delete", limit = 10, windowSeconds = 60),
-    MANAGEMENT_IDENTIFIER_DELETE_PASSWORD("management_identifier_delete_password", limit = 10, windowSeconds = 60),
-    MANAGEMENT_SESSION_DELETE("management_session_delete", limit = 10, windowSeconds = 60),
-    MANAGEMENT_SESSION_DELETE_ALL("management_session_delete_all", limit = 5, windowSeconds = 60),
+    MANAGEMENT_IDENTIFIER_DELETE(
+        "management_identifier_delete",
+        limit = 10,
+        windowSeconds = 60
+    ),
+    MANAGEMENT_IDENTIFIER_DELETE_PASSWORD(
+        "management_identifier_delete_password",
+        limit = 10,
+        windowSeconds = 60
+    ),
+    MANAGEMENT_SESSION_DELETE(
+        "management_session_delete",
+        limit = 10,
+        windowSeconds = 60
+    ),
+    MANAGEMENT_SESSION_DELETE_ALL(
+        "management_session_delete_all",
+        limit = 5,
+        windowSeconds = 60
+    ),
     MANAGEMENT_USER_DELETE("management_user_delete", limit = 5, windowSeconds = 60),
-    MANAGEMENT_USER_CREATE("management_user_create", limit = 3, windowSeconds = 60),
+    MANAGEMENT_USER_CREATE(
+        "management_user_create",
+        limit = 3,
+        windowSeconds = 60
+    ),
     MANAGEMENT_USER_UPDATE("management_user_update", limit = 10, windowSeconds = 60),
-    MANAGEMENT_DISABLE_TOTP("management_disable_totp", limit = 5, windowSeconds = 60),
+    MANAGEMENT_DISABLE_TOTP(
+        "management_disable_totp",
+        limit = 5,
+        windowSeconds = 60
+    )
 }

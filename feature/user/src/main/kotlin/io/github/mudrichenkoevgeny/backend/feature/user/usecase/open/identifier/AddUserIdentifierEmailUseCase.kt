@@ -13,27 +13,30 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
-import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to link a new email identifier to an existing user account.
+ */
 @Singleton
-class AddUserIdentifierEmailUseCase @Inject constructor(
+public class AddUserIdentifierEmailUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val authSettingsProvider: AuthSettingsProvider,
     private val emailRestrictionPolicyValidator: EmailRestrictionPolicyValidator,
@@ -70,7 +73,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] containing the newly created [UserIdentifierPrivate].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         email: String,
         password: String,
         confirmationCode: String,
@@ -111,8 +114,9 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
 
         if (!emailRestrictionPolicyValidator.isEmailAllowed(
                 email = email,
-                policy = authSettingsProvider.getOpenEmailRestrictionPolicy())
-            ) {
+                policy = authSettingsProvider.getOpenEmailRestrictionPolicy()
+            )
+        ) {
             return handleError(
                 error = UserError.EmailNotAllowed(),
                 actorId = auditActorId,
@@ -121,8 +125,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserInternalById(currentUserId)
-            .mapNotNullOrError(UserError.UserForbidden())
+        val userResult = userManager.getUserInternalById(currentUserId).mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (userResult) {
             is AppResult.Error -> return handleError(
@@ -131,6 +134,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 
@@ -183,6 +187,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> if (!verifyOtpResult.data) {
                 return handleError(
                     error = UserError.WrongConfirmationCode(),
@@ -209,6 +214,7 @@ class AddUserIdentifierEmailUseCase @Inject constructor(
                     baseMetadata = auditMetadata
                 )
             }
+
             is AppResult.Success -> {
                 logAudit(
                     actorId = auditActorId,

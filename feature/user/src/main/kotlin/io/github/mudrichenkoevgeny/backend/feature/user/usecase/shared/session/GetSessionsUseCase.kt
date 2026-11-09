@@ -13,8 +13,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.s
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to retrieve a paginated list of user sessions.
+ */
 @Singleton
-class GetSessionsUseCase @Inject constructor(
+public class GetSessionsUseCase @Inject constructor(
     private val userManager: UserManager,
     private val sessionManager: SessionManager
 ) {
@@ -31,7 +34,7 @@ class GetSessionsUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] with [PagedResult] of [UserSessionSummary].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         queryParams: SelfSessionListQueryParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<UserSessionSummary>> {
@@ -45,7 +48,11 @@ class GetSessionsUseCase @Inject constructor(
             is AppResult.Success -> getCurrentUserResult.data
         }
 
-        if (currentUser.accountStatus !in setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)) {
+        if (currentUser.accountStatus !in setOf(
+                UserAccountStatus.ACTIVE,
+                UserAccountStatus.READ_ONLY
+            )
+        ) {
             return AppResult.Error(UserError.UserForbidden(currentUserId))
         }
 

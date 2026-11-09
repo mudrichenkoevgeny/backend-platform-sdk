@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SendLoginConfirmationToPhoneUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val otpService = mockk<OtpService>()
     private val phoneService = mockk<PhoneService>()
@@ -40,23 +39,43 @@ class SendLoginConfirmationToPhoneUseCaseTest {
         )
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_PHONE, TEST_PHONE)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.SEND_OTP_PHONE,
+                TEST_PHONE
+            )
         } returns AppResult.Success(Unit)
 
         coEvery {
-            otpService.getOtp(TEST_PHONE, UserOtpVerificationType.PHONE_VERIFICATION)
+            otpService.getOtp(
+                TEST_PHONE,
+                UserOtpVerificationType.PHONE_VERIFICATION
+            )
         } returns AppResult.Success(otpData)
 
         coEvery {
-            phoneService.sendVerificationCode(TEST_PHONE, TEST_CODE, any())
+            phoneService.sendVerificationCode(
+                TEST_PHONE,
+                TEST_CODE,
+                any()
+            )
         } returns AppResult.Success(Unit)
 
-        val result = useCase(TEST_PHONE, context)
+        val result = useCase(
+            TEST_PHONE,
+            context
+        )
 
-        assertEquals(AppResult.Success(otpConfirmation), result)
+        assertEquals(
+            AppResult.Success(otpConfirmation),
+            result
+        )
 
         coVerify(exactly = 1) {
-            phoneService.sendVerificationCode(TEST_PHONE, TEST_CODE, any())
+            phoneService.sendVerificationCode(
+                TEST_PHONE,
+                TEST_CODE,
+                any()
+            )
         }
     }
 
@@ -66,15 +85,29 @@ class SendLoginConfirmationToPhoneUseCaseTest {
         val error = UserError.InvalidCredentials()
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_PHONE, TEST_PHONE)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.SEND_OTP_PHONE,
+                TEST_PHONE
+            )
         } returns AppResult.Error(error)
 
-        val result = useCase(TEST_PHONE, context)
+        val result = useCase(
+            TEST_PHONE,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
 
-        coVerify(exactly = 0) { otpService.getOtp(any(), any()) }
+        coVerify(exactly = 0) {
+            otpService.getOtp(
+                any(),
+                any()
+            )
+        }
     }
 
     @Test
@@ -82,31 +115,70 @@ class SendLoginConfirmationToPhoneUseCaseTest {
         val context = createTestRequestContext()
         val error = UserError.InvalidCredentials()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { otpService.getOtp(any(), any()) } returns AppResult.Error(error)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            otpService.getOtp(
+                any(),
+                any()
+            )
+        } returns AppResult.Error(error)
 
-        val result = useCase(TEST_PHONE, context)
+        val result = useCase(
+            TEST_PHONE,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
     }
 
     @Test
     fun `returns error when phone service fails to send sms`() = runTest {
         val context = createTestRequestContext()
         val error = UserError.CannotCreateUserIdentifier()
-        val otpData = OtpConfirmationData(code = TEST_CODE, otpConfirmation = createTestOtpConfirmation())
+        val otpData = OtpConfirmationData(
+            code = TEST_CODE,
+            otpConfirmation = createTestOtpConfirmation()
+        )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { otpService.getOtp(any(), any()) } returns AppResult.Success(otpData)
         coEvery {
-            phoneService.sendVerificationCode(any(), any(), any())
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            otpService.getOtp(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(otpData)
+        coEvery {
+            phoneService.sendVerificationCode(
+                any(),
+                any(),
+                any()
+            )
         } returns AppResult.Error(error)
 
-        val result = useCase(TEST_PHONE, context)
+        val result = useCase(
+            TEST_PHONE,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
     }
 
     companion object {

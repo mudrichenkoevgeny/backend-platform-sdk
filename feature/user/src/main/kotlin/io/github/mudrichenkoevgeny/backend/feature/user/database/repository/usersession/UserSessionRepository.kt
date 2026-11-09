@@ -1,17 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usersession
 
-import io.github.mudrichenkoevgeny.backend.core.common.pagination.PageParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.UserRoleAccessFilter
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.ManagementSessionListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.SelfSessionListQueryParams
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionSortBy
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
@@ -20,14 +14,14 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
 /**
  * Persistence API for refresh sessions created by the user feature.
  */
-interface UserSessionRepository {
+public interface UserSessionRepository {
     /**
      * Persists a new session record.
      *
      * @param userSession session to create
      * @return created session or an error
      */
-    suspend fun createUserSession(userSession: UserSessionInternal): AppResult<UserSessionInternal>
+    public suspend fun createUserSession(userSession: UserSessionInternal): AppResult<UserSessionInternal>
 
     /**
      * Deletes a session by session id.
@@ -35,7 +29,7 @@ interface UserSessionRepository {
      * @param userSessionId session id
      * @return success or an error
      */
-    suspend fun deleteUserSessionById(userSessionId: UserSessionId): AppResult<Unit>
+    public suspend fun deleteUserSessionById(userSessionId: UserSessionId): AppResult<Unit>
 
     /**
      * Deletes all sessions for a given user.
@@ -43,7 +37,7 @@ interface UserSessionRepository {
      * @param userId user id
      * @return success or an error
      */
-    suspend fun deleteAllUserSessions(userId: UserId): AppResult<Unit>
+    public suspend fun deleteAllUserSessions(userId: UserId): AppResult<Unit>
 
     /**
      * Deletes all sessions for a user except the one specified by [userSessionId].
@@ -52,7 +46,7 @@ interface UserSessionRepository {
      * @param userSessionId session id to keep
      * @return success or an error
      */
-    suspend fun deleteAllUserSessionsExceptOne(
+    public suspend fun deleteAllUserSessionsExceptOne(
         userId: UserId,
         userSessionId: UserSessionId
     ): AppResult<List<UserSessionId>>
@@ -64,7 +58,7 @@ interface UserSessionRepository {
      * @param userId user id
      * @return the ID of the deleted session or an error
      */
-    suspend fun deleteLeastRecentlyUsedUserSession(userId: UserId): AppResult<UserSessionId>
+    public suspend fun deleteLeastRecentlyUsedUserSession(userId: UserId): AppResult<UserSessionId>
 
     /**
      * Updates the "last accessed" timestamp for a session.
@@ -72,7 +66,7 @@ interface UserSessionRepository {
      * @param userSessionId session id
      * @return success or an error
      */
-    suspend fun updateLastAccessed(userSessionId: UserSessionId): AppResult<Unit>
+    public suspend fun updateLastAccessed(userSessionId: UserSessionId): AppResult<Unit>
 
     /**
      * Updates the "last reauthenticated" timestamp for a session.
@@ -80,7 +74,7 @@ interface UserSessionRepository {
      * @param userSessionId session id
      * @return success or an error
      */
-    suspend fun updateLastReauthenticated(userSessionId: UserSessionId): AppResult<Unit>
+    public suspend fun updateLastReauthenticated(userSessionId: UserSessionId): AppResult<Unit>
 
     /**
      * Loads a session by id.
@@ -88,7 +82,7 @@ interface UserSessionRepository {
      * @param userSessionId session id
      * @return session when found, `null` when missing, or an error
      */
-    suspend fun getUserSessionInternalById(userSessionId: UserSessionId): AppResult<UserSessionInternal?>
+    public suspend fun getUserSessionInternalById(userSessionId: UserSessionId): AppResult<UserSessionInternal?>
 
     /**
      * Loads a session by refresh token hash.
@@ -96,9 +90,7 @@ interface UserSessionRepository {
      * @param refreshTokenHash refresh token hash
      * @return session when found, `null` when missing, or an error
      */
-    suspend fun getUserSessionByHash(
-        refreshTokenHash: RefreshTokenHash
-    ): AppResult<UserSessionInternal?>
+    public suspend fun getUserSessionByHash(refreshTokenHash: RefreshTokenHash): AppResult<UserSessionInternal?>
 
     /**
      * Loads all sessions for a user.
@@ -106,7 +98,7 @@ interface UserSessionRepository {
      * @param userId user id
      * @return list of sessions or an error
      */
-    suspend fun getAllUserSessions(userId: UserId): AppResult<List<UserSessionInternal>>
+    public suspend fun getAllUserSessions(userId: UserId): AppResult<List<UserSessionInternal>>
 
     /**
      * Loads sessions for the given identifier id with an optional owner filter.
@@ -115,7 +107,7 @@ interface UserSessionRepository {
      * @param userId optional owner filter for user-scoped access
      * @return list of sessions or an error
      */
-    suspend fun getUserSessionsByIdentifierId(
+    public suspend fun getUserSessionsByIdentifierId(
         userIdentifierId: UserIdentifierId,
         userId: UserId? = null
     ): AppResult<List<UserSessionInternal>>
@@ -144,10 +136,7 @@ interface UserSessionRepository {
      * @param operationSystemVersions optional filters for OS versions
      * @return paged result or a database error
      */
-    /**
-     * Returns a paginated list of sessions filtered by target user roles and additional criteria.
-     */
-    suspend fun getUserSessionsPageWithAccessFilter(
+    public suspend fun getUserSessionsPageWithAccessFilter(
         accessFilter: UserRoleAccessFilter = UserRoleAccessFilter(emptySet()),
         queryParams: ManagementSessionListQueryParams
     ): AppResult<PagedResult<UserSessionInternal>>
@@ -155,7 +144,7 @@ interface UserSessionRepository {
     /**
      * Returns a paginated list of sessions belonging to a specific user.
      */
-    suspend fun getUserSessionsPageByUserId(
+    public suspend fun getUserSessionsPageByUserId(
         userId: UserId,
         queryParams: SelfSessionListQueryParams
     ): AppResult<PagedResult<UserSessionInternal>>

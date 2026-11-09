@@ -13,8 +13,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.t
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to rotate and refresh user session tokens.
+ */
 @Singleton
-class RefreshTokenUseCase @Inject constructor(
+public class RefreshTokenUseCase @Inject constructor(
     private val sessionManager: SessionManager,
     private val rateLimiter: RateLimiter,
     private val refreshTokenProvider: RefreshTokenProvider
@@ -38,11 +41,14 @@ class RefreshTokenUseCase @Inject constructor(
      * @param requestContext The context of the public request.
      * @return [AppResult] containing the new [SessionToken] upon success.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         refreshToken: RefreshToken,
         requestContext: RequestContext,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
-        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
     ): AppResult<SessionToken> {
         val refreshTokenHashResult = refreshTokenProvider.getRefreshTokenHash(refreshToken)
         val refreshTokenHash = when (refreshTokenHashResult) {

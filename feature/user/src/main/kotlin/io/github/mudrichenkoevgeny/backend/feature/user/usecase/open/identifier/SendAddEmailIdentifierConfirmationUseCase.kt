@@ -4,22 +4,25 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpConfirmationData
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
+import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
+import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
-import io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction.EmailRestrictionPolicyValidator
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to send confirmation code for adding an email identifier.
+ */
 @Singleton
-class SendAddEmailIdentifierConfirmationUseCase @Inject constructor(
+public class SendAddEmailIdentifierConfirmationUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val authSettingsProvider: AuthSettingsProvider,
     private val emailRestrictionPolicyValidator: EmailRestrictionPolicyValidator,
@@ -43,7 +46,7 @@ class SendAddEmailIdentifierConfirmationUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] containing [OtpConfirmation] data.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         email: String,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<OtpConfirmation> {
@@ -57,8 +60,9 @@ class SendAddEmailIdentifierConfirmationUseCase @Inject constructor(
 
         if (!emailRestrictionPolicyValidator.isEmailAllowed(
                 email = email,
-                policy = authSettingsProvider.getOpenEmailRestrictionPolicy())
-            ) {
+                policy = authSettingsProvider.getOpenEmailRestrictionPolicy()
+            )
+        ) {
             return AppResult.Error(UserError.EmailNotAllowed())
         }
 
@@ -82,9 +86,17 @@ class SendAddEmailIdentifierConfirmationUseCase @Inject constructor(
         }
 
         return if (identifier != null) {
-            sendAlreadyRegistered(email, otpConfirmationData, authenticatedRequestContext)
+            sendAlreadyRegistered(
+                email,
+                otpConfirmationData,
+                authenticatedRequestContext
+            )
         } else {
-            sendConfirmationCode(email, otpConfirmationData, authenticatedRequestContext)
+            sendConfirmationCode(
+                email,
+                otpConfirmationData,
+                authenticatedRequestContext
+            )
         }
     }
 

@@ -7,7 +7,6 @@ import io.github.mudrichenkoevgeny.backend.core.database.testing.assertAllQueryP
 import io.github.mudrichenkoevgeny.backend.core.storage.database.table.StorageFilesTable
 import io.github.mudrichenkoevgeny.backend.core.storage.network.model.ManagementStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.backend.core.storage.network.model.SelfStorageFileListQueryParams
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileInternal
@@ -27,10 +26,10 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StorageFilesRepositoryImplTest {
-
     private val dataSource = createTestDataSource("storage_files_repo")
     private lateinit var repository: StorageFilesRepository
 
@@ -58,7 +57,7 @@ class StorageFilesRepositoryImplTest {
         id: FileId = FileId.generate(),
         ownerUserId: String = "usr_123",
         status: StorageFileStatus = StorageFileStatus.PENDING_UPLOAD,
-        createdAt: kotlin.time.Instant = Clock.System.now()
+        createdAt: Instant = Clock.System.now()
     ) = StorageFileInternal(
         id = id,
         ownerUserId = ownerUserId,
@@ -103,13 +102,22 @@ class StorageFilesRepositoryImplTest {
         }
 
         val result = suspendTransaction {
-            repository.getExpiredPendingUploadFiles(createdBefore = now - 1.hours, limit = 10)
+            repository.getExpiredPendingUploadFiles(
+                createdBefore = now - 1.hours,
+                limit = 10
+            )
         }
 
         assertTrue(result is AppResult.Success)
         val files = (result as AppResult.Success).data
-        assertEquals(1, files.size)
-        assertEquals(oldFile.id, files.first().id)
+        assertEquals(
+            1,
+            files.size
+        )
+        assertEquals(
+            oldFile.id,
+            files.first().id
+        )
     }
 
     @Test
@@ -122,23 +130,54 @@ class StorageFilesRepositoryImplTest {
             repository.createStorageFile(file2)
         }
 
-        val updated1 = file1.copy(status = StorageFileStatus.READY, fileSizeBytes = 500L, contentHash = "new-hash-1")
-        val updated2 = file2.copy(status = StorageFileStatus.READY, fileSizeBytes = 700L, contentHash = "new-hash-2")
+        val updated1 = file1.copy(
+            status = StorageFileStatus.READY,
+            fileSizeBytes = 500L,
+            contentHash = "new-hash-1"
+        )
+        val updated2 = file2.copy(
+            status = StorageFileStatus.READY,
+            fileSizeBytes = 700L,
+            contentHash = "new-hash-2"
+        )
 
         suspendTransaction {
-            repository.updateStorageFilesBatch(listOf(updated1, updated2))
+            repository.updateStorageFilesBatch(
+                listOf(
+                    updated1,
+                    updated2
+                )
+            )
         }
 
         val file1Db = suspendTransaction { repository.getStorageFileById(file1.id) }
         val file2Db = suspendTransaction { repository.getStorageFileById(file2.id) }
 
-        assertEquals(StorageFileStatus.READY, (file1Db as AppResult.Success).data?.status)
-        assertEquals(500L, file1Db.data?.fileSizeBytes)
-        assertEquals("new-hash-1", file1Db.data?.contentHash)
+        assertEquals(
+            StorageFileStatus.READY,
+            (file1Db as AppResult.Success).data?.status
+        )
+        assertEquals(
+            500L,
+            file1Db.data?.fileSizeBytes
+        )
+        assertEquals(
+            "new-hash-1",
+            file1Db.data?.contentHash
+        )
 
-        assertEquals(StorageFileStatus.READY, (file2Db as AppResult.Success).data?.status)
-        assertEquals(700L, file2Db.data?.fileSizeBytes)
-        assertEquals("new-hash-2", file2Db.data?.contentHash)
+        assertEquals(
+            StorageFileStatus.READY,
+            (file2Db as AppResult.Success).data?.status
+        )
+        assertEquals(
+            700L,
+            file2Db.data?.fileSizeBytes
+        )
+        assertEquals(
+            "new-hash-2",
+            file2Db.data?.contentHash
+        )
     }
 
     @Test
@@ -152,13 +191,22 @@ class StorageFilesRepositoryImplTest {
         }
 
         val result = suspendTransaction {
-            repository.getStorageFilesByStatus(status = StorageFileStatus.DELETED, limit = 10)
+            repository.getStorageFilesByStatus(
+                status = StorageFileStatus.DELETED,
+                limit = 10
+            )
         }
 
         assertTrue(result is AppResult.Success)
         val files = (result as AppResult.Success).data
-        assertEquals(1, files.size)
-        assertEquals(file1.id, files.first().id)
+        assertEquals(
+            1,
+            files.size
+        )
+        assertEquals(
+            file1.id,
+            files.first().id
+        )
     }
 
     @Test
@@ -178,8 +226,14 @@ class StorageFilesRepositoryImplTest {
         val file1Db = suspendTransaction { repository.getStorageFileById(file1.id) }
         val file2Db = suspendTransaction { repository.getStorageFileById(file2.id) }
 
-        assertEquals(null, (file1Db as AppResult.Success).data)
-        assertEquals(file2.id, (file2Db as AppResult.Success).data?.id)
+        assertEquals(
+            null,
+            (file1Db as AppResult.Success).data
+        )
+        assertEquals(
+            file2.id,
+            (file2Db as AppResult.Success).data?.id
+        )
     }
 
     @Test

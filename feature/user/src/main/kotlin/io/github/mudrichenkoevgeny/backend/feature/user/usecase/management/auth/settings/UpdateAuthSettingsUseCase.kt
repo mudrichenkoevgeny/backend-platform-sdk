@@ -41,7 +41,7 @@ import kotlin.uuid.Uuid
  * with [UserWebSocketEventTypes.OPEN_AUTH_SETTINGS_UPDATED] and [UserWebSocketEventTypes.MANAGEMENT_AUTH_SETTINGS_UPDATED] frames.
  */
 @Singleton
-class UpdateAuthSettingsUseCase @Inject constructor(
+public class UpdateAuthSettingsUseCase @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -71,7 +71,7 @@ class UpdateAuthSettingsUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] indicating success or the specific [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         managementAuthSettings: ManagementAuthSettings,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<ManagementAuthSettings> {
@@ -89,6 +89,7 @@ class UpdateAuthSettingsUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 
@@ -155,7 +156,8 @@ class UpdateAuthSettingsUseCase @Inject constructor(
             )
         )
 
-        val managementAuthSettingPayload = authSettingsProvider.getManagementAuthSettings().toManagementAuthSettingsPayload()
+        val managementAuthSettingPayload = authSettingsProvider.getManagementAuthSettings()
+            .toManagementAuthSettingsPayload()
         webSocketManager.sendMessageToScope(
             scope = ApiScope.MANAGEMENT,
             frame = SocketFrame(

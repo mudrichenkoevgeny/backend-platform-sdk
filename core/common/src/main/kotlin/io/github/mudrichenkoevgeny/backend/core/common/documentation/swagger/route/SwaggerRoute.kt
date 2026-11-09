@@ -15,11 +15,17 @@ import io.ktor.server.routing.Route
  * Call this from the application's routing block (e.g. only when not in production) so that
  * the API documentation is available on the same host.
  */
-fun Route.setupSwaggerEndpoints() {
-    route("/${SwaggerConfig.OPENAPI_JSON_PATH}") {
-        openApi()
-    }
-    route(SwaggerConfig.SWAGGER_UI_PATH) {
-        swaggerUI(SwaggerConfig.OPENAPI_JSON_PATH)
-    }
+public fun Route.setupSwaggerEndpoints() {
+    route(
+        path = SwaggerConfig.OPENAPI_JSON_PATH,
+        build = {
+            openApi()
+        }
+    )
+    route(
+        path = SwaggerConfig.SWAGGER_UI_PATH,
+        build = {
+            swaggerUI(SwaggerConfig.OPENAPI_JSON_PATH)
+        }
+    )
 }

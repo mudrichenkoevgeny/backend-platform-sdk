@@ -14,14 +14,19 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class KtorWebSocketManagerTest {
-
     private val appLogger = mockk<AppLogger>(relaxed = true)
     private val handlers: Set<WebSocketMessageHandler> = emptySet()
     private val listeners: Set<WebSocketSessionListener> = emptySet()
     private val redisManager = mockk<RedisManager>(relaxed = true)
     private val backgroundScope = TestScope()
 
-    private val manager = KtorWebSocketManager(appLogger, handlers, listeners, redisManager, backgroundScope)
+    private val manager = KtorWebSocketManager(
+        appLogger,
+        handlers,
+        listeners,
+        redisManager,
+        backgroundScope
+    )
 
     @Test
     fun `handleSocketError logs correct appError for RequestHandlingException`() {
@@ -43,7 +48,10 @@ class KtorWebSocketManagerTest {
         verify {
             appLogger.logError(
                 withArg { error ->
-                    assertEquals(CommonError.InvalidJsonBody::class, error::class)
+                    assertEquals(
+                        CommonError.InvalidJsonBody::class,
+                        error::class
+                    )
                 }
             )
         }
@@ -58,15 +66,24 @@ class KtorWebSocketManagerTest {
         verify {
             appLogger.logError(
                 withArg { error ->
-                    assertEquals(CommonError.Unknown::class, error::class)
+                    assertEquals(
+                        CommonError.Unknown::class,
+                        error::class
+                    )
                 }
             )
         }
     }
 
     private fun invokeHandleSocketError(throwable: Throwable) {
-        val method = KtorWebSocketManager::class.java.getDeclaredMethod("handleSocketError", Throwable::class.java)
+        val method = KtorWebSocketManager::class.java.getDeclaredMethod(
+            "handleSocketError",
+            Throwable::class.java
+        )
         method.isAccessible = true
-        method.invoke(manager, throwable)
+        method.invoke(
+            manager,
+            throwable
+        )
     }
 }

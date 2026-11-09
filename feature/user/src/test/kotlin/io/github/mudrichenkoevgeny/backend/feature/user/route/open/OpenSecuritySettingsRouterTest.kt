@@ -1,12 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.open
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestOpenSecuritySettings
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.security.GetOpenSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
 import io.github.mudrichenkoevgeny.backend.feature.user.route.open.security.OpenSecuritySettingsRouter
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.security.GetOpenSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.route.open.security.settings.OpenSecuritySettingsRoutes
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestOpenSecuritySettings
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
@@ -18,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class OpenSecuritySettingsRouterTest : BaseRouterTest() {
-
     private val getOpenSecuritySettingsUseCase = mockk<GetOpenSecuritySettingsUseCase>()
 
     private val router = OpenSecuritySettingsRouter(
@@ -40,6 +39,9 @@ class OpenSecuritySettingsRouterTest : BaseRouterTest() {
 
         val response = client.get(OpenSecuritySettingsRoutes.GET_OPEN_SECURITY_SETTINGS)
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 }

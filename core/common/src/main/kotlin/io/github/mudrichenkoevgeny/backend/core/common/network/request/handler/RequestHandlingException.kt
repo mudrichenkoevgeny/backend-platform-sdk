@@ -7,4 +7,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
  *
  * Wraps an [AppError] that can later be logged or mapped to an HTTP response.
  */
-class RequestHandlingException(val error: AppError) : RuntimeException()
+public class RequestHandlingException(
+    public val error: AppError
+) : RuntimeException()

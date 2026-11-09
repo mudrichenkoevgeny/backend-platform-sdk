@@ -16,28 +16,30 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
  * @param totpEncryptionSecret symmetric key used to encrypt and decrypt user TOTP secrets before database persistence
  * @param managementSecuritySettings default management security settings configuration
  */
-data class SecurityConfig(
-    val authRealm: String,
-    val totpEncryptionSecret: String,
-    val managementSecuritySettings: ManagementSecuritySettings
+public data class SecurityConfig(
+    public val authRealm: String,
+    public val totpEncryptionSecret: String,
+    public val managementSecuritySettings: ManagementSecuritySettings
 ) {
-    companion object {
-        const val DEFAULT_MAX_REQUESTS_PER_PERIOD = 100
-        const val DEFAULT_RATE_LIMIT_PERIOD_SECONDS = 60
-        const val DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS = 60
-        const val DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS = 30
+    public companion object {
+        public const val DEFAULT_MAX_REQUESTS_PER_PERIOD: Int = 100
+        public const val DEFAULT_RATE_LIMIT_PERIOD_SECONDS: Int = 60
+        public const val DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS: Int = 60
+        public const val DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS: Int = 30
+        public const val DEFAULT_FAILED_ATTEMPTS_WINDOW_SECONDS: Int = 600
+        public const val DEFAULT_LOCKOUT_DURATION_SECONDS: Int = 1800
 
-        val DEFAULT_ACCOUNT_LOCKOUT_POLICY = AccountLockoutPolicy(
+        public val DEFAULT_ACCOUNT_LOCKOUT_POLICY: AccountLockoutPolicy = AccountLockoutPolicy(
             maxFailedPasswordAttempts = 5,
             maxFailedOtpAttempts = 3,
             maxFailedTotpAttempts = 3,
-            failedAttemptsWindowSeconds = 600,
-            lockoutDurationSeconds = 1800,
+            failedAttemptsWindowSeconds = DEFAULT_FAILED_ATTEMPTS_WINDOW_SECONDS,
+            lockoutDurationSeconds = DEFAULT_LOCKOUT_DURATION_SECONDS,
             indefiniteLockoutThreshold = 3,
             isSelfServiceUnlockEnabled = true
         )
 
-        val DEFAULT_IP_RESTRICTION_POLICY = IpRestrictionPolicy(
+        public val DEFAULT_IP_RESTRICTION_POLICY: IpRestrictionPolicy = IpRestrictionPolicy(
             isBlacklistEnabled = false,
             blacklist = emptyList(),
             isWhitelistEnabled = false,

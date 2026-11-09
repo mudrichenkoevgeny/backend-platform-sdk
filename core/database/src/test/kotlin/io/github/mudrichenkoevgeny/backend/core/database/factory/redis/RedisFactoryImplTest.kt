@@ -12,12 +12,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class RedisFactoryImplTest {
-
-    private companion object {
-        private const val REDIS_URL = "redis://localhost:6379"
-        private const val TIMEOUT_SECONDS = 5L
-    }
-
     private val config = DatabaseConfig(
         dbUrl = "jdbc:postgresql://localhost/db",
         dbUser = "u",
@@ -31,7 +25,12 @@ class RedisFactoryImplTest {
     fun `create returns client from RedisClientCreator with config url and timeout`() {
         val redisClient = RedisClient.create(REDIS_URL)
         val redisClientCreator = mockk<RedisClientCreator> {
-            every { create(REDIS_URL, TIMEOUT_SECONDS) } returns redisClient
+            every {
+                create(
+                    REDIS_URL,
+                    TIMEOUT_SECONDS
+                )
+            } returns redisClient
         }
         val appLogger = mockk<AppLogger>(relaxUnitFun = true)
 
@@ -43,15 +42,28 @@ class RedisFactoryImplTest {
 
         val result = factory.create()
 
-        assertSame(redisClient, result)
-        verify(exactly = 1) { redisClientCreator.create(REDIS_URL, TIMEOUT_SECONDS) }
+        assertSame(
+            redisClient,
+            result
+        )
+        verify(exactly = 1) {
+            redisClientCreator.create(
+                REDIS_URL,
+                TIMEOUT_SECONDS
+            )
+        }
         redisClient.shutdown()
     }
 
     @Test
     fun `create logs and rethrows when RedisClientCreator throws`() {
         val redisClientCreator = mockk<RedisClientCreator> {
-            every { create(any(), any()) } throws RuntimeException("connect failed")
+            every {
+                create(
+                    any(),
+                    any()
+                )
+            } throws RuntimeException("connect failed")
         }
         val appLogger = mockk<AppLogger>(relaxUnitFun = true)
 
@@ -63,5 +75,10 @@ class RedisFactoryImplTest {
 
         assertThrows<RuntimeException> { factory.create() }
         verify(exactly = 1) { appLogger.logError(any()) }
+    }
+
+    private companion object {
+        private const val REDIS_URL = "redis://localhost:6379"
+        private const val TIMEOUT_SECONDS = 5L
     }
 }

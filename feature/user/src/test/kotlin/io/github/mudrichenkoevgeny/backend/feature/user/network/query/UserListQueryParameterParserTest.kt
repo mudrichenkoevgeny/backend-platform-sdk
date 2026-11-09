@@ -39,7 +39,6 @@ private const val TEST_TRUE = "true"
 private const val INVALID_VAL = "invalid_value"
 
 class UserListQueryParameterParserTest {
-
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()
     private val filterNames = UserFilterValues
@@ -67,14 +66,35 @@ class UserListQueryParameterParserTest {
 
         val result = call.parseUsersListQueryParams()
 
-        assertEquals(UserRole.ADMIN, result.roles.first())
-        assertEquals(UserAccountStatus.ACTIVE, result.accountStatuses.first())
-        assertEquals(UserAccountStatus.ACTIVE, result.accountStatusesOnRestore.first())
-        assertEquals(5, result.authorityLevelFrom)
-        assertEquals(10, result.authorityLevelTo)
+        assertEquals(
+            UserRole.ADMIN,
+            result.roles.first()
+        )
+        assertEquals(
+            UserAccountStatus.ACTIVE,
+            result.accountStatuses.first()
+        )
+        assertEquals(
+            UserAccountStatus.ACTIVE,
+            result.accountStatusesOnRestore.first()
+        )
+        assertEquals(
+            5,
+            result.authorityLevelFrom
+        )
+        assertEquals(
+            10,
+            result.authorityLevelTo
+        )
         assertTrue(result.requiredPermissionCodes.contains(PermissionCode(TEST_PERMISSION)))
-        assertEquals(true, result.isTotpEnabled)
-        assertEquals(UserSortBy.CREATED_AT, result.listing.sortBy)
+        assertEquals(
+            true,
+            result.isTotpEnabled
+        )
+        assertEquals(
+            UserSortBy.CREATED_AT,
+            result.listing.sortBy
+        )
     }
 
     @Test
@@ -114,14 +134,19 @@ class UserListQueryParameterParserTest {
             wireValueExtractor = { sortByEntry -> sortByEntry.value },
             parseFunction = { mockCall -> mockCall.parseUsersListQueryParams() },
             assertSortByFunction = { parsedQueryParams, expectedSortBy ->
-                assertEquals(expectedSortBy, parsedQueryParams.listing.sortBy)
+                assertEquals(
+                    expectedSortBy,
+                    parsedQueryParams.listing.sortBy
+                )
             }
         )
     }
 
     @ParameterizedTest
     @MethodSource("invalidQueryParameterNameProvider")
-    fun `should throw RequestHandlingException when validated query parameter contains invalid value`(paramName: String) {
+    fun `should throw RequestHandlingException when validated query parameter contains invalid value`(
+        paramName: String
+    ) {
         setupMockParameters(mapOf(paramName to listOf(INVALID_VAL)))
 
         val exception = assertThrows<RequestHandlingException> {
@@ -129,7 +154,10 @@ class UserListQueryParameterParserTest {
         }
 
         val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(paramName, error.parameterName)
+        assertEquals(
+            paramName,
+            error.parameterName
+        )
     }
 
     @Test
@@ -157,23 +185,40 @@ class UserListQueryParameterParserTest {
     }
 
     private fun getSampleValidValueForFilterKey(key: String): String = when {
-        key == filterNames.USER_ID || key == "avatar_file_id" || key.endsWith("_id") -> "00000000-0000-0000-0000-000000000001"
+        key == filterNames.USER_ID ||
+            key == "avatar_file_id" ||
+            key.endsWith(
+                "_id"
+            ) -> "00000000-0000-0000-0000-000000000001"
+
         key.endsWith("_from") || key.endsWith("_to") -> when {
             key.startsWith("authority_level") || key.startsWith("storage_") -> TEST_LEVEL
             else -> TEST_TIMESTAMP
         }
+
         key.startsWith("is_") -> TEST_TRUE
         key == UserFilterValues.ROLE || key == UserFilterValues.EXCLUDE_ROLE -> TEST_ROLE
-        key == UserFilterValues.ACCOUNT_STATUS || key == UserFilterValues.EXCLUDE_ACCOUNT_STATUS ||
-                key == UserFilterValues.ACCOUNT_STATUS_ON_RESTORE || key == UserFilterValues.EXCLUDE_ACCOUNT_STATUS_ON_RESTORE -> TEST_STATUS
-        key == UserFilterValues.ACCOUNT_LOCKOUT_TYPE || key == UserFilterValues.EXCLUDE_ACCOUNT_LOCKOUT_TYPE -> TEST_LOCKOUT_TYPE
+        key == UserFilterValues.ACCOUNT_STATUS ||
+            key == UserFilterValues.EXCLUDE_ACCOUNT_STATUS ||
+            key == UserFilterValues.ACCOUNT_STATUS_ON_RESTORE ||
+            key == UserFilterValues.EXCLUDE_ACCOUNT_STATUS_ON_RESTORE -> TEST_STATUS
+
+        key == UserFilterValues.ACCOUNT_LOCKOUT_TYPE ||
+            key == UserFilterValues.EXCLUDE_ACCOUNT_LOCKOUT_TYPE -> TEST_LOCKOUT_TYPE
+
         key == UserFilterValues.PERMISSION_CODES || key == UserFilterValues.EXCLUDE_PERMISSION_CODES -> TEST_PERMISSION
+
         else -> "sample_value"
     }
 
     private fun setupMockParameters(params: Map<String, List<String>>) {
         val parameters = Parameters.build {
-            params.forEach { (key, values) -> appendAll(key, values) }
+            params.forEach { (key, values) ->
+                appendAll(
+                    key,
+                    values
+                )
+            }
         }
         every { request.queryParameters } returns parameters
     }

@@ -10,7 +10,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
  * @property encryptedSecret The secret encrypted for secure persistence in the database.
  * @property otpAuthUrl The standard `otpauth://` URI for QR code generation.
  */
-data class GeneratedTotpSecret(
+public data class GeneratedTotpSecret(
     val decryptedSecret: DecryptedString,
     val encryptedSecret: EncryptedString,
     val otpAuthUrl: String

@@ -10,18 +10,17 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.model.Api
  * Implementations process specific error codes and return a localized [ApiErrorResponse],
  * or `null` if the error code is not handled by this parser.
  */
-interface AppErrorSpecificParser {
-
+public interface AppErrorSpecificParser {
     /**
      * Attempts to build an [ApiErrorResponse] for a specific error code and arguments.
      *
      * @return [ApiErrorResponse] if handled, or `null` to delegate to the next parser.
      */
-    fun getApiErrorResponse(
+    public fun getApiErrorResponse(
         errorId: ErrorId,
         code: String,
         args: Map<String, Any>?,
-        locale: String,
+        locale: String
     ): ApiErrorResponse?
 
     /**
@@ -29,8 +28,8 @@ interface AppErrorSpecificParser {
      *
      * @return [ApiErrorResponse] if handled, or `null` to delegate to the next parser.
      */
-    fun getApiErrorResponse(
+    public fun getApiErrorResponse(
         appError: AppError,
-        locale: String,
+        locale: String
     ): ApiErrorResponse?
 }

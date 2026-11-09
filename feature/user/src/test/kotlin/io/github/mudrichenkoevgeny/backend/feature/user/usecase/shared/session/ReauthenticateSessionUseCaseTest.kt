@@ -10,12 +10,11 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.createTestMfaChallengeData
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.session.ReauthenticateSessionUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
@@ -33,11 +32,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ReauthenticateSessionUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val mfaService = mockk<MfaService>(relaxed = true)
     private val sessionManager = mockk<SessionManager>()
     private val totpManager = mockk<TotpManager>()
@@ -58,10 +59,34 @@ class ReauthenticateSessionUseCaseTest {
 
     @BeforeEach
     fun setup() {
-        coEvery { userLockoutService.checkLockout(any<String>(), any()) } returns AppResult.Success(Unit)
-        coEvery { userLockoutService.checkLockout(any<List<String>>(), any()) } returns AppResult.Success(Unit)
-        coEvery { userLockoutService.recordFailedAttempt(any<String>(), any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userLockoutService.recordFailedAttempt(any<List<String>>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            userLockoutService.checkLockout(
+                any<String>(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            userLockoutService.checkLockout(
+                any<List<String>>(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            userLockoutService.recordFailedAttempt(
+                any<String>(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            userLockoutService.recordFailedAttempt(
+                any<List<String>>(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(
+            Unit
+        )
         coEvery { userLockoutService.clearLockout(any()) } returns AppResult.Success(Unit)
     }
 
@@ -69,7 +94,11 @@ class ReauthenticateSessionUseCaseTest {
     fun `successfully reauthenticates session`() = runTest {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
-        val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
+        val context = createTestAuthenticatedRequestContext(
+            userId = userId,
+            sessionId = sessionId,
+            userRole = UserRole.USER
+        )
 
         val mfaChallengeData = createTestMfaChallengeData(
             token = mfaToken,
@@ -79,14 +108,38 @@ class ReauthenticateSessionUseCaseTest {
             type = MfaChallengeType.STEP_UP
         )
 
-        coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.SESSION_REAUTHENTICATE, any()) } returns AppResult.Success(Unit)
-        coEvery { mfaService.getChallenge(mfaToken, MfaChallengeType.STEP_UP) } returns AppResult.Success(mfaChallengeData)
-        coEvery { totpManager.verifyTotp(userId, totpCode) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.SESSION_REAUTHENTICATE,
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            mfaService.getChallenge(
+                mfaToken,
+                MfaChallengeType.STEP_UP
+            )
+        } returns AppResult.Success(
+            mfaChallengeData
+        )
+        coEvery {
+            totpManager.verifyTotp(
+                userId,
+                totpCode
+            )
+        } returns AppResult.Success(Unit)
         coEvery { sessionManager.updateLastReauthenticated(sessionId) } returns AppResult.Success(Unit)
 
-        val result = useCase(context, mfaToken, totpCode)
+        val result = useCase(
+            context,
+            mfaToken,
+            totpCode
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
 
         coVerify { mfaService.consumeChallenge(mfaToken) }
         coVerify { sessionManager.updateLastReauthenticated(sessionId) }
@@ -108,12 +161,25 @@ class ReauthenticateSessionUseCaseTest {
     fun `returns error when rate limit exceeded`() = runTest {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
-        val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
+        val context = createTestAuthenticatedRequestContext(
+            userId = userId,
+            sessionId = sessionId,
+            userRole = UserRole.USER
+        )
         val error = CommonError.Unknown()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Error(error)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Error(error)
 
-        val result = useCase(context, mfaToken, totpCode)
+        val result = useCase(
+            context,
+            mfaToken,
+            totpCode
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify {
@@ -134,7 +200,11 @@ class ReauthenticateSessionUseCaseTest {
     fun `returns error when mfa challenge is for different user`() = runTest {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
-        val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
+        val context = createTestAuthenticatedRequestContext(
+            userId = userId,
+            sessionId = sessionId,
+            userRole = UserRole.USER
+        )
 
         val wrongMfaChallengeData = createTestMfaChallengeData(
             token = mfaToken,
@@ -144,10 +214,24 @@ class ReauthenticateSessionUseCaseTest {
             type = MfaChallengeType.STEP_UP
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { mfaService.getChallenge(any(), any()) } returns AppResult.Success(wrongMfaChallengeData)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            mfaService.getChallenge(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(wrongMfaChallengeData)
 
-        val result = useCase(context, mfaToken, totpCode)
+        val result = useCase(
+            context,
+            mfaToken,
+            totpCode
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is SecurityError.InvalidMfaToken)
@@ -170,7 +254,11 @@ class ReauthenticateSessionUseCaseTest {
     fun `returns error when totp verification fails`() = runTest {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
-        val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
+        val context = createTestAuthenticatedRequestContext(
+            userId = userId,
+            sessionId = sessionId,
+            userRole = UserRole.USER
+        )
 
         val mfaChallengeData = createTestMfaChallengeData(
             token = mfaToken,
@@ -181,14 +269,36 @@ class ReauthenticateSessionUseCaseTest {
         )
         val error = CommonError.Unknown()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { mfaService.getChallenge(any(), any()) } returns AppResult.Success(mfaChallengeData)
-        coEvery { totpManager.verifyTotp(any(), any()) } returns AppResult.Error(error)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            mfaService.getChallenge(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(mfaChallengeData)
+        coEvery {
+            totpManager.verifyTotp(
+                any(),
+                any()
+            )
+        } returns AppResult.Error(error)
 
-        val result = useCase(context, mfaToken, totpCode)
+        val result = useCase(
+            context,
+            mfaToken,
+            totpCode
+        )
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
 
         coVerify {
             auditLogger.log(
@@ -208,7 +318,11 @@ class ReauthenticateSessionUseCaseTest {
     fun `returns error when session update fails`() = runTest {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
-        val context = createTestAuthenticatedRequestContext(userId = userId, sessionId = sessionId, userRole = UserRole.USER)
+        val context = createTestAuthenticatedRequestContext(
+            userId = userId,
+            sessionId = sessionId,
+            userRole = UserRole.USER
+        )
 
         val mfaChallengeData = createTestMfaChallengeData(
             token = mfaToken,
@@ -219,12 +333,31 @@ class ReauthenticateSessionUseCaseTest {
         )
         val error = CommonError.Unknown()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { mfaService.getChallenge(any(), any()) } returns AppResult.Success(mfaChallengeData)
-        coEvery { totpManager.verifyTotp(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            mfaService.getChallenge(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(mfaChallengeData)
+        coEvery {
+            totpManager.verifyTotp(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         coEvery { sessionManager.updateLastReauthenticated(any()) } returns AppResult.Error(error)
 
-        val result = useCase(context, mfaToken, totpCode)
+        val result = useCase(
+            context,
+            mfaToken,
+            totpCode
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify { mfaService.consumeChallenge(mfaToken) }

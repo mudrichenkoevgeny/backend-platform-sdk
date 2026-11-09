@@ -1,6 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.core.common.permission
 
-enum class PermissionRequirement {
+/**
+ * Permission requirement level for accessing resource fields.
+ */
+public enum class PermissionRequirement {
     UNMASKED,
     MASKED,
     FORBIDDEN

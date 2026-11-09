@@ -27,11 +27,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ManagementDeleteFileUseCaseTest {
-
     private val storageManager = mockk<StorageManager>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val userManager = mockk<UserManager>()
 
     private val useCase = ManagementDeleteFileUseCase(
@@ -57,9 +59,15 @@ class ManagementDeleteFileUseCaseTest {
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
         coEvery { storageManager.deleteStorageFile(fileId) } returns AppResult.Success(Unit)
 
-        val result = useCase(fileId, context)
+        val result = useCase(
+            fileId,
+            context
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorId = managementUserId.asHexDashString(),
@@ -85,7 +93,10 @@ class ManagementDeleteFileUseCaseTest {
 
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
 
-        val result = useCase(fileId, context)
+        val result = useCase(
+            fileId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserIllegalAccountStatus)
     }
@@ -101,7 +112,10 @@ class ManagementDeleteFileUseCaseTest {
 
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
 
-        val result = useCase(fileId, context)
+        val result = useCase(
+            fileId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserMissingPermissions)
     }
@@ -119,7 +133,10 @@ class ManagementDeleteFileUseCaseTest {
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
         coEvery { storageManager.deleteStorageFile(fileId) } returns AppResult.Error(expectedError)
 
-        val result = useCase(fileId, context)
+        val result = useCase(
+            fileId,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {

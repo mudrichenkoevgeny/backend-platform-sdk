@@ -28,7 +28,7 @@ import kotlin.time.Instant
  * @property avatarFileId target profile avatar image file identifier update ([UpdateField])
  * @property birthdate target user birthdate timestamp update ([UpdateField])
  */
-data class UpdateUserParams(
+public data class UpdateUserParams(
     val accountStatus: UpdateField<UserAccountStatus> = UpdateField.Ignore,
     val accountStatusOnRestore: UpdateField<UserAccountStatus> = UpdateField.Ignore,
     val authorityLevel: UpdateField<Int> = UpdateField.Ignore,

@@ -2,14 +2,14 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.sess
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionPrivate
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ManagementGetSessionUseCaseTest {
-
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
 
@@ -50,9 +49,15 @@ class ManagementGetSessionUseCaseTest {
             )
         } returns AppResult.Success(expectedSession)
 
-        val result = useCase(targetSessionId, defaultContext)
+        val result = useCase(
+            targetSessionId,
+            defaultContext
+        )
 
-        assertEquals(AppResult.Success(expectedSession), result)
+        assertEquals(
+            AppResult.Success(expectedSession),
+            result
+        )
     }
 
     @Test
@@ -68,10 +73,17 @@ class ManagementGetSessionUseCaseTest {
 
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
         coEvery {
-            sessionManager.getUserSessionPrivate(any(), any(), any())
+            sessionManager.getUserSessionPrivate(
+                any(),
+                any(),
+                any()
+            )
         } returns AppResult.Success(null)
 
-        val result = useCase(targetSessionId, defaultContext)
+        val result = useCase(
+            targetSessionId,
+            defaultContext
+        )
 
         assertTrue(result is AppResult.Error && result.error is CommonError.NotFound)
     }
@@ -87,7 +99,10 @@ class ManagementGetSessionUseCaseTest {
 
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
 
-        val result = useCase(targetSessionId, defaultContext)
+        val result = useCase(
+            targetSessionId,
+            defaultContext
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserIllegalAccountStatus)
     }
@@ -97,7 +112,10 @@ class ManagementGetSessionUseCaseTest {
         val targetSessionId = UserSessionId.generate()
         coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(null)
 
-        val result = useCase(targetSessionId, defaultContext)
+        val result = useCase(
+            targetSessionId,
+            defaultContext
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserForbidden)
     }

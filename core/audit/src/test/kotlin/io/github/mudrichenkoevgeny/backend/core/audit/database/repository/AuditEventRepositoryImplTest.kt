@@ -2,32 +2,28 @@ package io.github.mudrichenkoevgeny.backend.core.audit.database.repository
 
 import io.github.mudrichenkoevgeny.backend.core.audit.database.table.AuditEventsTable
 import io.github.mudrichenkoevgeny.backend.core.audit.domain.model.AuditAccessFilter
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.TestAuditActionType
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.TestAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.createTestCompositeAuditActionTypeParser
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.metadata.createTestCompositeAuditMetadataKeyParser
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.createTestCompositeAuditResourceTypeParser
+import io.github.mudrichenkoevgeny.backend.core.audit.network.model.ManagementAuditEventListQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.createTestDataSource
 import io.github.mudrichenkoevgeny.backend.core.database.testing.assertAllQueryParamsApplied
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventId
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditEventSortBy
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
-import io.github.mudrichenkoevgeny.backend.core.audit.network.model.ManagementAuditEventListQueryParams
-import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.SortOrder
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.TestAuditActionType
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.createTestCompositeAuditActionTypeParser
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.metadata.createTestCompositeAuditMetadataKeyParser
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.TestAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.createTestCompositeAuditResourceTypeParser
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
@@ -38,7 +34,6 @@ import java.util.UUID
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuditEventRepositoryImplTest {
-
     private val dataSource = createTestDataSource("audit_repo")
     private lateinit var repository: AuditEventRepository
 
@@ -80,10 +75,22 @@ class AuditEventRepositoryImplTest {
 
         val success = result as AppResult.Success
         val data = checkNotNull(success.data)
-        assertEquals(event.id, data.id)
-        assertEquals("login", data.action.value)
-        assertEquals("session", data.resource.value)
-        assertEquals(AuditStatus.SUCCESS, data.status)
+        assertEquals(
+            event.id,
+            data.id
+        )
+        assertEquals(
+            "login",
+            data.action.value
+        )
+        assertEquals(
+            "session",
+            data.resource.value
+        )
+        assertEquals(
+            AuditStatus.SUCCESS,
+            data.status
+        )
     }
 
     @Test
@@ -108,8 +115,13 @@ class AuditEventRepositoryImplTest {
 
         val result = suspendTransaction {
             repository.getEventsPageWithAccessFilter(
-                accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
-                queryParams = ManagementAuditEventListQueryParams(listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT))
+                accessFilter = AuditAccessFilter(
+                    setOf(AuditActorType.SYSTEM),
+                    emptySet()
+                ),
+                queryParams = ManagementAuditEventListQueryParams(
+                    listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT)
+                )
             )
         }
 
@@ -133,13 +145,21 @@ class AuditEventRepositoryImplTest {
 
         val result = suspendTransaction {
             repository.getEventsPageWithAccessFilter(
-                accessFilter = AuditAccessFilter(emptySet(), emptySet()),
-                queryParams = ManagementAuditEventListQueryParams(listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT))
+                accessFilter = AuditAccessFilter(
+                    emptySet(),
+                    emptySet()
+                ),
+                queryParams = ManagementAuditEventListQueryParams(
+                    listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT)
+                )
             )
         }
 
         val success = result as AppResult.Success
-        assertEquals(0L, success.data.totalCount)
+        assertEquals(
+            0L,
+            success.data.totalCount
+        )
         assertTrue(success.data.items.isEmpty())
     }
 
@@ -157,7 +177,10 @@ class AuditEventRepositoryImplTest {
 
         val result = suspendTransaction {
             repository.getEventsPageWithAccessFilter(
-                accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
+                accessFilter = AuditAccessFilter(
+                    setOf(AuditActorType.SYSTEM),
+                    emptySet()
+                ),
                 queryParams = ManagementAuditEventListQueryParams(
                     listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT),
                     actorIds = listOf(actorId)
@@ -186,7 +209,10 @@ class AuditEventRepositoryImplTest {
 
         val result = suspendTransaction {
             repository.getEventsPageWithAccessFilter(
-                accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), emptySet()),
+                accessFilter = AuditAccessFilter(
+                    setOf(AuditActorType.SYSTEM),
+                    emptySet()
+                ),
                 queryParams = ManagementAuditEventListQueryParams(
                     listing = ListingQueryParams(sortBy = AuditEventSortBy.DEFAULT),
                     searchQuery = "DATA"
@@ -209,12 +235,13 @@ class AuditEventRepositoryImplTest {
                 ignoredProperties = setOf("listing")
             ) { queryParams ->
                 repository.getEventsPageWithAccessFilter(
-                    accessFilter = AuditAccessFilter(setOf(AuditActorType.SYSTEM), setOf("admin")),
+                    accessFilter = AuditAccessFilter(
+                        setOf(AuditActorType.SYSTEM),
+                        setOf("admin")
+                    ),
                     queryParams = queryParams
                 )
             }
         }
     }
 }
-
-

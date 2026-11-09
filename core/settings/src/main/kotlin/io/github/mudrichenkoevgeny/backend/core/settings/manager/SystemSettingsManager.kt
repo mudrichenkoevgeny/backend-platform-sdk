@@ -9,15 +9,19 @@ import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
  * Unlike the repository, the manager is expected to run operations inside the configured database
  * context/transaction boundary.
  */
-interface SystemSettingsManager {
+public interface SystemSettingsManager {
     /** Saves (upserts) multiple settings in a batch. */
-    suspend fun saveSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>>
+    public suspend fun saveSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>>
+
     /** Saves (upserts) a setting. */
-    suspend fun saveSetting(setting: SystemSetting): AppResult<SystemSetting>
+    public suspend fun saveSetting(setting: SystemSetting): AppResult<SystemSetting>
+
     /** Loads a setting by key. */
-    suspend fun getSettingByKey(key: String): AppResult<SystemSetting?>
+    public suspend fun getSettingByKey(key: String): AppResult<SystemSetting?>
+
     /** Loads all settings. */
-    suspend fun getAllSettings(): AppResult<List<SystemSetting>>
+    public suspend fun getAllSettings(): AppResult<List<SystemSetting>>
+
     /** Deletes a setting by key. */
-    suspend fun deleteSetting(key: String): AppResult<Unit>
+    public suspend fun deleteSetting(key: String): AppResult<Unit>
 }

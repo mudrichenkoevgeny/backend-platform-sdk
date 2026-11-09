@@ -28,9 +28,9 @@ import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.inList
-import org.jetbrains.exposed.v1.core.notInList
 import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.core.lowerCase
+import org.jetbrains.exposed.v1.core.notInList
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -45,12 +45,11 @@ import javax.inject.Singleton
  * Uses composite parsers to hydrate persisted action, resource, and metadata keys.
  */
 @Singleton
-class AuditEventRepositoryImpl @Inject constructor(
+public class AuditEventRepositoryImpl @Inject constructor(
     private val compositeAuditActionTypeParser: CompositeAuditActionTypeParser,
     private val compositeAuditResourceTypeParser: CompositeAuditResourceTypeParser,
     private val compositeAuditMetadataKeyParser: CompositeAuditMetadataKeyParser
 ) : AuditEventRepository {
-
     override suspend fun createEvent(event: AuditEventInternal): AppResult<AuditEventInternal> {
         return try {
             val inserted = AuditEventsTable.insert { auditEventRow ->
@@ -82,17 +81,12 @@ class AuditEventRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getEventById(auditEventId: AuditEventId): AppResult<AuditEventInternal?> {
-        return try {
-            val resultRow = AuditEventsTable
-                .selectAll()
-                .where { AuditEventsTable.id eq auditEventId.value }
-                .singleOrNull()
+    override suspend fun getEventById(auditEventId: AuditEventId): AppResult<AuditEventInternal?> = try {
+        val resultRow = AuditEventsTable.selectAll().where { AuditEventsTable.id eq auditEventId.value }.singleOrNull()
 
-            AppResult.Success(resultRow?.toAuditEventInternal())
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error retrieving audit event by id: ${e.message}"))
-        }
+        AppResult.Success(resultRow?.toAuditEventInternal())
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving audit event by id: ${e.message}"))
     }
 
     override suspend fun getEventsPageWithAccessFilter(
@@ -103,8 +97,9 @@ class AuditEventRepositoryImpl @Inject constructor(
             val simpleTypes = accessFilter.allowedActorTypes.filter { it != AuditActorType.USER }
             val allowsUser = accessFilter.allowedActorTypes.contains(AuditActorType.USER)
 
-            if (accessFilter.allowedActorTypes.isEmpty()
-                || (allowsUser && simpleTypes.isEmpty() && accessFilter.allowedUserRoles.isEmpty())
+            if (
+                accessFilter.allowedActorTypes.isEmpty() ||
+                (allowsUser && simpleTypes.isEmpty() && accessFilter.allowedUserRoles.isEmpty())
             ) {
                 return AppResult.Success(
                     PagedResult(
@@ -129,7 +124,7 @@ class AuditEventRepositoryImpl @Inject constructor(
                 if (allowsUser && accessFilter.allowedUserRoles.isNotEmpty()) {
                     conditions.add(
                         (AuditEventsTable.actorType eq AuditActorType.USER) and
-                                (AuditEventsTable.actorUserRole inList accessFilter.allowedUserRoles)
+                            (AuditEventsTable.actorUserRole inList accessFilter.allowedUserRoles)
                     )
                 }
 

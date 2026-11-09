@@ -8,9 +8,9 @@ import io.ktor.server.engine.EmbeddedServer
  * Implementations are expected to register a JVM shutdown hook and stop the provided [EmbeddedServer]
  * while also releasing infrastructure resources (database, redis, background jobs, etc.).
  */
-interface AppShutdownHook {
+public interface AppShutdownHook {
     /**
      * Registers a shutdown hook for the given [server].
      */
-    fun register(server: EmbeddedServer<*, *>)
+    public fun register(server: EmbeddedServer<*, *>)
 }

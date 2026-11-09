@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SeedSecuritySettingsUseCaseTest {
-
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private lateinit var useCase: SeedSecuritySettingsUseCase
 
@@ -39,7 +38,10 @@ class SeedSecuritySettingsUseCaseTest {
 
         val result = useCase()
 
-        assertEquals(expectedError, result)
+        assertEquals(
+            expectedError,
+            result
+        )
         coVerify(exactly = 1) { securitySettingsProvider.initialize() }
     }
 }

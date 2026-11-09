@@ -4,10 +4,10 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.f
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.getQueryValues
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseBooleanQueryOrNull
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseIntQueryOrNull
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseLongQueryOrNull
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseTimestampQueryOrNull
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseValidatedQueryList
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseListingQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.model.UserListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
@@ -22,7 +22,7 @@ import kotlin.uuid.Uuid
 /**
  * Parses user management list query parameters with strict validation.
  */
-fun ApplicationCall.parseUsersListQueryParams(): UserListQueryParams {
+public fun ApplicationCall.parseUsersListQueryParams(): UserListQueryParams {
     val filterNames = UserFilterValues
 
     return UserListQueryParams(
@@ -31,20 +31,44 @@ fun ApplicationCall.parseUsersListQueryParams(): UserListQueryParams {
             parseSortByOrNull = UserSortBy::fromValueOrNull
         ),
         userIds = parseValidatedQueryList(filterNames.USER_ID) { Uuid.parseOrNull(it)?.toString() },
-        roles = parseValidatedQueryList(filterNames.ROLE, UserRole::fromValueOrNull),
-        excludeRoles = parseValidatedQueryList(filterNames.EXCLUDE_ROLE, UserRole::fromValueOrNull),
-        accountStatuses = parseValidatedQueryList(filterNames.ACCOUNT_STATUS, UserAccountStatus::fromValueOrNull),
-        excludeAccountStatuses = parseValidatedQueryList(filterNames.EXCLUDE_ACCOUNT_STATUS, UserAccountStatus::fromValueOrNull),
-        accountStatusesOnRestore = parseValidatedQueryList(filterNames.ACCOUNT_STATUS_ON_RESTORE, UserAccountStatus::fromValueOrNull),
-        excludeAccountStatusesOnRestore = parseValidatedQueryList(filterNames.EXCLUDE_ACCOUNT_STATUS_ON_RESTORE, UserAccountStatus::fromValueOrNull),
+        roles = parseValidatedQueryList(
+            filterNames.ROLE,
+            UserRole::fromValueOrNull
+        ),
+        excludeRoles = parseValidatedQueryList(
+            filterNames.EXCLUDE_ROLE,
+            UserRole::fromValueOrNull
+        ),
+        accountStatuses = parseValidatedQueryList(
+            filterNames.ACCOUNT_STATUS,
+            UserAccountStatus::fromValueOrNull
+        ),
+        excludeAccountStatuses = parseValidatedQueryList(
+            filterNames.EXCLUDE_ACCOUNT_STATUS,
+            UserAccountStatus::fromValueOrNull
+        ),
+        accountStatusesOnRestore = parseValidatedQueryList(
+            filterNames.ACCOUNT_STATUS_ON_RESTORE,
+            UserAccountStatus::fromValueOrNull
+        ),
+        excludeAccountStatusesOnRestore = parseValidatedQueryList(
+            filterNames.EXCLUDE_ACCOUNT_STATUS_ON_RESTORE,
+            UserAccountStatus::fromValueOrNull
+        ),
         isAccountStatusOnRestoreSet = parseBooleanQueryOrNull(filterNames.IS_ACCOUNT_STATUS_ON_RESTORE_SET),
         authorityLevelFrom = parseIntQueryOrNull(filterNames.AUTHORITY_LEVEL_FROM),
         authorityLevelTo = parseIntQueryOrNull(filterNames.AUTHORITY_LEVEL_TO),
         requiredPermissionCodes = getQueryValues(filterNames.PERMISSION_CODES).mapToSet { PermissionCode(it) },
         excludePermissionCodes = getQueryValues(filterNames.EXCLUDE_PERMISSION_CODES).mapToSet { PermissionCode(it) },
         isTotpEnabled = parseBooleanQueryOrNull(filterNames.IS_TOTP_ENABLED),
-        accountLockoutTypes = parseValidatedQueryList(filterNames.ACCOUNT_LOCKOUT_TYPE, AccountLockoutType::fromValueOrNull),
-        excludeAccountLockoutTypes = parseValidatedQueryList(filterNames.EXCLUDE_ACCOUNT_LOCKOUT_TYPE, AccountLockoutType::fromValueOrNull),
+        accountLockoutTypes = parseValidatedQueryList(
+            filterNames.ACCOUNT_LOCKOUT_TYPE,
+            AccountLockoutType::fromValueOrNull
+        ),
+        excludeAccountLockoutTypes = parseValidatedQueryList(
+            filterNames.EXCLUDE_ACCOUNT_LOCKOUT_TYPE,
+            AccountLockoutType::fromValueOrNull
+        ),
         nickname = firstNonBlankQueryValue(filterNames.NICKNAME),
         isNicknameSet = parseBooleanQueryOrNull(filterNames.IS_NICKNAME_SET),
         displayName = firstNonBlankQueryValue(filterNames.DISPLAY_NAME),

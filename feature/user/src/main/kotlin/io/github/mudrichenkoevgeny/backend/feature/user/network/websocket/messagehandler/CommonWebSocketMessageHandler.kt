@@ -17,32 +17,27 @@ import kotlin.uuid.Uuid
  * such as ping–pong and client initialization.
  */
 @Singleton
-class CommonWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
-
+public class CommonWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
     override suspend fun handle(
         frame: SocketFrame,
         webSocketSessionContext: WebSocketSessionContext
-    ): WebSocketMessageHandlerResult {
-        return when (frame.type) {
-            CommonWebSocketEventTypes.PING -> handlePing()
-            CommonWebSocketEventTypes.PONG -> WebSocketMessageHandlerResult.Handled
-            CommonWebSocketEventTypes.INITIALIZE -> handleInitialize(frame)
-            CommonWebSocketEventTypes.INITIALIZED_SUCCESS -> WebSocketMessageHandlerResult.Handled
-            else -> WebSocketMessageHandlerResult.NotHandled
-        }
+    ): WebSocketMessageHandlerResult = when (frame.type) {
+        CommonWebSocketEventTypes.PING -> handlePing()
+        CommonWebSocketEventTypes.PONG -> WebSocketMessageHandlerResult.Handled
+        CommonWebSocketEventTypes.INITIALIZE -> handleInitialize(frame)
+        CommonWebSocketEventTypes.INITIALIZED_SUCCESS -> WebSocketMessageHandlerResult.Handled
+        else -> WebSocketMessageHandlerResult.NotHandled
     }
 
-    private fun handlePing(): WebSocketMessageHandlerResult {
-        return WebSocketMessageHandlerResult.SendSocketFrame(
-            SocketFrame(
-                id = Uuid.random().toHexDashString(),
-                type = CommonWebSocketEventTypes.PONG,
-                payload = null,
-                metadata = emptyMap(),
-                timestamp = System.currentTimeMillis()
-            )
+    private fun handlePing(): WebSocketMessageHandlerResult = WebSocketMessageHandlerResult.SendSocketFrame(
+        SocketFrame(
+            id = Uuid.random().toHexDashString(),
+            type = CommonWebSocketEventTypes.PONG,
+            payload = null,
+            metadata = emptyMap(),
+            timestamp = System.currentTimeMillis()
         )
-    }
+    )
 
     private fun handleInitialize(frame: SocketFrame): WebSocketMessageHandlerResult {
         val payloadElement = frame.payload ?: return WebSocketMessageHandlerResult.Error(

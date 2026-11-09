@@ -1,21 +1,21 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.management.audit
 
+import io.github.mudrichenkoevgeny.backend.core.audit.network.query.parseAuditEventsListQueryParams
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validatePathParameter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
-import io.github.mudrichenkoevgeny.backend.core.audit.network.query.parseAuditEventsListQueryParams
-import io.github.mudrichenkoevgeny.backend.feature.user.route.AuditSwaggerTags
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auditevent.GetAuditEventsUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auditevent.GetAuditEventUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.route.AuditSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auditevent.GetAuditEventUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.auditevent.GetAuditEventsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.CompositeAuditActionTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.toAuditEventIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CompositeAuditResourceTypeParser
@@ -24,9 +24,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toA
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.contract.AuditApiPaths
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.model.event.AuditEventPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.model.event.AuditEventSummaryPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.route.management.ManagementAuditRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.route.management.ManagementAuditRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.smiley4.ktoropenapi.config.RouteConfig
@@ -46,7 +46,7 @@ import javax.inject.Singleton
  * 2. [ManagementAuditRoutes.GET_AUDIT_EVENT] — retrieves a specific audit event via [GetAuditEventUseCase].
  */
 @Singleton
-class ManagementAuditRouter @Inject constructor(
+public class ManagementAuditRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -55,8 +55,7 @@ class ManagementAuditRouter @Inject constructor(
     private val getAuditEventsUseCase: GetAuditEventsUseCase,
     private val getAuditEventUseCase: GetAuditEventUseCase
 ) : BaseRouter {
-
-    override fun register(route: Route) {
+    public override fun register(route: Route) {
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
             registerGetAuditEventsRoute(this)
             registerGetAuditEventRoute(this)
@@ -64,24 +63,56 @@ class ManagementAuditRouter @Inject constructor(
     }
 
     private fun registerGetAuditEventsRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = ManagementAuditRoutes.GET_AUDIT_EVENTS,
-            builder = { getAuditEventsDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getAuditEvents(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getAuditEventsDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getAuditEvents(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerGetAuditEventRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = ManagementAuditRoutes.GET_AUDIT_EVENT,
-            builder = { getAuditEventDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getAuditEvent(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getAuditEventDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getAuditEvent(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -119,7 +150,11 @@ class ManagementAuditRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -127,7 +162,7 @@ class ManagementAuditRouter @Inject constructor(
 
         val queryParams = call.parseAuditEventsListQueryParams(
             compositeAuditActionTypeParser = compositeAuditActionTypeParser,
-            compositeAuditResourceTypeParser = compositeAuditResourceTypeParser,
+            compositeAuditResourceTypeParser = compositeAuditResourceTypeParser
         )
 
         val result = getAuditEventsUseCase(
@@ -135,7 +170,11 @@ class ManagementAuditRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { pagedAuditEvent ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { pagedAuditEvent ->
             pagedAuditEvent.mapItems { auditEventSummary ->
                 auditEventSummary.toAuditEventSummaryPayload()
             }
@@ -181,7 +220,11 @@ class ManagementAuditRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -195,24 +238,28 @@ class ManagementAuditRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { event ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { event ->
             event.toAuditEventPrivatePayload()
         }
     }
 
-    companion object {
-        const val GET_AUDIT_EVENTS_ROUTE_SUMMARY = "List audit events"
-        const val GET_AUDIT_EVENTS_ROUTE_DESCRIPTION =
+    public companion object {
+        public const val GET_AUDIT_EVENTS_ROUTE_SUMMARY: String = "List audit events"
+        public const val GET_AUDIT_EVENTS_ROUTE_DESCRIPTION: String =
             "Returns a paginated list of audit events. Rows and field masking depend on the caller's audit permissions."
-        const val GET_AUDIT_EVENTS_ROUTE_OPERATION_ID = "getManagementAuditEvents"
-        const val GET_AUDIT_EVENTS_ROUTE_RESPONSE_OK_DESCRIPTION = "Paged audit events"
+        public const val GET_AUDIT_EVENTS_ROUTE_OPERATION_ID: String = "getManagementAuditEvents"
+        public const val GET_AUDIT_EVENTS_ROUTE_RESPONSE_OK_DESCRIPTION: String = "Paged audit events"
 
-        const val GET_AUDIT_EVENT_ROUTE_SUMMARY = "Get audit event by id"
-        const val GET_AUDIT_EVENT_ROUTE_DESCRIPTION =
+        public const val GET_AUDIT_EVENT_ROUTE_SUMMARY: String = "Get audit event by id"
+        public const val GET_AUDIT_EVENT_ROUTE_DESCRIPTION: String =
             "Returns a single audit event. Payload masking depends on the caller's audit permissions."
-        const val GET_AUDIT_EVENT_ROUTE_OPERATION_ID = "getManagementAuditEvent"
-        const val GET_AUDIT_EVENT_ROUTE_PATH_PARAMETER_ID_DESCRIPTION =
+        public const val GET_AUDIT_EVENT_ROUTE_OPERATION_ID: String = "getManagementAuditEvent"
+        public const val GET_AUDIT_EVENT_ROUTE_PATH_PARAMETER_ID_DESCRIPTION: String =
             "Audit event id (UUID string, hex with dashes)"
-        const val GET_AUDIT_EVENT_ROUTE_RESPONSE_OK_DESCRIPTION = "Audit event"
+        public const val GET_AUDIT_EVENT_ROUTE_RESPONSE_OK_DESCRIPTION: String = "Audit event"
     }
 }

@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class TotpCryptoProcessorImplTest {
-
     private val aesCryptor = mockk<AesCryptor>()
     private val testAuthRealm = "TestRealm"
     private val securityConfig = createTestSecurityConfig(authRealm = testAuthRealm)
@@ -27,7 +26,10 @@ class TotpCryptoProcessorImplTest {
 
     @BeforeEach
     fun setup() {
-        processor = TotpCryptoProcessorImpl(aesCryptor, securityConfig)
+        processor = TotpCryptoProcessorImpl(
+            aesCryptor,
+            securityConfig
+        )
     }
 
     @Test
@@ -39,8 +41,14 @@ class TotpCryptoProcessorImplTest {
         assertTrue(result is AppResult.Success)
         val data = (result as AppResult.Success).data
 
-        assertEquals(32, data.decryptedSecret.value.length)
-        assertEquals(encryptedSecret, data.encryptedSecret)
+        assertEquals(
+            32,
+            data.decryptedSecret.value.length
+        )
+        assertEquals(
+            encryptedSecret,
+            data.encryptedSecret
+        )
         assertTrue(data.otpAuthUrl.contains("otpauth://totp/$testAuthRealm:$testAccount"))
         assertTrue(data.otpAuthUrl.contains("secret=${data.decryptedSecret.value}"))
     }
@@ -52,12 +60,21 @@ class TotpCryptoProcessorImplTest {
         val secretBytes = Base32.decode(testSecretBase32)
         val counter = System.currentTimeMillis() / 1000 / 30
 
-        val validCode = invokeGenerateTotp(secretBytes, counter)
+        val validCode = invokeGenerateTotp(
+            secretBytes,
+            counter
+        )
 
-        val result = processor.isCodeValid(validCode, encryptedSecret)
+        val result = processor.isCodeValid(
+            validCode,
+            encryptedSecret
+        )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(true, (result as AppResult.Success).data)
+        assertEquals(
+            true,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
@@ -66,29 +83,47 @@ class TotpCryptoProcessorImplTest {
 
         val secretBytes = Base32.decode(testSecretBase32)
         val counter = (System.currentTimeMillis() / 1000 / 30) - 1
-        val pastCode = invokeGenerateTotp(secretBytes, counter)
+        val pastCode = invokeGenerateTotp(
+            secretBytes,
+            counter
+        )
 
-        val result = processor.isCodeValid(pastCode, encryptedSecret)
+        val result = processor.isCodeValid(
+            pastCode,
+            encryptedSecret
+        )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(true, (result as AppResult.Success).data)
+        assertEquals(
+            true,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
     fun `isCodeValid returns false for completely wrong code`() {
         every { aesCryptor.decrypt(encryptedSecret) } returns AppResult.Success(decryptedSecret)
 
-        val result = processor.isCodeValid("000000", encryptedSecret)
+        val result = processor.isCodeValid(
+            "000000",
+            encryptedSecret
+        )
 
         assertTrue(result is AppResult.Success)
-        assertEquals(false, (result as AppResult.Success).data)
+        assertEquals(
+            false,
+            (result as AppResult.Success).data
+        )
     }
 
     @Test
     fun `getOtpAuthUrl returns correctly formatted string`() {
         every { aesCryptor.decrypt(encryptedSecret) } returns AppResult.Success(decryptedSecret)
 
-        val result = processor.getOtpAuthUrl(testAccount, encryptedSecret)
+        val result = processor.getOtpAuthUrl(
+            testAccount,
+            encryptedSecret
+        )
 
         assertTrue(result is AppResult.Success)
         val url = (result as AppResult.Success).data
@@ -105,19 +140,36 @@ class TotpCryptoProcessorImplTest {
 
         assertTrue(result is AppResult.Success)
         val codes = (result as AppResult.Success).data
-        assertEquals(count, codes.size)
+        assertEquals(
+            count,
+            codes.size
+        )
 
         val firstCode = codes.first().value
-        assertEquals(14, firstCode.length)
+        assertEquals(
+            14,
+            firstCode.length
+        )
         assertTrue(firstCode.matches(Regex("^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$")))
     }
 
     /**
      * Helper to replicate the private generateTotp logic for testing purposes
      */
-    private fun invokeGenerateTotp(secret: ByteArray, interval: Long): String {
-        val method = processor.javaClass.getDeclaredMethod("generateTotp", ByteArray::class.java, Long::class.java)
+    private fun invokeGenerateTotp(
+        secret: ByteArray,
+        interval: Long
+    ): String {
+        val method = processor.javaClass.getDeclaredMethod(
+            "generateTotp",
+            ByteArray::class.java,
+            Long::class.java
+        )
         method.isAccessible = true
-        return method.invoke(processor, secret, interval) as String
+        return method.invoke(
+            processor,
+            secret,
+            interval
+        ) as String
     }
 }

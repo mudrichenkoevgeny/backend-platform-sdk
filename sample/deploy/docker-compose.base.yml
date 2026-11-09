@@ -7,7 +7,7 @@ services:
         APP_PORT: ${KTOR_SERVER_PORT}
         GRADLE_IMAGE: ${GRADLE_IMAGE}
         JRE_IMAGE: ${JRE_IMAGE}
-    command: ["--migrate-only"]
+    command: [ "--migrate-only" ]
     depends_on:
       db:
         condition: service_healthy
@@ -156,7 +156,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$(cat /run/secrets/DB_USER)"]
+      test: [ "CMD-SHELL", "pg_isready -U $$(cat /run/secrets/DB_USER)" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -195,7 +195,7 @@ services:
     environment:
       - COLLECTOR_OTLP_ENABLED=true
     healthcheck:
-      test: ["CMD", "/jaeger", "status"]
+      test: [ "CMD", "/jaeger", "status" ]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -212,7 +212,7 @@ services:
       - ./docker/observability/prometheus/prometheus-entrypoint.sh:/usr/local/bin/prometheus-entrypoint.sh
     environment:
       - KTOR_MANAGEMENT_PORT=${KTOR_MANAGEMENT_PORT}
-    entrypoint: ["/bin/sh", "-c", "sh /usr/local/bin/prometheus-entrypoint.sh"]
+    entrypoint: [ "/bin/sh", "-c", "sh /usr/local/bin/prometheus-entrypoint.sh" ]
     networks:
       - app-network
 

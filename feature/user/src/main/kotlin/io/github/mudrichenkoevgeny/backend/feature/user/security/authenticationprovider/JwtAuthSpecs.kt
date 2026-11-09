@@ -5,6 +5,6 @@ package io.github.mudrichenkoevgeny.backend.feature.user.security.authentication
  *
  * The name is referenced from Ktor `authenticate(...)` blocks.
  */
-object JwtAuthSpecs {
-    const val AUTHENTICATE_CONFIGURATION = "jwt"
+public object JwtAuthSpecs {
+    public const val AUTHENTICATE_CONFIGURATION: String = "jwt"
 }

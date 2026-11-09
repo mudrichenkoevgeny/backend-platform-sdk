@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SecurityConfigFactoryImplTest {
-
     private val envReader = mockk<EnvReader>()
     private lateinit var factory: SecurityConfigFactoryImpl
 
@@ -34,25 +33,56 @@ class SecurityConfigFactoryImplTest {
     @Test
     fun `create reads required keys and applies defaults for optional password policy`() {
         every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS) } returns "15"
-        every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT) } returns "45"
+        every {
+            envReader.getByKey(
+                SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT
+            )
+        } returns "45"
 
         every { envReader.getByKeyOrNull(any()) } returns null
 
         val config = factory.create()
 
-        assertEquals("TestRealm", config.authRealm)
-        assertEquals("top-secret-key", config.totpEncryptionSecret)
-        assertEquals(15, config.managementSecuritySettings.recentAuthenticationValiditySecondsForOpenUser)
-        assertEquals(45, config.managementSecuritySettings.recentAuthenticationValiditySecondsForManagementUser)
+        assertEquals(
+            "TestRealm",
+            config.authRealm
+        )
+        assertEquals(
+            "top-secret-key",
+            config.totpEncryptionSecret
+        )
+        assertEquals(
+            15,
+            config.managementSecuritySettings.recentAuthenticationValiditySecondsForOpenUser
+        )
+        assertEquals(
+            45,
+            config.managementSecuritySettings.recentAuthenticationValiditySecondsForManagementUser
+        )
 
-        assertEquals(ManagementPasswordPolicy.DEFAULT_MIN_LENGTH, config.managementSecuritySettings.passwordPolicy.minLength)
+        assertEquals(
+            ManagementPasswordPolicy.DEFAULT_MIN_LENGTH,
+            config.managementSecuritySettings.passwordPolicy.minLength
+        )
         assertTrue(config.managementSecuritySettings.passwordPolicy.requireLetter)
         assertFalse(config.managementSecuritySettings.passwordPolicy.requireUpperCase)
 
-        assertEquals(6, config.managementSecuritySettings.otpConfirmation.numberOfSymbols)
-        assertEquals(120, config.managementSecuritySettings.mfaTokenExpirationSeconds)
-        assertEquals(SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS, config.managementSecuritySettings.accountLockoutCheckIntervalSeconds)
-        assertEquals(SecurityConfig.DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS, config.managementSecuritySettings.refreshTokenRotationGracePeriodSeconds)
+        assertEquals(
+            6,
+            config.managementSecuritySettings.otpConfirmation.numberOfSymbols
+        )
+        assertEquals(
+            120,
+            config.managementSecuritySettings.mfaTokenExpirationSeconds
+        )
+        assertEquals(
+            SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS,
+            config.managementSecuritySettings.accountLockoutCheckIntervalSeconds
+        )
+        assertEquals(
+            SecurityConfig.DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS,
+            config.managementSecuritySettings.refreshTokenRotationGracePeriodSeconds
+        )
     }
 
     @Test
@@ -60,7 +90,11 @@ class SecurityConfigFactoryImplTest {
         every { envReader.getByKeyOrNull(any()) } returns null
 
         every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS) } returns "60"
-        every { envReader.getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT) } returns "90"
+        every {
+            envReader.getByKey(
+                SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT
+            )
+        } returns "90"
 
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_MIN_LENGTH) } returns "12"
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_LETTER) } returns "false"
@@ -68,22 +102,48 @@ class SecurityConfigFactoryImplTest {
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_LOWER_CASE) } returns "true"
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_DIGIT) } returns "true"
         every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_SPECIAL_CHAR) } returns "true"
-        every { envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_COMMON_PASSWORDS) } returns "pass123,  qwerty  , ,  letmein "
+        every {
+            envReader.getByKeyOrNull(
+                SecurityEnvKeys.PASSWORD_POLICY_COMMON_PASSWORDS
+            )
+        } returns "pass123,  qwerty  , ,  letmein "
         every { envReader.getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS) } returns "120"
         every { envReader.getByKeyOrNull(SecurityEnvKeys.REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS) } returns "45"
 
         val config = factory.create()
 
-        assertEquals(60, config.managementSecuritySettings.recentAuthenticationValiditySecondsForOpenUser)
-        assertEquals(90, config.managementSecuritySettings.recentAuthenticationValiditySecondsForManagementUser)
-        assertEquals(12, config.managementSecuritySettings.passwordPolicy.minLength)
+        assertEquals(
+            60,
+            config.managementSecuritySettings.recentAuthenticationValiditySecondsForOpenUser
+        )
+        assertEquals(
+            90,
+            config.managementSecuritySettings.recentAuthenticationValiditySecondsForManagementUser
+        )
+        assertEquals(
+            12,
+            config.managementSecuritySettings.passwordPolicy.minLength
+        )
         assertFalse(config.managementSecuritySettings.passwordPolicy.requireLetter)
         assertTrue(config.managementSecuritySettings.passwordPolicy.requireUpperCase)
         assertTrue(config.managementSecuritySettings.passwordPolicy.requireLowerCase)
         assertTrue(config.managementSecuritySettings.passwordPolicy.requireDigit)
         assertTrue(config.managementSecuritySettings.passwordPolicy.requireSpecialChar)
-        assertEquals(setOf("pass123", "qwerty", "letmein"), config.managementSecuritySettings.passwordPolicy.commonPasswords)
-        assertEquals(120, config.managementSecuritySettings.accountLockoutCheckIntervalSeconds)
-        assertEquals(45, config.managementSecuritySettings.refreshTokenRotationGracePeriodSeconds)
+        assertEquals(
+            setOf(
+                "pass123",
+                "qwerty",
+                "letmein"
+            ),
+            config.managementSecuritySettings.passwordPolicy.commonPasswords
+        )
+        assertEquals(
+            120,
+            config.managementSecuritySettings.accountLockoutCheckIntervalSeconds
+        )
+        assertEquals(
+            45,
+            config.managementSecuritySettings.refreshTokenRotationGracePeriodSeconds
+        )
     }
 }

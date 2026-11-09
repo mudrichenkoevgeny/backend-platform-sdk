@@ -22,7 +22,6 @@ import kotlin.time.Duration.Companion.seconds
 private const val TEST_INTERVAL_SECONDS = 60
 
 class UserScheduledJobsImplTest {
-
     private val userManager = mockk<UserManager>()
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
@@ -99,9 +98,11 @@ class UserScheduledJobsImplTest {
         advanceTimeBy(1.seconds)
 
         verify {
-            appLogger.logError(match { error ->
-                error is CommonError.Internal && error.throwable == exception
-            })
+            appLogger.logError(
+                match { error ->
+                    error is CommonError.Internal && error.throwable == exception
+                }
+            )
         }
     }
 

@@ -8,4 +8,6 @@ import kotlinx.serialization.Serializable
  * @property html HTML content to send.
  */
 @Serializable
-data class UniOneBody(val html: String)
+public data class UniOneBody(
+    val html: String
+)

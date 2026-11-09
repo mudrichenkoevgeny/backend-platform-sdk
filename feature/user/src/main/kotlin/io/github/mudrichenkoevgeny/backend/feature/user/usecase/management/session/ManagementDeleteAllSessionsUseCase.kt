@@ -31,8 +31,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
 
+/**
+ * Use case to delete all sessions.
+ */
 @Singleton
-class ManagementDeleteAllSessionsUseCase @Inject constructor(
+public class ManagementDeleteAllSessionsUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -68,7 +71,7 @@ class ManagementDeleteAllSessionsUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] indicating success or the specific [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         userId: UserId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
@@ -128,8 +131,7 @@ class ManagementDeleteAllSessionsUseCase @Inject constructor(
             )
         }
 
-        val targetUserResult = userManager.getUserInternalById(userId)
-            .mapNotNullOrError(UserError.UserNotFound(userId))
+        val targetUserResult = userManager.getUserInternalById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
 
         val targetUser = when (targetUserResult) {
             is AppResult.Success -> targetUserResult.data
@@ -225,6 +227,7 @@ class ManagementDeleteAllSessionsUseCase @Inject constructor(
                 )
                 deleteResult
             }
+
             is AppResult.Error -> handleError(
                 error = deleteResult.error,
                 actorId = auditActorId,

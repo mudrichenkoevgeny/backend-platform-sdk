@@ -15,10 +15,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class RateLimiterImplTest {
-
     private val redisManager = mockk<RedisManager>()
     private val appLogger = mockk<AppLogger>(relaxed = true)
-    private val rateLimiter = RateLimiterImpl(redisManager, appLogger)
+    private val rateLimiter = RateLimiterImpl(
+        redisManager,
+        appLogger
+    )
 
     @Test
     fun `isRateLimited returns Success when counter is within limit`() = runTest {
@@ -26,11 +28,24 @@ class RateLimiterImplTest {
         val identifier = "user:123"
         val key = action.createKey(identifier)
 
-        coEvery { redisManager.incrementWithExpiration(key, action.windowSeconds.toLong()) } returns AppResult.Success(action.limit.toLong())
+        coEvery {
+            redisManager.incrementWithExpiration(
+                key,
+                action.windowSeconds.toLong()
+            )
+        } returns AppResult.Success(
+            action.limit.toLong()
+        )
 
-        val result = rateLimiter.checkRateLimit(action, identifier)
+        val result = rateLimiter.checkRateLimit(
+            action,
+            identifier
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
         coVerify(exactly = 0) { redisManager.getTtl(any()) }
     }
 
@@ -40,14 +55,27 @@ class RateLimiterImplTest {
         val identifier = "ip:127.0.0.1"
         val key = action.createKey(identifier)
 
-        coEvery { redisManager.incrementWithExpiration(key, action.windowSeconds.toLong()) } returns AppResult.Success((action.limit + 1).toLong())
+        coEvery {
+            redisManager.incrementWithExpiration(
+                key,
+                action.windowSeconds.toLong()
+            )
+        } returns AppResult.Success(
+            (action.limit + 1).toLong()
+        )
         coEvery { redisManager.getTtl(key) } returns AppResult.Success(42L)
 
-        val result = rateLimiter.checkRateLimit(action, identifier)
+        val result = rateLimiter.checkRateLimit(
+            action,
+            identifier
+        )
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error as CommonError.TooManyRequests
-        assertEquals(42, error.publicArgs?.get(CommonErrorArgs.RETRY_AFTER_SECONDS))
+        assertEquals(
+            42,
+            error.publicArgs?.get(CommonErrorArgs.RETRY_AFTER_SECONDS)
+        )
     }
 
     @Test
@@ -56,13 +84,26 @@ class RateLimiterImplTest {
         val identifier = "user:42"
         val key = action.createKey(identifier)
 
-        coEvery { redisManager.incrementWithExpiration(key, action.windowSeconds.toLong()) } returns AppResult.Success((action.limit + 1).toLong())
+        coEvery {
+            redisManager.incrementWithExpiration(
+                key,
+                action.windowSeconds.toLong()
+            )
+        } returns AppResult.Success(
+            (action.limit + 1).toLong()
+        )
         coEvery { redisManager.getTtl(key) } returns AppResult.Error(CommonError.Internal(Throwable("ttl error")))
 
-        val result = rateLimiter.checkRateLimit(action, identifier)
+        val result = rateLimiter.checkRateLimit(
+            action,
+            identifier
+        )
 
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error as CommonError.TooManyRequests
-        assertEquals(action.windowSeconds, error.publicArgs?.get(CommonErrorArgs.RETRY_AFTER_SECONDS))
+        assertEquals(
+            action.windowSeconds,
+            error.publicArgs?.get(CommonErrorArgs.RETRY_AFTER_SECONDS)
+        )
     }
 }

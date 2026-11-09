@@ -12,9 +12,8 @@ import javax.inject.Singleton
  * Binds [TotpCryptoProcessor] to [TotpCryptoProcessorImpl].
  */
 @Module
-interface TotpCryptoProcessorModule {
-
+public interface TotpCryptoProcessorModule {
     @Binds
     @Singleton
-    fun bindTotpCryptoProcessor(totpCryptoProcessorImpl: TotpCryptoProcessorImpl): TotpCryptoProcessor
+    public fun bindTotpCryptoProcessor(totpCryptoProcessorImpl: TotpCryptoProcessorImpl): TotpCryptoProcessor
 }

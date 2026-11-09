@@ -35,8 +35,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
 
+/**
+ * Use case to delete a password.
+ */
 @Singleton
-class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
+public class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -76,7 +79,7 @@ class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] indicating success or the specific [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         userIdentifierId: UserIdentifierId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
@@ -125,13 +128,12 @@ class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
             )
         }
 
-        val userIdentifierResult = identifierManager.getUserIdentifierInternalById(userIdentifierId)
-            .mapNotNullOrError(
-                CommonError.NotFound(
-                    resource = UserIdentifierPrivate::class.java.simpleName,
-                    identifier = userIdentifierId.asHexDashString()
-                )
+        val userIdentifierResult = identifierManager.getUserIdentifierInternalById(userIdentifierId).mapNotNullOrError(
+            CommonError.NotFound(
+                resource = UserIdentifierPrivate::class.java.simpleName,
+                identifier = userIdentifierId.asHexDashString()
             )
+        )
 
         val userIdentifier = when (userIdentifierResult) {
             is AppResult.Success -> userIdentifierResult.data
@@ -289,6 +291,7 @@ class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
                 )
                 AppResult.Success(Unit)
             }
+
             is AppResult.Error -> handleError(
                 error = clearPasswordResult.error,
                 actorId = auditActorId,

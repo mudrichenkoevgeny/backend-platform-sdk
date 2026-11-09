@@ -22,11 +22,10 @@ import javax.inject.Singleton
  * @property storageManager Manager for storage file metadata and quotas.
  */
 @Singleton
-class GeneratePresignedUploadUrlUseCase @Inject constructor(
+public class GeneratePresignedUploadUrlUseCase @Inject constructor(
     private val userManager: UserManager,
     private val storageManager: StorageManager
 ) {
-
     /**
      * Executes upload initialization.
      *
@@ -39,7 +38,7 @@ class GeneratePresignedUploadUrlUseCase @Inject constructor(
      * @param authenticatedRequestContext Context of the requesting authenticated user.
      * @return [AppResult.Success] containing [PresignedUrl].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         fileName: String,
         fileSizeBytes: Long,
         mimeType: String,

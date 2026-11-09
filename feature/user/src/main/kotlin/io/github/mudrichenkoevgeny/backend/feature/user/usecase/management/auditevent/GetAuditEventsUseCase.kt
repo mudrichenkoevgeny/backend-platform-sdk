@@ -9,14 +9,16 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditEventSummary
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.core.audit.navigation.screen.management.audit.list.ManagementAuditEventListParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to get audit events.
+ */
 @Singleton
-class GetAuditEventsUseCase @Inject constructor(
+public class GetAuditEventsUseCase @Inject constructor(
     private val userManager: UserManager,
     private val auditManager: AuditManager
 ) {
@@ -41,7 +43,7 @@ class GetAuditEventsUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management caller.
      * @return [AppResult] containing a [PagedResult] of [AuditEventSummary] within the authorized scope.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         queryParams: ManagementAuditEventListQueryParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<AuditEventSummary>> {

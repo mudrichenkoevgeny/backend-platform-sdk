@@ -6,8 +6,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to retrieve public global settings snapshot.
+ */
 @Singleton
-class GetOpenGlobalSettingsUseCase @Inject constructor(
+public class GetOpenGlobalSettingsUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider
 ) {
     /**
@@ -25,7 +28,6 @@ class GetOpenGlobalSettingsUseCase @Inject constructor(
      *
      * @return [AppResult] containing the [OpenGlobalSettings].
      */
-    operator fun invoke(): AppResult<OpenGlobalSettings> {
-        return AppResult.Success(globalSettingsProvider.getOpenGlobalSettings())
-    }
+    public operator fun invoke(): AppResult<OpenGlobalSettings> =
+        AppResult.Success(globalSettingsProvider.getOpenGlobalSettings())
 }

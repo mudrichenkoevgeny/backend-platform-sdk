@@ -27,11 +27,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ManagementDeleteFilesUseCaseTest {
-
     private val storageManager = mockk<StorageManager>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val userManager = mockk<UserManager>()
 
     private val useCase = ManagementDeleteFilesUseCase(
@@ -45,7 +47,10 @@ class ManagementDeleteFilesUseCaseTest {
     private val managementUserId = context.userId
     private val fileId1 = FileId.generate()
     private val fileId2 = FileId.generate()
-    private val fileIds = listOf(fileId1, fileId2)
+    private val fileIds = listOf(
+        fileId1,
+        fileId2
+    )
 
     @Test
     fun `successfully deletes files batch and logs audit records when user is active and authorized`() = runTest {
@@ -59,9 +64,15 @@ class ManagementDeleteFilesUseCaseTest {
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
         coEvery { storageManager.deleteStorageFilesBatch(fileIds) } returns AppResult.Success(Unit)
 
-        val result = useCase(fileIds, context)
+        val result = useCase(
+            fileIds,
+            context
+        )
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorId = managementUserId.asHexDashString(),
@@ -99,7 +110,10 @@ class ManagementDeleteFilesUseCaseTest {
 
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
 
-        val result = useCase(fileIds, context)
+        val result = useCase(
+            fileIds,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserIllegalAccountStatus)
     }
@@ -115,7 +129,10 @@ class ManagementDeleteFilesUseCaseTest {
 
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
 
-        val result = useCase(fileIds, context)
+        val result = useCase(
+            fileIds,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserMissingPermissions)
     }
@@ -133,7 +150,10 @@ class ManagementDeleteFilesUseCaseTest {
         coEvery { userManager.getUserInternalById(managementUserId) } returns AppResult.Success(managementUser)
         coEvery { storageManager.deleteStorageFilesBatch(fileIds) } returns AppResult.Error(expectedError)
 
-        val result = useCase(fileIds, context)
+        val result = useCase(
+            fileIds,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {

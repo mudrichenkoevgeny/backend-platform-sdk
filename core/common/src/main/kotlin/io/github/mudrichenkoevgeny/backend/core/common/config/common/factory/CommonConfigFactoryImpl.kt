@@ -16,11 +16,10 @@ import javax.inject.Singleton
  * It combines metadata from [AppInfo] with values provided by [EnvReader] using keys from [CommonEnvKeys].
  */
 @Singleton
-class CommonConfigFactoryImpl @Inject constructor(
+public class CommonConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader,
     private val appInfo: AppInfo
 ) : CommonConfigFactory {
-
     override fun create(): CommonConfig {
         val appName = appInfo.appName
         val version = appInfo.version

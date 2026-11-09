@@ -18,22 +18,19 @@ import javax.inject.Singleton
  * specific configuration values such as [GoogleWebClientId].
  */
 @Module
-interface UserExternalAuthVerifierModule {
-
+public interface UserExternalAuthVerifierModule {
     @Binds
     @IntoSet
     @Singleton
-    fun bindGoogleVerifier(verifier: GoogleAuthVerifier): ExternalAuthVerifier
+    public fun bindGoogleVerifier(verifier: GoogleAuthVerifier): ExternalAuthVerifier
 
     @Multibinds
-    fun bindExternalAuthVerifiers(): Set<ExternalAuthVerifier>
+    public fun bindExternalAuthVerifiers(): Set<ExternalAuthVerifier>
 
-    companion object {
+    public companion object {
         @Provides
         @Singleton
         @GoogleWebClientId
-        fun provideGoogleWebClientId(userConfig: UserConfig): String? {
-            return userConfig.googleWebClientId
-        }
+        public fun provideGoogleWebClientId(userConfig: UserConfig): String? = userConfig.googleWebClientId
     }
 }

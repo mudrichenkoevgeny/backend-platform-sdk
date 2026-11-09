@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test
  * Validates locale normalization and fallback behavior.
  */
 class CommonErrorParserTest {
-
     private val parser = CommonErrorParser()
 
     @Test
@@ -26,10 +25,22 @@ class CommonErrorParserTest {
             args = null,
             locale = LOCALE_EN
         )
-        assertEquals(errorId.asHexDashString(), response.id)
-        assertEquals(CommonErrorCodes.UNKNOWN, response.code)
-        assertEquals(stringsEn.errors.unknown, response.message)
-        assertEquals(emptyMap<String, String>(), response.args)
+        assertEquals(
+            errorId.asHexDashString(),
+            response.id
+        )
+        assertEquals(
+            CommonErrorCodes.UNKNOWN,
+            response.code
+        )
+        assertEquals(
+            stringsEn.errors.unknown,
+            response.message
+        )
+        assertEquals(
+            emptyMap<String, String>(),
+            response.args
+        )
     }
 
     @Test
@@ -40,7 +51,10 @@ class CommonErrorParserTest {
             args = null,
             locale = LOCALE_RU
         )
-        assertEquals(stringsRu.errors.unknown, response.message)
+        assertEquals(
+            stringsRu.errors.unknown,
+            response.message
+        )
     }
 
     @Test
@@ -51,17 +65,35 @@ class CommonErrorParserTest {
             args = null,
             locale = "fr"
         )
-        assertEquals(stringsEn.errors.unknown, response.message)
+        assertEquals(
+            stringsEn.errors.unknown,
+            response.message
+        )
     }
 
     @Test
     fun `getApiErrorResponse from AppError produces fallback message`() {
         val appError = CommonError.Unknown()
-        val response = parser.getApiErrorResponse(appError, LOCALE_EN)
-        assertEquals(appError.errorId.asHexDashString(), response.id)
-        assertEquals(CommonErrorCodes.UNKNOWN, response.code)
-        assertEquals(stringsEn.errors.unknown, response.message)
-        assertEquals(emptyMap<String, String>(), response.args)
+        val response = parser.getApiErrorResponse(
+            appError,
+            LOCALE_EN
+        )
+        assertEquals(
+            appError.errorId.asHexDashString(),
+            response.id
+        )
+        assertEquals(
+            CommonErrorCodes.UNKNOWN,
+            response.code
+        )
+        assertEquals(
+            stringsEn.errors.unknown,
+            response.message
+        )
+        assertEquals(
+            emptyMap<String, String>(),
+            response.args
+        )
     }
 
     @Test
@@ -72,7 +104,10 @@ class CommonErrorParserTest {
             args = null,
             locale = "EN"
         )
-        assertEquals(stringsEn.errors.unknown, response.message)
+        assertEquals(
+            stringsEn.errors.unknown,
+            response.message
+        )
     }
 
     companion object {

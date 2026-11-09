@@ -5,10 +5,6 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorPars
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.ApiScope
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestManagementAuthSettings
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestOpenAuthSettings
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -23,6 +19,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestManagementAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestOpenAuthSettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -33,11 +33,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class UpdateAuthSettingsUseCaseTest {
-
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val webSocketManager = mockk<WebSocketManager>(relaxed = true)
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
@@ -58,7 +60,13 @@ class UpdateAuthSettingsUseCaseTest {
         val userSession = createTestUserSessionInternal(userId = userId)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(userSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(userInternal, userSession, true) } returns AppResult.Success(Unit)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                userInternal,
+                userSession,
+                true
+            )
+        } returns AppResult.Success(Unit)
     }
 
     @Test
@@ -77,9 +85,15 @@ class UpdateAuthSettingsUseCaseTest {
         every { authSettingsProvider.getOpenAuthSettings() } returns openAuthSettings
         every { authSettingsProvider.getManagementAuthSettings() } returns settings
 
-        val result = useCase(settings, context)
+        val result = useCase(
+            settings,
+            context
+        )
 
-        assertEquals(AppResult.Success(settings), result)
+        assertEquals(
+            AppResult.Success(settings),
+            result
+        )
 
         coVerify(exactly = 1) {
             authSettingsProvider.updateManagementAuthSettings(settings)
@@ -120,10 +134,16 @@ class UpdateAuthSettingsUseCaseTest {
             authSettingsProvider.updateManagementAuthSettings(settings)
         } returns AppResult.Error(error)
 
-        val result = useCase(settings, context)
+        val result = useCase(
+            settings,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
-        assertEquals(error, (result as AppResult.Error).error)
+        assertEquals(
+            error,
+            (result as AppResult.Error).error
+        )
 
         coVerify(exactly = 1) {
             auditLogger.log(
@@ -140,7 +160,10 @@ class UpdateAuthSettingsUseCaseTest {
         coVerify(exactly = 0) {
             authSettingsProvider.getOpenAuthSettings()
             authSettingsProvider.getManagementAuthSettings()
-            webSocketManager.sendMessageToScope(any(), any())
+            webSocketManager.sendMessageToScope(
+                any(),
+                any()
+            )
         }
     }
 }

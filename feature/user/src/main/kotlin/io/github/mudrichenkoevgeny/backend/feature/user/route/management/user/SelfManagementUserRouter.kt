@@ -6,26 +6,20 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.for
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
+import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.mapper.user.toUpdateUserParams
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.JwtAuthSpecs
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.GetUserUseCase
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivatePayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserPrivatePayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.SelfUpdateUserRequest
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.self.user.SelfManagementUserRoutes
-import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.user.UpdateSelfUserUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user.GetUserUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.action.AuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
@@ -33,6 +27,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserPrivatePayload
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.SelfUpdateUserRequest
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.self.user.SelfManagementUserRoutes
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
 import io.github.smiley4.ktoropenapi.patch
@@ -47,10 +47,11 @@ import javax.inject.Singleton
  * Management HTTP routes for self-service user profile operations.
  *
  * Registered routes:
- * 1. [SelfManagementUserRoutes.GET_USER] — retrieves detailed information about the currently authenticated user via [GetUserUseCase].
+ * 1. [SelfManagementUserRoutes.GET_USER] — retrieves detailed information about the currently authenticated user via
+ * [GetUserUseCase].
  */
 @Singleton
-class SelfManagementUserRouter @Inject constructor(
+public class SelfManagementUserRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -67,24 +68,50 @@ class SelfManagementUserRouter @Inject constructor(
     }
 
     private fun registerGetUserRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = UserAccountStatus.entries.toSet()
 
         route.get(
             path = SelfManagementUserRoutes.GET_USER,
-            builder = { getUserDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getUser(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getUserDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getUser(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerUpdateUserRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
         val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE)
 
         route.patch(
             path = SelfManagementUserRoutes.UPDATE_USER,
-            builder = { updateUserDocs(allowedRoles, allowedAccountStatuses) },
-            body = { updateUser(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                updateUserDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                updateUser(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -124,7 +151,11 @@ class SelfManagementUserRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -132,7 +163,11 @@ class SelfManagementUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userPrivate ->
             userPrivate.toUserPrivatePayload()
         }
     }
@@ -182,7 +217,11 @@ class SelfManagementUserRouter @Inject constructor(
                 actionType = UserAuditActionType.SELF_UPDATE_USER,
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -194,11 +233,14 @@ class SelfManagementUserRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userPrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userPrivate ->
             userPrivate.toUserPrivatePayload()
         }
     }
-
 
     private fun logErrorToAudit(
         authenticatedRequestContext: AuthenticatedRequestContext,
@@ -221,15 +263,17 @@ class SelfManagementUserRouter @Inject constructor(
         )
     }
 
-    companion object {
-        const val GET_SELF_USER_ROUTE_SUMMARY = "Get current user profile (management)"
-        const val GET_SELF_USER_ROUTE_DESCRIPTION = "Returns the profile details of the currently authenticated management user."
-        const val GET_SELF_USER_ROUTE_OPERATION_ID = "getSelfManagementUser"
-        const val GET_SELF_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User profile data."
+    public companion object {
+        private const val GET_SELF_USER_ROUTE_SUMMARY = "Get current user profile (management)"
+        private const val GET_SELF_USER_ROUTE_DESCRIPTION =
+            "Returns the profile details of the currently authenticated management user."
+        private const val GET_SELF_USER_ROUTE_OPERATION_ID = "getSelfManagementUser"
+        private const val GET_SELF_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "User profile data."
 
-        const val UPDATE_SELF_USER_ROUTE_SUMMARY = "Update current management user profile"
-        const val UPDATE_SELF_USER_ROUTE_DESCRIPTION = "Partially updates account details and profile fields of the currently authenticated staff member."
-        const val UPDATE_SELF_USER_ROUTE_OPERATION_ID = "updateSelfManagementUser"
-        const val UPDATE_SELF_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "Updated user profile data."
+        private const val UPDATE_SELF_USER_ROUTE_SUMMARY = "Update current management user profile"
+        private const val UPDATE_SELF_USER_ROUTE_DESCRIPTION =
+            "Partially updates account details and profile fields of the currently authenticated staff member."
+        private const val UPDATE_SELF_USER_ROUTE_OPERATION_ID = "updateSelfManagementUser"
+        private const val UPDATE_SELF_USER_ROUTE_RESPONSE_OK_DESCRIPTION = "Updated user profile data."
     }
 }

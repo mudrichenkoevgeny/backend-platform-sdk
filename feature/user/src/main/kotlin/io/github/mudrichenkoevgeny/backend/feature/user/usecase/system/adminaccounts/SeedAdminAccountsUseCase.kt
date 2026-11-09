@@ -15,8 +15,11 @@ import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to seed initial system administrator accounts on startup.
+ */
 @Singleton
-class SeedAdminAccountsUseCase @Inject constructor(
+public class SeedAdminAccountsUseCase @Inject constructor(
     private val userConfig: UserConfig,
     private val authManager: AuthManager
 ) {
@@ -35,7 +38,7 @@ class SeedAdminAccountsUseCase @Inject constructor(
      * @param permissionCodesForUserCreation The set of permissions to be assigned to the new admin users.
      * @return [AppResult] indicating whether the seeding process completed without critical failures.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         adminAccounts: List<AdminAccount> = userConfig.adminAccountsList,
         permissionCodesForUserCreation: Set<PermissionCode>
     ): AppResult<Unit> = coroutineScope {

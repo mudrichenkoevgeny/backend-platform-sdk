@@ -1,9 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.di.module
 
-import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepository
-import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepositoryImpl
 import dagger.Binds
 import dagger.Module
+import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepository
+import io.github.mudrichenkoevgeny.backend.core.audit.database.repository.AuditEventRepositoryImpl
 import javax.inject.Singleton
 
 /**
@@ -12,9 +12,8 @@ import javax.inject.Singleton
  * Binds [AuditEventRepository] to [AuditEventRepositoryImpl].
  */
 @Module
-interface AuditRepositoriesModule {
-
+public interface AuditRepositoriesModule {
     @Binds
     @Singleton
-    fun bindAuditEventRepository(auditEventRepositoryImpl: AuditEventRepositoryImpl): AuditEventRepository
+    public fun bindAuditEventRepository(auditEventRepositoryImpl: AuditEventRepositoryImpl): AuditEventRepository
 }

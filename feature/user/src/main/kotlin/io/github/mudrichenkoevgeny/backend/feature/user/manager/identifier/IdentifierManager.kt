@@ -17,7 +17,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
  *
  * Provides a higher-level API over the identifier repository and password hashing.
  */
-interface IdentifierManager {
+public interface IdentifierManager {
     /**
      * Loads an identifier by provider and identifier value for internal system use.
      *
@@ -25,7 +25,7 @@ interface IdentifierManager {
      * @param identifier identifier value (email/phone/external subject)
      * @return [AppResult.Success] containing [UserIdentifierInternal] when found, `null` when missing, or an error
      */
-    suspend fun getUserIdentifierInternalByProvider(
+    public suspend fun getUserIdentifierInternalByProvider(
         userAuthProvider: UserAuthProvider,
         identifier: String
     ): AppResult<UserIdentifierInternal?>
@@ -37,7 +37,7 @@ interface IdentifierManager {
      * @param userIdentifierId identifier id
      * @return [AppResult.Success] containing [UserIdentifierInternal] when found, `null` when missing, or an error
      */
-    suspend fun getUserIdentifierInternalById(
+    public suspend fun getUserIdentifierInternalById(
         userIdentifierId: UserIdentifierId
     ): AppResult<UserIdentifierInternal?>
 
@@ -47,7 +47,7 @@ interface IdentifierManager {
      * @param userIdentifierId identifier id
      * @return [AppResult.Success] containing [UserIdentifierPrivate] when found, `null` when missing, or an error
      */
-    suspend fun getUserIdentifierPrivateById(
+    public suspend fun getUserIdentifierPrivateById(
         userIdentifierId: UserIdentifierId
     ): AppResult<UserIdentifierPrivate?>
 
@@ -61,7 +61,7 @@ interface IdentifierManager {
      * @param managementUserPermissionCodes caller permissions
      * @return [AppResult.Success] containing [UserIdentifierPrivate] when found and allowed, `null` when missing, or an error
      */
-    suspend fun getUserIdentifierPrivateById(
+    public suspend fun getUserIdentifierPrivateById(
         userIdentifierId: UserIdentifierId,
         managementUserId: UserId,
         managementUserPermissionCodes: Set<PermissionCode>
@@ -73,9 +73,7 @@ interface IdentifierManager {
      * @param userId user id
      * @return [AppResult.Success] with list of [UserIdentifierInternal] or an error
      */
-    suspend fun getUserIdentifiersInternalPageByUserId(
-        userId: UserId
-    ): AppResult<List<UserIdentifierInternal>>
+    public suspend fun getUserIdentifiersInternalPageByUserId(userId: UserId): AppResult<List<UserIdentifierInternal>>
 
     /**
      * Creates a new identifier for a user.
@@ -90,7 +88,7 @@ interface IdentifierManager {
      * @param externalProviderDisplayName optional display name from an external provider
      * @return [AppResult.Success] with created [UserIdentifierInternal] or an error
      */
-    suspend fun createUserIdentifier(
+    public suspend fun createUserIdentifier(
         userId: UserId,
         userAuthProvider: UserAuthProvider,
         identifier: String,
@@ -105,9 +103,7 @@ interface IdentifierManager {
      * @param userIdentifierId identifier id
      * @return [AppResult.Success] with [Unit] or an error
      */
-    suspend fun deleteUserIdentifier(
-        userIdentifierId: UserIdentifierId
-    ): AppResult<Unit>
+    public suspend fun deleteUserIdentifier(userIdentifierId: UserIdentifierId): AppResult<Unit>
 
     /**
      * Updates the identifier value and password for an existing identifier.
@@ -116,7 +112,7 @@ interface IdentifierManager {
      * @param password new password to hash
      * @return [AppResult.Success] with updated [UserIdentifierPrivate] snapshot or an error
      */
-    suspend fun updateUserIdentifierPassword(
+    public suspend fun updateUserIdentifierPassword(
         userIdentifier: UserIdentifierInternal,
         password: String
     ): AppResult<UserIdentifierPrivate>
@@ -127,7 +123,7 @@ interface IdentifierManager {
      * @param userIdentifier current identifier snapshot
      * @return [AppResult.Success] with updated [UserIdentifierPrivate] snapshot or an error
      */
-    suspend fun clearUserIdentifierPassword(
+    public suspend fun clearUserIdentifierPassword(
         userIdentifier: UserIdentifierInternal
     ): AppResult<UserIdentifierPrivate>
 
@@ -139,7 +135,7 @@ interface IdentifierManager {
      * @param queryParams structured filter and pagination parameters ([ManagementIdentifierListQueryParams])
      * @return [AppResult.Success] containing [PagedResult] of [UserIdentifierSummary] or an error
      */
-    suspend fun getUserIdentifiersSummaryPage(
+    public suspend fun getUserIdentifiersSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
         queryParams: ManagementIdentifierListQueryParams
     ): AppResult<PagedResult<UserIdentifierSummary>>
@@ -151,7 +147,7 @@ interface IdentifierManager {
      * @param queryParams structured filter and pagination parameters ([SelfIdentifierListQueryParams])
      * @return [AppResult.Success] containing [PagedResult] of [UserIdentifierSummary] or an error
      */
-    suspend fun getUserIdentifiersSummaryPage(
+    public suspend fun getUserIdentifiersSummaryPage(
         userId: UserId,
         queryParams: SelfIdentifierListQueryParams
     ): AppResult<PagedResult<UserIdentifierSummary>>

@@ -5,12 +5,11 @@ import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseCo
 /**
  * Factory for building [DatabaseConfig] from environment or other configuration source.
  */
-interface DatabaseConfigFactory {
-
+public interface DatabaseConfigFactory {
     /**
      * Creates a new database configuration instance.
      *
      * @return configuration with JDBC URL/credentials, migration paths, Redis URL and timeout.
      */
-    fun create(): DatabaseConfig
+    public fun create(): DatabaseConfig
 }

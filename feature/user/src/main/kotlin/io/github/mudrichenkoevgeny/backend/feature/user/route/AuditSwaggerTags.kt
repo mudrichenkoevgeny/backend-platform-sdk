@@ -5,6 +5,6 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route
  *
  * These constants are referenced from route docs builders to keep tag names consistent.
  */
-object AuditSwaggerTags {
-    const val AUDIT_EVENTS = "Audit events"
+public object AuditSwaggerTags {
+    public const val AUDIT_EVENTS: String = "Audit events"
 }

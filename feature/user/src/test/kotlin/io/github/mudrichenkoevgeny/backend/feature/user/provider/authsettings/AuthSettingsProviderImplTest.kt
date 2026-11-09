@@ -3,9 +3,9 @@ package io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
 import io.github.mudrichenkoevgeny.backend.feature.user.config.model.createTestUserConfig
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestManagementAuthSettings
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.settings.createTestManagementAuthSettings
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -18,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class AuthSettingsProviderImplTest {
-
     private val settingsService = mockk<SystemSettingsService>()
 
     private val availableAuthProviders = AvailableAuthProviders(
@@ -43,11 +42,19 @@ class AuthSettingsProviderImplTest {
 
     private val config = createTestUserConfig(managementAuthSettings = managementSettings)
 
-    private val provider = AuthSettingsProviderImpl(settingsService, config)
+    private val provider = AuthSettingsProviderImpl(
+        settingsService,
+        config
+    )
 
     @BeforeEach
     fun setUp() {
-        clearMocks(settingsService, answers = true, recordedCalls = true, childMocks = false)
+        clearMocks(
+            settingsService,
+            answers = true,
+            recordedCalls = true,
+            childMocks = false
+        )
     }
 
     @Test
@@ -60,9 +67,11 @@ class AuthSettingsProviderImplTest {
 
         assertTrue(result is AppResult.Success)
         coVerify(exactly = 1) {
-            settingsService.registerDefaults(match { list ->
-                list.size == 19
-            })
+            settingsService.registerDefaults(
+                match { list ->
+                    list.size == 19
+                }
+            )
         }
     }
 
@@ -76,9 +85,11 @@ class AuthSettingsProviderImplTest {
 
         assertTrue(result is AppResult.Success)
         coVerify(exactly = 1) {
-            settingsService.updateSettings(match { list ->
-                list.size == 19
-            })
+            settingsService.updateSettings(
+                match { list ->
+                    list.size == 19
+                }
+            )
         }
     }
 
@@ -95,24 +106,52 @@ class AuthSettingsProviderImplTest {
 
     @Test
     fun `should fallback to config when settings service is empty`() {
-        every { settingsService.getJson<AvailableAuthProviders>(any(), any()) } returns null
+        every {
+            settingsService.getJson<AvailableAuthProviders>(
+                any(),
+                any()
+            )
+        } returns null
         every { settingsService.getInt(any()) } returns null
         every { settingsService.getBoolean(any()) } returns null
         every { settingsService.getString(any()) } returns null
 
         val result = provider.getManagementAuthSettings()
 
-        assertEquals(availableAuthProviders, result.availableAuthProviders)
-        assertEquals(5, result.maxTotalIdentifiers)
-        assertEquals(3600, result.accessTokenExpirationSeconds)
-        assertEquals(604800, result.accountDeletionGracePeriodSeconds)
-        assertEquals(60, result.accountDeletionCheckIntervalSeconds)
-        assertEquals(true, result.isRegistrationEnabled)
+        assertEquals(
+            availableAuthProviders,
+            result.availableAuthProviders
+        )
+        assertEquals(
+            5,
+            result.maxTotalIdentifiers
+        )
+        assertEquals(
+            3600,
+            result.accessTokenExpirationSeconds
+        )
+        assertEquals(
+            604800,
+            result.accountDeletionGracePeriodSeconds
+        )
+        assertEquals(
+            60,
+            result.accountDeletionCheckIntervalSeconds
+        )
+        assertEquals(
+            true,
+            result.isRegistrationEnabled
+        )
     }
 
     @Test
     fun `should prefer service values over config`() {
-        every { settingsService.getJson<AvailableAuthProviders>(any(), any()) } returns null
+        every {
+            settingsService.getJson<AvailableAuthProviders>(
+                any(),
+                any()
+            )
+        } returns null
         every { settingsService.getInt("auth.max_total_identifiers") } returns 100
         every { settingsService.getInt(not("auth.max_total_identifiers")) } returns null
         every { settingsService.getBoolean(any()) } returns null
@@ -120,9 +159,21 @@ class AuthSettingsProviderImplTest {
 
         val result = provider.getManagementAuthSettings()
 
-        assertEquals(100, result.maxTotalIdentifiers)
-        assertEquals(3600, result.accessTokenExpirationSeconds)
-        assertEquals(604800, result.accountDeletionGracePeriodSeconds)
-        assertEquals(60, result.accountDeletionCheckIntervalSeconds)
+        assertEquals(
+            100,
+            result.maxTotalIdentifiers
+        )
+        assertEquals(
+            3600,
+            result.accessTokenExpirationSeconds
+        )
+        assertEquals(
+            604800,
+            result.accountDeletionGracePeriodSeconds
+        )
+        assertEquals(
+            60,
+            result.accountDeletionCheckIntervalSeconds
+        )
     }
 }

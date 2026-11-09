@@ -20,18 +20,17 @@ import kotlin.coroutines.cancellation.CancellationException
  * by [checkNonCriticalHealth] and only logged.
  */
 @Singleton
-class HealthCheckerManager @Inject constructor(
+public class HealthCheckerManager @Inject constructor(
     private val healthChecks: Set<@JvmSuppressWildcards HealthCheck>,
     private val appLogger: AppLogger
 ) {
-
     /**
      * Runs all [HealthCheck]s with [HealthCheckSeverity.CRITICAL].
      *
      * If any critical check returns [AppSystemResult.Error], logs it and throws the underlying
      * exception, causing startup to fail fast.
      */
-    fun verifyCriticalHealth() {
+    public fun verifyCriticalHealth() {
         runBlocking {
             val criticalResult = checkCriticalHealth()
             if (criticalResult is AppSystemResult.Error) {
@@ -41,11 +40,11 @@ class HealthCheckerManager @Inject constructor(
             }
         }
     }
-    
+
     /**
      * Executes all critical checks concurrently and short‑circuits on the first failure.
      */
-    suspend fun checkCriticalHealth(): AppSystemResult<Unit> = coroutineScope {
+    public suspend fun checkCriticalHealth(): AppSystemResult<Unit> = coroutineScope {
         val criticalChecks = healthChecks.filter { it.severity == HealthCheckSeverity.CRITICAL }
         val deferredList = criticalChecks.map { check ->
             async {
@@ -70,7 +69,7 @@ class HealthCheckerManager @Inject constructor(
     /**
      * Runs all [HealthCheck]s with [HealthCheckSeverity.NON_CRITICAL] and logs any failures.
      */
-    suspend fun checkNonCriticalHealth() {
+    public suspend fun checkNonCriticalHealth() {
         val nonCriticalErrors = runNonCriticalChecks()
         nonCriticalErrors.forEach { systemError ->
             appLogger.logError(systemError)

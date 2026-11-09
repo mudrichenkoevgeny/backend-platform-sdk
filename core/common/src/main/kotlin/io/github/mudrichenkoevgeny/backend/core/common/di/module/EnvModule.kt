@@ -1,10 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.core.common.di.module
 
+import dagger.Module
+import dagger.Provides
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReaderImpl
 import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathResolver
-import dagger.Module
-import dagger.Provides
 import javax.inject.Singleton
 
 /**
@@ -14,15 +14,10 @@ import javax.inject.Singleton
  * that can be used by other configuration factories.
  */
 @Module
-class EnvModule {
-
+public class EnvModule {
     @Provides
     @Singleton
-    fun provideEnvReader(
-        pathResolver: PathResolver
-    ): EnvReader {
-        return EnvReaderImpl(
-            paths = pathResolver.getResolvedPaths()
-        )
-    }
+    public fun provideEnvReader(pathResolver: PathResolver): EnvReader = EnvReaderImpl(
+        paths = pathResolver.getResolvedPaths()
+    )
 }

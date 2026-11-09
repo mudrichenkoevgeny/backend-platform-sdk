@@ -26,6 +26,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.s
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.count
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.inList
@@ -36,7 +37,6 @@ import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.core.lowerCase
 import org.jetbrains.exposed.v1.core.neq
 import org.jetbrains.exposed.v1.core.notInList
-import org.jetbrains.exposed.v1.core.count
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.core.sum
 import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
@@ -60,8 +60,7 @@ import java.time.Instant as JavaInstant
  * Returns [CommonError.Database] when inserts/updates report no affected rows.
  */
 @Singleton
-class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository {
-
+public class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository {
     override suspend fun createStorageFile(storageFile: StorageFileInternal): AppResult<StorageFileInternal> {
         return try {
             val inserted = StorageFilesTable.insert { row ->
@@ -69,7 +68,9 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
             }
 
             if (inserted.insertedCount == 0) {
-                return AppResult.Error(CommonError.Database("Failed to insert storage file: ${storageFile.id.value}"))
+                return AppResult.Error(
+                    CommonError.Database("Failed to insert storage file: ${storageFile.id.value}")
+                )
             }
 
             AppResult.Success(storageFile)
@@ -78,31 +79,37 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
         }
     }
 
-    override suspend fun deleteStorageFile(fileId: FileId): AppResult<Unit> {
-        return deleteStorageFile(fileId, null)
-    }
+    override suspend fun deleteStorageFile(fileId: FileId): AppResult<Unit> = deleteStorageFile(
+        fileId,
+        null
+    )
 
-    override suspend fun deleteStorageFile(fileId: FileId, ownerUserId: String?): AppResult<Unit> {
-        return try {
-            StorageFilesTable.deleteWhere {
-                val base = StorageFilesTable.id eq fileId.value
-                if (ownerUserId != null) {
-                    base and (StorageFilesTable.ownerUserId eq ownerUserId)
-                } else {
-                    base
-                }
+    override suspend fun deleteStorageFile(
+        fileId: FileId,
+        ownerUserId: String?
+    ): AppResult<Unit> = try {
+        StorageFilesTable.deleteWhere {
+            val base = StorageFilesTable.id eq fileId.value
+            if (ownerUserId != null) {
+                base and (StorageFilesTable.ownerUserId eq ownerUserId)
+            } else {
+                base
             }
-            AppResult.Success(Unit)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error deleting storage file $fileId: ${e.message}"))
         }
+        AppResult.Success(Unit)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error deleting storage file $fileId: ${e.message}"))
     }
 
-    override suspend fun deleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit> {
-        return deleteStorageFilesBatch(fileIds, null)
-    }
+    override suspend fun deleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit> = deleteStorageFilesBatch(
+        fileIds,
+        null
+    )
 
-    override suspend fun deleteStorageFilesBatch(fileIds: List<FileId>, ownerUserId: String?): AppResult<Unit> {
+    override suspend fun deleteStorageFilesBatch(
+        fileIds: List<FileId>,
+        ownerUserId: String?
+    ): AppResult<Unit> {
         if (fileIds.isEmpty()) return AppResult.Success(Unit)
         return try {
             val ids = fileIds.map { it.value }
@@ -154,6 +161,7 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
                         AppResult.Error(CommonError.Database("Storage file $fileId not found after update"))
                     }
                 }
+
                 is AppResult.Error -> AppResult.Error(fileResult.error)
             }
         } catch (e: ExposedSQLException) {
@@ -161,47 +169,42 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
         }
     }
 
-    override suspend fun countPendingUploadsForUser(ownerUserId: String): AppResult<Long> {
-        return try {
-            val countExpression = StorageFilesTable.id.count()
-            val count = StorageFilesTable
-                .select(countExpression)
-                .where {
-                    (StorageFilesTable.ownerUserId eq ownerUserId) and
-                            (StorageFilesTable.status eq StorageFileStatus.PENDING_UPLOAD)
-                }
-                .firstOrNull()
-                ?.get(countExpression) ?: 0L
-            AppResult.Success(count)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error counting pending uploads for user $ownerUserId: ${e.message}"))
-        }
+    override suspend fun countPendingUploadsForUser(ownerUserId: String): AppResult<Long> = try {
+        val countExpression = StorageFilesTable.id.count()
+        val count = StorageFilesTable
+            .select(countExpression)
+            .where {
+                (StorageFilesTable.ownerUserId eq ownerUserId) and
+                    (StorageFilesTable.status eq StorageFileStatus.PENDING_UPLOAD)
+            }.firstOrNull()
+            ?.get(countExpression) ?: 0L
+        AppResult.Success(count)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(
+            CommonError.Database("Error counting pending uploads for user $ownerUserId: ${e.message}")
+        )
     }
 
-    override suspend fun calculateUsedStorageForUser(ownerUserId: String): AppResult<Long> {
-        return try {
-            val sumExpression = StorageFilesTable.fileSizeBytes.sum()
-            val sum = StorageFilesTable
-                .select(sumExpression)
-                .where {
-                    (StorageFilesTable.ownerUserId eq ownerUserId) and
-                            (StorageFilesTable.status eq StorageFileStatus.READY)
-                }
-                .firstOrNull()
-                ?.get(sumExpression) ?: 0L
-            AppResult.Success(sum)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error calculating used storage for user $ownerUserId: ${e.message}"))
-        }
+    override suspend fun calculateUsedStorageForUser(ownerUserId: String): AppResult<Long> = try {
+        val sumExpression = StorageFilesTable.fileSizeBytes.sum()
+        val sum = StorageFilesTable
+            .select(sumExpression)
+            .where {
+                (StorageFilesTable.ownerUserId eq ownerUserId) and (StorageFilesTable.status eq StorageFileStatus.READY)
+            }.firstOrNull()
+            ?.get(sumExpression) ?: 0L
+        AppResult.Success(sum)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(
+            CommonError.Database("Error calculating used storage for user $ownerUserId: ${e.message}")
+        )
     }
 
-    override suspend fun getStorageFileById(fileId: FileId): AppResult<StorageFileInternal?> {
-        return try {
-            val row = StorageFilesTable.selectAll().where { StorageFilesTable.id eq fileId.value }.singleOrNull()
-            AppResult.Success(row?.toStorageFileInternal())
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error retrieving storage file $fileId: ${e.message}"))
-        }
+    override suspend fun getStorageFileById(fileId: FileId): AppResult<StorageFileInternal?> = try {
+        val row = StorageFilesTable.selectAll().where { StorageFilesTable.id eq fileId.value }.singleOrNull()
+        AppResult.Success(row?.toStorageFileInternal())
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving storage file $fileId: ${e.message}"))
     }
 
     override suspend fun getStorageFilesPageForManagement(
@@ -223,9 +226,7 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
         ownerUserId: String,
         queryParams: SelfStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileInternal>> {
-        val query = StorageFilesTable
-            .selectAll()
-            .where { StorageFilesTable.ownerUserId eq ownerUserId }
+        val query = StorageFilesTable.selectAll().where { StorageFilesTable.ownerUserId eq ownerUserId }
 
         if (queryParams.statuses.isEmpty()) {
             query.andWhere { StorageFilesTable.status neq StorageFileStatus.DELETED }
@@ -240,62 +241,58 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
     private fun executeStorageFilesPagedQuery(
         query: Query,
         queryParams: ManagementStorageFileListQueryParams
-    ): AppResult<PagedResult<StorageFileInternal>> {
-        return executeStorageFilesPagedQueryCommon(
-            query = query,
-            listing = queryParams.listing,
-            fileIds = queryParams.fileIds,
-            isOwnerUserIdSet = queryParams.isOwnerUserIdSet,
-            fileName = queryParams.fileName,
-            fileSizeBytesFrom = queryParams.fileSizeBytesFrom,
-            fileSizeBytesTo = queryParams.fileSizeBytesTo,
-            mimeTypes = queryParams.mimeTypes,
-            categories = queryParams.categories,
-            excludeCategories = queryParams.excludeCategories,
-            visibilities = queryParams.visibilities,
-            excludeVisibilities = queryParams.excludeVisibilities,
-            statuses = queryParams.statuses,
-            excludeStatuses = queryParams.excludeStatuses,
-            targetScopes = queryParams.targetScopes,
-            isTargetScopeSet = queryParams.isTargetScopeSet,
-            createdAtFrom = queryParams.createdAtFrom,
-            createdAtTo = queryParams.createdAtTo,
-            updatedAtFrom = queryParams.updatedAtFrom,
-            updatedAtTo = queryParams.updatedAtTo,
-            isUpdatedAtSet = queryParams.isUpdatedAtSet,
-            searchQuery = queryParams.searchQuery
-        )
-    }
+    ): AppResult<PagedResult<StorageFileInternal>> = executeStorageFilesPagedQueryCommon(
+        query = query,
+        listing = queryParams.listing,
+        fileIds = queryParams.fileIds,
+        isOwnerUserIdSet = queryParams.isOwnerUserIdSet,
+        fileName = queryParams.fileName,
+        fileSizeBytesFrom = queryParams.fileSizeBytesFrom,
+        fileSizeBytesTo = queryParams.fileSizeBytesTo,
+        mimeTypes = queryParams.mimeTypes,
+        categories = queryParams.categories,
+        excludeCategories = queryParams.excludeCategories,
+        visibilities = queryParams.visibilities,
+        excludeVisibilities = queryParams.excludeVisibilities,
+        statuses = queryParams.statuses,
+        excludeStatuses = queryParams.excludeStatuses,
+        targetScopes = queryParams.targetScopes,
+        isTargetScopeSet = queryParams.isTargetScopeSet,
+        createdAtFrom = queryParams.createdAtFrom,
+        createdAtTo = queryParams.createdAtTo,
+        updatedAtFrom = queryParams.updatedAtFrom,
+        updatedAtTo = queryParams.updatedAtTo,
+        isUpdatedAtSet = queryParams.isUpdatedAtSet,
+        searchQuery = queryParams.searchQuery
+    )
 
     private fun executeStorageFilesPagedQuery(
         query: Query,
         queryParams: SelfStorageFileListQueryParams
-    ): AppResult<PagedResult<StorageFileInternal>> {
-        return executeStorageFilesPagedQueryCommon(
-            query = query,
-            listing = queryParams.listing,
-            fileIds = queryParams.fileIds,
-            isOwnerUserIdSet = null,
-            fileName = queryParams.fileName,
-            fileSizeBytesFrom = queryParams.fileSizeBytesFrom,
-            fileSizeBytesTo = queryParams.fileSizeBytesTo,
-            mimeTypes = queryParams.mimeTypes,
-            categories = queryParams.categories,
-            excludeCategories = queryParams.excludeCategories,
-            visibilities = queryParams.visibilities,
-            excludeVisibilities = queryParams.excludeVisibilities,
-            statuses = queryParams.statuses,
-            excludeStatuses = queryParams.excludeStatuses,
-            targetScopes = queryParams.targetScopes,
-            isTargetScopeSet = queryParams.isTargetScopeSet,
-            createdAtFrom = queryParams.createdAtFrom,
-            createdAtTo = queryParams.createdAtTo,
-            updatedAtFrom = queryParams.updatedAtFrom,
-            updatedAtTo = queryParams.updatedAtTo,
-            isUpdatedAtSet = queryParams.isUpdatedAtSet,
-            searchQuery = queryParams.searchQuery
-        )
-    }
+    ): AppResult<PagedResult<StorageFileInternal>> = executeStorageFilesPagedQueryCommon(
+        query = query,
+        listing = queryParams.listing,
+        fileIds = queryParams.fileIds,
+        isOwnerUserIdSet = null,
+        fileName = queryParams.fileName,
+        fileSizeBytesFrom = queryParams.fileSizeBytesFrom,
+        fileSizeBytesTo = queryParams.fileSizeBytesTo,
+        mimeTypes = queryParams.mimeTypes,
+        categories = queryParams.categories,
+        excludeCategories = queryParams.excludeCategories,
+        visibilities = queryParams.visibilities,
+        excludeVisibilities = queryParams.excludeVisibilities,
+        statuses = queryParams.statuses,
+        excludeStatuses = queryParams.excludeStatuses,
+        targetScopes = queryParams.targetScopes,
+        isTargetScopeSet = queryParams.isTargetScopeSet,
+        createdAtFrom = queryParams.createdAtFrom,
+        createdAtTo = queryParams.createdAtTo,
+        updatedAtFrom = queryParams.updatedAtFrom,
+        updatedAtTo = queryParams.updatedAtTo,
+        isUpdatedAtSet = queryParams.isUpdatedAtSet,
+        searchQuery = queryParams.searchQuery
+    )
 
     private fun executeStorageFilesPagedQueryCommon(
         query: Query,
@@ -320,101 +317,119 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
         updatedAtTo: Instant?,
         isUpdatedAtSet: Boolean?,
         searchQuery: String?
-    ): AppResult<PagedResult<StorageFileInternal>> {
-        return try {
-            if (fileIds.isNotEmpty()) {
-                val uuids = fileIds.map { it.value }
-                query.andWhere { StorageFilesTable.id inList uuids }
-            }
-            if (isOwnerUserIdSet == true) {
-                query.andWhere { StorageFilesTable.ownerUserId.isNotNull() }
-            } else if (isOwnerUserIdSet == false) {
-                query.andWhere { StorageFilesTable.ownerUserId.isNull() }
-            }
-            if (!fileName.isNullOrBlank()) {
-                query.addOrLikeFilter(StorageFilesTable.fileName, listOf(fileName))
-            }
-            if (fileSizeBytesFrom != null) {
-                query.andWhere { StorageFilesTable.fileSizeBytes greaterEq fileSizeBytesFrom }
-            }
-            if (fileSizeBytesTo != null) {
-                query.andWhere { StorageFilesTable.fileSizeBytes lessEq fileSizeBytesTo }
-            }
-            if (categories.isNotEmpty()) {
-                query.andWhere { StorageFilesTable.category inList categories }
-            }
-            if (excludeCategories.isNotEmpty()) {
-                query.andWhere { StorageFilesTable.category notInList excludeCategories }
-            }
-            if (visibilities.isNotEmpty()) {
-                query.andWhere { StorageFilesTable.visibility inList visibilities }
-            }
-            if (excludeVisibilities.isNotEmpty()) {
-                query.andWhere { StorageFilesTable.visibility notInList excludeVisibilities }
-            }
-            if (statuses.isNotEmpty()) {
-                query.andWhere { StorageFilesTable.status inList statuses }
-            }
-            if (excludeStatuses.isNotEmpty()) {
-                query.andWhere { StorageFilesTable.status notInList excludeStatuses }
-            }
-            if (targetScopes.isNotEmpty()) {
-                query.andWhere { StorageFilesTable.targetScope inList targetScopes }
-            }
-            query.applyNullabilityFilter(StorageFilesTable.targetScope, isTargetScopeSet)
-
-            query.addOrLikeFilter(StorageFilesTable.mimeType, mimeTypes)
-
-            query.applyTimestampFilter(StorageFilesTable.createdAt, createdAtFrom, createdAtTo)
-            query.applyTimestampFilter(StorageFilesTable.updatedAt, updatedAtFrom, updatedAtTo, isUpdatedAtSet)
-
-            if (!searchQuery.isNullOrBlank()) {
-                val pattern = substringSqlLikePattern(searchQuery.lowercase())
-                query.andWhere { StorageFilesTable.fileName.lowerCase() like pattern }
-            }
-
-            val totalCount = query.count()
-            val totalPages = getNumOfTotalPages(totalCount, listing.pageParams.size)
-
-            val sortColumn = when (listing.sortBy) {
-                StorageFileSortBy.CREATED_AT -> StorageFilesTable.createdAt
-                StorageFileSortBy.UPDATED_AT -> StorageFilesTable.updatedAt
-                StorageFileSortBy.FILE_NAME -> StorageFilesTable.fileName
-                StorageFileSortBy.FILE_SIZE_BYTES -> StorageFilesTable.fileSizeBytes
-            }
-
-            val items = query
-                .orderBy(sortColumn to listing.sortOrder.toExposedSortOrder())
-                .applyPagination(listing.pageParams)
-                .map { it.toStorageFileInternal() }
-
-            AppResult.Success(
-                PagedResult(
-                    items = items,
-                    totalCount = totalCount,
-                    pageNumber = listing.pageParams.page,
-                    pageSize = listing.pageParams.size,
-                    totalPages = totalPages
-                )
-            )
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error executing storage files paged query: ${e.message}"))
+    ): AppResult<PagedResult<StorageFileInternal>> = try {
+        if (fileIds.isNotEmpty()) {
+            val uuids = fileIds.map { it.value }
+            query.andWhere { StorageFilesTable.id inList uuids }
         }
+        if (isOwnerUserIdSet == true) {
+            query.andWhere { StorageFilesTable.ownerUserId.isNotNull() }
+        } else if (isOwnerUserIdSet == false) {
+            query.andWhere { StorageFilesTable.ownerUserId.isNull() }
+        }
+        if (!fileName.isNullOrBlank()) {
+            query.addOrLikeFilter(
+                StorageFilesTable.fileName,
+                listOf(fileName)
+            )
+        }
+        if (fileSizeBytesFrom != null) {
+            query.andWhere { StorageFilesTable.fileSizeBytes greaterEq fileSizeBytesFrom }
+        }
+        if (fileSizeBytesTo != null) {
+            query.andWhere { StorageFilesTable.fileSizeBytes lessEq fileSizeBytesTo }
+        }
+        if (categories.isNotEmpty()) {
+            query.andWhere { StorageFilesTable.category inList categories }
+        }
+        if (excludeCategories.isNotEmpty()) {
+            query.andWhere { StorageFilesTable.category notInList excludeCategories }
+        }
+        if (visibilities.isNotEmpty()) {
+            query.andWhere { StorageFilesTable.visibility inList visibilities }
+        }
+        if (excludeVisibilities.isNotEmpty()) {
+            query.andWhere { StorageFilesTable.visibility notInList excludeVisibilities }
+        }
+        if (statuses.isNotEmpty()) {
+            query.andWhere { StorageFilesTable.status inList statuses }
+        }
+        if (excludeStatuses.isNotEmpty()) {
+            query.andWhere { StorageFilesTable.status notInList excludeStatuses }
+        }
+        if (targetScopes.isNotEmpty()) {
+            query.andWhere { StorageFilesTable.targetScope inList targetScopes }
+        }
+        query.applyNullabilityFilter(
+            StorageFilesTable.targetScope,
+            isTargetScopeSet
+        )
+
+        query.addOrLikeFilter(
+            StorageFilesTable.mimeType,
+            mimeTypes
+        )
+
+        query.applyTimestampFilter(
+            StorageFilesTable.createdAt,
+            createdAtFrom,
+            createdAtTo
+        )
+        query.applyTimestampFilter(
+            StorageFilesTable.updatedAt,
+            updatedAtFrom,
+            updatedAtTo,
+            isUpdatedAtSet
+        )
+
+        if (!searchQuery.isNullOrBlank()) {
+            val pattern = substringSqlLikePattern(searchQuery.lowercase())
+            query.andWhere { StorageFilesTable.fileName.lowerCase() like pattern }
+        }
+
+        val totalCount = query.count()
+        val totalPages = getNumOfTotalPages(
+            totalCount,
+            listing.pageParams.size
+        )
+
+        val sortColumn = when (listing.sortBy) {
+            StorageFileSortBy.CREATED_AT -> StorageFilesTable.createdAt
+            StorageFileSortBy.UPDATED_AT -> StorageFilesTable.updatedAt
+            StorageFileSortBy.FILE_NAME -> StorageFilesTable.fileName
+            StorageFileSortBy.FILE_SIZE_BYTES -> StorageFilesTable.fileSizeBytes
+        }
+
+        val items = query
+            .orderBy(sortColumn to listing.sortOrder.toExposedSortOrder())
+            .applyPagination(listing.pageParams)
+            .map { it.toStorageFileInternal() }
+
+        AppResult.Success(
+            PagedResult(
+                items = items,
+                totalCount = totalCount,
+                pageNumber = listing.pageParams.page,
+                pageSize = listing.pageParams.size,
+                totalPages = totalPages
+            )
+        )
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error executing storage files paged query: ${e.message}"))
     }
 
     override suspend fun getStorageFilesByStatus(
         status: StorageFileStatus,
         limit: Int
-    ): AppResult<List<StorageFileInternal>> {
-        return try {
-            val items = StorageFilesTable.selectAll()
-                .where { StorageFilesTable.status eq status }
-                .limit(limit)
-                .map { it.toStorageFileInternal() }
-            AppResult.Success(items)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error retrieving files by status: ${e.message}"))
-        }
+    ): AppResult<List<StorageFileInternal>> = try {
+        val items = StorageFilesTable
+            .selectAll()
+            .where { StorageFilesTable.status eq status }
+            .limit(limit)
+            .map { it.toStorageFileInternal() }
+        AppResult.Success(items)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving files by status: ${e.message}"))
     }
 
     override suspend fun hardDeleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit> {
@@ -431,19 +446,17 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
     override suspend fun getExpiredPendingUploadFiles(
         createdBefore: Instant,
         limit: Int
-    ): AppResult<List<StorageFileInternal>> {
-        return try {
-            val items = StorageFilesTable.selectAll()
-                .where {
-                    (StorageFilesTable.status eq StorageFileStatus.PENDING_UPLOAD) and
-                            (StorageFilesTable.createdAt lessEq createdBefore.toJavaInstant())
-                }
-                .limit(limit)
-                .map { it.toStorageFileInternal() }
-            AppResult.Success(items)
-        } catch (e: ExposedSQLException) {
-            AppResult.Error(CommonError.Database("Error retrieving expired pending upload files: ${e.message}"))
-        }
+    ): AppResult<List<StorageFileInternal>> = try {
+        val items = StorageFilesTable
+            .selectAll()
+            .where {
+                (StorageFilesTable.status eq StorageFileStatus.PENDING_UPLOAD) and
+                    (StorageFilesTable.createdAt lessEq createdBefore.toJavaInstant())
+            }.limit(limit)
+            .map { it.toStorageFileInternal() }
+        AppResult.Success(items)
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving expired pending upload files: ${e.message}"))
     }
 
     override suspend fun updateStorageFilesBatch(files: List<StorageFileInternal>): AppResult<Unit> {
@@ -453,7 +466,10 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
                 data = files,
                 keys = arrayOf(StorageFilesTable.id)
             ) { file ->
-                applyStorageFile(file = file, updatedAt = JavaInstant.now())
+                applyStorageFile(
+                    file = file,
+                    updatedAt = JavaInstant.now()
+                )
             }
             AppResult.Success(Unit)
         } catch (e: ExposedSQLException) {
@@ -461,25 +477,23 @@ class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepository 
         }
     }
 
-    private fun ResultRow.toStorageFileInternal(): StorageFileInternal {
-        return StorageFileInternal(
-            id = FileId(this[StorageFilesTable.id].value),
-            ownerUserId = this[StorageFilesTable.ownerUserId],
-            fileName = this[StorageFilesTable.fileName],
-            fileSizeBytes = this[StorageFilesTable.fileSizeBytes],
-            mimeType = this[StorageFilesTable.mimeType],
-            category = this[StorageFilesTable.category],
-            visibility = this[StorageFilesTable.visibility],
-            status = this[StorageFilesTable.status],
-            targetScope = this[StorageFilesTable.targetScope],
-            contentHash = this[StorageFilesTable.contentHash],
-            s3Bucket = this[StorageFilesTable.s3Bucket],
-            s3Key = this[StorageFilesTable.s3Key],
-            fileUrls = null,
-            createdAt = this[StorageFilesTable.createdAt].toKotlinInstant(),
-            updatedAt = this[StorageFilesTable.updatedAt]?.toKotlinInstant()
-        )
-    }
+    private fun ResultRow.toStorageFileInternal(): StorageFileInternal = StorageFileInternal(
+        id = FileId(this[StorageFilesTable.id].value),
+        ownerUserId = this[StorageFilesTable.ownerUserId],
+        fileName = this[StorageFilesTable.fileName],
+        fileSizeBytes = this[StorageFilesTable.fileSizeBytes],
+        mimeType = this[StorageFilesTable.mimeType],
+        category = this[StorageFilesTable.category],
+        visibility = this[StorageFilesTable.visibility],
+        status = this[StorageFilesTable.status],
+        targetScope = this[StorageFilesTable.targetScope],
+        contentHash = this[StorageFilesTable.contentHash],
+        s3Bucket = this[StorageFilesTable.s3Bucket],
+        s3Key = this[StorageFilesTable.s3Key],
+        fileUrls = null,
+        createdAt = this[StorageFilesTable.createdAt].toKotlinInstant(),
+        updatedAt = this[StorageFilesTable.updatedAt]?.toKotlinInstant()
+    )
 
     private fun UpdateBuilder<*>.applyStorageFile(
         file: StorageFileInternal,

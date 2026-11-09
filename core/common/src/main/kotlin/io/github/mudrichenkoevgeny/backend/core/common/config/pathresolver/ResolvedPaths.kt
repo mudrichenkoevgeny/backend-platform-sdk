@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver
 
-import java.io.File
 import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
+import java.io.File
 
 /**
  * Resolved filesystem locations used to load environment variables and secrets.
@@ -12,7 +12,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.env.EnvReader
  * @param envFile file with key/value environment overrides (e.g. `.env`).
  * @param secretsDir directory that contains secret files referenced by [EnvReader.readSecret].
  */
-data class ResolvedPaths(
+public data class ResolvedPaths(
     val envFile: File,
     val secretsDir: File
 )

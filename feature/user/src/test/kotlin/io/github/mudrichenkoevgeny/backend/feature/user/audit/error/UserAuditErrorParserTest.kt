@@ -17,7 +17,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 
 class UserAuditErrorParserTest {
-
     private val parser = UserAuditErrorParser()
 
     @ParameterizedTest
@@ -29,15 +28,24 @@ class UserAuditErrorParserTest {
         val result = parser.parse(error)
 
         assertNotNull(result)
-        assertEquals(AuditStatus.DENIED, result?.status)
+        assertEquals(
+            AuditStatus.DENIED,
+            result?.status
+        )
 
         val metadata = result?.metadata ?: emptySet()
 
         val idEntry = metadata.find { it.key == CommonAuditMetadataKey.ERROR_ID }
-        assertEquals(error.errorId.asHexDashString(), idEntry?.value)
+        assertEquals(
+            error.errorId.asHexDashString(),
+            idEntry?.value
+        )
 
         val reasonEntry = metadata.find { it.key == CommonAuditMetadataKey.DENIED_REASON }
-        assertEquals(expectedReason, reasonEntry?.value)
+        assertEquals(
+            expectedReason,
+            reasonEntry?.value
+        )
     }
 
     @Test
@@ -56,13 +64,19 @@ class UserAuditErrorParserTest {
         )
 
         unhandledErrors.forEach { error ->
-            assertNull(parser.parse(error), "Parser should return null for ${error::class.simpleName}")
+            assertNull(
+                parser.parse(error),
+                "Parser should return null for ${error::class.simpleName}"
+            )
         }
     }
 
     @Test
     fun `parse returns null for CommonError`() {
-        val error = CommonError.NotFound(resource = "User", identifier = "123")
+        val error = CommonError.NotFound(
+            resource = "User",
+            identifier = "123"
+        )
         val result = parser.parse(error)
         assertNull(result)
     }
@@ -77,34 +91,67 @@ class UserAuditErrorParserTest {
     companion object {
         @JvmStatic
         fun provideUserErrors(): Stream<Arguments> = Stream.of(
-            Arguments.of(UserError.UserForbidden(), UserAuditMetadataDeniedReasonValues.USER_FORBIDDEN),
-            Arguments.of(UserError.UserReadOnly(), UserAuditMetadataDeniedReasonValues.USER_READ_ONLY),
-            Arguments.of(UserError.UserBanned(), UserAuditMetadataDeniedReasonValues.USER_BANNED),
+            Arguments.of(
+                UserError.UserForbidden(),
+                UserAuditMetadataDeniedReasonValues.USER_FORBIDDEN
+            ),
+            Arguments.of(
+                UserError.UserReadOnly(),
+                UserAuditMetadataDeniedReasonValues.USER_READ_ONLY
+            ),
+            Arguments.of(
+                UserError.UserBanned(),
+                UserAuditMetadataDeniedReasonValues.USER_BANNED
+            ),
             Arguments.of(
                 UserError.UserLocked(
                     lockoutType = AccountLockoutType.TEMPORARY
                 ),
                 UserAuditMetadataDeniedReasonValues.USER_LOCKED
             ),
-            Arguments.of(UserError.UserSecurityHold(), UserAuditMetadataDeniedReasonValues.USER_SECURITY_HOLD),
-            Arguments.of(UserError.UserPendingDeletion(), UserAuditMetadataDeniedReasonValues.USER_PENDING_DELETION),
-            Arguments.of(UserError.UserNotFound(), UserAuditMetadataDeniedReasonValues.USER_NOT_FOUND),
-            Arguments.of(UserError.UserRoleNotAllowed(), UserAuditMetadataDeniedReasonValues.USER_ROLE_NOT_ALLOWED),
-            Arguments.of(UserError.UserMissingPermissions(), UserAuditMetadataDeniedReasonValues.USER_MISSING_PERMISSIONS),
+            Arguments.of(
+                UserError.UserSecurityHold(),
+                UserAuditMetadataDeniedReasonValues.USER_SECURITY_HOLD
+            ),
+            Arguments.of(
+                UserError.UserPendingDeletion(),
+                UserAuditMetadataDeniedReasonValues.USER_PENDING_DELETION
+            ),
+            Arguments.of(
+                UserError.UserNotFound(),
+                UserAuditMetadataDeniedReasonValues.USER_NOT_FOUND
+            ),
+            Arguments.of(
+                UserError.UserRoleNotAllowed(),
+                UserAuditMetadataDeniedReasonValues.USER_ROLE_NOT_ALLOWED
+            ),
+            Arguments.of(
+                UserError.UserMissingPermissions(),
+                UserAuditMetadataDeniedReasonValues.USER_MISSING_PERMISSIONS
+            ),
             Arguments.of(
                 UserError.UserInsufficientAuthorityLevel(),
                 UserAuditMetadataDeniedReasonValues.USER_INSUFFICIENT_AUTHORITY_LEVEL
             ),
-            Arguments.of(UserError.UserIllegalAccountStatus(), UserAuditMetadataDeniedReasonValues.USER_ILLEGAL_ACCOUNT_STATUS),
             Arguments.of(
-                UserError.UserIdentifierLimitReached(5, UserAuthProvider.EMAIL),
+                UserError.UserIllegalAccountStatus(),
+                UserAuditMetadataDeniedReasonValues.USER_ILLEGAL_ACCOUNT_STATUS
+            ),
+            Arguments.of(
+                UserError.UserIdentifierLimitReached(
+                    5,
+                    UserAuthProvider.EMAIL
+                ),
                 UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_LIMIT_REACHED
             ),
             Arguments.of(
                 UserError.TotalUserIdentifiersLimitReached(10),
                 UserAuditMetadataDeniedReasonValues.TOTAL_USER_IDENTIFIERS_LIMIT_REACHED
             ),
-            Arguments.of(UserError.PasswordSetupRequired(), UserAuditMetadataDeniedReasonValues.PASSWORD_SETUP_REQUIRED),
+            Arguments.of(
+                UserError.PasswordSetupRequired(),
+                UserAuditMetadataDeniedReasonValues.PASSWORD_SETUP_REQUIRED
+            ),
             Arguments.of(
                 UserError.UserIdentifierPasswordNotSupported(),
                 UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SUPPORTED

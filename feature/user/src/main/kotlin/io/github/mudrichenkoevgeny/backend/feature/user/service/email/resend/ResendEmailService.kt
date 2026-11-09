@@ -34,122 +34,120 @@ import kotlin.time.Duration.Companion.milliseconds
  * This service also exposes [fakeSendEmail] which simulates network latency without sending real emails.
  */
 @Singleton
-class ResendEmailService @Inject constructor(
+public class ResendEmailService @Inject constructor(
     private val config: ResendConfig,
     private val httpClient: HttpClient,
     private val emailParser: EmailParser
 ) : EmailService {
-
-    private val lastExecutionTime = AtomicLong(500L)
+    private val lastExecutionTime = AtomicLong(DEFAULT_FAKE_DELAY_MILLIS)
     private val defaultLanguage = CommonLocales.DEFAULT
 
-    override suspend fun sendVerificationCode(email: String, code: String, language: String?): AppResult<Unit> {
-        return executeTemplatedSend(
-            email = email,
-            templateKey = EmailTemplateKeys.VERIFICATION_CODE,
-            args = mapOf(EmailTemplateArgs.CODE to code),
-            language = language
-        )
-    }
+    override suspend fun sendVerificationCode(
+        email: String,
+        code: String,
+        language: String?
+    ): AppResult<Unit> = executeTemplatedSend(
+        email = email,
+        templateKey = EmailTemplateKeys.VERIFICATION_CODE,
+        args = mapOf(EmailTemplateArgs.CODE to code),
+        language = language
+    )
 
-    override suspend fun sendResetPasswordVerificationCode(email: String, code: String, language: String?): AppResult<Unit> {
-        return executeTemplatedSend(
-            email = email,
-            templateKey = EmailTemplateKeys.RESET_PASSWORD_CODE,
-            args = mapOf(EmailTemplateArgs.CODE to code),
-            language = language
-        )
-    }
+    override suspend fun sendResetPasswordVerificationCode(
+        email: String,
+        code: String,
+        language: String?
+    ): AppResult<Unit> = executeTemplatedSend(
+        email = email,
+        templateKey = EmailTemplateKeys.RESET_PASSWORD_CODE,
+        args = mapOf(EmailTemplateArgs.CODE to code),
+        language = language
+    )
 
     override suspend fun sendUnlockAccountVerificationCode(
         email: String,
         code: String,
         language: String?
-    ): AppResult<Unit> {
-        return executeTemplatedSend(
-            email = email,
-            templateKey = EmailTemplateKeys.UNLOCK_ACCOUNT_CODE,
-            args = mapOf(EmailTemplateArgs.CODE to code),
-            language = language
-        )
-    }
+    ): AppResult<Unit> = executeTemplatedSend(
+        email = email,
+        templateKey = EmailTemplateKeys.UNLOCK_ACCOUNT_CODE,
+        args = mapOf(EmailTemplateArgs.CODE to code),
+        language = language
+    )
 
     override suspend fun sendAlreadyRegisteredEmail(
         email: String,
         ipAddress: String?,
         deviceName: String?,
         language: String?
-    ): AppResult<Unit> {
-        return executeTemplatedSend(
-            email = email,
-            templateKey = EmailTemplateKeys.ALREADY_REGISTERED,
-            args = mapOf(
-                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
-                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: EmailParser.UNKNOWN_VALUE_FALLBACK)
-            ),
-            language = language
-        )
-    }
+    ): AppResult<Unit> = executeTemplatedSend(
+        email = email,
+        templateKey = EmailTemplateKeys.ALREADY_REGISTERED,
+        args = mapOf(
+            EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
+            EmailTemplateArgs.DEVICE_NAME to (deviceName ?: EmailParser.UNKNOWN_VALUE_FALLBACK)
+        ),
+        language = language
+    )
 
-    override suspend fun sendSuccessfulRegistrationEmail(email: String): AppResult<Unit> {
-        return executeTemplatedSend(
-            email = email,
-            templateKey = EmailTemplateKeys.SUCCESSFUL_REGISTRATION,
-            args = emptyMap(),
-            language = defaultLanguage
-        )
-    }
+    override suspend fun sendSuccessfulRegistrationEmail(email: String): AppResult<Unit> = executeTemplatedSend(
+        email = email,
+        templateKey = EmailTemplateKeys.SUCCESSFUL_REGISTRATION,
+        args = emptyMap(),
+        language = defaultLanguage
+    )
 
-    override suspend fun sendSuccessfulLoginEmail(email: String, ipAddress: String?, deviceName: String?): AppResult<Unit> {
-        return executeTemplatedSend(
-            email = email,
-            templateKey = EmailTemplateKeys.SUCCESSFUL_LOGIN,
-            args = mapOf(
-                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
-                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: EmailParser.UNKNOWN_VALUE_FALLBACK)
-            ),
-            language = defaultLanguage
-        )
-    }
+    override suspend fun sendSuccessfulLoginEmail(
+        email: String,
+        ipAddress: String?,
+        deviceName: String?
+    ): AppResult<Unit> = executeTemplatedSend(
+        email = email,
+        templateKey = EmailTemplateKeys.SUCCESSFUL_LOGIN,
+        args = mapOf(
+            EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
+            EmailTemplateArgs.DEVICE_NAME to (deviceName ?: EmailParser.UNKNOWN_VALUE_FALLBACK)
+        ),
+        language = defaultLanguage
+    )
 
     override suspend fun sendNewDeviceLoginEmail(
         email: String,
         ipAddress: String?,
         deviceName: String?,
         userAgent: String?
-    ): AppResult<Unit> {
-        return executeTemplatedSend(
-            email = email,
-            templateKey = EmailTemplateKeys.NEW_DEVICE_LOGIN,
-            args = mapOf(
-                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
-                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
-                EmailTemplateArgs.USER_AGENT to (userAgent ?: EmailParser.UNKNOWN_VALUE_FALLBACK)
-            ),
-            language = defaultLanguage
-        )
-    }
+    ): AppResult<Unit> = executeTemplatedSend(
+        email = email,
+        templateKey = EmailTemplateKeys.NEW_DEVICE_LOGIN,
+        args = mapOf(
+            EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
+            EmailTemplateArgs.DEVICE_NAME to (deviceName ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
+            EmailTemplateArgs.USER_AGENT to (userAgent ?: EmailParser.UNKNOWN_VALUE_FALLBACK)
+        ),
+        language = defaultLanguage
+    )
 
     override suspend fun sendPasswordSuccessfullyChangedEmail(
         email: String,
         ipAddress: String?,
         deviceName: String?
-    ): AppResult<Unit> {
-        return executeTemplatedSend(
-            email = email,
-            templateKey = EmailTemplateKeys.PASSWORD_CHANGED,
-            args = mapOf(
-                EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
-                EmailTemplateArgs.DEVICE_NAME to (deviceName ?: EmailParser.UNKNOWN_VALUE_FALLBACK)
-            ),
-            language = defaultLanguage
-        )
-    }
+    ): AppResult<Unit> = executeTemplatedSend(
+        email = email,
+        templateKey = EmailTemplateKeys.PASSWORD_CHANGED,
+        args = mapOf(
+            EmailTemplateArgs.IP_ADDRESS to (ipAddress ?: EmailParser.UNKNOWN_VALUE_FALLBACK),
+            EmailTemplateArgs.DEVICE_NAME to (deviceName ?: EmailParser.UNKNOWN_VALUE_FALLBACK)
+        ),
+        language = defaultLanguage
+    )
 
     override suspend fun fakeSendEmail(): AppResult<Unit> {
         val baseDelay = lastExecutionTime.get()
-        val jitter = Random.nextLong(-50, 50)
-        val delayMillis = (baseDelay + jitter).coerceAtLeast(100L)
+        val jitter = Random.nextLong(
+            -50,
+            50
+        )
+        val delayMillis = (baseDelay + jitter).coerceAtLeast(MIN_FAKE_DELAY_MILLIS)
         delay(delayMillis.milliseconds)
         return AppResult.Success(Unit)
     }
@@ -161,18 +159,33 @@ class ResendEmailService @Inject constructor(
         language: String?
     ): AppResult<Unit> {
         val locale = language ?: defaultLanguage
-        val template = emailParser.getTemplate(templateKey, args, locale)
-            ?: return AppResult.Error(
-                CommonError.ServiceUnavailable("Email template not found: $templateKey")
-            )
-        return executeSend(email, template.subject, template.body)
+        val template = emailParser.getTemplate(
+            templateKey,
+            args,
+            locale
+        ) ?: return AppResult.Error(
+            CommonError.ServiceUnavailable("Email template not found: $templateKey")
+        )
+        return executeSend(
+            email,
+            template.subject,
+            template.body
+        )
     }
 
-    private suspend fun executeSend(email: String, subject: String, htmlContent: String): AppResult<Unit> {
+    private suspend fun executeSend(
+        email: String,
+        subject: String,
+        htmlContent: String
+    ): AppResult<Unit> {
         val baseUrl = config.url.trim().removeSurrounding("\"").removeSuffix("/")
         val fullUrl = "$baseUrl/emails"
 
-        val from = "${config.fromName.trim().removeSurrounding("\"")} <${config.fromEmail.trim().removeSurrounding("\"")}>"
+        val from = "${
+            config.fromName.trim().removeSurrounding(
+                "\""
+            )
+        } <${config.fromEmail.trim().removeSurrounding("\"")}>"
         val requestBody = ResendEmailRequest(
             from = from,
             to = listOf(email),
@@ -182,7 +195,10 @@ class ResendEmailService @Inject constructor(
 
         return try {
             val response = httpClient.post(fullUrl) {
-                header("Authorization", "Bearer ${config.apiKey.trim().removeSurrounding("\"")}")
+                header(
+                    "Authorization",
+                    "Bearer ${config.apiKey.trim().removeSurrounding("\"")}"
+                )
                 contentType(ContentType.Application.Json)
                 setBody(requestBody)
             }
@@ -200,5 +216,10 @@ class ResendEmailService @Inject constructor(
         } catch (e: Exception) {
             AppResult.Error(CommonError.Internal(e))
         }
+    }
+
+    public companion object {
+        private const val DEFAULT_FAKE_DELAY_MILLIS = 500L
+        private const val MIN_FAKE_DELAY_MILLIS = 100L
     }
 }

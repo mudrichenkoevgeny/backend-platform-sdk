@@ -5,13 +5,15 @@ import org.junit.jupiter.api.Test
 import java.io.File
 
 class PathResolverConfigHolderTest {
-
     @Test
     fun `get returns default config when not set`() {
         PathResolverConfigHolder.set(PathResolverConfig())
         val config = PathResolverConfigHolder.get()
 
-        assertEquals(PathResolverConfig(), config)
+        assertEquals(
+            PathResolverConfig(),
+            config
+        )
     }
 
     @Test
@@ -26,7 +28,9 @@ class PathResolverConfigHolderTest {
         PathResolverConfigHolder.set(custom)
 
         val result = PathResolverConfigHolder.get()
-        assertEquals(custom, result)
+        assertEquals(
+            custom,
+            result
+        )
     }
 }
-

@@ -8,13 +8,16 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to get a session.
+ */
 @Singleton
-class ManagementGetSessionUseCase @Inject constructor(
+public class ManagementGetSessionUseCase @Inject constructor(
     private val userManager: UserManager,
     private val sessionManager: SessionManager
 ) {
@@ -38,7 +41,7 @@ class ManagementGetSessionUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] containing the [UserSessionPrivate] if found and authorized.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         userSessionId: UserSessionId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<UserSessionPrivate> {

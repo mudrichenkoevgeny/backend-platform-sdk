@@ -6,9 +6,9 @@ scrape_configs:
   - job_name: "otel"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["${OTEL_TARGETS}"]
+      - targets: [ "${OTEL_TARGETS}" ]
 
   - job_name: "ktor-app"
     metrics_path: "/metrics"
     static_configs:
-      - targets: ["app:${KTOR_MANAGEMENT_PORT}"]
+      - targets: [ "app:${KTOR_MANAGEMENT_PORT}" ]

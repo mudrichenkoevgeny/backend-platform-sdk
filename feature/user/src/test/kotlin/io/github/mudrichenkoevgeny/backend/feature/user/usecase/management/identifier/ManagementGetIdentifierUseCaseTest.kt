@@ -2,8 +2,6 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.iden
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
@@ -12,6 +10,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.pe
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ManagementGetIdentifierUseCaseTest {
-
     private val userManager = mockk<UserManager>()
     private val identifierManager = mockk<IdentifierManager>()
 
@@ -54,9 +53,15 @@ class ManagementGetIdentifierUseCaseTest {
             )
         } returns AppResult.Success(identifier)
 
-        val result = useCase(targetIdentifierId, context)
+        val result = useCase(
+            targetIdentifierId,
+            context
+        )
 
-        assertEquals(AppResult.Success(identifier), result)
+        assertEquals(
+            AppResult.Success(identifier),
+            result
+        )
     }
 
     @Test
@@ -72,10 +77,19 @@ class ManagementGetIdentifierUseCaseTest {
 
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
 
-        val result = useCase(targetIdentifierId, context)
+        val result = useCase(
+            targetIdentifierId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserIllegalAccountStatus)
-        coVerify(exactly = 0) { identifierManager.getUserIdentifierPrivateById(any(), any(), any()) }
+        coVerify(exactly = 0) {
+            identifierManager.getUserIdentifierPrivateById(
+                any(),
+                any(),
+                any()
+            )
+        }
     }
 
     @Test
@@ -86,7 +100,10 @@ class ManagementGetIdentifierUseCaseTest {
 
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(null)
 
-        val result = useCase(targetIdentifierId, context)
+        val result = useCase(
+            targetIdentifierId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is UserError.UserForbidden)
     }
@@ -106,10 +123,17 @@ class ManagementGetIdentifierUseCaseTest {
 
         coEvery { userManager.getUserInternalById(managerId) } returns AppResult.Success(managerInternal)
         coEvery {
-            identifierManager.getUserIdentifierPrivateById(any(), any(), any())
+            identifierManager.getUserIdentifierPrivateById(
+                any(),
+                any(),
+                any()
+            )
         } returns AppResult.Success(null)
 
-        val result = useCase(targetIdentifierId, context)
+        val result = useCase(
+            targetIdentifierId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error is CommonError.NotFound)
     }

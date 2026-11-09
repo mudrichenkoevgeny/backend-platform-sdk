@@ -16,10 +16,9 @@ import javax.inject.Singleton
  * @property storageManager Manager for storage file metadata and status updates.
  */
 @Singleton
-class ConfirmUploadUseCase @Inject constructor(
+public class ConfirmUploadUseCase @Inject constructor(
     private val storageManager: StorageManager
 ) {
-
     /**
      * Executes upload confirmation.
      *
@@ -27,7 +26,7 @@ class ConfirmUploadUseCase @Inject constructor(
      * @param authenticatedRequestContext Context of the requesting authenticated user.
      * @return [AppResult] containing updated [StorageFilePrivate] on success or an error.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         fileId: FileId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<StorageFilePrivate> {

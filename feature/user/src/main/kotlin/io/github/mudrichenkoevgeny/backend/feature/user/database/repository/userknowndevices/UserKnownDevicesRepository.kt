@@ -10,15 +10,14 @@ import kotlin.time.Instant
 /**
  * Persistence API for tracking known devices used by users for security monitoring and login notifications.
  */
-interface UserKnownDevicesRepository {
-
+public interface UserKnownDevicesRepository {
     /**
      * Persists a new known device record.
      *
      * @param userKnownDevice known device model to create
      * @return created known device or an error
      */
-    suspend fun createKnownDevice(userKnownDevice: UserKnownDevice): AppResult<UserKnownDevice>
+    public suspend fun createKnownDevice(userKnownDevice: UserKnownDevice): AppResult<UserKnownDevice>
 
     /**
      * Updates selected fields of an existing known device.
@@ -29,7 +28,7 @@ interface UserKnownDevicesRepository {
      * @param lastSeenAt last seen timestamp update
      * @return updated known device or an error
      */
-    suspend fun updateKnownDevice(
+    public suspend fun updateKnownDevice(
         userId: UserId,
         deviceId: ClientDeviceId,
         lastIpAddress: UpdateField<String?> = UpdateField.Ignore,
@@ -43,5 +42,8 @@ interface UserKnownDevicesRepository {
      * @param deviceId unique device identifier
      * @return known device when found, `null` when missing, or an error
      */
-    suspend fun getKnownDevice(userId: UserId, deviceId: ClientDeviceId): AppResult<UserKnownDevice?>
+    public suspend fun getKnownDevice(
+        userId: UserId,
+        deviceId: ClientDeviceId
+    ): AppResult<UserKnownDevice?>
 }

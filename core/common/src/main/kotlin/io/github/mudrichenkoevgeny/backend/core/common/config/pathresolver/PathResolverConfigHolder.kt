@@ -7,12 +7,18 @@ package io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver
  * provided during bootstrap and replaced later if paths need to change without restarting
  * the process. When no config is set explicitly, a default [PathResolverConfig] is used.
  */
-object PathResolverConfigHolder {
+public object PathResolverConfigHolder {
     private var config: PathResolverConfig? = null
 
-    fun set(config: PathResolverConfig) {
+    /**
+     * Sets the global [PathResolverConfig] instance.
+     */
+    public fun set(config: PathResolverConfig) {
         this.config = config
     }
 
-    fun get(): PathResolverConfig = config ?: PathResolverConfig()
+    /**
+     * Gets the current [PathResolverConfig] or a default instance if unset.
+     */
+    public fun get(): PathResolverConfig = config ?: PathResolverConfig()
 }

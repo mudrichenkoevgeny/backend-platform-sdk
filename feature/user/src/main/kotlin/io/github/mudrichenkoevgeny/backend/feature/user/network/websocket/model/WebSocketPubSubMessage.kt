@@ -16,24 +16,28 @@ import kotlinx.serialization.Serializable
  * @param frame The actual payload frame that will be serialized to JSON and sent to the WebSocket clients.
  */
 @Serializable
-data class WebSocketPubSubMessage(
-    val targetType: TargetType,
-    val targetId: String?,
-    val apiScope: ApiScope?,
-    val frame: SocketFrame
+public data class WebSocketPubSubMessage(
+    public val targetType: TargetType,
+    public val targetId: String?,
+    public val apiScope: ApiScope?,
+    public val frame: SocketFrame
 ) {
     /**
      * Defines the granularity of the message recipient.
      */
-    enum class TargetType {
+    public enum class TargetType {
         /** Message should be delivered to all connected clients. */
         ALL,
+
         /** Message should be delivered to all clients connected under a specific [ApiScope]. */
         SCOPE,
+
         /** Message should be delivered to all active sessions of a specific User ID. */
         USER,
+
         /** Message should be delivered to a specific User Session ID. */
         SESSION,
+
         /** Message should be delivered directly to a specific socket connection ID. */
         SOCKET
     }

@@ -10,7 +10,7 @@ import kotlinx.coroutines.CancellationException
  * This is useful for best‑effort parsing of optional payloads or logging endpoints, where a failure
  * to parse should not propagate as an exception.
  */
-suspend inline fun <reified T> HttpResponse.bodySafe(): T? = try {
+public suspend inline fun <reified T> HttpResponse.bodySafe(): T? = try {
     body<T>()
 } catch (e: CancellationException) {
     throw e

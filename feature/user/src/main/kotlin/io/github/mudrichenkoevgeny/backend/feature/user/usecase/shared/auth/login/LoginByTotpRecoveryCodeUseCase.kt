@@ -3,19 +3,19 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.log
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
-import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutAttemptType
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
-import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.feature.user.error.util.extractUserIdHexOrNull
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
+import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
+import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
@@ -30,8 +30,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.u
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to authenticate MFA challenge using a TOTP backup recovery code.
+ */
 @Singleton
-class LoginByTotpRecoveryCodeUseCase @Inject constructor(
+public class LoginByTotpRecoveryCodeUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -65,12 +68,15 @@ class LoginByTotpRecoveryCodeUseCase @Inject constructor(
      * @param code The backup recovery code provided by the user.
      * @return [AppResult] containing [AuthData] upon successful authentication.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         requestContext: RequestContext,
         mfaToken: String,
         code: String,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
-        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
     ): AppResult<AuthData> {
         val auditMetadata = requestContext.clientInfo.toAuditMetadata()
 
@@ -94,6 +100,7 @@ class LoginByTotpRecoveryCodeUseCase @Inject constructor(
                 error = getChallengeResult.error,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> getChallengeResult.data
         }
 
@@ -164,6 +171,7 @@ class LoginByTotpRecoveryCodeUseCase @Inject constructor(
                 )
                 mfaAuthenticationResult
             }
+
             is AppResult.Error -> handleError(
                 error = mfaAuthenticationResult.error,
                 actorId = userId.asHexDashString(),

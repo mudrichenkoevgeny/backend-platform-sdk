@@ -12,9 +12,8 @@ import javax.inject.Singleton
  * Binds [SystemSettingsManager] to [SystemSettingsManagerImpl].
  */
 @Module
-interface SettingsManagersModule {
-
+public interface SettingsManagersModule {
     @Binds
     @Singleton
-    fun bindSystemSettingsManager(systemSettingsManagerImpl: SystemSettingsManagerImpl): SystemSettingsManager
+    public fun bindSystemSettingsManager(systemSettingsManagerImpl: SystemSettingsManagerImpl): SystemSettingsManager
 }

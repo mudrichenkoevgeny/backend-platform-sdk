@@ -2,15 +2,15 @@ package io.github.mudrichenkoevgeny.backend.core.security.settings.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.createTestSecurityConfig
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
 import io.github.mudrichenkoevgeny.backend.core.settings.service.SystemSettingsService
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.ManagementPasswordPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.otpconfirmation.toOtpConfirmationPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.passwordpolicy.toManagementPasswordPolicyPayload
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
@@ -21,9 +21,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class SecuritySettingsProviderImplTest {
-
     private val settingsService = mockk<SystemSettingsService>()
-    private val defaultPolicy = createTestManagementPasswordPolicy(minLength = 10, requireDigit = true)
+    private val defaultPolicy = createTestManagementPasswordPolicy(
+        minLength = 10,
+        requireDigit = true
+    )
     private val defaultOtpConfirmation = createTestOtpConfirmation(
         retryAfterSeconds = 60,
         numberOfSymbols = 6,
@@ -41,11 +43,19 @@ class SecuritySettingsProviderImplTest {
         )
     )
 
-    private val provider = SecuritySettingsProviderImpl(settingsService, config)
+    private val provider = SecuritySettingsProviderImpl(
+        settingsService,
+        config
+    )
 
     @BeforeEach
     fun resetSettingsServiceMocks() {
-        clearMocks(settingsService, answers = true, recordedCalls = true, childMocks = false)
+        clearMocks(
+            settingsService,
+            answers = true,
+            recordedCalls = true,
+            childMocks = false
+        )
     }
 
     @Test
@@ -56,61 +66,142 @@ class SecuritySettingsProviderImplTest {
 
         val result = provider.initialize()
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
     }
 
     @Test
     fun `getManagementSecuritySettings returns stored values when present`() {
-        val storedPolicy = createTestManagementPasswordPolicy(minLength = 20, requireSpecialChar = true)
-        val storedOtp = createTestOtpConfirmation(retryAfterSeconds = 10, numberOfSymbols = 4, expirationSeconds = 60)
+        val storedPolicy = createTestManagementPasswordPolicy(
+            minLength = 20,
+            requireSpecialChar = true
+        )
+        val storedOtp = createTestOtpConfirmation(
+            retryAfterSeconds = 10,
+            numberOfSymbols = 4,
+            expirationSeconds = 60
+        )
 
-        every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS) } returns 99
-        every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT) } returns 120
-        every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS) } returns 45
+        every {
+            settingsService.getInt(
+                SecuritySettingsProviderImpl.KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS
+            )
+        } returns 99
+        every {
+            settingsService.getInt(
+                SecuritySettingsProviderImpl.KEY_RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT
+            )
+        } returns 120
+        every {
+            settingsService.getInt(
+                SecuritySettingsProviderImpl.KEY_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS
+            )
+        } returns 45
         every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_MFA_TOKEN_EXPIRATION_SECONDS) } returns 300
         every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_MAX_REQUESTS_PER_PERIOD) } returns 200
         every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_RATE_LIMIT_PERIOD_SECONDS) } returns 120
-        every { settingsService.getInt(SecuritySettingsProviderImpl.KEY_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS) } returns 15
+        every {
+            settingsService.getInt(
+                SecuritySettingsProviderImpl.KEY_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS
+            )
+        } returns 15
         every { settingsService.getString(any()) } returns null
-        every { settingsService.getJson<Any>(any(), any()) } returns null
+        every {
+            settingsService.getJson<Any>(
+                any(),
+                any()
+            )
+        } returns null
         stubGetJsonPasswordPolicyDeserializesTo(storedPolicy)
         stubGetJsonOtpConfirmationDeserializesTo(storedOtp)
 
         val result = provider.getManagementSecuritySettings()
 
-        assertEquals(99, result.recentAuthenticationValiditySecondsForOpenUser)
-        assertEquals(120, result.recentAuthenticationValiditySecondsForManagementUser)
-        assertEquals(storedPolicy, result.passwordPolicy)
-        assertEquals(storedOtp, result.otpConfirmation)
-        assertEquals(45, result.accountLockoutCheckIntervalSeconds)
-        assertEquals(200, result.maxRequestsPerPeriod)
-        assertEquals(120, result.rateLimitPeriodSeconds)
-        assertEquals(15, result.refreshTokenRotationGracePeriodSeconds)
+        assertEquals(
+            99,
+            result.recentAuthenticationValiditySecondsForOpenUser
+        )
+        assertEquals(
+            120,
+            result.recentAuthenticationValiditySecondsForManagementUser
+        )
+        assertEquals(
+            storedPolicy,
+            result.passwordPolicy
+        )
+        assertEquals(
+            storedOtp,
+            result.otpConfirmation
+        )
+        assertEquals(
+            45,
+            result.accountLockoutCheckIntervalSeconds
+        )
+        assertEquals(
+            200,
+            result.maxRequestsPerPeriod
+        )
+        assertEquals(
+            120,
+            result.rateLimitPeriodSeconds
+        )
+        assertEquals(
+            15,
+            result.refreshTokenRotationGracePeriodSeconds
+        )
     }
 
     @Test
     fun `getManagementSecuritySettings falls back to config when keys missing`() {
         every { settingsService.getInt(any()) } returns null
         every { settingsService.getString(any()) } returns null
-        every { settingsService.getJson<Any>(any(), any()) } returns null
+        every {
+            settingsService.getJson<Any>(
+                any(),
+                any()
+            )
+        } returns null
 
         val result = provider.getManagementSecuritySettings()
 
-        assertEquals(30, result.recentAuthenticationValiditySecondsForOpenUser)
-        assertEquals(60, result.recentAuthenticationValiditySecondsForManagementUser)
-        assertEquals(defaultPolicy, result.passwordPolicy)
-        assertEquals(60, result.accountLockoutCheckIntervalSeconds)
-        assertEquals(30, result.refreshTokenRotationGracePeriodSeconds)
+        assertEquals(
+            30,
+            result.recentAuthenticationValiditySecondsForOpenUser
+        )
+        assertEquals(
+            60,
+            result.recentAuthenticationValiditySecondsForManagementUser
+        )
+        assertEquals(
+            defaultPolicy,
+            result.passwordPolicy
+        )
+        assertEquals(
+            60,
+            result.accountLockoutCheckIntervalSeconds
+        )
+        assertEquals(
+            30,
+            result.refreshTokenRotationGracePeriodSeconds
+        )
     }
 
     @Test
     fun `getManagementPasswordPolicy returns stored policy when present`() {
-        val storedPolicy = createTestManagementPasswordPolicy(minLength = 8, requireUpperCase = true)
+        val storedPolicy = createTestManagementPasswordPolicy(
+            minLength = 8,
+            requireUpperCase = true
+        )
         stubGetJsonPasswordPolicyDeserializesTo(storedPolicy)
 
         val policy = provider.getManagementPasswordPolicy()
 
-        assertEquals(storedPolicy, policy)
+        assertEquals(
+            storedPolicy,
+            policy
+        )
     }
 
     @Test
@@ -119,7 +210,10 @@ class SecuritySettingsProviderImplTest {
 
         val policy = provider.getManagementPasswordPolicy()
 
-        assertEquals(defaultPolicy, policy)
+        assertEquals(
+            defaultPolicy,
+            policy
+        )
     }
 
     @Test
@@ -142,7 +236,10 @@ class SecuritySettingsProviderImplTest {
 
         val result = provider.updateManagementSecuritySettings(newSettings)
 
-        assertEquals(AppResult.Success(Unit), result)
+        assertEquals(
+            AppResult.Success(Unit),
+            result
+        )
     }
 
     private fun stubGetJsonPasswordPolicyDeserializesTo(storedPolicy: ManagementPasswordPolicy) {
@@ -152,8 +249,7 @@ class SecuritySettingsProviderImplTest {
                 any<(String) -> ManagementPasswordPolicy>()
             )
         } answers {
-            @Suppress("UNCHECKED_CAST")
-            val deserializer = invocation.args[1] as (String) -> ManagementPasswordPolicy
+            @Suppress("UNCHECKED_CAST") val deserializer = invocation.args[1] as (String) -> ManagementPasswordPolicy
             deserializer(FoundationJson.encodeToString(storedPolicy.toManagementPasswordPolicyPayload()))
         }
     }
@@ -165,15 +261,21 @@ class SecuritySettingsProviderImplTest {
                 any<(String) -> OtpConfirmation>()
             )
         } answers {
-            @Suppress("UNCHECKED_CAST")
-            val deserializer = invocation.args[1] as (String) -> OtpConfirmation
+            @Suppress("UNCHECKED_CAST") val deserializer = invocation.args[1] as (String) -> OtpConfirmation
             deserializer(FoundationJson.encodeToString(storedOtp.toOtpConfirmationPayload()))
         }
     }
 
     private fun stubGetJsonPasswordPolicyReturnsNull() {
         every {
-            settingsService.getJson(SecuritySettingsProviderImpl.KEY_PASSWORD_POLICY, any<(String) -> ManagementPasswordPolicy>())
+            settingsService.getJson(
+                SecuritySettingsProviderImpl.KEY_PASSWORD_POLICY,
+                any<
+                        (
+                    String
+                ) -> ManagementPasswordPolicy
+                    >()
+            )
         } returns null
     }
 }

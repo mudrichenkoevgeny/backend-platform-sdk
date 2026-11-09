@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class RedisHealthCheckTest {
-
     @Test
     fun `check returns Success when Redis is available`() = runBlocking {
         val redisManager = mockk<RedisManager> {

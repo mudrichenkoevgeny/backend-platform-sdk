@@ -8,13 +8,16 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to retrieve a specific user session by ID.
+ */
 @Singleton
-class GetSessionUseCase @Inject constructor(
+public class GetSessionUseCase @Inject constructor(
     private val userManager: UserManager,
     private val sessionManager: SessionManager
 ) {
@@ -32,7 +35,7 @@ class GetSessionUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] containing the [UserSessionPrivate] or a [CommonError.NotFound] error.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         sessionId: UserSessionId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<UserSessionPrivate> {
@@ -46,7 +49,11 @@ class GetSessionUseCase @Inject constructor(
             is AppResult.Success -> getCurrentUserResult.data
         }
 
-        if (currentUser.accountStatus !in setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)) {
+        if (currentUser.accountStatus !in setOf(
+                UserAccountStatus.ACTIVE,
+                UserAccountStatus.READ_ONLY
+            )
+        ) {
             return AppResult.Error(UserError.UserForbidden(currentUserId))
         }
 

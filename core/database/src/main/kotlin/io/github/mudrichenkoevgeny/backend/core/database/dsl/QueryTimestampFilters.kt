@@ -22,7 +22,7 @@ import kotlin.time.Instant as KotlinInstant
  * @param isSet optional flag indicating whether the timestamp must be non-null (`true`) or null (`false`)
  * @return this [Query] with timestamp conditions applied
  */
-fun Query.applyTimestampFilter(
+public fun Query.applyTimestampFilter(
     column: ExpressionWithColumnType<out JavaInstant?>,
     fromInstant: KotlinInstant? = null,
     toInstant: KotlinInstant? = null,

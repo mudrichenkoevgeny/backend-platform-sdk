@@ -26,8 +26,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to login by external auth provider.
+ */
 @Singleton
-class LoginByExternalAuthProviderUseCase @Inject constructor(
+public class LoginByExternalAuthProviderUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -61,11 +64,14 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
      * @param allowedAccountStatuses Allowed statuses for the target account.
      * @return [AppResult] containing [AuthData] or an MFA challenge.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         params: LoginByExternalAuthProviderParams,
         requestContext: RequestContext,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
-        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
     ): AppResult<AuthData> {
         val authProvider = params.authProvider
         val token = params.token
@@ -102,6 +108,7 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
                 error = verificationResult.error,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> verificationResult.data
         }
 
@@ -121,7 +128,8 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
         }
 
         val externalEmail = verificationData.email
-        if (externalEmail != null && !emailRestrictionPolicyValidator.isEmailAllowed(
+        if (externalEmail != null &&
+            !emailRestrictionPolicyValidator.isEmailAllowed(
                 email = externalEmail,
                 policy = authSettingsProvider.getOpenEmailRestrictionPolicy()
             )
@@ -154,6 +162,7 @@ class LoginByExternalAuthProviderUseCase @Inject constructor(
                 )
                 authenticateUserResult
             }
+
             is AppResult.Error -> handleError(
                 error = authenticateUserResult.error,
                 baseMetadata = auditMetadata

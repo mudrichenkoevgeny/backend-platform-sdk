@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class GetOpenUserConfigurationUseCaseTest {
-
     private val globalSettingsProvider = mockk<GlobalSettingsProvider>()
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val storageSettingsProvider = mockk<StorageSettingsProvider>()
@@ -50,6 +49,9 @@ class GetOpenUserConfigurationUseCaseTest {
             openAuthSettings = authSettings
         )
 
-        assertEquals(AppResult.Success(expectedConfiguration), result)
+        assertEquals(
+            AppResult.Success(expectedConfiguration),
+            result
+        )
     }
 }

@@ -5,12 +5,12 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route
  *
  * These tags are consumed by the OpenAPI/Swagger integration to group endpoints in UI.
  */
-object UserSwaggerTags {
-    const val AUTH = "Authentication"
-    const val SESSION = "Session"
-    const val USER = "User"
-    const val IDENTIFIER = "Identifiers"
-    const val AUTH_SETTINGS = "Auth settings"
-    const val USER_CONFIGURATION = "User configuration"
-    const val USER_SECURITY = "User security"
+public object UserSwaggerTags {
+    public const val AUTH: String = "Authentication"
+    public const val SESSION: String = "Session"
+    public const val USER: String = "User"
+    public const val IDENTIFIER: String = "Identifiers"
+    public const val AUTH_SETTINGS: String = "Auth settings"
+    public const val USER_CONFIGURATION: String = "User configuration"
+    public const val USER_SECURITY: String = "User security"
 }

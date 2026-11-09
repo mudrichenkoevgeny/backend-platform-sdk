@@ -24,33 +24,32 @@ import javax.inject.Singleton
  * Managers are used by use cases and routes to coordinate repositories and services.
  */
 @Module
-interface UserManagersModule {
+public interface UserManagersModule {
+    @Binds
+    @Singleton
+    public fun bindAuditManager(impl: AuditManagerImpl): AuditManager
 
     @Binds
     @Singleton
-    fun bindAuditManager(impl: AuditManagerImpl): AuditManager
+    public fun bindUserManager(userManagerImpl: UserManagerImpl): UserManager
 
     @Binds
     @Singleton
-    fun bindUserManager(userManagerImpl: UserManagerImpl): UserManager
+    public fun bindUserIdentifierManager(userIdentifierManagerImpl: IdentifierManagerImpl): IdentifierManager
 
     @Binds
     @Singleton
-    fun bindUserIdentifierManager(userIdentifierManagerImpl: IdentifierManagerImpl): IdentifierManager
+    public fun bindSessionManager(sessionManagerImpl: SessionManagerImpl): SessionManager
 
     @Binds
     @Singleton
-    fun bindSessionManager(sessionManagerImpl: SessionManagerImpl): SessionManager
+    public fun bindAuthManager(authManagerImpl: AuthManagerImpl): AuthManager
 
     @Binds
     @Singleton
-    fun bindAuthManager(authManagerImpl: AuthManagerImpl): AuthManager
+    public fun bindTotpManager(totpManagerImpl: TotpManagerImpl): TotpManager
 
     @Binds
     @Singleton
-    fun bindTotpManager(totpManagerImpl: TotpManagerImpl): TotpManager
-
-    @Binds
-    @Singleton
-    fun bindUserLockoutService(impl: UserLockoutServiceImpl): UserLockoutService
+    public fun bindUserLockoutService(impl: UserLockoutServiceImpl): UserLockoutService
 }

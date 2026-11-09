@@ -40,7 +40,7 @@ import kotlin.uuid.Uuid
  * with [UserWebSocketEventTypes.OPEN_AUTH_SETTINGS_UPDATED] and [UserWebSocketEventTypes.MANAGEMENT_AUTH_SETTINGS_UPDATED] frames.
  */
 @Singleton
-class ResetAuthSettingsUseCase @Inject constructor(
+public class ResetAuthSettingsUseCase @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -67,7 +67,7 @@ class ResetAuthSettingsUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] containing the reset [ManagementAuthSettings] or an [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<ManagementAuthSettings> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
@@ -84,6 +84,7 @@ class ResetAuthSettingsUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 

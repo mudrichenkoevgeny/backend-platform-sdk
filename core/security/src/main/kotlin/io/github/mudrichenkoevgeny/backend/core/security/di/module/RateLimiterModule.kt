@@ -1,11 +1,11 @@
 package io.github.mudrichenkoevgeny.backend.core.security.di.module
 
+import dagger.Module
+import dagger.Provides
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiterImpl
-import dagger.Module
-import dagger.Provides
 import javax.inject.Singleton
 
 /**
@@ -15,17 +15,14 @@ import javax.inject.Singleton
  * when auxiliary operations (e.g. TTL retrieval) fail.
  */
 @Module
-class RateLimiterModule {
-
+public class RateLimiterModule {
     @Provides
     @Singleton
-    fun provideRateLimiter(
+    public fun provideRateLimiter(
         redisManager: RedisManager,
         appLogger: AppLogger
-    ): RateLimiter {
-        return RateLimiterImpl(
-            redisManager = redisManager,
-            appLogger = appLogger
-        )
-    }
+    ): RateLimiter = RateLimiterImpl(
+        redisManager = redisManager,
+        appLogger = appLogger
+    )
 }

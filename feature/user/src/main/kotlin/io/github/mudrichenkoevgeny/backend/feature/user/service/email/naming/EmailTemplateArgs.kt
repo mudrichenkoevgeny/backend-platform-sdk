@@ -1,18 +1,22 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.service.email.naming
 
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.parser.EmailParser
+
 /**
  * Placeholder names used for templated email rendering.
  *
  * Placeholders are referenced in template text as `{key}` and replaced by [EmailParser].
  */
-object EmailTemplateArgs {
+public object EmailTemplateArgs {
     /** One-time code used in verification/reset flows. */
-    const val CODE = "code"
+    public const val CODE: String = "code"
+
     /** Optional client IP address for security notifications. */
-    const val IP_ADDRESS = "ipAddress"
+    public const val IP_ADDRESS: String = "ipAddress"
+
     /** Optional client device name for security notifications. */
-    const val DEVICE_NAME = "deviceName"
+    public const val DEVICE_NAME: String = "deviceName"
+
     /** Value to replace the `{userAgent}` placeholder. */
-    const val USER_AGENT = "userAgent"
+    public const val USER_AGENT: String = "userAgent"
 }

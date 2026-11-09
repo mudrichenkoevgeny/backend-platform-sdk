@@ -7,9 +7,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.model.ExternalAuthProviderData
 import io.github.mudrichenkoevgeny.backend.feature.user.auth.verifier.ExternalAuthVerifier
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
@@ -25,6 +22,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings.AvailableAuthProviders
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -36,11 +36,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class AddUserIdentifierExternalAuthProviderUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
     private val authManager = mockk<AuthManager>()
@@ -70,7 +72,10 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
     fun `successfully adds external identifier`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val sessionInternal = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
+        val sessionInternal = createTestUserSessionInternal(
+            id = context.sessionId,
+            userId = context.userId
+        )
         val identifierId = UserIdentifierId.generate()
         val identifier = createTestUserIdentifierPrivate(id = identifierId)
 
@@ -86,7 +91,10 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
         )
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.USER_IDENTIFIER_ADD, any())
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.USER_IDENTIFIER_ADD,
+                any()
+            )
         } returns AppResult.Success(Unit)
 
         every {
@@ -102,7 +110,10 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
         } returns AppResult.Success(sessionInternal)
 
         coEvery {
-            authenticationChallengeService.ensureSessionConfirmed(userInternal, sessionInternal)
+            authenticationChallengeService.ensureSessionConfirmed(
+                userInternal,
+                sessionInternal
+            )
         } returns AppResult.Success(Unit)
 
         coEvery { externalAuthVerifier.verify(TEST_TOKEN) } returns AppResult.Success(authData)
@@ -117,9 +128,16 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
             )
         } returns AppResult.Success(identifier)
 
-        val result = useCase(UserAuthProvider.GOOGLE, TEST_TOKEN, context)
+        val result = useCase(
+            UserAuthProvider.GOOGLE,
+            TEST_TOKEN,
+            context
+        )
 
-        assertEquals(AppResult.Success(identifier), result)
+        assertEquals(
+            AppResult.Success(identifier),
+            result
+        )
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorId = context.userId.asHexDashString(),
@@ -130,7 +148,7 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
                 resourceId = identifierId.asHexDashString(),
                 status = AuditStatus.SUCCESS,
                 metadata = any(),
-                message = null,
+                message = null
             )
         }
     }
@@ -143,10 +161,19 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
             secondary = emptyList()
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         every { authSettingsProvider.getAvailableAuthProviders() } returns availableAuthProviders
 
-        val result = useCase(UserAuthProvider.GOOGLE, TEST_TOKEN, context)
+        val result = useCase(
+            UserAuthProvider.GOOGLE,
+            TEST_TOKEN,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         assertTrue((result as AppResult.Error).error is UserError.CannotCreateUserIdentifier)
@@ -161,7 +188,7 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
                 resourceId = null,
                 status = AuditStatus.FAILED,
                 metadata = any(),
-                message = null,
+                message = null
             )
         }
     }
@@ -170,7 +197,10 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
     fun `returns error when session is not confirmed`() = runTest {
         val context = createTestAuthenticatedRequestContext()
         val userInternal = createTestUserInternal(id = context.userId)
-        val sessionInternal = createTestUserSessionInternal(id = context.sessionId, userId = context.userId)
+        val sessionInternal = createTestUserSessionInternal(
+            id = context.sessionId,
+            userId = context.userId
+        )
         val error = UserError.UserForbidden()
 
         val availableAuthProviders = AvailableAuthProviders(
@@ -178,18 +208,33 @@ class AddUserIdentifierExternalAuthProviderUseCaseTest {
             secondary = emptyList()
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
         every { authSettingsProvider.getAvailableAuthProviders() } returns availableAuthProviders
         coEvery { userManager.getUserInternalById(any()) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(sessionInternal)
 
         coEvery {
-            authenticationChallengeService.ensureSessionConfirmed(any(), any())
+            authenticationChallengeService.ensureSessionConfirmed(
+                any(),
+                any()
+            )
         } returns AppResult.Error(error)
 
-        val result = useCase(UserAuthProvider.GOOGLE, TEST_TOKEN, context)
+        val result = useCase(
+            UserAuthProvider.GOOGLE,
+            TEST_TOKEN,
+            context
+        )
 
-        assertEquals(AppResult.Error(error), result)
+        assertEquals(
+            AppResult.Error(error),
+            result
+        )
     }
 
     companion object {

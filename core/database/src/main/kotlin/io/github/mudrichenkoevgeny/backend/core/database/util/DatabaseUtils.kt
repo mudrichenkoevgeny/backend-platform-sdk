@@ -13,9 +13,8 @@ import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
  * @param block code to run in the transaction.
  * @return the result of [block].
  */
-suspend fun <T> dbQuery(block: suspend Transaction.() -> T): T =
-    withContext(Dispatchers.IO) {
-        suspendTransaction {
-            block()
-        }
+public suspend fun <T> dbQuery(block: suspend Transaction.() -> T): T = withContext(Dispatchers.IO) {
+    suspendTransaction {
+        block()
     }
+}

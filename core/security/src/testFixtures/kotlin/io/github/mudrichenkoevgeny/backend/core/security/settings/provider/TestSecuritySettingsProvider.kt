@@ -1,11 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.security.settings.provider
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestOpenSecuritySettings
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.iprestriction.createTestIpRestrictionPolicy
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.iprestriction.IpRestrictionPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
@@ -13,9 +8,18 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordpolicy.OpenPasswordPolicy
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.ManagementSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.securitysettings.OpenSecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.iprestriction.createTestIpRestrictionPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.passwordpolicy.createTestManagementPasswordPolicy
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestOpenSecuritySettings
 
 class TestSecuritySettingsProvider : SecuritySettingsProvider {
     var initializeCalled: Boolean = false
+    var currentAccountLockoutCheckIntervalSeconds: Int = 60
+    var currentOpenIpRestrictionPolicy: IpRestrictionPolicy = createTestIpRestrictionPolicy()
+    var currentManagementIpRestrictionPolicy: IpRestrictionPolicy = createTestIpRestrictionPolicy()
+    var currentRefreshTokenRotationGracePeriodSeconds: Int = 30
 
     override suspend fun initialize(): AppResult<Unit> {
         initializeCalled = true
@@ -38,13 +42,7 @@ class TestSecuritySettingsProvider : SecuritySettingsProvider {
 
     override fun getAccountLockoutPolicy(): AccountLockoutPolicy = error("Not used")
 
-    var currentAccountLockoutCheckIntervalSeconds: Int = 60
-
     override fun getAccountLockoutCheckIntervalSeconds(): Int = currentAccountLockoutCheckIntervalSeconds
-
-    var currentOpenIpRestrictionPolicy: IpRestrictionPolicy = createTestIpRestrictionPolicy()
-
-    var currentManagementIpRestrictionPolicy: IpRestrictionPolicy = createTestIpRestrictionPolicy()
 
     override fun getOpenIpRestrictionPolicy(): IpRestrictionPolicy = currentOpenIpRestrictionPolicy
 
@@ -55,8 +53,6 @@ class TestSecuritySettingsProvider : SecuritySettingsProvider {
     override fun getMaxRequestsPerPeriod(): Int = 100
 
     override fun getRateLimitPeriodSeconds(): Int = 60
-
-    var currentRefreshTokenRotationGracePeriodSeconds: Int = 30
 
     override fun getRefreshTokenRotationGracePeriodSeconds(): Int = currentRefreshTokenRotationGracePeriodSeconds
 

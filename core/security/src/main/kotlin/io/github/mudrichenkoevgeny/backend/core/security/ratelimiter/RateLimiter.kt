@@ -8,7 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.model.RateL
  *
  * Implementations typically use a shared store (e.g. Redis) to keep counters across instances.
  */
-interface RateLimiter {
+public interface RateLimiter {
     /**
      * Checks whether [identifier] exceeded the limit for the given [action].
      *
@@ -18,7 +18,7 @@ interface RateLimiter {
      * `CommonError.TooManyRequests` when the limit is exceeded; other errors (e.g. store failures)
      * as [AppResult.Error].
      */
-    suspend fun checkRateLimit(
+    public suspend fun checkRateLimit(
         action: RateLimitAction,
         identifier: String
     ): AppResult<Unit>

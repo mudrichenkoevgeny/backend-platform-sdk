@@ -4,13 +4,12 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupOpenTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByExternalAuthProviderUseCase
+import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByPhoneUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.SendUnlockConfirmationToEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.SendUnlockConfirmationToPhoneUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.UnlockByEmailUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByExternalAuthProviderUseCase
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock.UnlockByPhoneUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
@@ -20,7 +19,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.reques
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.confirmation.SendConfirmationToPhoneRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.open.auth.unlock.OpenUnlockRoutes
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -34,9 +33,9 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class OpenUnlockRouterTest : BaseRouterTest() {
-
     private val sendUnlockConfirmationToEmailUseCase = mockk<SendUnlockConfirmationToEmailUseCase>()
     private val unlockByEmailUseCase = mockk<UnlockByEmailUseCase>()
     private val sendUnlockConfirmationToPhoneUseCase = mockk<SendUnlockConfirmationToPhoneUseCase>()
@@ -88,7 +87,10 @@ class OpenUnlockRouterTest : BaseRouterTest() {
             setBody(SendConfirmationToEmailRequest(email = "test@example.com"))
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
@@ -112,10 +114,18 @@ class OpenUnlockRouterTest : BaseRouterTest() {
 
         val response = jsonClient.post(OpenUnlockRoutes.UNLOCK_BY_EMAIL) {
             contentType(ContentType.Application.Json)
-            setBody(UnlockByEmailConfirmationRequest(email = "test@example.com", confirmationCode = "123456"))
+            setBody(
+                UnlockByEmailConfirmationRequest(
+                    email = "test@example.com",
+                    confirmationCode = "123456"
+                )
+            )
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
@@ -142,7 +152,10 @@ class OpenUnlockRouterTest : BaseRouterTest() {
             setBody(SendConfirmationToPhoneRequest(phoneNumber = "+1234567890"))
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
@@ -166,10 +179,18 @@ class OpenUnlockRouterTest : BaseRouterTest() {
 
         val response = jsonClient.post(OpenUnlockRoutes.UNLOCK_BY_PHONE) {
             contentType(ContentType.Application.Json)
-            setBody(UnlockByPhoneConfirmationRequest(phoneNumber = "+1234567890", confirmationCode = "123456"))
+            setBody(
+                UnlockByPhoneConfirmationRequest(
+                    phoneNumber = "+1234567890",
+                    confirmationCode = "123456"
+                )
+            )
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
@@ -193,9 +214,17 @@ class OpenUnlockRouterTest : BaseRouterTest() {
 
         val response = jsonClient.post(OpenUnlockRoutes.UNLOCK_BY_EXTERNAL_PROVIDER) {
             contentType(ContentType.Application.Json)
-            setBody(UnlockByExternalAuthProviderRequest(authProvider = UserAuthProvider.GOOGLE.value, externalProviderToken = "ext_token"))
+            setBody(
+                UnlockByExternalAuthProviderRequest(
+                    authProvider = UserAuthProvider.GOOGLE.value,
+                    externalProviderToken = "ext_token"
+                )
+            )
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 }

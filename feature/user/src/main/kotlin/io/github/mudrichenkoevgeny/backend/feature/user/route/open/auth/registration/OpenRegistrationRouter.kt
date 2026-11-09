@@ -3,10 +3,10 @@ package io.github.mudrichenkoevgeny.backend.feature.user.route.open.auth.registr
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter.getFormattedDescription
 import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorParser
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
-import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
-import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
-import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.validateRequest
+import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
+import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
+import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
 import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
@@ -33,11 +33,13 @@ import javax.inject.Singleton
  * Public authentication routes for new user registration.
  *
  * Registered routes:
- * 1. [OpenRegistrationRoutes.REGISTRATION_BY_EMAIL] — creates a new user account using email, password, and a valid OTP via [RegistrationByEmailUseCase].
- * 2. [OpenRegistrationRoutes.SEND_REGISTRATION_CONFIRMATION_TO_EMAIL] — triggers the delivery of a registration verification code to the specified email via [SendRegistrationConfirmationToEmailUseCase].
+ * 1. [OpenRegistrationRoutes.REGISTRATION_BY_EMAIL] — creates a new user account using email, password, and a valid OTP
+ * via [RegistrationByEmailUseCase].
+ * 2. [OpenRegistrationRoutes.SEND_REGISTRATION_CONFIRMATION_TO_EMAIL] — triggers the delivery of a registration
+ * verification code to the specified email via [SendRegistrationConfirmationToEmailUseCase].
  */
 @Singleton
-class OpenRegistrationRouter @Inject constructor(
+public class OpenRegistrationRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val registrationByEmailUseCase: RegistrationByEmailUseCase,
@@ -54,7 +56,12 @@ class OpenRegistrationRouter @Inject constructor(
 
         route.post(
             path = OpenRegistrationRoutes.REGISTRATION_BY_EMAIL,
-            builder = { registrationByEmailDocs(allowedRoles, allowedAccountStatuses) },
+            builder = {
+                registrationByEmailDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
             body = { registrationByEmail() }
         )
     }
@@ -65,7 +72,12 @@ class OpenRegistrationRouter @Inject constructor(
 
         route.post(
             path = OpenRegistrationRoutes.SEND_REGISTRATION_CONFIRMATION_TO_EMAIL,
-            builder = { sendRegistrationConfirmationToEmailDocs(allowedRoles, allowedAccountStatuses) },
+            builder = {
+                sendRegistrationConfirmationToEmailDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
             body = { sendRegistrationConfirmationToEmail() }
         )
     }
@@ -102,7 +114,11 @@ class OpenRegistrationRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { authData ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { authData ->
             authData.toAuthDataPayload()
         }
     }
@@ -137,21 +153,29 @@ class OpenRegistrationRouter @Inject constructor(
             requestContext = call.getRequestContext()
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { otpConfirmation ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { otpConfirmation ->
             otpConfirmation.toOtpConfirmationPayload()
         }
     }
 
-    companion object {
-        const val REGISTRATION_BY_EMAIL_ROUTE_SUMMARY = "Register user by email"
-        const val REGISTRATION_BY_EMAIL_ROUTE_DESCRIPTION = "Registers a new user using email and password " +
-                "after confirmation code validation."
-        const val REGISTRATION_BY_EMAIL_ROUTE_OPERATION_ID = "openRegistrationByEmail"
-        const val REGISTRATION_BY_EMAIL_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. User registered."
+    public companion object {
+        private const val REGISTRATION_BY_EMAIL_ROUTE_SUMMARY = "Register user by email"
+        private const val REGISTRATION_BY_EMAIL_ROUTE_DESCRIPTION =
+            "Registers a new user using email and password after confirmation code validation."
+        private const val REGISTRATION_BY_EMAIL_ROUTE_OPERATION_ID = "openRegistrationByEmail"
+        private const val REGISTRATION_BY_EMAIL_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. User registered."
 
-        const val SEND_REGISTRATION_CONFIRMATION_TO_EMAIL_ROUTE_SUMMARY = "Send registration confirmation code to email"
-        const val SEND_REGISTRATION_CONFIRMATION_TO_EMAIL_ROUTE_DESCRIPTION = "Sends a verification code to the email for registration purposes."
-        const val SEND_REGISTRATION_CONFIRMATION_TO_EMAIL_ROUTE_OPERATION_ID = "openSendRegistrationConfirmationToEmail"
-        const val SEND_REGISTRATION_CONFIRMATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Verification code sent."
+        private const val SEND_REGISTRATION_CONFIRMATION_TO_EMAIL_ROUTE_SUMMARY =
+            "Send registration confirmation code to email"
+        private const val SEND_REGISTRATION_CONFIRMATION_TO_EMAIL_ROUTE_DESCRIPTION =
+            "Sends a verification code to the email for registration purposes."
+        private const val SEND_REGISTRATION_CONFIRMATION_TO_EMAIL_ROUTE_OPERATION_ID =
+            "openSendRegistrationConfirmationToEmail"
+        private const val SEND_REGISTRATION_CONFIRMATION_ROUTE_RESPONSE_OK_DESCRIPTION =
+            "Success. Verification code sent."
     }
 }

@@ -1,5 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.core.database.di.module
 
+import dagger.Binds
+import dagger.Module
+import dagger.Provides
+import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import io.github.mudrichenkoevgeny.backend.core.database.factory.redis.RedisFactory
@@ -8,10 +12,6 @@ import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisMana
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManagerImpl
 import io.github.mudrichenkoevgeny.backend.core.database.redisclient.LettuceRedisClientCreator
 import io.github.mudrichenkoevgeny.backend.core.database.redisclient.RedisClientCreator
-import dagger.Binds
-import dagger.Module
-import dagger.Provides
-import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundScope
 import kotlinx.coroutines.CoroutineScope
 import javax.inject.Singleton
 
@@ -22,30 +22,27 @@ import javax.inject.Singleton
  * and [RedisManager] (→ [RedisManagerImpl] with a client from the factory).
  */
 @Module
-interface RedisModule {
-
+public interface RedisModule {
     @Binds
     @Singleton
-    fun bindRedisClientCreator(lettuceRedisClientCreator: LettuceRedisClientCreator): RedisClientCreator
+    public fun bindRedisClientCreator(lettuceRedisClientCreator: LettuceRedisClientCreator): RedisClientCreator
 
-    companion object {
+    public companion object {
         @Provides
         @Singleton
-        fun provideRedisFactory(
+        public fun provideRedisFactory(
             redisClientCreator: RedisClientCreator,
             appLogger: AppLogger,
             databaseConfig: DatabaseConfig
-        ): RedisFactory {
-            return RedisFactoryImpl(
-                redisClientCreator = redisClientCreator,
-                appLogger = appLogger,
-                databaseConfig = databaseConfig
-            )
-        }
+        ): RedisFactory = RedisFactoryImpl(
+            redisClientCreator = redisClientCreator,
+            appLogger = appLogger,
+            databaseConfig = databaseConfig
+        )
 
         @Provides
         @Singleton
-        fun provideRedisManager(
+        public fun provideRedisManager(
             factory: RedisFactory,
             @BackgroundScope scope: CoroutineScope
         ): RedisManager {

@@ -35,17 +35,17 @@ import javax.inject.Singleton
  * Registered routes:
  * 1. [SelfManagementLoginRoutes.LOGIN_BY_EMAIL] — handles primary authentication via [LoginByEmailUseCase].
  * 2. [SelfManagementLoginRoutes.LOGIN_BY_TOTP] — handles secondary verification via [LoginByTotpUseCase].
- * 3. [SelfManagementLoginRoutes.LOGIN_BY_TOTP_RECOVERY_CODE] — handles account recovery via [LoginByTotpRecoveryCodeUseCase].
+ * 3. [SelfManagementLoginRoutes.LOGIN_BY_TOTP_RECOVERY_CODE] — handles account recovery via
+ * [LoginByTotpRecoveryCodeUseCase].
  */
 @Singleton
-class SelfManagementLoginRouter @Inject constructor(
+public class SelfManagementLoginRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val loginByEmailUseCase: LoginByEmailUseCase,
     private val loginByTotpUseCase: LoginByTotpUseCase,
     private val loginByTotpRecoveryCodeUseCase: LoginByTotpRecoveryCodeUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         registerLoginByEmailRoute(route)
         registerLoginByTotpRoute(route)
@@ -53,35 +53,83 @@ class SelfManagementLoginRouter @Inject constructor(
     }
 
     private fun registerLoginByEmailRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = SelfManagementLoginRoutes.LOGIN_BY_EMAIL,
-            builder = { loginByEmailDocs(allowedRoles, allowedAccountStatuses) },
-            body = { loginByEmail(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                loginByEmailDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                loginByEmail(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerLoginByTotpRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = SelfManagementLoginRoutes.LOGIN_BY_TOTP,
-            builder = { loginByTotpDocs(allowedRoles, allowedAccountStatuses) },
-            body = { loginByTotp(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                loginByTotpDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                loginByTotp(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerLoginByTotpRecoveryCodeRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = SelfManagementLoginRoutes.LOGIN_BY_TOTP_RECOVERY_CODE,
-            builder = { loginByTotpRecoveryCodeDocs(allowedRoles, allowedAccountStatuses) },
-            body = { loginByTotpRecoveryCode(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                loginByTotpRecoveryCodeDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                loginByTotpRecoveryCode(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -122,7 +170,11 @@ class SelfManagementLoginRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { authData ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { authData ->
             authData.toAuthDataPayload()
         }
     }
@@ -163,7 +215,11 @@ class SelfManagementLoginRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { authData ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { authData ->
             authData.toAuthDataPayload()
         }
     }
@@ -204,24 +260,31 @@ class SelfManagementLoginRouter @Inject constructor(
             allowedAccountStatuses = allowedAccountStatuses
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { authData ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { authData ->
             authData.toAuthDataPayload()
         }
     }
 
-    companion object {
-        const val LOGIN_BY_EMAIL_ROUTE_SUMMARY = "Management login by email"
-        const val LOGIN_BY_EMAIL_ROUTE_DESCRIPTION = "Authenticates a management account using email and password."
-        const val LOGIN_BY_EMAIL_ROUTE_OPERATION_ID = "managementLoginByEmail"
+    public companion object {
+        private const val LOGIN_BY_EMAIL_ROUTE_SUMMARY = "Management login by email"
+        private const val LOGIN_BY_EMAIL_ROUTE_DESCRIPTION =
+            "Authenticates a management account using email and password."
+        private const val LOGIN_BY_EMAIL_ROUTE_OPERATION_ID = "managementLoginByEmail"
 
-        const val LOGIN_BY_TOTP_ROUTE_SUMMARY = "Management login by TOTP"
-        const val LOGIN_BY_TOTP_ROUTE_DESCRIPTION = "Finalizes the management login process by providing a TOTP code."
-        const val LOGIN_BY_TOTP_ROUTE_OPERATION_ID = "managementLoginByTotp"
+        private const val LOGIN_BY_TOTP_ROUTE_SUMMARY = "Management login by TOTP"
+        private const val LOGIN_BY_TOTP_ROUTE_DESCRIPTION =
+            "Finalizes the management login process by providing a TOTP code."
+        private const val LOGIN_BY_TOTP_ROUTE_OPERATION_ID = "managementLoginByTotp"
 
-        const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_SUMMARY = "Management login by recovery code"
-        const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_DESCRIPTION = "Finalizes the management login process by providing a recovery code."
-        const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_OPERATION_ID = "managementLoginByTotpRecoveryCode"
+        private const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_SUMMARY = "Management login by recovery code"
+        private const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_DESCRIPTION =
+            "Finalizes the management login process by providing a recovery code."
+        private const val LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_OPERATION_ID = "managementLoginByTotpRecoveryCode"
 
-        const val LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Management user authenticated."
+        private const val LOGIN_ROUTE_RESPONSE_OK_DESCRIPTION = "Success. Management user authenticated."
     }
 }

@@ -20,20 +20,16 @@ import kotlin.uuid.Uuid
  * - SHA-256 digest encoded as Base64 to make storage and transmission safe.
  */
 @Singleton
-class RefreshTokenProviderImpl @Inject constructor() : RefreshTokenProvider {
-    override fun getRefreshToken(): AppResult<RefreshToken> {
-        return AppResult.Success(
-            RefreshToken("${Uuid.random()}.${Uuid.random()}")
-        )
-    }
+public class RefreshTokenProviderImpl @Inject constructor() : RefreshTokenProvider {
+    override fun getRefreshToken(): AppResult<RefreshToken> = AppResult.Success(
+        RefreshToken("${Uuid.random()}.${Uuid.random()}")
+    )
 
-    override fun getRefreshTokenHash(refreshToken: RefreshToken): AppResult<RefreshTokenHash> {
-        return try {
-            val digest = MessageDigest.getInstance("SHA-256")
-            val hash = digest.digest(refreshToken.value.toByteArray())
-            AppResult.Success(RefreshTokenHash(Base64.getEncoder().encodeToString(hash)))
-        } catch (e: Exception) {
-            AppResult.Error(CommonError.Internal(e))
-        }
+    override fun getRefreshTokenHash(refreshToken: RefreshToken): AppResult<RefreshTokenHash> = try {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hash = digest.digest(refreshToken.value.toByteArray())
+        AppResult.Success(RefreshTokenHash(Base64.getEncoder().encodeToString(hash)))
+    } catch (e: Exception) {
+        AppResult.Error(CommonError.Internal(e))
     }
 }

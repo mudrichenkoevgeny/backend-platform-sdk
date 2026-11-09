@@ -12,6 +12,6 @@ import org.slf4j.MDC
  *
  * @return The trace ID string if present in MDC and accessible, null otherwise.
  */
-fun getMdcTraceFromMdcOrNull(): String? = runCatching {
+public fun getMdcTraceFromMdcOrNull(): String? = runCatching {
     MDC.get(TracingKeys.TRACE_ID_KEY)
 }.getOrNull()

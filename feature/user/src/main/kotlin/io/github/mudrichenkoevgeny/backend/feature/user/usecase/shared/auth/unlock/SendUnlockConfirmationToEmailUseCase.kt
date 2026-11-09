@@ -7,11 +7,11 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.email.EmailService
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.otpconfirmation.OtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
@@ -19,8 +19,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to send account unlock confirmation code to user email.
+ */
 @Singleton
-class SendUnlockConfirmationToEmailUseCase @Inject constructor(
+public class SendUnlockConfirmationToEmailUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val identifierManager: IdentifierManager,
@@ -50,7 +53,7 @@ class SendUnlockConfirmationToEmailUseCase @Inject constructor(
      * @param requestContext Request context containing client details for localization.
      * @return [AppResult] containing [OtpConfirmation] metadata or an error.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         email: String,
         requestContext: RequestContext,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
@@ -91,7 +94,9 @@ class SendUnlockConfirmationToEmailUseCase @Inject constructor(
         val user = if (identifier != null) {
             val userResult = userManager.getUserInternalById(identifier.userId)
             (userResult as? AppResult.Success)?.data
-        } else null
+        } else {
+            null
+        }
 
         val isUserAllowed = user != null && user.role in allowedRoles && user.accountStatus in allowedAccountStatuses
 
@@ -102,9 +107,7 @@ class SendUnlockConfirmationToEmailUseCase @Inject constructor(
         }
     }
 
-    private suspend fun sendFakeEmail(
-        otpConfirmationData: OtpConfirmationData
-    ): AppResult<OtpConfirmation> {
+    private suspend fun sendFakeEmail(otpConfirmationData: OtpConfirmationData): AppResult<OtpConfirmation> {
         val sendEmailResult = emailService.fakeSendEmail()
         if (sendEmailResult is AppResult.Error) {
             return AppResult.Error(sendEmailResult.error)

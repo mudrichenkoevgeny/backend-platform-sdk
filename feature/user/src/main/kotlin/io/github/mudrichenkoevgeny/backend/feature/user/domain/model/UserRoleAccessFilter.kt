@@ -10,6 +10,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
  *
  * If [allowedUserRoles] is empty, listing returns no rows.
  */
-data class UserRoleAccessFilter(
+public data class UserRoleAccessFilter(
     val allowedUserRoles: Set<UserRole>
 )

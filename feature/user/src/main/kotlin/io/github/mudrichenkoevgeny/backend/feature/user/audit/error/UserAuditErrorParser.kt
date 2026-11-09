@@ -19,8 +19,7 @@ import javax.inject.Singleton
  * role mismatch) to a DENIED status.
  */
 @Singleton
-class UserAuditErrorParser @Inject constructor() : AuditErrorParser {
-
+public class UserAuditErrorParser @Inject constructor() : AuditErrorParser {
     override fun parse(error: AppError): AuditErrorLogData? {
         if (error !is UserError) {
             return null
@@ -36,19 +35,39 @@ class UserAuditErrorParser @Inject constructor() : AuditErrorParser {
             is UserError.UserNotFound -> UserAuditMetadataDeniedReasonValues.USER_NOT_FOUND
             is UserError.UserRoleNotAllowed -> UserAuditMetadataDeniedReasonValues.USER_ROLE_NOT_ALLOWED
             is UserError.UserMissingPermissions -> UserAuditMetadataDeniedReasonValues.USER_MISSING_PERMISSIONS
-            is UserError.UserInsufficientAuthorityLevel -> UserAuditMetadataDeniedReasonValues.USER_INSUFFICIENT_AUTHORITY_LEVEL
-            is UserError.UserIllegalAccountStatus -> UserAuditMetadataDeniedReasonValues.USER_ILLEGAL_ACCOUNT_STATUS
-            is UserError.UserIdentifierLimitReached -> UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_LIMIT_REACHED
-            is UserError.TotalUserIdentifiersLimitReached -> UserAuditMetadataDeniedReasonValues.TOTAL_USER_IDENTIFIERS_LIMIT_REACHED
-            is UserError.PasswordSetupRequired -> UserAuditMetadataDeniedReasonValues.PASSWORD_SETUP_REQUIRED
-            is UserError.UserIdentifierPasswordNotSupported -> UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SUPPORTED
-            is UserError.UserIdentifierPasswordNotSet -> UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SET
+            is UserError.UserInsufficientAuthorityLevel ->
+                UserAuditMetadataDeniedReasonValues.USER_INSUFFICIENT_AUTHORITY_LEVEL
+
+            is UserError.UserIllegalAccountStatus ->
+                UserAuditMetadataDeniedReasonValues.USER_ILLEGAL_ACCOUNT_STATUS
+
+            is UserError.UserIdentifierLimitReached ->
+                UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_LIMIT_REACHED
+
+            is UserError.TotalUserIdentifiersLimitReached ->
+                UserAuditMetadataDeniedReasonValues.TOTAL_USER_IDENTIFIERS_LIMIT_REACHED
+
+            is UserError.PasswordSetupRequired ->
+                UserAuditMetadataDeniedReasonValues.PASSWORD_SETUP_REQUIRED
+
+            is UserError.UserIdentifierPasswordNotSupported ->
+                UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SUPPORTED
+
+            is UserError.UserIdentifierPasswordNotSet ->
+                UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SET
+
             else -> return null
         }
 
         val metadata = mutableSetOf(
-            AuditEventMetadata(CommonAuditMetadataKey.ERROR_ID, error.errorId.asHexDashString()),
-            AuditEventMetadata(CommonAuditMetadataKey.DENIED_REASON, deniedReasonValue)
+            AuditEventMetadata(
+                CommonAuditMetadataKey.ERROR_ID,
+                error.errorId.asHexDashString()
+            ),
+            AuditEventMetadata(
+                CommonAuditMetadataKey.DENIED_REASON,
+                deniedReasonValue
+            )
         )
 
         if (error is UserError.UserLocked) {

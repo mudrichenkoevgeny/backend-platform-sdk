@@ -10,15 +10,12 @@ import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.createTestMfaChallengeData
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserPrivate
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
-import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.lockout.UserLockoutService
+import io.github.mudrichenkoevgeny.backend.feature.user.manager.totp.TotpManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
-import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByTotpRecoveryCodeUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
@@ -26,6 +23,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserPrivate
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -35,11 +34,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class LoginByTotpRecoveryCodeUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val mfaService = mockk<MfaService>()
     private val totpManager = mockk<TotpManager>()
     private val authManager = mockk<AuthManager>()
@@ -62,7 +63,10 @@ class LoginByTotpRecoveryCodeUseCaseTest {
         val context = createTestRequestContext()
         val userId = UserId.generate()
         val identifierId = UserIdentifierId.generate()
-        val userPrivate = createTestUserPrivate(id = userId, role = UserRole.USER)
+        val userPrivate = createTestUserPrivate(
+            id = userId,
+            role = UserRole.USER
+        )
         val authData = createTestAuthData(userPrivate = userPrivate)
 
         val mfaChallenge = createTestMfaChallengeData(
@@ -73,17 +77,52 @@ class LoginByTotpRecoveryCodeUseCaseTest {
             type = MfaChallengeType.LOGIN_RECOVERY_CODE
         )
 
-        coEvery { rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_MFA_TOKEN) } returns AppResult.Success(Unit)
-        coEvery { mfaService.getChallenge(TEST_MFA_TOKEN, MfaChallengeType.LOGIN_RECOVERY_CODE) } returns AppResult.Success(mfaChallenge)
-        coEvery { userLockoutService.checkLockout(any<String>(), any()) } returns AppResult.Success(Unit)
-        coEvery { totpManager.verifyTotpRecoveryCode(userId, TEST_RECOVERY_CODE) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.LOGIN_ATTEMPT,
+                TEST_MFA_TOKEN
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            mfaService.getChallenge(
+                TEST_MFA_TOKEN,
+                MfaChallengeType.LOGIN_RECOVERY_CODE
+            )
+        } returns AppResult.Success(mfaChallenge)
+        coEvery {
+            userLockoutService.checkLockout(
+                any<String>(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            totpManager.verifyTotpRecoveryCode(
+                userId,
+                TEST_RECOVERY_CODE
+            )
+        } returns AppResult.Success(Unit)
         coEvery { userLockoutService.clearLockout(any()) } returns AppResult.Success(Unit)
         coEvery { mfaService.consumeChallenge(TEST_MFA_TOKEN) } returns AppResult.Success(Unit)
-        coEvery { authManager.completeMfaAuthentication(userId, identifierId, any(), any(), any()) } returns AppResult.Success(authData)
+        coEvery {
+            authManager.completeMfaAuthentication(
+                userId,
+                identifierId,
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(authData)
 
-        val result = useCase(context, TEST_MFA_TOKEN, TEST_RECOVERY_CODE)
+        val result = useCase(
+            context,
+            TEST_MFA_TOKEN,
+            TEST_RECOVERY_CODE
+        )
 
-        assertEquals(AppResult.Success(authData), result)
+        assertEquals(
+            AppResult.Success(authData),
+            result
+        )
 
         coVerify(exactly = 1) {
             auditLogger.log(
@@ -113,13 +152,43 @@ class LoginByTotpRecoveryCodeUseCaseTest {
             type = MfaChallengeType.LOGIN_RECOVERY_CODE
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { mfaService.getChallenge(any(), any()) } returns AppResult.Success(mfaChallenge)
-        coEvery { userLockoutService.checkLockout(any<String>(), any()) } returns AppResult.Success(Unit)
-        coEvery { totpManager.verifyTotpRecoveryCode(any(), any()) } returns AppResult.Error(error)
-        coEvery { userLockoutService.recordFailedAttempt(any<String>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            mfaService.getChallenge(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(mfaChallenge)
+        coEvery {
+            userLockoutService.checkLockout(
+                any<String>(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            totpManager.verifyTotpRecoveryCode(
+                any(),
+                any()
+            )
+        } returns AppResult.Error(error)
+        coEvery {
+            userLockoutService.recordFailedAttempt(
+                any<String>(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
 
-        val result = useCase(context, TEST_MFA_TOKEN, TEST_RECOVERY_CODE)
+        val result = useCase(
+            context,
+            TEST_MFA_TOKEN,
+            TEST_RECOVERY_CODE
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {
@@ -143,10 +212,24 @@ class LoginByTotpRecoveryCodeUseCaseTest {
         val context = createTestRequestContext()
         val error = SecurityError.InvalidMfaToken()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { mfaService.getChallenge(any(), any()) } returns AppResult.Error(error)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            mfaService.getChallenge(
+                any(),
+                any()
+            )
+        } returns AppResult.Error(error)
 
-        val result = useCase(context, TEST_MFA_TOKEN, TEST_RECOVERY_CODE)
+        val result = useCase(
+            context,
+            TEST_MFA_TOKEN,
+            TEST_RECOVERY_CODE
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {

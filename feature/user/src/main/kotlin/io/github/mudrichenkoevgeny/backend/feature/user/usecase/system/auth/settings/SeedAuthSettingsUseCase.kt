@@ -11,10 +11,11 @@ import javax.inject.Singleton
  * @return [AppResult.Success] if all settings are registered.
  */
 @Singleton
-class SeedAuthSettingsUseCase @Inject constructor(
+public class SeedAuthSettingsUseCase @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider
 ) {
-    suspend operator fun invoke(): AppResult<Unit> {
-        return authSettingsProvider.initialize()
-    }
+    /**
+     * Initializes and seeds authentication settings.
+     */
+    public suspend operator fun invoke(): AppResult<Unit> = authSettingsProvider.initialize()
 }

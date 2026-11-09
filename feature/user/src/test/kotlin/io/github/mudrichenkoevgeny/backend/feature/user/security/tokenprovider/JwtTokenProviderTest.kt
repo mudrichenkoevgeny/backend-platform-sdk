@@ -18,10 +18,11 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.TimeSource
 
 class JwtTokenProviderTest {
-
     private val refreshTokenProvider = mockk<RefreshTokenProvider>()
     private val userConfig = mockk<UserConfig>()
 
@@ -30,16 +31,17 @@ class JwtTokenProviderTest {
     @BeforeEach
     fun setUp() {
         every { userConfig.jwtSecret } returns SECRET
-        provider = JwtTokenProvider(userConfig, refreshTokenProvider)
+        provider = JwtTokenProvider(
+            userConfig,
+            refreshTokenProvider
+        )
     }
 
     @Test
     fun `should generate and verify valid access token`() {
         val userId = UserId.generate()
         val sessionId = UserSessionId.generate()
-        val now = kotlin.time.TimeSource.Monotonic.markNow().plus(0.hours).let {
-            kotlin.time.Clock.System.now()
-        }
+        val now = TimeSource.Monotonic.markNow().plus(0.hours).let { Clock.System.now() }
         val expiry = now + 1.hours
 
         val identifierId = UserIdentifierId.generate()
@@ -57,13 +59,16 @@ class JwtTokenProviderTest {
 
         val verifyResult = provider.verifyAccessToken(token)
         assertTrue(verifyResult is AppResult.Success)
-        assertEquals(userId, (verifyResult as AppResult.Success).data)
+        assertEquals(
+            userId,
+            (verifyResult as AppResult.Success).data
+        )
     }
 
     @Test
     fun `should return error for expired token`() {
         val userId = UserId.generate()
-        val now = kotlin.time.Clock.System.now()
+        val now = Clock.System.now()
         val pastIssuedAt = now - 2.hours
         val pastExpiry = now - 1.hours
 
@@ -102,8 +107,14 @@ class JwtTokenProviderTest {
         val genResult = provider.generateRefreshToken()
         val hashResult = provider.getRefreshTokenHash(expectedToken)
 
-        assertEquals(expectedToken, (genResult as AppResult.Success).data)
-        assertEquals(expectedHash, (hashResult as AppResult.Success).data)
+        assertEquals(
+            expectedToken,
+            (genResult as AppResult.Success).data
+        )
+        assertEquals(
+            expectedHash,
+            (hashResult as AppResult.Success).data
+        )
 
         verify { refreshTokenProvider.getRefreshToken() }
         verify { refreshTokenProvider.getRefreshTokenHash(expectedToken) }

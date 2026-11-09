@@ -16,27 +16,39 @@ import javax.inject.Singleton
  * one for low-level system failures and one for business-level problems.
  */
 @Singleton
-class AppLoggerImpl(
+public class AppLoggerImpl(
     @param:SystemLogger private val systemLogger: Logger,
     @param:BusinessLogger private val businessLogger: Logger
 ) : AppLogger {
-
     override fun logError(appError: AppError) {
         when (appError) {
             is CommonError.Internal -> {
-                logSystemError(appError, appError.throwable, appError.call)
+                logSystemError(
+                    appError,
+                    appError.throwable,
+                    appError.call
+                )
             }
+
             is CommonError.Database -> {
                 logSystemError(appError)
             }
+
             else -> {
                 logBusinessError(appError)
             }
         }
     }
 
-    private fun logSystemError(appError: AppError, throwable: Throwable? = null, call: ApplicationCall? = null) {
-        val parts = mutableListOf("Unhandled exception", "errorId=${appError.errorId.asHexDashString()}")
+    private fun logSystemError(
+        appError: AppError,
+        throwable: Throwable? = null,
+        call: ApplicationCall? = null
+    ) {
+        val parts = mutableListOf(
+            "Unhandled exception",
+            "errorId=${appError.errorId.asHexDashString()}"
+        )
 
         call?.let {
             parts += "path=${it.request.path()}"
@@ -45,7 +57,10 @@ class AppLoggerImpl(
 
         val message = parts.joinToString(", ")
         if (throwable != null) {
-            systemLogger.error(message, throwable)
+            systemLogger.error(
+                message,
+                throwable
+            )
         } else {
             systemLogger.error(message)
         }

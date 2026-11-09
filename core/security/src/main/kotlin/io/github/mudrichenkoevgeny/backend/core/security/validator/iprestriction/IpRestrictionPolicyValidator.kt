@@ -10,8 +10,7 @@ import javax.inject.Singleton
  * Validates client IP addresses against an [IpRestrictionPolicy].
  */
 @Singleton
-class IpRestrictionPolicyValidator @Inject constructor() {
-
+public class IpRestrictionPolicyValidator @Inject constructor() {
     /**
      * Checks if the given [ipAddress] is permitted by the provided [policy].
      *
@@ -19,7 +18,10 @@ class IpRestrictionPolicyValidator @Inject constructor() {
      * @param policy IP restriction policy containing blacklist and whitelist settings.
      * @return `true` if the IP address is allowed, `false` if it is restricted.
      */
-    fun isIpAllowed(ipAddress: String, policy: IpRestrictionPolicy): Boolean {
+    public fun isIpAllowed(
+        ipAddress: String,
+        policy: IpRestrictionPolicy
+    ): Boolean {
         if (!policy.isBlacklistEnabled && !policy.isWhitelistEnabled) {
             return true
         }
@@ -30,14 +32,24 @@ class IpRestrictionPolicyValidator @Inject constructor() {
         }
 
         if (policy.isBlacklistEnabled) {
-            val isBlacklisted = policy.blacklist.any { pattern -> matchesIp(clientIp, pattern) }
+            val isBlacklisted = policy.blacklist.any { pattern ->
+                matchesIp(
+                    clientIp,
+                    pattern
+                )
+            }
             if (isBlacklisted) {
                 return false
             }
         }
 
         if (policy.isWhitelistEnabled) {
-            val isWhitelisted = policy.whitelist.any { pattern -> matchesIp(clientIp, pattern) }
+            val isWhitelisted = policy.whitelist.any { pattern ->
+                matchesIp(
+                    clientIp,
+                    pattern
+                )
+            }
             if (!isWhitelisted) {
                 return false
             }
@@ -46,24 +58,37 @@ class IpRestrictionPolicyValidator @Inject constructor() {
         return true
     }
 
-    private fun matchesIp(clientIp: String, pattern: String): Boolean {
+    private fun matchesIp(
+        clientIp: String,
+        pattern: String
+    ): Boolean {
         val trimmedPattern = pattern.trim()
         if (trimmedPattern.isEmpty()) {
             return false
         }
 
-        if (clientIp.equals(trimmedPattern, ignoreCase = true)) {
+        if (clientIp.equals(
+                trimmedPattern,
+                ignoreCase = true
+            )
+        ) {
             return true
         }
 
         if (trimmedPattern.contains("/")) {
-            return matchesCidr(clientIp, trimmedPattern)
+            return matchesCidr(
+                clientIp,
+                trimmedPattern
+            )
         }
 
         return false
     }
 
-    private fun matchesCidr(clientIp: String, cidrPattern: String): Boolean {
+    private fun matchesCidr(
+        clientIp: String,
+        cidrPattern: String
+    ): Boolean {
         return try {
             val parts = cidrPattern.split("/")
             if (parts.size != 2) {
@@ -86,8 +111,14 @@ class IpRestrictionPolicyValidator @Inject constructor() {
                 return false
             }
 
-            val networkInt = BigInteger(1, networkBytes)
-            val clientInt = BigInteger(1, clientBytes)
+            val networkInt = BigInteger(
+                1,
+                networkBytes
+            )
+            val clientInt = BigInteger(
+                1,
+                clientBytes
+            )
 
             val mask = if (prefixLength == 0) {
                 BigInteger.ZERO

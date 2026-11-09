@@ -1,12 +1,12 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.user
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class GetUserUseCaseTest {
-
     private val userManager = mockk<UserManager>()
 
     private val useCase = GetUserUseCase(
@@ -34,7 +33,10 @@ class GetUserUseCaseTest {
 
         val result = useCase(context)
 
-        assertEquals(AppResult.Success(expectedUserPrivate), result)
+        assertEquals(
+            AppResult.Success(expectedUserPrivate),
+            result
+        )
     }
 
     @Test
@@ -54,6 +56,9 @@ class GetUserUseCaseTest {
 
         val result = useCase(context)
 
-        assertEquals(AppResult.Error(error), result)
+        assertEquals(
+            AppResult.Error(error),
+            result
+        )
     }
 }

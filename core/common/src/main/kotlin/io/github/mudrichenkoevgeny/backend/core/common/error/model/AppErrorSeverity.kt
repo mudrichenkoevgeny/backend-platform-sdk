@@ -5,8 +5,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.error.model
  *
  * Use to decide log level, whether to notify ops, or to aggregate error rates by severity.
  */
-enum class AppErrorSeverity {
-
+public enum class AppErrorSeverity {
     /** Minor or expected validation/rate-limit issues; often not escalated. */
     LOW,
 

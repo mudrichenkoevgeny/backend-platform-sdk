@@ -19,18 +19,21 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to link a new phone identifier to an existing user account.
+ */
 @Singleton
-class AddUserIdentifierPhoneUseCase @Inject constructor(
+public class AddUserIdentifierPhoneUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -61,7 +64,7 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] containing the newly created [UserIdentifierPrivate].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         phoneNumber: String,
         confirmationCode: String,
         authenticatedRequestContext: AuthenticatedRequestContext
@@ -99,8 +102,7 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserInternalById(currentUserId)
-            .mapNotNullOrError(UserError.UserForbidden())
+        val userResult = userManager.getUserInternalById(currentUserId).mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (userResult) {
             is AppResult.Error -> return handleError(
@@ -109,6 +111,7 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 
@@ -151,6 +154,7 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
                 actorUserRole = auditActorUserRole,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> if (!verifyOtpResult.data) {
                 return handleError(
                     error = UserError.WrongConfirmationCode(),
@@ -177,6 +181,7 @@ class AddUserIdentifierPhoneUseCase @Inject constructor(
                     baseMetadata = auditMetadata
                 )
             }
+
             is AppResult.Success -> {
                 logAudit(
                     actorId = auditActorId,

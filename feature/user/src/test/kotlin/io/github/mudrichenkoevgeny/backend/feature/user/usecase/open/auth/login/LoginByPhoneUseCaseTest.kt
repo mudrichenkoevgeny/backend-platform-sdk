@@ -4,11 +4,8 @@ import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.error.CommonAuditErrorParser
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserPrivate
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.auth.AuthManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
@@ -23,9 +20,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserPrivate
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,11 +32,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class LoginByPhoneUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val otpService = mockk<OtpService>()
     private val authManager = mockk<AuthManager>()
     private val userLockoutService = mockk<UserLockoutService>(relaxed = true)
@@ -56,10 +56,34 @@ class LoginByPhoneUseCaseTest {
 
     @BeforeEach
     fun setup() {
-        coEvery { userLockoutService.checkLockout(any<String>(), any()) } returns AppResult.Success(Unit)
-        coEvery { userLockoutService.checkLockout(any<List<String>>(), any()) } returns AppResult.Success(Unit)
-        coEvery { userLockoutService.recordFailedAttempt(any<String>(), any(), any()) } returns AppResult.Success(Unit)
-        coEvery { userLockoutService.recordFailedAttempt(any<List<String>>(), any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            userLockoutService.checkLockout(
+                any<String>(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            userLockoutService.checkLockout(
+                any<List<String>>(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            userLockoutService.recordFailedAttempt(
+                any<String>(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            userLockoutService.recordFailedAttempt(
+                any<List<String>>(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(
+            Unit
+        )
         coEvery { userLockoutService.clearLockout(any()) } returns AppResult.Success(Unit)
     }
 
@@ -67,15 +91,25 @@ class LoginByPhoneUseCaseTest {
     fun `successfully authenticates by phone and logs audit`() = runTest {
         val context = createTestRequestContext()
         val userId = UserId.generate()
-        val userPrivate = createTestUserPrivate(id = userId, role = UserRole.USER)
+        val userPrivate = createTestUserPrivate(
+            id = userId,
+            role = UserRole.USER
+        )
         val authData = createTestAuthData(userPrivate = userPrivate)
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_PHONE)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.LOGIN_ATTEMPT,
+                TEST_PHONE
+            )
         } returns AppResult.Success(Unit)
 
         coEvery {
-            otpService.verifyOtp(TEST_PHONE, UserOtpVerificationType.PHONE_VERIFICATION, TEST_CODE)
+            otpService.verifyOtp(
+                TEST_PHONE,
+                UserOtpVerificationType.PHONE_VERIFICATION,
+                TEST_CODE
+            )
         } returns AppResult.Success(true)
 
         coEvery {
@@ -89,9 +123,16 @@ class LoginByPhoneUseCaseTest {
             )
         } returns AppResult.Success(authData)
 
-        val result = useCase(TEST_PHONE, TEST_CODE, context)
+        val result = useCase(
+            TEST_PHONE,
+            TEST_CODE,
+            context
+        )
 
-        assertEquals(AppResult.Success(authData), result)
+        assertEquals(
+            AppResult.Success(authData),
+            result
+        )
 
         coVerify(exactly = 1) {
             auditLogger.log(
@@ -114,10 +155,17 @@ class LoginByPhoneUseCaseTest {
         val error = UserError.InvalidCredentials()
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.LOGIN_ATTEMPT, TEST_PHONE)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.LOGIN_ATTEMPT,
+                TEST_PHONE
+            )
         } returns AppResult.Error(error)
 
-        val result = useCase(TEST_PHONE, TEST_CODE, context)
+        val result = useCase(
+            TEST_PHONE,
+            TEST_CODE,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {
@@ -139,10 +187,25 @@ class LoginByPhoneUseCaseTest {
     fun `returns error when OTP code is incorrect`() = runTest {
         val context = createTestRequestContext()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { otpService.verifyOtp(any(), any(), any()) } returns AppResult.Success(false)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            otpService.verifyOtp(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(false)
 
-        val result = useCase(TEST_PHONE, TEST_CODE, context)
+        val result = useCase(
+            TEST_PHONE,
+            TEST_CODE,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
 
@@ -163,8 +226,19 @@ class LoginByPhoneUseCaseTest {
         val context = createTestRequestContext()
         val authError = UserError.UserBanned()
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
-        coEvery { otpService.verifyOtp(any(), any(), any()) } returns AppResult.Success(true)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
+        coEvery {
+            otpService.verifyOtp(
+                any(),
+                any(),
+                any()
+            )
+        } returns AppResult.Success(true)
         coEvery {
             authManager.authenticateOrCreateUser(
                 clientInfo = any(),
@@ -176,7 +250,11 @@ class LoginByPhoneUseCaseTest {
             )
         } returns AppResult.Error(authError)
 
-        val result = useCase(TEST_PHONE, TEST_CODE, context)
+        val result = useCase(
+            TEST_PHONE,
+            TEST_CODE,
+            context
+        )
 
         assertTrue(result is AppResult.Error)
         coVerify(exactly = 1) {

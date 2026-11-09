@@ -13,30 +13,25 @@ import javax.inject.Singleton
  * with a real SMS provider integration.
  */
 @Singleton
-class PhoneServiceImpl @Inject constructor() : PhoneService {
-
-    override suspend fun sendVerificationCode(phoneNumber: String, code: String, language: String?): AppResult<Unit> {
-        return AppResult.Error(CommonError.ServiceUnavailable())
-    }
+public class PhoneServiceImpl @Inject constructor() : PhoneService {
+    override suspend fun sendVerificationCode(
+        phoneNumber: String,
+        code: String,
+        language: String?
+    ): AppResult<Unit> = AppResult.Error(CommonError.ServiceUnavailable())
 
     override suspend fun sendUnlockAccountVerificationCode(
         phoneNumber: String,
         code: String,
         language: String?
-    ): AppResult<Unit> {
-        return AppResult.Error(CommonError.ServiceUnavailable())
-    }
+    ): AppResult<Unit> = AppResult.Error(CommonError.ServiceUnavailable())
 
-    override suspend fun fakeSendSMS(): AppResult<Unit> {
-        return AppResult.Error(CommonError.ServiceUnavailable())
-    }
+    override suspend fun fakeSendSMS(): AppResult<Unit> = AppResult.Error(CommonError.ServiceUnavailable())
 
     override suspend fun sendAlreadyRegisteredPhoneNumber(
         phoneNumber: String,
         ipAddress: String?,
         deviceName: String?,
         language: String?
-    ): AppResult<Unit> {
-        return AppResult.Error(CommonError.ServiceUnavailable())
-    }
+    ): AppResult<Unit> = AppResult.Error(CommonError.ServiceUnavailable())
 }

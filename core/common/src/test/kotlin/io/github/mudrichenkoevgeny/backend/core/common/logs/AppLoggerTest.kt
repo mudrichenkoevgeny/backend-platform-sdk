@@ -14,10 +14,12 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.slf4j.Logger
 
 class AppLoggerTest {
-
     private val systemLogger = mockk<Logger>(relaxed = true)
     private val businessLogger = mockk<Logger>(relaxed = true)
-    private val appLogger = AppLoggerImpl(systemLogger, businessLogger)
+    private val appLogger = AppLoggerImpl(
+        systemLogger,
+        businessLogger
+    )
 
     @Test
     fun `logError routes internal error to system logger`() {

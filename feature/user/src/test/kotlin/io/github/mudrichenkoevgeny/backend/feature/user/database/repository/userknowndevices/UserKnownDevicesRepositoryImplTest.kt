@@ -23,11 +23,11 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserKnownDevicesRepositoryImplTest {
-
     private val dataSource = createTestDataSource("user_known_devices_repo")
     private lateinit var repository: UserKnownDevicesRepository
     private lateinit var userRepository: UserRepository
@@ -37,8 +37,14 @@ class UserKnownDevicesRepositoryImplTest {
         Database.connect(dataSource)
         runBlocking {
             suspendTransaction {
-                SchemaUtils.drop(UserKnownDevicesTable, UsersTable)
-                SchemaUtils.create(UsersTable, UserKnownDevicesTable)
+                SchemaUtils.drop(
+                    UserKnownDevicesTable,
+                    UsersTable
+                )
+                SchemaUtils.create(
+                    UsersTable,
+                    UserKnownDevicesTable
+                )
             }
         }
         repository = UserKnownDevicesRepositoryImpl()
@@ -57,7 +63,12 @@ class UserKnownDevicesRepositoryImplTest {
     @Test
     fun `getKnownDevice returns null when not found`() = runBlocking {
         val userId = createTestUserInDb()
-        val result = suspendTransaction { repository.getKnownDevice(userId, ClientDeviceId.generate()) }
+        val result = suspendTransaction {
+            repository.getKnownDevice(
+                userId,
+                ClientDeviceId.generate()
+            )
+        }
         val success = result as AppResult.Success
         assertNull(success.data)
     }
@@ -66,7 +77,7 @@ class UserKnownDevicesRepositoryImplTest {
     fun `createKnownDevice persists and retrieves known device`() = runBlocking {
         val userId = createTestUserInDb()
         val deviceId = ClientDeviceId.generate()
-        val now = kotlin.time.Clock.System.now()
+        val now = Clock.System.now()
 
         val knownDevice = UserKnownDevice(
             userId = userId,
@@ -84,22 +95,40 @@ class UserKnownDevicesRepositoryImplTest {
         assertTrue(createResult is AppResult.Success)
 
         val getResult = suspendTransaction {
-            repository.getKnownDevice(userId, deviceId)
+            repository.getKnownDevice(
+                userId,
+                deviceId
+            )
         }
         assertTrue(getResult is AppResult.Success)
         val device = checkNotNull((getResult as AppResult.Success).data)
-        assertEquals(userId, device.userId)
-        assertEquals(deviceId, device.deviceId)
-        assertEquals("127.0.0.1", device.firstIpAddress)
-        assertEquals("127.0.0.1", device.lastIpAddress)
-        assertEquals("Mozilla/5.0", device.userAgent)
+        assertEquals(
+            userId,
+            device.userId
+        )
+        assertEquals(
+            deviceId,
+            device.deviceId
+        )
+        assertEquals(
+            "127.0.0.1",
+            device.firstIpAddress
+        )
+        assertEquals(
+            "127.0.0.1",
+            device.lastIpAddress
+        )
+        assertEquals(
+            "Mozilla/5.0",
+            device.userAgent
+        )
     }
 
     @Test
     fun `updateKnownDevice updates last ip and seen at`() = runBlocking {
         val userId = createTestUserInDb()
         val deviceId = ClientDeviceId.generate()
-        val now = kotlin.time.Clock.System.now()
+        val now = Clock.System.now()
         val updatedSeenAt = now + 1.hours
 
         val knownDevice = UserKnownDevice(
@@ -124,19 +153,31 @@ class UserKnownDevicesRepositoryImplTest {
         }
 
         val getResult = suspendTransaction {
-            repository.getKnownDevice(userId, deviceId)
+            repository.getKnownDevice(
+                userId,
+                deviceId
+            )
         }
         val device = checkNotNull((getResult as AppResult.Success).data)
-        assertEquals("192.168.1.1", device.firstIpAddress)
-        assertEquals("192.168.1.2", device.lastIpAddress)
-        assertEquals(updatedSeenAt.toEpochMilliseconds(), device.lastSeenAt.toEpochMilliseconds())
+        assertEquals(
+            "192.168.1.1",
+            device.firstIpAddress
+        )
+        assertEquals(
+            "192.168.1.2",
+            device.lastIpAddress
+        )
+        assertEquals(
+            updatedSeenAt.toEpochMilliseconds(),
+            device.lastSeenAt.toEpochMilliseconds()
+        )
     }
 
     @Test
     fun `updateKnownDevice returns error when lastSeenAt is null`() = runBlocking {
         val userId = createTestUserInDb()
         val deviceId = ClientDeviceId.generate()
-        val now = kotlin.time.Clock.System.now()
+        val now = Clock.System.now()
 
         val knownDevice = UserKnownDevice(
             userId = userId,
@@ -160,7 +201,10 @@ class UserKnownDevicesRepositoryImplTest {
         assertTrue(result is AppResult.Error)
         val error = (result as AppResult.Error).error
         assertTrue(error is CommonError.Database)
-        assertEquals("lastSeenAt cannot be null", error.secretArgs?.get(CommonErrorArgs.MESSAGE))
+        assertEquals(
+            "lastSeenAt cannot be null",
+            error.secretArgs?.get(CommonErrorArgs.MESSAGE)
+        )
     }
 
     @Test

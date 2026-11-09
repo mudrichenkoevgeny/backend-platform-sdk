@@ -24,8 +24,7 @@ import javax.inject.Singleton
  * Feature-specific error parser for user-related errors.
  */
 @Singleton
-class UserErrorParser @Inject constructor() : AppErrorSpecificParser {
-
+public class UserErrorParser @Inject constructor() : AppErrorSpecificParser {
     override fun getApiErrorResponse(
         errorId: ErrorId,
         code: String,
@@ -69,14 +68,21 @@ class UserErrorParser @Inject constructor() : AppErrorSpecificParser {
                 val lockoutUntilRaw = args?.get(UserErrorArgs.TEMPORARY_LOCKOUT_UNTIL)
                 val lockoutUntilEpoch = lockoutUntilRaw?.toString()?.toLongOrNull()
                 val formattedUntil = lockoutUntilEpoch?.formatEpochMillisToUtcString() ?: lockoutUntilRaw?.toString()
-                userStrings.resolveUserLockedMessage(lockoutType = lockoutType, formattedUntil = formattedUntil)
+                userStrings.resolveUserLockedMessage(
+                    lockoutType = lockoutType,
+                    formattedUntil = formattedUntil
+                )
             }
 
             UserErrorCodes.USER_IDENTIFIER_LIMIT_REACHED -> {
                 val commonStrings = CommonModuleStrings(locale = locale)
                 val limit = args?.get(UserErrorArgs.MAX_NUMBER_OF_IDENTIFIERS)
                 val providerRaw = args?.get(UserErrorArgs.USER_AUTH_PROVIDER)?.toString()
-                userStrings.resolveUserIdentifierLimitReachedMessage(commonStrings, limit = limit, providerRaw = providerRaw)
+                userStrings.resolveUserIdentifierLimitReachedMessage(
+                    commonStrings,
+                    limit = limit,
+                    providerRaw = providerRaw
+                )
             }
 
             UserErrorCodes.TOTAL_USER_IDENTIFIERS_LIMIT_REACHED -> {
@@ -90,19 +96,23 @@ class UserErrorParser @Inject constructor() : AppErrorSpecificParser {
                 val minLength = args?.get(UserErrorArgs.NICKNAME_MIN_LENGTH)
                 userStrings.resolveNicknameTooShortMessage(minLength = minLength)
             }
+
             UserErrorCodes.NICKNAME_TOO_LONG -> {
                 val maxLength = args?.get(UserErrorArgs.NICKNAME_MAX_LENGTH)
                 userStrings.resolveNicknameTooLongMessage(maxLength = maxLength)
             }
+
             UserErrorCodes.INVALID_NICKNAME_CHARACTERS -> strings.invalidNicknameCharacters
             UserErrorCodes.DISPLAY_NAME_TOO_SHORT -> {
                 val minLength = args?.get(UserErrorArgs.DISPLAY_NAME_MIN_LENGTH)
                 userStrings.resolveDisplayNameTooShortMessage(minLength = minLength)
             }
+
             UserErrorCodes.DISPLAY_NAME_TOO_LONG -> {
                 val maxLength = args?.get(UserErrorArgs.DISPLAY_NAME_MAX_LENGTH)
                 userStrings.resolveDisplayNameTooLongMessage(maxLength = maxLength)
             }
+
             UserErrorCodes.INVALID_DISPLAY_NAME_CHARACTERS -> strings.invalidDisplayNameCharacters
 
             else -> return null
@@ -119,12 +129,10 @@ class UserErrorParser @Inject constructor() : AppErrorSpecificParser {
     override fun getApiErrorResponse(
         appError: AppError,
         locale: String
-    ): ApiErrorResponse? {
-        return getApiErrorResponse(
-            errorId = appError.errorId,
-            code = appError.code,
-            args = appError.publicArgs,
-            locale = locale
-        )
-    }
+    ): ApiErrorResponse? = getApiErrorResponse(
+        errorId = appError.errorId,
+        code = appError.code,
+        args = appError.publicArgs,
+        locale = locale
+    )
 }

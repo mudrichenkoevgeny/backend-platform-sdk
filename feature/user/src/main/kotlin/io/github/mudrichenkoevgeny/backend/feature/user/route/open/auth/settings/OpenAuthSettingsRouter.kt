@@ -29,12 +29,11 @@ import javax.inject.Singleton
  * 1. [OpenAuthSettingsRoutes.GET_OPEN_AUTH_SETTINGS] — retrieves global authentication configurations (e.g., enabled providers) via [GetOpenAuthSettingsUseCase].
  */
 @Singleton
-class OpenAuthSettingsRouter @Inject constructor(
+public class OpenAuthSettingsRouter @Inject constructor(
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val getOpenAuthSettingsUseCase: GetOpenAuthSettingsUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         registerGetAuthSettingsRoute(route)
     }
@@ -45,7 +44,12 @@ class OpenAuthSettingsRouter @Inject constructor(
 
         route.get(
             path = OpenAuthSettingsRoutes.GET_OPEN_AUTH_SETTINGS,
-            builder = { getAuthSettingsDocs(allowedRoles, allowedAccountStatuses) },
+            builder = {
+                getAuthSettingsDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
             body = { getAuthSettings() }
         )
     }
@@ -76,15 +80,19 @@ class OpenAuthSettingsRouter @Inject constructor(
     private suspend fun RoutingContext.getAuthSettings() {
         val result = getOpenAuthSettingsUseCase()
 
-        call.respondResult(result, appLogger, appErrorParser) { authSettings ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { authSettings ->
             authSettings.toOpenAuthSettingsPayload()
         }
     }
 
-    companion object {
-        const val GET_AUTH_SETTINGS_ROUTE_SUMMARY = "Get auth settings"
-        const val GET_AUTH_SETTINGS_ROUTE_DESCRIPTION = "Returns available authentication settings."
-        const val GET_AUTH_SETTINGS_ROUTE_OPERATION_ID = "openGetAuthSettings"
-        const val GET_AUTH_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Auth settings data"
+    public companion object {
+        private const val GET_AUTH_SETTINGS_ROUTE_SUMMARY = "Get auth settings"
+        private const val GET_AUTH_SETTINGS_ROUTE_DESCRIPTION = "Returns available authentication settings."
+        private const val GET_AUTH_SETTINGS_ROUTE_OPERATION_ID = "openGetAuthSettings"
+        private const val GET_AUTH_SETTINGS_ROUTE_RESPONSE_OK_DESCRIPTION = "Auth settings data"
     }
 }

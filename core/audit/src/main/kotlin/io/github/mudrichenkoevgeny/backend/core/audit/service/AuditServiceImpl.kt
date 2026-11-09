@@ -22,12 +22,11 @@ import javax.inject.Singleton
  * [awaitAll] joins all children of the scope's job so that tests or shutdown can wait for pending writes.
  */
 @Singleton
-class AuditServiceImpl @Inject constructor(
+public class AuditServiceImpl @Inject constructor(
     private val auditEventRepository: AuditEventRepository,
     @param:BackgroundScope private val scope: CoroutineScope,
     private val appLogger: AppLogger
 ) : AuditService {
-
     override fun log(auditEvent: AuditEventInternal) {
         scope.launch {
             try {

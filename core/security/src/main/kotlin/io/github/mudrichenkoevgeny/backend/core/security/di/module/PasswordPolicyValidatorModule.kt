@@ -15,17 +15,13 @@ import javax.inject.Singleton
  * - Provides [PasswordPolicyValidator] as [PasswordPolicyValidatorImpl].
  */
 @Module
-class PasswordPolicyValidatorModule {
+public class PasswordPolicyValidatorModule {
+    @Provides
+    @Singleton
+    public fun provideManagementPasswordPolicy(securityConfig: SecurityConfig): ManagementPasswordPolicy =
+        securityConfig.managementSecuritySettings.passwordPolicy
 
     @Provides
     @Singleton
-    fun provideManagementPasswordPolicy(securityConfig: SecurityConfig): ManagementPasswordPolicy {
-        return securityConfig.managementSecuritySettings.passwordPolicy
-    }
-
-    @Provides
-    @Singleton
-    fun providePasswordPolicyValidator(): PasswordPolicyValidator {
-        return PasswordPolicyValidatorImpl()
-    }
+    public fun providePasswordPolicyValidator(): PasswordPolicyValidator = PasswordPolicyValidatorImpl()
 }

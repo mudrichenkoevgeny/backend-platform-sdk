@@ -13,12 +13,11 @@ import io.ktor.server.application.ApplicationCall
  * @param mapper function that converts the raw string value to type [T]
  * @throws RequestHandlingException when the parameter is missing or cannot be converted
  */
-inline fun <reified T> ApplicationCall.validatePathParameter(
+public inline fun <reified T> ApplicationCall.validatePathParameter(
     name: String,
     mapper: (String) -> T
 ): T {
-    val rawValue = parameters[name]
-        ?: throw RequestHandlingException(CommonError.MissingRequiredParameter(name))
+    val rawValue = parameters[name] ?: throw RequestHandlingException(CommonError.MissingRequiredParameter(name))
 
     return try {
         mapper(rawValue)

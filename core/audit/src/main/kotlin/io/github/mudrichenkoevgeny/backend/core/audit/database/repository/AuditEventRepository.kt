@@ -13,14 +13,14 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
  * Implementations are responsible for storing events and returning paginated lists
  * with optional filters.
  */
-interface AuditEventRepository {
+public interface AuditEventRepository {
     /**
      * Persists a new [AuditEventInternal] in the database.
      *
      * @param event The audit event data to insert.
      * @return [AppResult] containing the inserted [AuditEventInternal] or an error.
      */
-    suspend fun createEvent(event: AuditEventInternal): AppResult<AuditEventInternal>
+    public suspend fun createEvent(event: AuditEventInternal): AppResult<AuditEventInternal>
 
     /**
      * Retrieves an [AuditEventInternal] by its unique [AuditEventId].
@@ -28,7 +28,7 @@ interface AuditEventRepository {
      * @param auditEventId The unique identifier of the audit event.
      * @return [AppResult] containing the [AuditEventInternal] if found, `null` if not found, or an error.
      */
-    suspend fun getEventById(auditEventId: AuditEventId): AppResult<AuditEventInternal?>
+    public suspend fun getEventById(auditEventId: AuditEventId): AppResult<AuditEventInternal?>
 
     /**
      * Returns a page of [AuditEventInternal] rows matching optional filters in [queryParams].
@@ -38,7 +38,7 @@ interface AuditEventRepository {
      * @param queryParams query parameters and filters
      * @return [PagedResult] of matching events or an error.
      */
-    suspend fun getEventsPageWithAccessFilter(
+    public suspend fun getEventsPageWithAccessFilter(
         accessFilter: AuditAccessFilter,
         queryParams: ManagementAuditEventListQueryParams
     ): AppResult<PagedResult<AuditEventInternal>>

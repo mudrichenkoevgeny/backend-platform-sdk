@@ -12,8 +12,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to retrieve private file details.
+ */
 @Singleton
-class GetFileUseCase @Inject constructor(
+public class GetFileUseCase @Inject constructor(
     private val storageManager: StorageManager
 ) {
     /**
@@ -31,7 +34,7 @@ class GetFileUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] containing the [StorageFilePrivate] or a [CommonError.NotFound] error.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         fileId: FileId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<StorageFilePrivate> {

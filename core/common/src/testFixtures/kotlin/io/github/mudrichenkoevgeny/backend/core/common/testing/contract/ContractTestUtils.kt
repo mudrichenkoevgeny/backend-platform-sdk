@@ -31,14 +31,11 @@ fun <SharedDto : Any, BackendDto : Any> assertDtoSynchronization(
         .map { propertyAliases[it] ?: it }
         .toSet()
 
-    val mappedBackendProps = backendProps
-        .filterNot { it in ignoredBackendProperties }
-        .toSet()
+    val mappedBackendProps = backendProps.filterNot { it in ignoredBackendProperties }.toSet()
 
     check(mappedSharedProps == mappedBackendProps) {
         "Backend ${backendDtoClass.simpleName} and Shared ${sharedDtoClass.simpleName} are out of sync!\n" +
-                "Expected (Shared): $mappedSharedProps\n" +
-                "Actual (Backend): $mappedBackendProps"
+            "Expected (Shared): $mappedSharedProps\n" + "Actual (Backend): $mappedBackendProps"
     }
 }
 
@@ -55,9 +52,7 @@ fun <Dto : Any> assertExhaustiveFilterKeysParsed(
     sampleValueProvider: (String) -> String,
     parseFunction: (ApplicationCall) -> Dto
 ) {
-    val filterKeys = filterKeysClass.memberProperties
-        .filter { it.isConst }
-        .mapNotNull { it.getter.call() as? String }
+    val filterKeys = filterKeysClass.memberProperties.filter { it.isConst }.mapNotNull { it.getter.call() as? String }
 
     check(filterKeys.isNotEmpty()) {
         "Filter keys class ${filterKeysClass.simpleName} must contain constant string wire key definitions"
@@ -68,7 +63,12 @@ fun <Dto : Any> assertExhaustiveFilterKeysParsed(
     }
 
     val parameters = Parameters.build {
-        sampleParams.forEach { (key, values) -> appendAll(key, values) }
+        sampleParams.forEach { (key, values) ->
+            appendAll(
+                key,
+                values
+            )
+        }
     }
     val call = createTestApplicationCallWithQuery(parameters)
 
@@ -95,10 +95,16 @@ fun <SortByEnum : Enum<SortByEnum>, Dto : Any> assertAllSortByEnumEntriesParsed(
     for (entry in enumEntries) {
         val wireValue = wireValueExtractor(entry)
         val parameters = Parameters.build {
-            append(ListingParamNames.Sort.SORT_BY, wireValue)
+            append(
+                ListingParamNames.Sort.SORT_BY,
+                wireValue
+            )
         }
         val call = createTestApplicationCallWithQuery(parameters)
         val result = parseFunction(call)
-        assertSortByFunction(result, entry)
+        assertSortByFunction(
+            result,
+            entry
+        )
     }
 }

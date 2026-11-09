@@ -25,7 +25,7 @@ import kotlin.time.Instant
  *
  * Responsible for issuing session tokens, persisting refresh sessions, and performing refresh/delete operations.
  */
-interface SessionManager {
+public interface SessionManager {
     /**
      * Creates a new session for the given user and identifier.
      *
@@ -40,7 +40,7 @@ interface SessionManager {
      * @param checkNewDevice Whether to check for new device login.
      * @return [AppResult.Success] with [SessionToken] or an error.
      */
-    suspend fun createSession(
+    public suspend fun createSession(
         userId: UserId,
         userRole: UserRole,
         identifier: String,
@@ -61,7 +61,7 @@ interface SessionManager {
      * @param allowedAccountStatuses Allowed account statuses for the session user.
      * @return [AppResult.Success] with a new [SessionToken] or an error.
      */
-    suspend fun refreshSession(
+    public suspend fun refreshSession(
         refreshToken: RefreshToken,
         clientInfo: ClientInfo,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
@@ -74,7 +74,7 @@ interface SessionManager {
      * @param userSessionId The ID of the session to update.
      * @return [AppResult.Success] containing [Unit] or an error.
      */
-    suspend fun updateLastAccessed(userSessionId: UserSessionId): AppResult<Unit>
+    public suspend fun updateLastAccessed(userSessionId: UserSessionId): AppResult<Unit>
 
     /**
      * Updates the "last reauthenticated" timestamp for a session.
@@ -82,7 +82,7 @@ interface SessionManager {
      * @param userSessionId The ID of the session to update.
      * @return [AppResult.Success] containing [Unit] or an error.
      */
-    suspend fun updateLastReauthenticated(userSessionId: UserSessionId): AppResult<Unit>
+    public suspend fun updateLastReauthenticated(userSessionId: UserSessionId): AppResult<Unit>
 
     /**
      * Deletes a session by its ID.
@@ -90,7 +90,7 @@ interface SessionManager {
      * @param userSessionId The ID of the session to delete.
      * @return [AppResult.Success] containing [Unit] or an error.
      */
-    suspend fun deleteSessionById(userSessionId: UserSessionId): AppResult<Unit>
+    public suspend fun deleteSessionById(userSessionId: UserSessionId): AppResult<Unit>
 
     /**
      * Deletes all sessions for a specific user.
@@ -98,7 +98,7 @@ interface SessionManager {
      * @param userId The unique identifier of the user.
      * @return [AppResult.Success] containing [Unit] or an error.
      */
-    suspend fun deleteAllUserSessions(userId: UserId): AppResult<Unit>
+    public suspend fun deleteAllUserSessions(userId: UserId): AppResult<Unit>
 
     /**
      * Deletes all sessions for a user except the one specified by [userSessionId].
@@ -109,7 +109,7 @@ interface SessionManager {
      * @param userSessionId The ID of the session that should remain active.
      * @return [AppResult.Success] with [DeletedSessions] summary or an error.
      */
-    suspend fun deleteAllUserSessionsExceptOne(
+    public suspend fun deleteAllUserSessionsExceptOne(
         userId: UserId,
         userSessionId: UserSessionId
     ): AppResult<DeletedSessions>
@@ -121,7 +121,7 @@ interface SessionManager {
      * @param userId user id
      * @return [AppResult.Success] with the ID of the deleted session or an error.
      */
-    suspend fun deleteLeastRecentlyUsedUserSession(userId: UserId): AppResult<UserSessionId>
+    public suspend fun deleteLeastRecentlyUsedUserSession(userId: UserId): AppResult<UserSessionId>
 
     /**
      * Loads a session by its ID for internal system use.
@@ -131,7 +131,7 @@ interface SessionManager {
      * @param userSessionId The ID of the session to retrieve.
      * @return [AppResult.Success] with [UserSessionInternal] if found, null otherwise, or an error.
      */
-    suspend fun getUserSessionInternal(userSessionId: UserSessionId): AppResult<UserSessionInternal?>
+    public suspend fun getUserSessionInternal(userSessionId: UserSessionId): AppResult<UserSessionInternal?>
 
     /**
      * Loads a session by its ID for the current user's self-service access.
@@ -139,7 +139,7 @@ interface SessionManager {
      * @param userSessionId The ID of the session to retrieve.
      * @return [AppResult.Success] with [UserSessionPrivate] if found, null otherwise, or an error.
      */
-    suspend fun getUserSessionPrivate(userSessionId: UserSessionId): AppResult<UserSessionPrivate?>
+    public suspend fun getUserSessionPrivate(userSessionId: UserSessionId): AppResult<UserSessionPrivate?>
 
     /**
      * Loads all sessions for a user as internal models.
@@ -147,7 +147,7 @@ interface SessionManager {
      * @param userId The unique identifier of the user.
      * @return [AppResult.Success] with a list of [UserSessionInternal] or an error.
      */
-    suspend fun getAllUserSessionsInternalList(userId: UserId): AppResult<List<UserSessionInternal>>
+    public suspend fun getAllUserSessionsInternalList(userId: UserId): AppResult<List<UserSessionInternal>>
 
     /**
      * Loads sessions associated with a specific identifier ID, with an optional owner filter.
@@ -156,7 +156,7 @@ interface SessionManager {
      * @param userId Optional owner filter to ensure sessions belong to the specified user.
      * @return [AppResult.Success] with a list of [UserSessionInternal] or an error.
      */
-    suspend fun getUserSessionsInternalListByIdentifierId(
+    public suspend fun getUserSessionsInternalListByIdentifierId(
         userIdentifierId: UserIdentifierId,
         userId: UserId? = null
     ): AppResult<List<UserSessionInternal>>
@@ -171,7 +171,7 @@ interface SessionManager {
      * @param managementUserPermissionCodes Permissions used to derive access rules.
      * @return [AppResult.Success] with [UserSessionPrivate], null if not found, or [AppResult.Error].
      */
-    suspend fun getUserSessionPrivate(
+    public suspend fun getUserSessionPrivate(
         userSessionId: UserSessionId,
         managementUserId: UserId,
         managementUserPermissionCodes: Set<PermissionCode>
@@ -186,7 +186,7 @@ interface SessionManager {
      * @param queryParams Structured filter and pagination parameters ([ManagementSessionListQueryParams]).
      * @return [AppResult.Success] with [PagedResult] of session summaries or an error.
      */
-    suspend fun getUserSessionsSummaryPage(
+    public suspend fun getUserSessionsSummaryPage(
         managementUserPermissionCodes: Set<PermissionCode>,
         queryParams: ManagementSessionListQueryParams
     ): AppResult<PagedResult<UserSessionSummary>>
@@ -200,7 +200,7 @@ interface SessionManager {
      * @param queryParams Structured filter and pagination parameters ([SelfSessionListQueryParams]).
      * @return [AppResult.Success] with [PagedResult] of the user's session summaries or an error.
      */
-    suspend fun getUserSessionsSummaryPage(
+    public suspend fun getUserSessionsSummaryPage(
         userId: UserId,
         queryParams: SelfSessionListQueryParams
     ): AppResult<PagedResult<UserSessionSummary>>

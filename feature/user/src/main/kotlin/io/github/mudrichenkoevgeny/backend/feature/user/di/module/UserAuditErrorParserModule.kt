@@ -12,9 +12,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.audit.error.UserAuditErr
  * Binds [UserAuditErrorParser] into a set of [AuditErrorParser].
  */
 @Module
-interface UserAuditErrorParserModule {
-
+public interface UserAuditErrorParserModule {
     @Binds
     @IntoSet
-    fun bindUserAuditErrorParser(parser: UserAuditErrorParser): AuditErrorParser
+    public fun bindUserAuditErrorParser(parser: UserAuditErrorParser): AuditErrorParser
 }

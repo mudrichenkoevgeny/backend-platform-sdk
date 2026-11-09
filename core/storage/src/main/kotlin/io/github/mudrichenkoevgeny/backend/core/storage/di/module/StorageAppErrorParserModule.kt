@@ -11,10 +11,9 @@ import javax.inject.Singleton
  * Binds [StorageErrorParser] into the Set of [AppErrorSpecificParser]s.
  */
 @Module
-interface StorageAppErrorParserModule {
-
+public interface StorageAppErrorParserModule {
     @Binds
     @Singleton
     @IntoSet
-    fun bindStorageErrorParser(parser: StorageErrorParser): AppErrorSpecificParser
+    public fun bindStorageErrorParser(parser: StorageErrorParser): AppErrorSpecificParser
 }

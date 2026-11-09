@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Test
 
 class AppResultTest {
-
     @Test
     fun `fold returns onSuccess result for Success`() {
         val result: AppResult<Int> = AppResult.Success(42)
@@ -16,7 +15,10 @@ class AppResultTest {
             onFailure = { -1 }
         )
 
-        assertEquals(84, folded)
+        assertEquals(
+            84,
+            folded
+        )
     }
 
     @Test
@@ -29,7 +31,10 @@ class AppResultTest {
             onFailure = { -1 }
         )
 
-        assertEquals(-1, folded)
+        assertEquals(
+            -1,
+            folded
+        )
     }
 
     @Test
@@ -40,7 +45,10 @@ class AppResultTest {
         val mapped = result.mapNotNullOrError(fallback)
 
         require(mapped is AppResult.Success)
-        assertEquals("value", mapped.data)
+        assertEquals(
+            "value",
+            mapped.data
+        )
     }
 
     @Test
@@ -51,7 +59,10 @@ class AppResultTest {
         val mapped = result.mapNotNullOrError(fallback)
 
         require(mapped is AppResult.Error)
-        assertSame(fallback, mapped.error)
+        assertSame(
+            fallback,
+            mapped.error
+        )
     }
 
     @Test
@@ -63,7 +74,10 @@ class AppResultTest {
         val mapped = result.mapNotNullOrError(fallback)
 
         require(mapped is AppResult.Error)
-        assertSame(original, mapped.error)
+        assertSame(
+            original,
+            mapped.error
+        )
     }
 
     @Test
@@ -75,7 +89,10 @@ class AppResultTest {
         success.onSuccess { counter += it }
         error.onSuccess { counter += 100 }
 
-        assertEquals(10, counter)
+        assertEquals(
+            10,
+            counter
+        )
     }
 
     @Test
@@ -88,7 +105,10 @@ class AppResultTest {
         success.onError { captured = it as CommonError.Unknown }
         error.onError { captured = it as CommonError.Unknown }
 
-        assertSame(originalError, captured)
+        assertSame(
+            originalError,
+            captured
+        )
     }
 
     @Test
@@ -100,7 +120,10 @@ class AppResultTest {
         }
 
         require(mapped is AppResult.Success)
-        assertEquals("v=2", mapped.data)
+        assertEquals(
+            "v=2",
+            mapped.data
+        )
     }
 
     @Test
@@ -115,8 +138,13 @@ class AppResultTest {
         }
 
         require(mapped is AppResult.Error)
-        assertSame(error, mapped.error)
-        assertEquals(false, called)
+        assertSame(
+            error,
+            mapped.error
+        )
+        assertEquals(
+            false,
+            called
+        )
     }
 }
-

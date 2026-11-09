@@ -27,7 +27,7 @@ import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
  * - Proxy Headers:
  *   - Installs [ForwardedHeaders] and [XForwardedHeaders] to correctly resolve client IP and protocol behind a reverse proxy (e.g. Nginx).
  */
-fun Application.configureHTTP(
+public fun Application.configureHTTP(
     environment: AppEnvironment,
     allowedOrigins: List<String>
 ) {
@@ -64,19 +64,34 @@ fun Application.configureHTTP(
 
     install(DefaultHeaders) {
         header(HttpHeaders.Server, CommonNetworkHttpHeaderValues.SERVER_MASK_HEADER_VALUE)
-        header(CommonNetworkHttpHeaders.X_CONTENT_TYPE_OPTIONS_HEADER_NAME, CommonNetworkHttpHeaderValues.NOSNIFF_HEADER_VALUE)
+        header(
+            CommonNetworkHttpHeaders.X_CONTENT_TYPE_OPTIONS_HEADER_NAME,
+            CommonNetworkHttpHeaderValues.NOSNIFF_HEADER_VALUE
+        )
         header(CommonNetworkHttpHeaders.X_FRAME_OPTIONS_HEADER_NAME, CommonNetworkHttpHeaderValues.DENY_HEADER_VALUE)
-        header(CommonNetworkHttpHeaders.X_XSS_PROTECTION_HEADER_NAME, CommonNetworkHttpHeaderValues.XSS_BLOCK_HEADER_VALUE)
+        header(
+            CommonNetworkHttpHeaders.X_XSS_PROTECTION_HEADER_NAME,
+            CommonNetworkHttpHeaderValues.XSS_BLOCK_HEADER_VALUE
+        )
         val csp = if (environment == AppEnvironment.DEV) {
             CommonNetworkHttpHeaderValues.CSP_DEV_HEADER_VALUE
         } else {
             CommonNetworkHttpHeaderValues.CSP_API_HEADER_VALUE
         }
         header(CommonNetworkHttpHeaders.CONTENT_SECURITY_POLICY_HEADER_NAME, csp)
-        header(CommonNetworkHttpHeaders.REFERRER_POLICY_HEADER_NAME, CommonNetworkHttpHeaderValues.NO_REFERRER_HEADER_VALUE)
-        header(CommonNetworkHttpHeaders.PERMISSION_POLICY_HEADER_NAME, CommonNetworkHttpHeaderValues.PERMISSION_POLICY_HEADER_VALUE)
+        header(
+            CommonNetworkHttpHeaders.REFERRER_POLICY_HEADER_NAME,
+            CommonNetworkHttpHeaderValues.NO_REFERRER_HEADER_VALUE
+        )
+        header(
+            CommonNetworkHttpHeaders.PERMISSION_POLICY_HEADER_NAME,
+            CommonNetworkHttpHeaderValues.PERMISSION_POLICY_HEADER_VALUE
+        )
         if (environment != AppEnvironment.DEV) {
-            header(CommonNetworkHttpHeaders.STRICT_TRANSPORT_SECURITY_HEADER_NAME, CommonNetworkHttpHeaderValues.HSTS_ONE_YEAR_HEADER_VALUE)
+            header(
+                CommonNetworkHttpHeaders.STRICT_TRANSPORT_SECURITY_HEADER_NAME,
+                CommonNetworkHttpHeaderValues.HSTS_ONE_YEAR_HEADER_VALUE
+            )
         }
     }
 }

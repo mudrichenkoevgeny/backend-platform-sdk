@@ -33,13 +33,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.time.Instant as JavaInstant
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
+import java.time.Instant as JavaInstant
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserSessionRepositoryImplTest {
-
     private val dataSource = createTestDataSource("user_session_repo")
     private lateinit var repository: UserSessionRepository
 
@@ -48,8 +47,16 @@ class UserSessionRepositoryImplTest {
         Database.connect(dataSource)
         runBlocking {
             suspendTransaction {
-                SchemaUtils.drop(UserSessionsTable, UserIdentifiersTable, UsersTable)
-                SchemaUtils.create(UsersTable, UserIdentifiersTable, UserSessionsTable)
+                SchemaUtils.drop(
+                    UserSessionsTable,
+                    UserIdentifiersTable,
+                    UsersTable
+                )
+                SchemaUtils.create(
+                    UsersTable,
+                    UserIdentifiersTable,
+                    UserSessionsTable
+                )
             }
         }
         repository = UserSessionRepositoryImpl()
@@ -59,23 +66,40 @@ class UserSessionRepositoryImplTest {
     fun `createUserSession persists and getUserSessionInternalById returns it`() = runBlocking {
         val userId = createTestUserInDb()
         val identifierId = createTestIdentifierInDb(userId)
-        val session = createTestSession(userId, identifierId = identifierId)
+        val session = createTestSession(
+            userId,
+            identifierId = identifierId
+        )
 
         suspendTransaction { repository.createUserSession(session) }
         val result = suspendTransaction { repository.getUserSessionInternalById(session.id) }
 
         val success = result as AppResult.Success
         val data = checkNotNull(success.data)
-        assertEquals(session.id, data.id)
-        assertEquals(session.refreshTokenHash, data.refreshTokenHash)
+        assertEquals(
+            session.id,
+            data.id
+        )
+        assertEquals(
+            session.refreshTokenHash,
+            data.refreshTokenHash
+        )
     }
 
     @Test
     fun `deleteAllUserSessionsExceptOne keeps only the specified session`() = runBlocking {
         val userId = createTestUserInDb()
         val identifierId = createTestIdentifierInDb(userId)
-        val keepSession = createTestSession(userId, UserSessionId.generate(), identifierId)
-        val deleteSession = createTestSession(userId, UserSessionId.generate(), identifierId)
+        val keepSession = createTestSession(
+            userId,
+            UserSessionId.generate(),
+            identifierId
+        )
+        val deleteSession = createTestSession(
+            userId,
+            UserSessionId.generate(),
+            identifierId
+        )
 
         suspendTransaction {
             repository.createUserSession(keepSession)
@@ -83,12 +107,21 @@ class UserSessionRepositoryImplTest {
         }
 
         val deletedIdsResult = suspendTransaction {
-            repository.deleteAllUserSessionsExceptOne(userId, keepSession.id)
+            repository.deleteAllUserSessionsExceptOne(
+                userId,
+                keepSession.id
+            )
         }
 
         val deletedIds = (deletedIdsResult as AppResult.Success).data
-        assertEquals(1, deletedIds.size)
-        assertEquals(deleteSession.id, deletedIds.first())
+        assertEquals(
+            1,
+            deletedIds.size
+        )
+        assertEquals(
+            deleteSession.id,
+            deletedIds.first()
+        )
 
         val checkKeep = suspendTransaction { repository.getUserSessionInternalById(keepSession.id) }
         val checkDelete = suspendTransaction { repository.getUserSessionInternalById(deleteSession.id) }
@@ -102,10 +135,18 @@ class UserSessionRepositoryImplTest {
         val userId = createTestUserInDb()
         val identifierId = createTestIdentifierInDb(userId)
         val now = Instant.parse(BASE_TIME)
-        val oldSession = createTestSession(userId, UserSessionId.generate(), identifierId)
-            .copy(lastAccessedAt = now - 10.days)
-        val newSession = createTestSession(userId, UserSessionId.generate(), identifierId)
-            .copy(lastAccessedAt = now)
+        val oldSession = createTestSession(
+            userId,
+            UserSessionId.generate(),
+            identifierId
+        ).copy(
+            lastAccessedAt = now - 10.days
+        )
+        val newSession = createTestSession(
+            userId,
+            UserSessionId.generate(),
+            identifierId
+        ).copy(lastAccessedAt = now)
 
         suspendTransaction {
             repository.createUserSession(oldSession)
@@ -113,19 +154,31 @@ class UserSessionRepositoryImplTest {
         }
 
         val result = suspendTransaction { repository.deleteLeastRecentlyUsedUserSession(userId) }
-        assertEquals(oldSession.id, (result as AppResult.Success).data)
+        assertEquals(
+            oldSession.id,
+            (result as AppResult.Success).data
+        )
 
         val sessions = suspendTransaction { repository.getAllUserSessions(userId) }
         val list = (sessions as AppResult.Success).data
-        assertEquals(1, list.size)
-        assertEquals(newSession.id, list.first().id)
+        assertEquals(
+            1,
+            list.size
+        )
+        assertEquals(
+            newSession.id,
+            list.first().id
+        )
     }
 
     @Test
     fun `updateLastAccessed updates the timestamp to current`() = runBlocking {
         val userId = createTestUserInDb()
         val identifierId = createTestIdentifierInDb(userId)
-        val session = createTestSession(userId, identifierId = identifierId)
+        val session = createTestSession(
+            userId,
+            identifierId = identifierId
+        )
         suspendTransaction { repository.createUserSession(session) }
 
         suspendTransaction { repository.updateLastAccessed(session.id) }
@@ -140,18 +193,27 @@ class UserSessionRepositoryImplTest {
         val userId = createTestUserInDb()
         val identifierId = createTestIdentifierInDb(userId)
         val hash = RefreshTokenHash("secret_hash_123")
-        val session = createTestSession(userId, identifierId = identifierId).copy(refreshTokenHash = hash)
+        val session = createTestSession(
+            userId,
+            identifierId = identifierId
+        ).copy(refreshTokenHash = hash)
         suspendTransaction { repository.createUserSession(session) }
 
         val result = suspendTransaction { repository.getUserSessionByHash(hash) }
-        assertEquals(session.id, (result as AppResult.Success).data?.id)
+        assertEquals(
+            session.id,
+            (result as AppResult.Success).data?.id
+        )
     }
 
     @Test
     fun `getUserSessionsPageByUserId filters by client info fields`() = runBlocking {
         val userId = createTestUserInDb()
         val identifierId = createTestIdentifierInDb(userId)
-        val session = createTestSession(userId, identifierId = identifierId).copy(
+        val session = createTestSession(
+            userId,
+            identifierId = identifierId
+        ).copy(
             clientDeviceInfo = ClientDeviceInfo(
                 deviceId = null,
                 deviceName = "iPhone 15",
@@ -174,8 +236,14 @@ class UserSessionRepositoryImplTest {
         }
 
         val data = (result as AppResult.Success).data
-        assertEquals(1, data.items.size)
-        assertEquals("iPhone 15", data.items.first().clientDeviceInfo.deviceName)
+        assertEquals(
+            1,
+            data.items.size
+        )
+        assertEquals(
+            "iPhone 15",
+            data.items.first().clientDeviceInfo.deviceName
+        )
     }
 
     @Test
@@ -187,8 +255,18 @@ class UserSessionRepositoryImplTest {
         val userIdentifier = createTestIdentifierInDb(userId)
 
         suspendTransaction {
-            repository.createUserSession(createTestSession(adminId, identifierId = adminIdentifier))
-            repository.createUserSession(createTestSession(userId, identifierId = userIdentifier))
+            repository.createUserSession(
+                createTestSession(
+                    adminId,
+                    identifierId = adminIdentifier
+                )
+            )
+            repository.createUserSession(
+                createTestSession(
+                    userId,
+                    identifierId = userIdentifier
+                )
+            )
         }
 
         val result = suspendTransaction {
@@ -202,8 +280,14 @@ class UserSessionRepositoryImplTest {
         }
 
         val data = (result as AppResult.Success).data
-        assertEquals(1, data.items.size)
-        assertEquals(adminId, data.items.first().userId)
+        assertEquals(
+            1,
+            data.items.size
+        )
+        assertEquals(
+            adminId,
+            data.items.first().userId
+        )
     }
 
     @Test

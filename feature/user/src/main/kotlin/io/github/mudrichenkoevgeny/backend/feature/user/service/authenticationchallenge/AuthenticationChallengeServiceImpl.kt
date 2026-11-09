@@ -19,11 +19,10 @@ import kotlin.time.Instant
  * Default [AuthenticationChallengeService] implementation based on [SecurityConfig].
  */
 @Singleton
-class AuthenticationChallengeServiceImpl @Inject constructor(
+public class AuthenticationChallengeServiceImpl @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider,
-    private val mfaService: MfaService,
+    private val mfaService: MfaService
 ) : AuthenticationChallengeService {
-
     override suspend fun ensureSessionConfirmed(
         userInternal: UserInternal,
         userSession: UserSessionInternal,
@@ -43,7 +42,11 @@ class AuthenticationChallengeServiceImpl @Inject constructor(
             securitySettingsProvider.getRecentAuthenticationValidityInSecondsForManagement()
         }
 
-        if (isWithinValidityWindow(userSession.lastReauthenticatedAt, validitySeconds)) {
+        if (isWithinValidityWindow(
+                userSession.lastReauthenticatedAt,
+                validitySeconds
+            )
+        ) {
             return AppResult.Success(Unit)
         }
 
@@ -55,7 +58,10 @@ class AuthenticationChallengeServiceImpl @Inject constructor(
         )
     }
 
-    private fun isWithinValidityWindow(lastReauthenticatedAt: Instant?, validitySeconds: Int): Boolean {
+    private fun isWithinValidityWindow(
+        lastReauthenticatedAt: Instant?,
+        validitySeconds: Int
+    ): Boolean {
         val at = lastReauthenticatedAt ?: return false
         val validityEnd = at + validitySeconds.seconds
         return validityEnd > Clock.System.now()

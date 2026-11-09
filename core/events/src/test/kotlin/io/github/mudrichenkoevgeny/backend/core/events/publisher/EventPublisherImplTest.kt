@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.events.publisher
 
-import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.events.config.model.EventsConfig
 import io.github.mudrichenkoevgeny.backend.core.events.event.AppEvent
@@ -23,22 +23,22 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class EventPublisherImplTest {
-
-    private data class TestEvent(val value: String) : AppEvent
+    private data class TestEvent(
+        val value: String
+    ) : AppEvent
 
     private class ThrowingSerializer<T : Any>(
         private val throwable: Throwable
     ) : KSerializer<T> {
-
         override val descriptor: SerialDescriptor = buildClassSerialDescriptor("ThrowingSerializer")
 
-        override fun serialize(encoder: Encoder, value: T) {
-            throw throwable
-        }
+        override fun serialize(
+            encoder: Encoder,
+            value: T
+        ): Unit = throw throwable
 
-        override fun deserialize(decoder: Decoder): T {
+        override fun deserialize(decoder: Decoder): T =
             throw UnsupportedOperationException("deserialize is not used in this test")
-        }
     }
 
     @Test
@@ -62,8 +62,7 @@ class EventPublisherImplTest {
 
         val thrown = assertThrows(SerializationException::class.java) {
             runBlocking {
-                @Suppress("UNCHECKED_CAST")
-                publisher.publish(
+                @Suppress("UNCHECKED_CAST") publisher.publish(
                     topic = "topic",
                     event = TestEvent("x"),
                     serializer = ThrowingSerializer<TestEvent>(throwable) as KSerializer<TestEvent>,
@@ -78,4 +77,3 @@ class EventPublisherImplTest {
         verify(exactly = 1) { appLogger.logError(any()) }
     }
 }
-

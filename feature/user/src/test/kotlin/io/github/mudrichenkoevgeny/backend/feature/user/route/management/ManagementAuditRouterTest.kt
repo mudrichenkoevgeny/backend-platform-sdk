@@ -1,10 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.route.management
 
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventPrivate
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventSummaryList
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.listing.createTestPagedResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.network.application.setupManagementTestEnvironment
 import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouterTest
@@ -18,6 +14,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.res
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.ListingDefaultValues
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.event.createTestAuditEventSummaryList
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.listing.createTestPagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
@@ -30,7 +30,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class ManagementAuditRouterTest : BaseRouterTest() {
-
     private val actionParser = mockk<CompositeAuditActionTypeParser>(relaxed = true)
     private val resourceParser = mockk<CompositeAuditResourceTypeParser>(relaxed = true)
     private val getAuditEventsUseCase = mockk<GetAuditEventsUseCase>(relaxed = true)
@@ -48,7 +47,10 @@ class ManagementAuditRouterTest : BaseRouterTest() {
 
     @BeforeEach
     fun setUp() {
-        clearMocks(getAuditEventsUseCase, getAuditEventUseCase)
+        clearMocks(
+            getAuditEventsUseCase,
+            getAuditEventUseCase
+        )
     }
 
     @Test
@@ -57,13 +59,21 @@ class ManagementAuditRouterTest : BaseRouterTest() {
         authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.ADMIN))
 
         val event = createTestAuditEventPrivate()
-        coEvery { getAuditEventUseCase(any(), any()) } returns AppResult.Success(event)
+        coEvery {
+            getAuditEventUseCase(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(event)
 
         val response = client.get("/management/audit/events/${event.id.value}") {
             bearerAuth(token)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
@@ -72,14 +82,20 @@ class ManagementAuditRouterTest : BaseRouterTest() {
         authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.USER))
 
         coEvery {
-            getAuditEventUseCase(any(), any())
+            getAuditEventUseCase(
+                any(),
+                any()
+            )
         } returns AppResult.Error(UserError.UserForbidden())
 
         val response = client.get("/management/audit/events/${AuditEventId.generate().value}") {
             bearerAuth(token)
         }
 
-        assertEquals(HttpStatusCode.Forbidden, response.status)
+        assertEquals(
+            HttpStatusCode.Forbidden,
+            response.status
+        )
     }
 
     @Test
@@ -88,14 +104,20 @@ class ManagementAuditRouterTest : BaseRouterTest() {
         authProvider.shouldReturnSuccess(createTestUserInternal(role = UserRole.STAFF))
 
         coEvery {
-            getAuditEventUseCase(any(), any())
+            getAuditEventUseCase(
+                any(),
+                any()
+            )
         } returns AppResult.Error(UserError.UserNotFound())
 
         val response = client.get("/management/audit/events/${AuditEventId.generate().value}") {
             bearerAuth(token)
         }
 
-        assertEquals(HttpStatusCode.NotFound, response.status)
+        assertEquals(
+            HttpStatusCode.NotFound,
+            response.status
+        )
     }
 
     @Test
@@ -118,7 +140,10 @@ class ManagementAuditRouterTest : BaseRouterTest() {
             bearerAuth(token)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
@@ -145,7 +170,10 @@ class ManagementAuditRouterTest : BaseRouterTest() {
             bearerAuth(token)
         }
 
-        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            HttpStatusCode.OK,
+            response.status
+        )
     }
 
     @Test
@@ -157,6 +185,9 @@ class ManagementAuditRouterTest : BaseRouterTest() {
             bearerAuth(token)
         }
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        assertEquals(
+            HttpStatusCode.Unauthorized,
+            response.status
+        )
     }
 }

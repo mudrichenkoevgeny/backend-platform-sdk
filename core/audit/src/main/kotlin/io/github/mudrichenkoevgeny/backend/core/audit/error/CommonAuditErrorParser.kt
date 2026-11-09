@@ -12,15 +12,18 @@ import javax.inject.Singleton
  * Fallback parser that maps any [AppError] to a generic FAILED status with error details.
  */
 @Singleton
-class CommonAuditErrorParser @Inject constructor() : AuditErrorParser {
-
-    override fun parse(error: AppError): AuditErrorLogData {
-        return AuditErrorLogData(
-            status = AuditStatus.FAILED,
-            metadata = setOf(
-                AuditEventMetadata(CommonAuditMetadataKey.ERROR_ID, error.errorId.asHexDashString()),
-                AuditEventMetadata(CommonAuditMetadataKey.ERROR_CODE, error.code)
+public class CommonAuditErrorParser @Inject constructor() : AuditErrorParser {
+    override fun parse(error: AppError): AuditErrorLogData = AuditErrorLogData(
+        status = AuditStatus.FAILED,
+        metadata = setOf(
+            AuditEventMetadata(
+                CommonAuditMetadataKey.ERROR_ID,
+                error.errorId.asHexDashString()
+            ),
+            AuditEventMetadata(
+                CommonAuditMetadataKey.ERROR_CODE,
+                error.code
             )
         )
-    }
+    )
 }

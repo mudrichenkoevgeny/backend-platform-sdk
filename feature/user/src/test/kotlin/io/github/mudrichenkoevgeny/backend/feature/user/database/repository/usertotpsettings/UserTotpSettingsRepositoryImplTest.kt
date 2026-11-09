@@ -21,12 +21,11 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.time.Instant as JavaInstant
 import kotlin.time.Instant
+import java.time.Instant as JavaInstant
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserTotpSettingsRepositoryImplTest {
-
     private val dataSource = createTestDataSource("user_totp_repo")
     private lateinit var repository: UserTotpSettingsRepository
 
@@ -35,8 +34,14 @@ class UserTotpSettingsRepositoryImplTest {
         Database.connect(dataSource)
         runBlocking {
             suspendTransaction {
-                SchemaUtils.drop(UserTotpSettingsTable, UsersTable)
-                SchemaUtils.create(UsersTable, UserTotpSettingsTable)
+                SchemaUtils.drop(
+                    UserTotpSettingsTable,
+                    UsersTable
+                )
+                SchemaUtils.create(
+                    UsersTable,
+                    UserTotpSettingsTable
+                )
             }
         }
         repository = UserTotpSettingsRepositoryImpl()
@@ -47,11 +52,22 @@ class UserTotpSettingsRepositoryImplTest {
         val userId = createTestUserInDb()
         val secret = EncryptedString("initial_secret")
 
-        val result = suspendTransaction { repository.upsertUnconfirmedSettings(userId, secret) }
+        val result = suspendTransaction {
+            repository.upsertUnconfirmedSettings(
+                userId,
+                secret
+            )
+        }
 
         val data = (result as AppResult.Success).data
-        assertEquals(userId, data.userId)
-        assertEquals(secret, data.encryptedSecret)
+        assertEquals(
+            userId,
+            data.userId
+        )
+        assertEquals(
+            secret,
+            data.encryptedSecret
+        )
         assertFalse(data.isConfirmed)
     }
 
@@ -62,15 +78,27 @@ class UserTotpSettingsRepositoryImplTest {
         val newSecret = EncryptedString("secret_2")
 
         suspendTransaction {
-            repository.upsertUnconfirmedSettings(userId, initialSecret)
-            repository.confirmTotp(userId, listOf(EncryptedString("code1")))
-            repository.upsertUnconfirmedSettings(userId, newSecret)
+            repository.upsertUnconfirmedSettings(
+                userId,
+                initialSecret
+            )
+            repository.confirmTotp(
+                userId,
+                listOf(EncryptedString("code1"))
+            )
+            repository.upsertUnconfirmedSettings(
+                userId,
+                newSecret
+            )
         }
 
         val result = suspendTransaction { repository.getSettingsByUserId(userId) }
         val data = checkNotNull((result as AppResult.Success).data)
 
-        assertEquals(newSecret, data.encryptedSecret)
+        assertEquals(
+            newSecret,
+            data.encryptedSecret
+        )
         assertFalse(data.isConfirmed)
         assertNull(data.encryptedRecoveryCodes)
     }
@@ -78,20 +106,41 @@ class UserTotpSettingsRepositoryImplTest {
     @Test
     fun `confirmTotp sets isConfirmed to true and saves recovery codes`() = runBlocking {
         val userId = createTestUserInDb()
-        suspendTransaction { repository.upsertUnconfirmedSettings(userId, EncryptedString("secret")) }
+        suspendTransaction {
+            repository.upsertUnconfirmedSettings(
+                userId,
+                EncryptedString("secret")
+            )
+        }
 
-        val recoveryCodes = listOf(EncryptedString("rec1"), EncryptedString("rec2"))
-        val result = suspendTransaction { repository.confirmTotp(userId, recoveryCodes) }
+        val recoveryCodes = listOf(
+            EncryptedString("rec1"),
+            EncryptedString("rec2")
+        )
+        val result = suspendTransaction {
+            repository.confirmTotp(
+                userId,
+                recoveryCodes
+            )
+        }
 
         val data = (result as AppResult.Success).data
         assertTrue(data.isConfirmed)
-        assertEquals(recoveryCodes, data.encryptedRecoveryCodes)
+        assertEquals(
+            recoveryCodes,
+            data.encryptedRecoveryCodes
+        )
     }
 
     @Test
     fun `updateSettings modifies specific fields via UpdateField`() = runBlocking {
         val userId = createTestUserInDb()
-        suspendTransaction { repository.upsertUnconfirmedSettings(userId, EncryptedString("old")) }
+        suspendTransaction {
+            repository.upsertUnconfirmedSettings(
+                userId,
+                EncryptedString("old")
+            )
+        }
 
         val lastUsed = Instant.parse(BASE_TIME)
         val result = suspendTransaction {
@@ -105,15 +154,26 @@ class UserTotpSettingsRepositoryImplTest {
         }
 
         val data = (result as AppResult.Success).data
-        assertEquals(EncryptedString("new"), data.encryptedSecret)
+        assertEquals(
+            EncryptedString("new"),
+            data.encryptedSecret
+        )
         assertTrue(data.isConfirmed)
-        assertEquals(lastUsed, data.lastUsedAt)
+        assertEquals(
+            lastUsed,
+            data.lastUsedAt
+        )
     }
 
     @Test
     fun `deleteSettings removes settings for user`() = runBlocking {
         val userId = createTestUserInDb()
-        suspendTransaction { repository.upsertUnconfirmedSettings(userId, EncryptedString("secret")) }
+        suspendTransaction {
+            repository.upsertUnconfirmedSettings(
+                userId,
+                EncryptedString("secret")
+            )
+        }
 
         suspendTransaction { repository.deleteSettings(userId) }
         val result = suspendTransaction { repository.getSettingsByUserId(userId) }

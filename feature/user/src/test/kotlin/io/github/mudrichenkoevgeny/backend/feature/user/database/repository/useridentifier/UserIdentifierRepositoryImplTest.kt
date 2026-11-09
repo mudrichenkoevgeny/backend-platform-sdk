@@ -31,12 +31,11 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.time.Instant as JavaInstant
 import kotlin.time.Instant
+import java.time.Instant as JavaInstant
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class UserIdentifierRepositoryImplTest {
-
     private val dataSource = createTestDataSource("user_identifier_repo")
     private lateinit var repository: UserIdentifierRepository
 
@@ -45,8 +44,14 @@ class UserIdentifierRepositoryImplTest {
         Database.connect(dataSource)
         runBlocking {
             suspendTransaction {
-                SchemaUtils.drop(UserIdentifiersTable, UsersTable)
-                SchemaUtils.create(UsersTable, UserIdentifiersTable)
+                SchemaUtils.drop(
+                    UserIdentifiersTable,
+                    UsersTable
+                )
+                SchemaUtils.create(
+                    UsersTable,
+                    UserIdentifiersTable
+                )
             }
         }
         repository = UserIdentifierRepositoryImpl()
@@ -63,8 +68,14 @@ class UserIdentifierRepositoryImplTest {
         val success = result as AppResult.Success
         val data = success.data
         assertNotNull(data)
-        assertEquals(identifier.id, data?.id)
-        assertEquals(identifier.identifier, data?.identifier)
+        assertEquals(
+            identifier.id,
+            data?.id
+        )
+        assertEquals(
+            identifier.identifier,
+            data?.identifier
+        )
     }
 
     @Test
@@ -90,18 +101,36 @@ class UserIdentifierRepositoryImplTest {
         suspendTransaction { repository.createUserIdentifier(identifier) }
 
         val newHash = PasswordHash("new_secret_hash")
-        val result = suspendTransaction { repository.updatePasswordHash(identifier, newHash) }
+        val result = suspendTransaction {
+            repository.updatePasswordHash(
+                identifier,
+                newHash
+            )
+        }
 
         val updated = (result as AppResult.Success).data
-        assertEquals(newHash, updated.passwordHash)
+        assertEquals(
+            newHash,
+            updated.passwordHash
+        )
         assertNotNull(updated.updatedAt)
     }
 
     @Test
     fun `getUserIdentifiersListByUserId filters by userId and optional provider`() = runBlocking {
         val userId = createTestUserInDb()
-        val ident1 = createTestIdentifier(userId, "email1@test.com", UserAuthProvider.EMAIL, UserIdentifierId.generate())
-        val ident2 = createTestIdentifier(userId, "google_id", UserAuthProvider.GOOGLE, UserIdentifierId.generate())
+        val ident1 = createTestIdentifier(
+            userId,
+            "email1@test.com",
+            UserAuthProvider.EMAIL,
+            UserIdentifierId.generate()
+        )
+        val ident2 = createTestIdentifier(
+            userId,
+            "google_id",
+            UserAuthProvider.GOOGLE,
+            UserIdentifierId.generate()
+        )
 
         suspendTransaction {
             repository.createUserIdentifier(ident1)
@@ -109,24 +138,51 @@ class UserIdentifierRepositoryImplTest {
         }
 
         val allResult = suspendTransaction {
-            repository.getUserIdentifiersListByUserId(userId, null)
+            repository.getUserIdentifiersListByUserId(
+                userId,
+                null
+            )
         }
-        assertEquals(2, (allResult as AppResult.Success).data.size)
+        assertEquals(
+            2,
+            (allResult as AppResult.Success).data.size
+        )
 
         val googleOnly = suspendTransaction {
-            repository.getUserIdentifiersListByUserId(userId, UserAuthProvider.GOOGLE)
+            repository.getUserIdentifiersListByUserId(
+                userId,
+                UserAuthProvider.GOOGLE
+            )
         }
         val googleData = (googleOnly as AppResult.Success).data
-        assertEquals(1, googleData.size)
-        assertEquals(UserAuthProvider.GOOGLE, googleData.first().userAuthProvider)
+        assertEquals(
+            1,
+            googleData.size
+        )
+        assertEquals(
+            UserAuthProvider.GOOGLE,
+            googleData.first().userAuthProvider
+        )
     }
 
     @Test
     fun `getUserIdentifiersPageByUserId filters by identifier substring`() = runBlocking {
         val userId = createTestUserInDb()
         suspendTransaction {
-            repository.createUserIdentifier(createTestIdentifier(userId, "apple_user", id = UserIdentifierId.generate()))
-            repository.createUserIdentifier(createTestIdentifier(userId, "banana_user", id = UserIdentifierId.generate()))
+            repository.createUserIdentifier(
+                createTestIdentifier(
+                    userId,
+                    "apple_user",
+                    id = UserIdentifierId.generate()
+                )
+            )
+            repository.createUserIdentifier(
+                createTestIdentifier(
+                    userId,
+                    "banana_user",
+                    id = UserIdentifierId.generate()
+                )
+            )
         }
 
         val result = suspendTransaction {
@@ -144,8 +200,13 @@ class UserIdentifierRepositoryImplTest {
         }
 
         val data = (result as AppResult.Success).data
-        assertEquals(1, data.items.size)
-        assertTrue(data.items.first().identifier.contains("apple"))
+        assertEquals(
+            1,
+            data.items.size
+        )
+        assertTrue(
+            data.items.first().identifier.contains("apple")
+        )
     }
 
     @Test
@@ -154,8 +215,20 @@ class UserIdentifierRepositoryImplTest {
         val userId = createTestUserInDb(UserRole.USER)
 
         suspendTransaction {
-            repository.createUserIdentifier(createTestIdentifier(adminId, "admin_ident", id = UserIdentifierId.generate()))
-            repository.createUserIdentifier(createTestIdentifier(userId, "user_ident", id = UserIdentifierId.generate()))
+            repository.createUserIdentifier(
+                createTestIdentifier(
+                    adminId,
+                    "admin_ident",
+                    id = UserIdentifierId.generate()
+                )
+            )
+            repository.createUserIdentifier(
+                createTestIdentifier(
+                    userId,
+                    "user_ident",
+                    id = UserIdentifierId.generate()
+                )
+            )
         }
 
         val result = suspendTransaction {
@@ -172,8 +245,14 @@ class UserIdentifierRepositoryImplTest {
         }
 
         val data = (result as AppResult.Success).data
-        assertEquals(1, data.items.size)
-        assertEquals("admin_ident", data.items.first().identifier)
+        assertEquals(
+            1,
+            data.items.size
+        )
+        assertEquals(
+            "admin_ident",
+            data.items.first().identifier
+        )
     }
 
     @Test

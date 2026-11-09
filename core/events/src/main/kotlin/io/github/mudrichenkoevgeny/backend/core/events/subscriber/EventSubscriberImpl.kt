@@ -28,15 +28,13 @@ import javax.inject.Singleton
  * and a 1s poll timeout.
  */
 @Singleton
-class EventSubscriberImpl @Inject constructor(
+public class EventSubscriberImpl @Inject constructor(
     private val eventsConfig: EventsConfig,
     private val appLogger: AppLogger,
     @param:BackgroundScope private val scope: CoroutineScope
 ) : EventSubscriber {
-
     private val json = FoundationJson
 
-    @Suppress("UNCHECKED_CAST")
     override fun <T : AppEvent> subscribe(
         topic: String,
         type: Class<T>,
@@ -60,10 +58,13 @@ class EventSubscriberImpl @Inject constructor(
                     for (record in records) {
                         try {
                             val serializer = json.serializersModule.serializer(type)
-                            val event = json.decodeFromString(serializer, record.value()) as T
 
-                            val metadata = record.headers()
-                                .associate { it.key() to String(it.value()) }
+                            @Suppress("UNCHECKED_CAST") val event = json.decodeFromString(
+                                serializer,
+                                record.value()
+                            ) as T
+
+                            val metadata = record.headers().associate { it.key() to String(it.value()) }
 
                             handler(event, metadata)
                         } catch (e: CancellationException) {
@@ -77,7 +78,7 @@ class EventSubscriberImpl @Inject constructor(
         }
     }
 
-    companion object {
+    public companion object {
         private const val OFFSET_RESET_EARLIEST = "earliest"
         private const val POLL_TIMEOUT_MS = 1000L
     }

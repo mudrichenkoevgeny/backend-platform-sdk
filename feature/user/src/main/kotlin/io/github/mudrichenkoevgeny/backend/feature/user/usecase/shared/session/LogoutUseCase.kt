@@ -21,8 +21,11 @@ import javax.inject.Singleton
 import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
+/**
+ * Use case to terminate current user session.
+ */
 @Singleton
-class LogoutUseCase @Inject constructor(
+public class LogoutUseCase @Inject constructor(
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val sessionManager: SessionManager,
@@ -42,9 +45,7 @@ class LogoutUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] indicating successful termination of the session.
      */
-    suspend operator fun invoke(
-        authenticatedRequestContext: AuthenticatedRequestContext
-    ): AppResult<Unit> {
+    public suspend operator fun invoke(authenticatedRequestContext: AuthenticatedRequestContext): AppResult<Unit> {
         val auditActorId = authenticatedRequestContext.userId.asHexDashString()
         val auditActorUserRole = authenticatedRequestContext.userRole
         val auditResourceId = authenticatedRequestContext.sessionId.asHexDashString()

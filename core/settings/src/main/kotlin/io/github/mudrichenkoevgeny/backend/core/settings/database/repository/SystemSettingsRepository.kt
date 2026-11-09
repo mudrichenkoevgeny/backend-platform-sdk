@@ -9,14 +9,14 @@ import io.github.mudrichenkoevgeny.backend.core.settings.model.SystemSetting
  * This is a low-level persistence contract. Higher-level caching and typed access is implemented by
  * `SystemSettingsService`.
  */
-interface SystemSettingRepository {
+public interface SystemSettingsRepository {
     /**
      * Inserts or updates multiple setting rows.
      *
      * @param settings list of settings to persist
      * @return [AppResult.Success] with the persisted settings or [AppResult.Error]
      */
-    suspend fun saveSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>>
+    public suspend fun saveSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>>
 
     /**
      * Inserts or updates a setting row.
@@ -24,7 +24,7 @@ interface SystemSettingRepository {
      * @param setting setting to persist
      * @return [AppResult.Success] with the persisted setting (same values) or [AppResult.Error]
      */
-    suspend fun saveSetting(setting: SystemSetting): AppResult<SystemSetting>
+    public suspend fun saveSetting(setting: SystemSetting): AppResult<SystemSetting>
 
     /**
      * Returns a setting by its unique [key].
@@ -32,14 +32,14 @@ interface SystemSettingRepository {
      * @param key unique setting key
      * @return [AppResult.Success] with the setting or `null` if missing
      */
-    suspend fun getSettingByKey(key: String): AppResult<SystemSetting?>
+    public suspend fun getSettingByKey(key: String): AppResult<SystemSetting?>
 
     /**
      * Loads all settings from storage.
      *
      * @return [AppResult.Success] with a list of settings (possibly empty)
      */
-    suspend fun getAllSettings(): AppResult<List<SystemSetting>>
+    public suspend fun getAllSettings(): AppResult<List<SystemSetting>>
 
     /**
      * Deletes a setting row by its unique [key].
@@ -47,5 +47,5 @@ interface SystemSettingRepository {
      * @param key unique setting key
      * @return [AppResult.Success] if the row was deleted or didn't exist, [AppResult.Error] on DB failure
      */
-    suspend fun deleteSetting(key: String): AppResult<Unit>
+    public suspend fun deleteSetting(key: String): AppResult<Unit>
 }

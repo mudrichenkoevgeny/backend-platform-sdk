@@ -28,10 +28,9 @@ import javax.inject.Singleton
  * Default [AuditManager] implementation: delegates persistence to [AuditEventRepository] inside [dbQuery].
  */
 @Singleton
-class AuditManagerImpl @Inject constructor(
+public class AuditManagerImpl @Inject constructor(
     private val auditRepository: AuditEventRepository
 ) : AuditManager {
-
     override suspend fun createEvent(auditEvent: AuditEventInternal): AppResult<AuditEventInternal> = dbQuery {
         auditRepository.createEvent(auditEvent)
     }
@@ -48,7 +47,12 @@ class AuditManagerImpl @Inject constructor(
             is AppResult.Success -> {
                 val auditEvent = getEventResult.data ?: return@dbQuery AppResult.Success(null)
 
-                when (determinePermissionRequirement(auditEvent, userPermissionCodes)) {
+                when (
+                    determinePermissionRequirement(
+                        auditEvent,
+                        userPermissionCodes
+                    )
+                ) {
                     PermissionRequirement.UNMASKED -> AppResult.Success(auditEvent.toAuditEventPrivate())
                     PermissionRequirement.MASKED -> AppResult.Success(auditEvent.maskSensitiveData())
                     PermissionRequirement.FORBIDDEN -> AppResult.Error(UserError.UserMissingPermissions(userId))
@@ -73,7 +77,12 @@ class AuditManagerImpl @Inject constructor(
             is AppResult.Success -> {
                 val pagedResult = getEventsResult.data
                 val finalItems = pagedResult.items.mapNotNull { auditEvent ->
-                    when (determinePermissionRequirement(auditEvent, managementUserPermissionCodes)) {
+                    when (
+                        determinePermissionRequirement(
+                            auditEvent,
+                            managementUserPermissionCodes
+                        )
+                    ) {
                         PermissionRequirement.UNMASKED -> auditEvent.toAuditEventSummary()
                         PermissionRequirement.MASKED -> auditEvent.maskSensitiveData().toAuditEventSummary()
                         PermissionRequirement.FORBIDDEN -> null
@@ -96,26 +105,36 @@ class AuditManagerImpl @Inject constructor(
         val allowedActorTypes = mutableSetOf<AuditActorType>()
         val allowedUserRoles = mutableSetOf<String>()
 
-        if (userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_SYSTEM_ACTOR_MASKED) ||
+        if (userPermissionCodes.contains(
+                AuditPermissionCode.AUDIT_GET_FOR_SYSTEM_ACTOR_MASKED
+            ) ||
             userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_SYSTEM_ACTOR_UNMASKED)
         ) {
             allowedActorTypes.add(AuditActorType.SYSTEM)
         }
 
-        if (userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_SERVICE_ACTOR_MASKED) ||
+        if (userPermissionCodes.contains(
+                AuditPermissionCode.AUDIT_GET_FOR_SERVICE_ACTOR_MASKED
+            ) ||
             userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_SERVICE_ACTOR_UNMASKED)
         ) {
             allowedActorTypes.add(AuditActorType.SERVICE)
         }
 
-        val hasUserAccess = userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_USER_ACTOR_MASKED) ||
-                userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_USER_ACTOR_UNMASKED)
+        val hasUserAccess = userPermissionCodes.contains(
+            AuditPermissionCode.AUDIT_GET_FOR_USER_ACTOR_MASKED
+        ) ||
+            userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_USER_ACTOR_UNMASKED)
 
-        val hasStaffAccess = userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_STAFF_ACTOR_MASKED) ||
-                userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_STAFF_ACTOR_UNMASKED)
+        val hasStaffAccess = userPermissionCodes.contains(
+            AuditPermissionCode.AUDIT_GET_FOR_STAFF_ACTOR_MASKED
+        ) ||
+            userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_STAFF_ACTOR_UNMASKED)
 
-        val hasAdminAccess = userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_ADMIN_ACTOR_MASKED) ||
-                userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_ADMIN_ACTOR_UNMASKED)
+        val hasAdminAccess = userPermissionCodes.contains(
+            AuditPermissionCode.AUDIT_GET_FOR_ADMIN_ACTOR_MASKED
+        ) ||
+            userPermissionCodes.contains(AuditPermissionCode.AUDIT_GET_FOR_ADMIN_ACTOR_UNMASKED)
 
         if (hasUserAccess || hasStaffAccess || hasAdminAccess) {
             allowedActorTypes.add(AuditActorType.USER)
@@ -130,7 +149,10 @@ class AuditManagerImpl @Inject constructor(
             }
         }
 
-        return AuditAccessFilter(allowedActorTypes, allowedUserRoles)
+        return AuditAccessFilter(
+            allowedActorTypes,
+            allowedUserRoles
+        )
     }
 
     private fun determinePermissionRequirement(
@@ -146,33 +168,37 @@ class AuditManagerImpl @Inject constructor(
         }
     }
 
-    private fun getRequiredPermissionsForEvent(auditEvent: AuditEventInternal): PermissionSet? {
-        return when (auditEvent.actorType) {
+    private fun getRequiredPermissionsForEvent(auditEvent: AuditEventInternal): PermissionSet? =
+        when (auditEvent.actorType) {
             AuditActorType.SYSTEM -> PermissionSet(
                 masked = AuditPermissionCode.AUDIT_GET_FOR_SYSTEM_ACTOR_MASKED,
                 unmasked = AuditPermissionCode.AUDIT_GET_FOR_SYSTEM_ACTOR_UNMASKED
             )
+
             AuditActorType.SERVICE -> PermissionSet(
                 masked = AuditPermissionCode.AUDIT_GET_FOR_SERVICE_ACTOR_MASKED,
                 unmasked = AuditPermissionCode.AUDIT_GET_FOR_SERVICE_ACTOR_UNMASKED
             )
+
             AuditActorType.USER -> {
                 when (UserRole.fromValueOrNull(auditEvent.actorUserRole ?: "")) {
                     UserRole.USER -> PermissionSet(
                         masked = AuditPermissionCode.AUDIT_GET_FOR_USER_ACTOR_MASKED,
                         unmasked = AuditPermissionCode.AUDIT_GET_FOR_USER_ACTOR_UNMASKED
                     )
+
                     UserRole.STAFF -> PermissionSet(
                         masked = AuditPermissionCode.AUDIT_GET_FOR_STAFF_ACTOR_MASKED,
                         unmasked = AuditPermissionCode.AUDIT_GET_FOR_STAFF_ACTOR_UNMASKED
                     )
+
                     UserRole.ADMIN -> PermissionSet(
                         masked = AuditPermissionCode.AUDIT_GET_FOR_ADMIN_ACTOR_MASKED,
                         unmasked = AuditPermissionCode.AUDIT_GET_FOR_ADMIN_ACTOR_UNMASKED
                     )
+
                     null -> null
                 }
             }
         }
-    }
 }

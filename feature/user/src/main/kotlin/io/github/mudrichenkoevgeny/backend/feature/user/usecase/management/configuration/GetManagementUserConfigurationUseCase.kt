@@ -9,8 +9,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.c
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to get management user configuration.
+ */
 @Singleton
-class GetManagementUserConfigurationUseCase @Inject constructor(
+public class GetManagementUserConfigurationUseCase @Inject constructor(
     private val globalSettingsProvider: GlobalSettingsProvider,
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val storageSettingsProvider: StorageSettingsProvider,
@@ -29,14 +32,12 @@ class GetManagementUserConfigurationUseCase @Inject constructor(
      *
      * @return [AppResult.Success] containing the aggregated [ManagementUserConfiguration].
      */
-    operator fun invoke(): AppResult<ManagementUserConfiguration> {
-        return AppResult.Success(
-            ManagementUserConfiguration(
-                managementGlobalSettings = globalSettingsProvider.getManagementGlobalSettings(),
-                managementSecuritySettings = securitySettingsProvider.getManagementSecuritySettings(),
-                managementStorageSettings = storageSettingsProvider.getManagementStorageSettings(),
-                managementAuthSettings = authSettingsProvider.getManagementAuthSettings()
-            )
+    public operator fun invoke(): AppResult<ManagementUserConfiguration> = AppResult.Success(
+        ManagementUserConfiguration(
+            managementGlobalSettings = globalSettingsProvider.getManagementGlobalSettings(),
+            managementSecuritySettings = securitySettingsProvider.getManagementSecuritySettings(),
+            managementStorageSettings = storageSettingsProvider.getManagementStorageSettings(),
+            managementAuthSettings = authSettingsProvider.getManagementAuthSettings()
         )
-    }
+    )
 }

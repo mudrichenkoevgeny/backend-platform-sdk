@@ -9,6 +9,4 @@ import org.jetbrains.exposed.v1.jdbc.Query
  * @param params pagination parameters (limit, offset).
  * @return this [Query] with [Query.limit] and [Query.offset] applied.
  */
-fun Query.applyPagination(params: PageParams): Query {
-    return this.limit(params.limit).offset(params.offset)
-}
+public fun Query.applyPagination(params: PageParams): Query = this.limit(params.limit).offset(params.offset)

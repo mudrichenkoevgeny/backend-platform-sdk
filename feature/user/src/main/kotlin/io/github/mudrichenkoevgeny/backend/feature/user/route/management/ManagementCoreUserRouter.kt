@@ -38,7 +38,7 @@ import javax.inject.Singleton
  * 10. Self-service and administrative storage file management ([SelfManagementStorageRouter], [ManagementStorageRouter]).
  */
 @Singleton
-class ManagementCoreUserRouter @Inject constructor(
+public class ManagementCoreUserRouter @Inject constructor(
     private val managementAuthRouter: ManagementAuthRouter,
     private val managementIdentifierRouter: ManagementIdentifierRouter,
     private val selfManagementIdentifierRouter: SelfManagementIdentifierRouter,

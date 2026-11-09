@@ -13,21 +13,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class CommonConfigFactoryImplTest {
-
-    private companion object {
-        private const val ENV_DEV = "dev"
-        private const val INSTANCE_MODE = "FULL"
-        private const val SERVER_URL = "http://localhost:8080"
-        private const val KTOR_HOST = "0.0.0.0"
-        private const val KTOR_PORT = "8080"
-        private const val KTOR_MANAGEMENT_PORT = "8081"
-        private const val SHUTDOWN_GRACE = "3000"
-        private const val SHUTDOWN_TIMEOUT = "10000"
-        private const val ALLOWED_ORIGIN = "http://localhost:3000"
-        private const val APP_NAME = "test-app"
-        private const val APP_VERSION = "1.0.0"
-    }
-
     private val envReader = mockk<EnvReader>()
     private val appInfo = mockk<AppInfo> {
         every { appName } returns APP_NAME
@@ -47,20 +32,70 @@ class CommonConfigFactoryImplTest {
 
         every { envReader.getByKeyOrNull(CommonEnvKeys.ALLOWED_ORIGINS) } returns ALLOWED_ORIGIN
 
-        val factory = CommonConfigFactoryImpl(envReader, appInfo)
+        val factory = CommonConfigFactoryImpl(
+            envReader,
+            appInfo
+        )
 
         val config: CommonConfig = factory.create()
 
-        assertEquals(AppEnvironment.DEV, config.environment)
-        assertEquals(AppInstanceMode.FULL, config.instanceMode)
-        assertEquals(APP_VERSION, config.version)
-        assertEquals(APP_NAME, config.appName)
-        assertEquals(KTOR_HOST, config.ktorServerHost)
-        assertEquals(KTOR_PORT.toInt(), config.ktorServerPort)
-        assertEquals(KTOR_MANAGEMENT_PORT.toInt(), config.ktorManagementPort)
-        assertEquals(SHUTDOWN_GRACE.toLong(), config.ktorShutdownGracePeriodMs)
-        assertEquals(SHUTDOWN_TIMEOUT.toLong(), config.ktorShutdownTimeoutMs)
-        assertEquals(SERVER_URL, config.serverUrl)
-        assertEquals(listOf(ALLOWED_ORIGIN), config.allowedOrigins)
+        assertEquals(
+            AppEnvironment.DEV,
+            config.environment
+        )
+        assertEquals(
+            AppInstanceMode.FULL,
+            config.instanceMode
+        )
+        assertEquals(
+            APP_VERSION,
+            config.version
+        )
+        assertEquals(
+            APP_NAME,
+            config.appName
+        )
+        assertEquals(
+            KTOR_HOST,
+            config.ktorServerHost
+        )
+        assertEquals(
+            KTOR_PORT.toInt(),
+            config.ktorServerPort
+        )
+        assertEquals(
+            KTOR_MANAGEMENT_PORT.toInt(),
+            config.ktorManagementPort
+        )
+        assertEquals(
+            SHUTDOWN_GRACE.toLong(),
+            config.ktorShutdownGracePeriodMs
+        )
+        assertEquals(
+            SHUTDOWN_TIMEOUT.toLong(),
+            config.ktorShutdownTimeoutMs
+        )
+        assertEquals(
+            SERVER_URL,
+            config.serverUrl
+        )
+        assertEquals(
+            listOf(ALLOWED_ORIGIN),
+            config.allowedOrigins
+        )
+    }
+
+    private companion object {
+        private const val ENV_DEV = "dev"
+        private const val INSTANCE_MODE = "FULL"
+        private const val SERVER_URL = "http://localhost:8080"
+        private const val KTOR_HOST = "0.0.0.0"
+        private const val KTOR_PORT = "8080"
+        private const val KTOR_MANAGEMENT_PORT = "8081"
+        private const val SHUTDOWN_GRACE = "3000"
+        private const val SHUTDOWN_TIMEOUT = "10000"
+        private const val ALLOWED_ORIGIN = "http://localhost:3000"
+        private const val APP_NAME = "test-app"
+        private const val APP_VERSION = "1.0.0"
     }
 }

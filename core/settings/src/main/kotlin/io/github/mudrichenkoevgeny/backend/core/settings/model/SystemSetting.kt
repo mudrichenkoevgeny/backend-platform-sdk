@@ -13,7 +13,7 @@ import kotlin.uuid.Uuid
  * @property type describes how [value] should be interpreted by consumers
  * @property description optional human-readable description of the setting
  */
-data class SystemSetting(
+public data class SystemSetting(
     val id: Uuid = Uuid.random(),
     val key: String,
     val value: String,

@@ -46,7 +46,7 @@ import kotlin.time.Duration.Companion.seconds
  * Default [StorageManager] implementation backed by [StorageFilesRepository] wrapped in [dbQuery].
  */
 @Singleton
-class StorageManagerImpl @Inject constructor(
+public class StorageManagerImpl @Inject constructor(
     private val filesRepository: StorageFilesRepository,
     private val settingsProvider: StorageSettingsProvider,
     private val storageService: StorageService,
@@ -54,7 +54,6 @@ class StorageManagerImpl @Inject constructor(
     private val httpClientProvider: HttpClientProvider,
     @param:BackgroundScope private val scope: CoroutineScope
 ) : StorageManager {
-
     private val httpClient by lazy { httpClientProvider.create(HttpClientSettings()) }
 
     override suspend fun initiateFileUpload(
@@ -123,7 +122,12 @@ class StorageManagerImpl @Inject constructor(
                 is AppResult.Error -> return@dbQuery usedStorageResult
             }
             if (usedBytes + fileSizeBytes > effectiveQuota) {
-                return@dbQuery AppResult.Error(StorageError.StorageQuotaExceeded(effectiveQuota, usedBytes))
+                return@dbQuery AppResult.Error(
+                    StorageError.StorageQuotaExceeded(
+                        effectiveQuota,
+                        usedBytes
+                    )
+                )
             }
         }
 
@@ -137,7 +141,10 @@ class StorageManagerImpl @Inject constructor(
         } else {
             storageConfig.s3BucketNamePrivate
         }
-        val bucketResult = storageService.ensureBucketExists(bucket = targetBucket, isPublic = isPublic)
+        val bucketResult = storageService.ensureBucketExists(
+            bucket = targetBucket,
+            isPublic = isPublic
+        )
         if (bucketResult is AppResult.Error) {
             return@dbQuery bucketResult
         }
@@ -155,7 +162,10 @@ class StorageManagerImpl @Inject constructor(
             is AppResult.Error -> return@dbQuery presignedUrlResult
         }
 
-        val urlResult = storageService.getPublicUrl(key = s3Key, bucket = targetBucket)
+        val urlResult = storageService.getPublicUrl(
+            key = s3Key,
+            bucket = targetBucket
+        )
         val fileUrl = if (urlResult is AppResult.Success) urlResult.data else ""
         val expiresAt = now + expirationSeconds.seconds
 
@@ -194,7 +204,8 @@ class StorageManagerImpl @Inject constructor(
         ownerUserId: String,
         fileId: FileId
     ): AppResult<StorageFilePrivate> = dbQuery {
-        filesRepository.getStorageFileById(fileId)
+        filesRepository
+            .getStorageFileById(fileId)
             .mapNotNullOrError(StorageError.FileNotFound(fileId))
             .flatMapSuccess { file ->
                 if (file.ownerUserId != ownerUserId) {
@@ -210,14 +221,16 @@ class StorageManagerImpl @Inject constructor(
                     )
                 }
 
-                storageService.getObjectMetadata(file.s3Key, isPublic = file.visibility == StorageFileVisibility.PUBLIC)
-                    .mapNotNullOrError(
+                storageService
+                    .getObjectMetadata(
+                        file.s3Key,
+                        isPublic = file.visibility == StorageFileVisibility.PUBLIC
+                    ).mapNotNullOrError(
                         StorageError.StorageUploadFailed(
                             fileId = fileId,
                             message = "Failed to verify S3 object metadata"
                         )
-                    )
-                    .flatMapSuccess { metadata ->
+                    ).flatMapSuccess { metadata ->
                         filesRepository.updateStorageFile(
                             fileId = fileId,
                             status = UpdateField.Set(StorageFileStatus.READY),
@@ -225,8 +238,7 @@ class StorageManagerImpl @Inject constructor(
                             contentHash = UpdateField.Set(metadata.eTag)
                         )
                     }
-            }
-            .mapSuccess { updatedFile ->
+            }.mapSuccess { updatedFile ->
                 val fileUrls = storageService.resolveFileUrls(updatedFile)
                 val updatedWithUrls = updatedFile.copy(fileUrls = fileUrls)
                 if (updatedWithUrls.mimeType.startsWith(VIDEO_MIME_TYPE_PREFIX)) {
@@ -247,18 +259,30 @@ class StorageManagerImpl @Inject constructor(
     }
 
     override suspend fun deleteStorageFile(fileId: FileId): AppResult<Unit> = dbQuery {
-        filesRepository.deleteStorageFile(fileId = fileId, ownerUserId = null)
+        filesRepository.deleteStorageFile(
+            fileId = fileId,
+            ownerUserId = null
+        )
     }
 
-    override suspend fun deleteSelfStorageFile(ownerUserId: String, fileId: FileId): AppResult<Unit> = dbQuery {
-        filesRepository.deleteStorageFile(fileId = fileId, ownerUserId = ownerUserId)
+    override suspend fun deleteSelfStorageFile(
+        ownerUserId: String,
+        fileId: FileId
+    ): AppResult<Unit> = dbQuery {
+        filesRepository.deleteStorageFile(
+            fileId = fileId,
+            ownerUserId = ownerUserId
+        )
     }
 
     override suspend fun deleteStorageFilesBatch(fileIds: List<FileId>): AppResult<Unit> = dbQuery {
         if (fileIds.isEmpty()) {
             return@dbQuery AppResult.Success(Unit)
         }
-        filesRepository.deleteStorageFilesBatch(fileIds = fileIds, ownerUserId = null)
+        filesRepository.deleteStorageFilesBatch(
+            fileIds = fileIds,
+            ownerUserId = null
+        )
     }
 
     override suspend fun deleteSelfStorageFilesBatch(
@@ -268,7 +292,10 @@ class StorageManagerImpl @Inject constructor(
         if (fileIds.isEmpty()) {
             return@dbQuery AppResult.Success(Unit)
         }
-        filesRepository.deleteStorageFilesBatch(fileIds = fileIds, ownerUserId = ownerUserId)
+        filesRepository.deleteStorageFilesBatch(
+            fileIds = fileIds,
+            ownerUserId = ownerUserId
+        )
     }
 
     override suspend fun getSelfStorageFilePrivate(
@@ -302,6 +329,7 @@ class StorageManagerImpl @Inject constructor(
                 val fileUrls = storageService.resolveFileUrls(file)
                 AppResult.Success(file.copy(fileUrls = fileUrls).toStorageFilePrivate())
             }
+
             is AppResult.Error -> fileResult
         }
     }
@@ -413,12 +441,13 @@ class StorageManagerImpl @Inject constructor(
         val abandonedFileIds = mutableListOf<FileId>()
 
         coroutineScope {
-            val results = pendingFiles.map { file ->
-                async {
-                    val metadataResult = storageService.getObjectMetadata(file.s3Key)
-                    file to metadataResult
-                }
-            }.awaitAll()
+            val results = pendingFiles
+                .map { file ->
+                    async {
+                        val metadataResult = storageService.getObjectMetadata(file.s3Key)
+                        file to metadataResult
+                    }
+                }.awaitAll()
 
             results.forEach { (file, metadataResult) ->
                 if (metadataResult is AppResult.Success) {
@@ -449,7 +478,7 @@ class StorageManagerImpl @Inject constructor(
         AppResult.Success(readyFiles.size + abandonedFileIds.size)
     }
 
-    companion object {
+    public companion object {
         private const val VIDEO_MIME_TYPE_PREFIX = "video/"
     }
 }

@@ -18,7 +18,7 @@ import io.ktor.server.response.respond
  *   - Logs the error via [appLogger].
  *   - Responds with the error's `httpStatusCode` and serialized API error body from [appErrorParser].
  */
-suspend inline fun <reified T : Any> ApplicationCall.respondResult(
+public suspend inline fun <reified T : Any> ApplicationCall.respondResult(
     result: AppResult<T>,
     appLogger: AppLogger,
     appErrorParser: AppErrorParser,
@@ -35,14 +35,21 @@ suspend inline fun <reified T : Any> ApplicationCall.respondResult(
             } else if (T::class == Unit::class) {
                 respond(successStatus)
             } else {
-                respond(successStatus, result.data)
+                respond(
+                    successStatus,
+                    result.data
+                )
             }
         }
+
         is AppResult.Error -> {
             appLogger.logError(result.error)
             respond(
                 result.error.httpStatusCode,
-                appErrorParser.getApiErrorResponse(result.error, requestLocale())
+                appErrorParser.getApiErrorResponse(
+                    result.error,
+                    requestLocale()
+                )
             )
         }
     }
@@ -60,7 +67,7 @@ suspend inline fun <reified T : Any> ApplicationCall.respondResult(
  *
  * The [mapper] can be used to convert domain models into DTOs.
  */
-suspend inline fun <reified T : Any, reified R : Any> ApplicationCall.respondResult(
+public suspend inline fun <reified T : Any, reified R : Any> ApplicationCall.respondResult(
     result: AppResult<T>,
     appLogger: AppLogger,
     appErrorParser: AppErrorParser,
@@ -84,11 +91,15 @@ suspend inline fun <reified T : Any, reified R : Any> ApplicationCall.respondRes
                 )
             }
         }
+
         is AppResult.Error -> {
             appLogger.logError(result.error)
             respond(
                 result.error.httpStatusCode,
-                appErrorParser.getApiErrorResponse(result.error, requestLocale())
+                appErrorParser.getApiErrorResponse(
+                    result.error,
+                    requestLocale()
+                )
             )
         }
     }

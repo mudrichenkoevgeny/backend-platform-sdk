@@ -12,9 +12,10 @@ import javax.inject.Singleton
  * Binds [SecuritySettingsProvider] to [SecuritySettingsProviderImpl].
  */
 @Module
-interface SecuritySettingsProviderModule {
-
+public interface SecuritySettingsProviderModule {
     @Binds
     @Singleton
-    fun bindSecuritySettingsProvider(securitySettingsProviderImpl: SecuritySettingsProviderImpl): SecuritySettingsProvider
+    public fun bindSecuritySettingsProvider(
+        securitySettingsProviderImpl: SecuritySettingsProviderImpl
+    ): SecuritySettingsProvider
 }

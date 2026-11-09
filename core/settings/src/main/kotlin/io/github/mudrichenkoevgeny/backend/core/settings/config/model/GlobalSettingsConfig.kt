@@ -10,6 +10,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.model.
  *
  * @param managementGlobalSettings default management global settings configuration
  */
-data class GlobalSettingsConfig(
+public data class GlobalSettingsConfig(
     val managementGlobalSettings: ManagementGlobalSettings
 )

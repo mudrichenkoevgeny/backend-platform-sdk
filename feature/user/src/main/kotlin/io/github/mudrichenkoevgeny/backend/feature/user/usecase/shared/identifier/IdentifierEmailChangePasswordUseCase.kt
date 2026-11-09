@@ -30,8 +30,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to change password for an email identifier.
+ */
 @Singleton
-class IdentifierEmailChangePasswordUseCase @Inject constructor(
+public class IdentifierEmailChangePasswordUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -65,7 +68,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated request.
      * @return [AppResult] containing the updated [UserIdentifierPrivate].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         userIdentifierId: UserIdentifierId,
         newPassword: String,
         oldPassword: String,
@@ -100,8 +103,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
             )
         }
 
-        val userResult = userManager.getUserInternalById(currentUserId)
-            .mapNotNullOrError(UserError.UserForbidden())
+        val userResult = userManager.getUserInternalById(currentUserId).mapNotNullOrError(UserError.UserForbidden())
 
         val currentUser = when (userResult) {
             is AppResult.Error -> return handleError(
@@ -111,6 +113,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> userResult.data
         }
 
@@ -166,6 +169,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> identifierResult.data
         }
 
@@ -199,7 +203,10 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
             )
         }
 
-        val isPasswordValidResult = passwordHasher.isPasswordValid(oldPassword, userIdentifier.passwordHash)
+        val isPasswordValidResult = passwordHasher.isPasswordValid(
+            oldPassword,
+            userIdentifier.passwordHash
+        )
         when (isPasswordValidResult) {
             is AppResult.Error -> return handleError(
                 error = isPasswordValidResult.error,
@@ -208,6 +215,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
                 resourceId = auditResourceId,
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> if (!isPasswordValidResult.data) {
                 return handleError(
                     error = UserError.WrongPassword(),
@@ -234,6 +242,7 @@ class IdentifierEmailChangePasswordUseCase @Inject constructor(
                     baseMetadata = auditMetadata
                 )
             }
+
             is AppResult.Success -> {
                 logAudit(
                     actorId = auditActorId,

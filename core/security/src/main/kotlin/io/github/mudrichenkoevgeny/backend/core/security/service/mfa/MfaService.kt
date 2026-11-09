@@ -8,8 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
  * It generates temporary tokens (mfaToken) that track the state of a multistep
  * authentication or sensitive operation (e.g., TOTP verification, password reset).
  */
-interface MfaService {
-
+public interface MfaService {
     /**
      * Creates a new MFA challenge and stores it in the persistent storage.
      *
@@ -21,7 +20,7 @@ interface MfaService {
      * @param metadata Optional additional context data.
      * @return The created [MfaChallengeData] containing the generated token.
      */
-    suspend fun createChallenge(
+    public suspend fun createChallenge(
         userId: String,
         userRole: String,
         type: MfaChallengeType,
@@ -37,7 +36,7 @@ interface MfaService {
      * @param type Expected type to prevent cross-usage between different flows.
      * @return The [MfaChallengeData] if valid, or an error if expired or type mismatch.
      */
-    suspend fun getChallenge(
+    public suspend fun getChallenge(
         token: String,
         type: MfaChallengeType
     ): AppResult<MfaChallengeData>
@@ -48,7 +47,7 @@ interface MfaService {
      *
      * @param token The token to delete.
      */
-    suspend fun consumeChallenge(token: String): AppResult<Unit>
+    public suspend fun consumeChallenge(token: String): AppResult<Unit>
 
     /**
      * Retrieves, validates, and consumes (deletes) the challenge token in a single operation.
@@ -66,7 +65,7 @@ interface MfaService {
      * this must match exactly.
      * @return [AppResult.Success] if all validations pass, otherwise [AppResult.Error].
      */
-    suspend fun validateChallenge(
+    public suspend fun validateChallenge(
         token: String,
         type: MfaChallengeType,
         userId: String,

@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class DynamicRateLimiterTest {
-
     @Test
     fun `getLimiterForKey returns same instance for same key when limits unchanged`() {
         val limit = 100
@@ -23,7 +22,10 @@ class DynamicRateLimiterTest {
         val limiter1 = dynamicLimiter.getLimiterForKey("127.0.0.1")
         val limiter2 = dynamicLimiter.getLimiterForKey("127.0.0.1")
 
-        assertSame(limiter1, limiter2)
+        assertSame(
+            limiter1,
+            limiter2
+        )
     }
 
     @Test
@@ -39,7 +41,10 @@ class DynamicRateLimiterTest {
         val limiter1 = dynamicLimiter.getLimiterForKey("127.0.0.1")
         val limiter2 = dynamicLimiter.getLimiterForKey("192.168.1.1")
 
-        assertNotSame(limiter1, limiter2)
+        assertNotSame(
+            limiter1,
+            limiter2
+        )
     }
 
     @Test
@@ -58,7 +63,10 @@ class DynamicRateLimiterTest {
 
         val limiterAfter = dynamicLimiter.getLimiterForKey("127.0.0.1")
 
-        assertNotSame(limiterBefore, limiterAfter)
+        assertNotSame(
+            limiterBefore,
+            limiterAfter
+        )
     }
 
     @Test
@@ -77,7 +85,10 @@ class DynamicRateLimiterTest {
 
         val limiterAfter = dynamicLimiter.getLimiterForKey("127.0.0.1")
 
-        assertNotSame(limiterBefore, limiterAfter)
+        assertNotSame(
+            limiterBefore,
+            limiterAfter
+        )
     }
 
     @Test
@@ -94,7 +105,13 @@ class DynamicRateLimiterTest {
 
         assertTrue(state1 is RateLimiter.State.Available)
         assertTrue(state2 is RateLimiter.State.Available)
-        assertEquals(1, (state1 as RateLimiter.State.Available).remainingTokens)
-        assertEquals(0, (state2 as RateLimiter.State.Available).remainingTokens)
+        assertEquals(
+            1,
+            (state1 as RateLimiter.State.Available).remainingTokens
+        )
+        assertEquals(
+            0,
+            (state2 as RateLimiter.State.Available).remainingTokens
+        )
     }
 }

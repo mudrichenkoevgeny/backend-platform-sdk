@@ -23,7 +23,6 @@ private const val TEST_INTERVAL_SECONDS = 300
 private const val TEST_EXPIRATION_SECONDS = 900
 
 class StorageScheduledJobsImplTest {
-
     private val storageManager = mockk<StorageManager>()
     private val storageSettingsProvider = mockk<StorageSettingsProvider>()
     private val appLogger = mockk<AppLogger>(relaxed = true)
@@ -93,9 +92,11 @@ class StorageScheduledJobsImplTest {
         advanceTimeBy(1.seconds)
 
         verify {
-            appLogger.logError(match { error ->
-                error is CommonError.Internal && error.throwable == exception
-            })
+            appLogger.logError(
+                match { error ->
+                    error is CommonError.Internal && error.throwable == exception
+                }
+            )
         }
     }
 

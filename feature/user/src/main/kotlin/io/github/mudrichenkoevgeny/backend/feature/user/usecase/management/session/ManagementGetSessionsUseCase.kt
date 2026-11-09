@@ -13,8 +13,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.s
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to get sessions.
+ */
 @Singleton
-class ManagementGetSessionsUseCase @Inject constructor(
+public class ManagementGetSessionsUseCase @Inject constructor(
     private val userManager: UserManager,
     private val sessionManager: SessionManager
 ) {
@@ -38,7 +41,7 @@ class ManagementGetSessionsUseCase @Inject constructor(
      * @param authenticatedRequestContext Context containing the ID of the management caller performing the search.
      * @return [AppResult] containing [PagedResult] of [UserSessionSummary] within the caller's authorized scope.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         queryParams: ManagementSessionListQueryParams,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<PagedResult<UserSessionSummary>> {

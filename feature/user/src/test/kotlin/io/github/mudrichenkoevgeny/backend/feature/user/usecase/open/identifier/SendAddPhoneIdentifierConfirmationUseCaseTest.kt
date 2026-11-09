@@ -10,9 +10,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTe
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.backend.feature.user.service.otp.UserOtpVerificationType
 import io.github.mudrichenkoevgeny.backend.feature.user.service.phone.PhoneService
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.otpconfirmation.createTestOtpConfirmation
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class SendAddPhoneIdentifierConfirmationUseCaseTest {
-
     private val rateLimiter = mockk<RateLimiter>()
     private val identifierManager = mockk<IdentifierManager>()
     private val otpService = mockk<OtpService>()
@@ -46,31 +45,59 @@ class SendAddPhoneIdentifierConfirmationUseCaseTest {
         )
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_PHONE, TEST_PHONE)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.SEND_OTP_PHONE,
+                TEST_PHONE
+            )
         } returns AppResult.Success(Unit)
 
         coEvery {
-            identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.PHONE, TEST_PHONE)
+            identifierManager.getUserIdentifierInternalByProvider(
+                UserAuthProvider.PHONE,
+                TEST_PHONE
+            )
         } returns AppResult.Success(null)
 
         coEvery {
-            otpService.getOtp(TEST_PHONE, UserOtpVerificationType.PHONE_VERIFICATION)
+            otpService.getOtp(
+                TEST_PHONE,
+                UserOtpVerificationType.PHONE_VERIFICATION
+            )
         } returns AppResult.Success(otpData)
 
         coEvery {
-            phoneService.sendVerificationCode(TEST_PHONE, TEST_CODE, clientInfo.clientDeviceInfo.language)
+            phoneService.sendVerificationCode(
+                TEST_PHONE,
+                TEST_CODE,
+                clientInfo.clientDeviceInfo.language
+            )
         } returns AppResult.Success(Unit)
 
-        val result = useCase(TEST_PHONE, context)
+        val result = useCase(
+            TEST_PHONE,
+            context
+        )
 
-        assertEquals(AppResult.Success(otpConfirmation), result)
+        assertEquals(
+            AppResult.Success(otpConfirmation),
+            result
+        )
 
         coVerify(exactly = 1) {
-            phoneService.sendVerificationCode(any(), any(), any())
+            phoneService.sendVerificationCode(
+                any(),
+                any(),
+                any()
+            )
         }
 
         coVerify(exactly = 0) {
-            phoneService.sendAlreadyRegisteredPhoneNumber(any(), any(), any(), any())
+            phoneService.sendAlreadyRegisteredPhoneNumber(
+                any(),
+                any(),
+                any(),
+                any()
+            )
         }
     }
 
@@ -83,13 +110,26 @@ class SendAddPhoneIdentifierConfirmationUseCaseTest {
             code = TEST_CODE
         )
 
-        coEvery { rateLimiter.checkRateLimit(any(), any()) } returns AppResult.Success(Unit)
+        coEvery {
+            rateLimiter.checkRateLimit(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(Unit)
 
         coEvery {
-            identifierManager.getUserIdentifierInternalByProvider(UserAuthProvider.PHONE, TEST_PHONE)
+            identifierManager.getUserIdentifierInternalByProvider(
+                UserAuthProvider.PHONE,
+                TEST_PHONE
+            )
         } returns AppResult.Success(identifier)
 
-        coEvery { otpService.getOtp(any(), any()) } returns AppResult.Success(otpData)
+        coEvery {
+            otpService.getOtp(
+                any(),
+                any()
+            )
+        } returns AppResult.Success(otpData)
 
         coEvery {
             phoneService.sendAlreadyRegisteredPhoneNumber(
@@ -100,16 +140,31 @@ class SendAddPhoneIdentifierConfirmationUseCaseTest {
             )
         } returns AppResult.Success(Unit)
 
-        val result = useCase(TEST_PHONE, context)
+        val result = useCase(
+            TEST_PHONE,
+            context
+        )
 
-        assertEquals(AppResult.Success(otpConfirmation), result)
+        assertEquals(
+            AppResult.Success(otpConfirmation),
+            result
+        )
 
         coVerify(exactly = 1) {
-            phoneService.sendAlreadyRegisteredPhoneNumber(any(), any(), any(), any())
+            phoneService.sendAlreadyRegisteredPhoneNumber(
+                any(),
+                any(),
+                any(),
+                any()
+            )
         }
 
         coVerify(exactly = 0) {
-            phoneService.sendVerificationCode(any(), any(), any())
+            phoneService.sendVerificationCode(
+                any(),
+                any(),
+                any()
+            )
         }
     }
 
@@ -118,14 +173,28 @@ class SendAddPhoneIdentifierConfirmationUseCaseTest {
         val error = CommonError.Unknown()
 
         coEvery {
-            rateLimiter.checkRateLimit(UserRateLimitAction.SEND_OTP_PHONE, TEST_PHONE)
+            rateLimiter.checkRateLimit(
+                UserRateLimitAction.SEND_OTP_PHONE,
+                TEST_PHONE
+            )
         } returns AppResult.Error(error)
 
-        val result = useCase(TEST_PHONE, context)
+        val result = useCase(
+            TEST_PHONE,
+            context
+        )
 
-        assertEquals(AppResult.Error(error), result)
+        assertEquals(
+            AppResult.Error(error),
+            result
+        )
 
-        coVerify(exactly = 0) { otpService.getOtp(any(), any()) }
+        coVerify(exactly = 0) {
+            otpService.getOtp(
+                any(),
+                any()
+            )
+        }
     }
 
     companion object {

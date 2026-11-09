@@ -12,9 +12,8 @@ import javax.inject.Singleton
  * Binds [AuditLogger] to [AuditLoggerImpl].
  */
 @Module
-interface AuditLoggerModule {
-
+public interface AuditLoggerModule {
     @Binds
     @Singleton
-    fun bindAuditLogger(auditLoggerImpl: AuditLoggerImpl): AuditLogger
+    public fun bindAuditLogger(auditLoggerImpl: AuditLoggerImpl): AuditLogger
 }

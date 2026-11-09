@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test
  * and handles parameterized error formatting.
  */
 class StorageErrorParserTest {
-
     private val parser = StorageErrorParser()
     private val stringsEn = StorageModuleStrings(locale = "en")
     private val stringsRu = StorageModuleStrings(locale = "ru")
@@ -32,10 +31,24 @@ class StorageErrorParserTest {
             locale = "en"
         )
         val nonNullResponse = checkNotNull(response)
-        assertEquals(errorId.asHexDashString(), nonNullResponse.id)
-        assertEquals(StorageErrorCodes.FILE_SIZE_EXCEEDS_LIMIT, nonNullResponse.code)
-        val expectedSize = checkNotNull(ByteSizeFormatter.format("52428800", locale = "en"))
-        assertEquals(stringsEn.errors.fileSizeExceedsLimit(expectedSize), nonNullResponse.message)
+        assertEquals(
+            errorId.asHexDashString(),
+            nonNullResponse.id
+        )
+        assertEquals(
+            StorageErrorCodes.FILE_SIZE_EXCEEDS_LIMIT,
+            nonNullResponse.code
+        )
+        val expectedSize = checkNotNull(
+            ByteSizeFormatter.format(
+                "52428800",
+                locale = "en"
+            )
+        )
+        assertEquals(
+            stringsEn.errors.fileSizeExceedsLimit(expectedSize),
+            nonNullResponse.message
+        )
     }
 
     @Test
@@ -48,7 +61,10 @@ class StorageErrorParserTest {
             locale = "en"
         )
         val nonNullResponse = checkNotNull(response)
-        assertEquals(stringsEn.errors.fileSizeExceedsLimitWithoutArgs, nonNullResponse.message)
+        assertEquals(
+            stringsEn.errors.fileSizeExceedsLimitWithoutArgs,
+            nonNullResponse.message
+        )
     }
 
     @Test
@@ -60,15 +76,26 @@ class StorageErrorParserTest {
             locale = "ru"
         )
         val nonNullResponse = checkNotNull(response)
-        val expectedSize = checkNotNull(ByteSizeFormatter.format("52428800", locale = "ru"))
-        assertEquals(stringsRu.errors.fileSizeExceedsLimit(expectedSize), nonNullResponse.message)
+        val expectedSize = checkNotNull(
+            ByteSizeFormatter.format(
+                "52428800",
+                locale = "ru"
+            )
+        )
+        assertEquals(
+            stringsRu.errors.fileSizeExceedsLimit(expectedSize),
+            nonNullResponse.message
+        )
     }
 
     @Test
     fun `getApiErrorResponse returns null for unhandled error code`() {
         val appError = createTestAppError(code = "UNKNOWN_NON_STORAGE_CODE")
 
-        val response = parser.getApiErrorResponse(appError, "en")
+        val response = parser.getApiErrorResponse(
+            appError,
+            "en"
+        )
 
         assertNull(response)
     }

@@ -2,19 +2,20 @@ package io.github.mudrichenkoevgeny.backend.core.settings.di.module
 
 import dagger.Binds
 import dagger.Module
-import io.github.mudrichenkoevgeny.backend.core.settings.database.repository.SystemSettingRepository
-import io.github.mudrichenkoevgeny.backend.core.settings.database.repository.SystemSettingRepositoryImpl
+import io.github.mudrichenkoevgeny.backend.core.settings.database.repository.SystemSettingsRepository
+import io.github.mudrichenkoevgeny.backend.core.settings.database.repository.SystemSettingsRepositoryImpl
 import javax.inject.Singleton
 
 /**
  * Dagger bindings for settings repositories.
  *
- * Binds [SystemSettingRepository] to [SystemSettingRepositoryImpl].
+ * Binds [SystemSettingsRepository] to [SystemSettingsRepositoryImpl].
  */
 @Module
-interface SettingsRepositoriesModule {
-
+public interface SettingsRepositoriesModule {
     @Binds
     @Singleton
-    fun bindSystemSettingRepository(systemSettingRepositoryImpl: SystemSettingRepositoryImpl): SystemSettingRepository
+    public fun bindSystemSettingRepository(
+        systemSettingRepositoryImpl: SystemSettingsRepositoryImpl
+    ): SystemSettingsRepository
 }

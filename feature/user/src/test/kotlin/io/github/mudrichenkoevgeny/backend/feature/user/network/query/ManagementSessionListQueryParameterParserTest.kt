@@ -9,6 +9,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionFilterValues
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.listing.UserSessionSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.ktor.http.Parameters
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.request.ApplicationRequest
 import io.mockk.every
@@ -26,7 +27,6 @@ private const val TEST_IP = "127.0.0.1"
 private const val INVALID_VAL = "invalid"
 
 class ManagementSessionListQueryParameterParserTest {
-
     private val call = mockk<ApplicationCall>()
     private val request = mockk<ApplicationRequest>()
     private val filterNames = UserSessionFilterValues
@@ -37,7 +37,7 @@ class ManagementSessionListQueryParameterParserTest {
     }
 
     @Test
-    fun `parseManagementSessionsListQueryParams should extract and parse all wire keys defined in UserSessionFilterValues`() {
+    fun `parseManagementSessionsListQueryParams parses all wire keys defined in UserSessionFilterValues`() {
         assertExhaustiveFilterKeysParsed(
             filterKeysClass = UserSessionFilterValues::class,
             sampleValueProvider = ::getSampleValidValueForSessionFilterKey,
@@ -52,16 +52,25 @@ class ManagementSessionListQueryParameterParserTest {
             wireValueExtractor = { sortByEntry -> sortByEntry.value },
             parseFunction = { mockCall -> mockCall.parseManagementSessionsListQueryParams() },
             assertSortByFunction = { parsedQueryParams, expectedSortBy ->
-                assertEquals(expectedSortBy, parsedQueryParams.listing.sortBy)
+                assertEquals(
+                    expectedSortBy,
+                    parsedQueryParams.listing.sortBy
+                )
             }
         )
     }
 
     private fun getSampleValidValueForSessionFilterKey(key: String): String = when {
         key == filterNames.USER_ROLE || key == filterNames.EXCLUDE_USER_ROLE -> "user"
+
         key == filterNames.IDENTIFIER_AUTH_PROVIDER || key == filterNames.EXCLUDE_IDENTIFIER_AUTH_PROVIDER -> "google"
+
         key == filterNames.CLIENT_TYPE || key == filterNames.EXCLUDE_CLIENT_TYPE -> "android"
-        key == filterNames.SESSION_ID || key == filterNames.USER_ID || key == filterNames.IDENTIFIER_ID -> "00000000-0000-0000-0000-000000000001"
+
+        key == filterNames.SESSION_ID ||
+            key == filterNames.USER_ID ||
+            key == filterNames.IDENTIFIER_ID -> "00000000-0000-0000-0000-000000000001"
+
         key.endsWith("_from") || key.endsWith("_to") -> "2026-01-01T00:00:00Z"
         key.startsWith("is_") -> "true"
         else -> "sample_value"
@@ -83,14 +92,38 @@ class ManagementSessionListQueryParameterParserTest {
 
         val result = call.parseManagementSessionsListQueryParams()
 
-        assertEquals(TEST_USER_ID, result.userIds.first())
-        assertEquals(UserRole.USER, result.userRoles.first())
-        assertEquals(TEST_IDENTIFIER_ID, result.identifierIds.first())
-        assertEquals(UserAuthProvider.GOOGLE, result.identifierAuthProviders.first())
-        assertEquals(ClientType.ANDROID, result.clientTypes.first())
-        assertEquals(TEST_IDENTIFIER, result.identifier)
-        assertEquals(TEST_IP, result.ipAddress)
-        assertEquals(UserSessionSortBy.DEFAULT, result.listing.sortBy)
+        assertEquals(
+            TEST_USER_ID,
+            result.userIds.first()
+        )
+        assertEquals(
+            UserRole.USER,
+            result.userRoles.first()
+        )
+        assertEquals(
+            TEST_IDENTIFIER_ID,
+            result.identifierIds.first()
+        )
+        assertEquals(
+            UserAuthProvider.GOOGLE,
+            result.identifierAuthProviders.first()
+        )
+        assertEquals(
+            ClientType.ANDROID,
+            result.clientTypes.first()
+        )
+        assertEquals(
+            TEST_IDENTIFIER,
+            result.identifier
+        )
+        assertEquals(
+            TEST_IP,
+            result.ipAddress
+        )
+        assertEquals(
+            UserSessionSortBy.DEFAULT,
+            result.listing.sortBy
+        )
     }
 
     @Test
@@ -115,7 +148,10 @@ class ManagementSessionListQueryParameterParserTest {
         }
 
         val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.USER_ROLE, error.parameterName)
+        assertEquals(
+            filterNames.USER_ROLE,
+            error.parameterName
+        )
     }
 
     @Test
@@ -131,7 +167,10 @@ class ManagementSessionListQueryParameterParserTest {
         }
 
         val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.IDENTIFIER_AUTH_PROVIDER, error.parameterName)
+        assertEquals(
+            filterNames.IDENTIFIER_AUTH_PROVIDER,
+            error.parameterName
+        )
     }
 
     @Test
@@ -147,12 +186,20 @@ class ManagementSessionListQueryParameterParserTest {
         }
 
         val error = exception.error as CommonError.InvalidParameterValue
-        assertEquals(filterNames.CLIENT_TYPE, error.parameterName)
+        assertEquals(
+            filterNames.CLIENT_TYPE,
+            error.parameterName
+        )
     }
 
     private fun setupMockParameters(params: Map<String, List<String>>) {
-        val parameters = io.ktor.http.Parameters.build {
-            params.forEach { (key, values) -> appendAll(key, values) }
+        val parameters = Parameters.build {
+            params.forEach { (key, values) ->
+                appendAll(
+                    key,
+                    values
+                )
+            }
         }
         every { request.queryParameters } returns parameters
     }

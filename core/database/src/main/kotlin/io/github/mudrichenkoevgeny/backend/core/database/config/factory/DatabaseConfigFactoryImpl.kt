@@ -12,28 +12,22 @@ import javax.inject.Singleton
  * Reads DB user/password and Redis URL from files whose paths are given by env keys.
  */
 @Singleton
-class DatabaseConfigFactoryImpl @Inject constructor(
+public class DatabaseConfigFactoryImpl @Inject constructor(
     private val envReader: EnvReader
-): DatabaseConfigFactory {
-
+) : DatabaseConfigFactory {
     override fun create(): DatabaseConfig {
-        // secret files
         val dbUserFile = envReader.getByKey(DatabaseEnvKeys.DB_USER_SECRET_FILE)
         val dbPasswordFile = envReader.getByKey(DatabaseEnvKeys.DB_PASSWORD_SECRET_FILE)
         val redisUrlFile = envReader.getByKey(DatabaseEnvKeys.REDIS_URL_SECRET_FILE)
 
-        // env
         val dbUrl = envReader.getByKey(DatabaseEnvKeys.DB_URL)
         val dbUser = envReader.readSecret(dbUserFile)
         val dbPassword = envReader.readSecret(dbPasswordFile)
 
-        val migrationPaths = envReader.getByKeyOrNull(DatabaseEnvKeys.MIGRATION_PATHS)
-            ?.split(",")
+        val migrationPaths = envReader.getByKeyOrNull(DatabaseEnvKeys.MIGRATION_PATHS)?.split(",")
             ?: DatabaseConfig.defaultMigrationPaths
 
-        val isMigrationEnabled = envReader.getByKeyOrNull(DatabaseEnvKeys.DB_MIGRATE_ON_STARTUP)
-            ?.toBoolean()
-            ?: true
+        val isMigrationEnabled = envReader.getByKeyOrNull(DatabaseEnvKeys.DB_MIGRATE_ON_STARTUP)?.toBoolean() ?: true
 
         val redisUrl = envReader.readSecret(redisUrlFile)
         val redisTimeoutSeconds = envReader.getByKey(DatabaseEnvKeys.REDIS_TIMEOUT_SECONDS).toLong()

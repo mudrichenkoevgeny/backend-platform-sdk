@@ -32,8 +32,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
 
+/**
+ * Use case to delete a session.
+ */
 @Singleton
-class ManagementDeleteSessionUseCase @Inject constructor(
+public class ManagementDeleteSessionUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -68,7 +71,7 @@ class ManagementDeleteSessionUseCase @Inject constructor(
      * @param authenticatedRequestContext The context of the authenticated management request.
      * @return [AppResult] indicating success or the specific [AppError].
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         userSessionId: UserSessionId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
@@ -117,13 +120,12 @@ class ManagementDeleteSessionUseCase @Inject constructor(
             )
         }
 
-        val userSessionResult = sessionManager.getUserSessionInternal(userSessionId)
-            .mapNotNullOrError(
-                CommonError.NotFound(
-                    resource = UserSessionPrivate::class.java.simpleName,
-                    identifier = userSessionId.asHexDashString()
-                )
+        val userSessionResult = sessionManager.getUserSessionInternal(userSessionId).mapNotNullOrError(
+            CommonError.NotFound(
+                resource = UserSessionPrivate::class.java.simpleName,
+                identifier = userSessionId.asHexDashString()
             )
+        )
 
         val userSession = when (userSessionResult) {
             is AppResult.Success -> userSessionResult.data
@@ -251,6 +253,7 @@ class ManagementDeleteSessionUseCase @Inject constructor(
                 )
                 deleteResult
             }
+
             is AppResult.Error -> handleError(
                 error = deleteResult.error,
                 actorId = auditActorId,

@@ -33,18 +33,19 @@ import javax.inject.Singleton
  * Management HTTP routes for retrieving user feature configuration.
  *
  * Registered routes:
- * 1. [ManagementUserConfigurationRoutes.GET_MANAGEMENT_USER_CONFIGURATION] — retrieves management-specific user settings via [GetManagementUserConfigurationUseCase].
- * 2. [ManagementUserConfigurationRoutes.GET_OPEN_USER_CONFIGURATION] — retrieves open user configuration via [GetOpenUserConfigurationUseCase].
+ * 1. [ManagementUserConfigurationRoutes.GET_MANAGEMENT_USER_CONFIGURATION] — retrieves management-specific user
+ * settings via [GetManagementUserConfigurationUseCase].
+ * 2. [ManagementUserConfigurationRoutes.GET_OPEN_USER_CONFIGURATION] — retrieves open user configuration via
+ * [GetOpenUserConfigurationUseCase].
  */
 @Singleton
-class ManagementUserConfigurationRouter @Inject constructor(
+public class ManagementUserConfigurationRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
     private val getManagementUserConfigurationUseCase: GetManagementUserConfigurationUseCase,
     private val getOpenUserConfigurationUseCase: GetOpenUserConfigurationUseCase
 ) : BaseRouter {
-
     override fun register(route: Route) {
         registerGetOpenUserConfigurationRoute(route)
         route.authenticate(JwtAuthSpecs.AUTHENTICATE_CONFIGURATION) {
@@ -58,7 +59,12 @@ class ManagementUserConfigurationRouter @Inject constructor(
 
         route.get(
             path = ManagementUserConfigurationRoutes.GET_OPEN_USER_CONFIGURATION,
-            builder = { getOpenUserConfigurationDocs(allowedRoles, allowedAccountStatuses) },
+            builder = {
+                getOpenUserConfigurationDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
             body = { getOpenUserConfiguration() }
         )
     }
@@ -89,19 +95,39 @@ class ManagementUserConfigurationRouter @Inject constructor(
     private suspend fun RoutingContext.getOpenUserConfiguration() {
         val result = getOpenUserConfigurationUseCase()
 
-        call.respondResult(result, appLogger, appErrorParser) { userConfiguration ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userConfiguration ->
             userConfiguration.toOpenUserConfigurationPayload()
         }
     }
 
     private fun registerGetUserConfigurationRoute(route: Route) {
-        val allowedRoles = setOf(UserRole.STAFF, UserRole.ADMIN)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedRoles = setOf(
+            UserRole.STAFF,
+            UserRole.ADMIN
+        )
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.get(
             path = ManagementUserConfigurationRoutes.GET_MANAGEMENT_USER_CONFIGURATION,
-            builder = { getUserConfigurationDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getUserConfiguration(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getUserConfigurationDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getUserConfiguration(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -139,26 +165,36 @@ class ManagementUserConfigurationRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
         val result = getManagementUserConfigurationUseCase()
 
-        call.respondResult(result, appLogger, appErrorParser) { userConfiguration ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userConfiguration ->
             userConfiguration.toManagementUserConfigurationPayload()
         }
     }
 
-    companion object {
-        const val GET_OPEN_USER_CONFIGURATION_ROUTE_SUMMARY = "Get open user configuration for management"
-        const val GET_OPEN_USER_CONFIGURATION_ROUTE_DESCRIPTION = "Retrieves user configuration settings for unauthenticated management users."
-        const val GET_OPEN_USER_CONFIGURATION_ROUTE_OPERATION_ID = "managementGetOpenUserConfiguration"
-        const val GET_OPEN_USER_CONFIGURATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Open user configuration data"
+    public companion object {
+        private const val GET_OPEN_USER_CONFIGURATION_ROUTE_SUMMARY = "Get open user configuration for management"
+        private const val GET_OPEN_USER_CONFIGURATION_ROUTE_DESCRIPTION =
+            "Retrieves user configuration settings for unauthenticated management users."
+        private const val GET_OPEN_USER_CONFIGURATION_ROUTE_OPERATION_ID = "managementGetOpenUserConfiguration"
+        private const val GET_OPEN_USER_CONFIGURATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Open user configuration data"
 
-        const val GET_USER_CONFIGURATION_ROUTE_SUMMARY = "Get user feature configuration for management"
-        const val GET_USER_CONFIGURATION_ROUTE_DESCRIPTION = "Retrieves configuration settings relevant for management tasks and staff workflows."
-        const val GET_USER_CONFIGURATION_ROUTE_OPERATION_ID = "managementGetUserConfiguration"
-        const val GET_USER_CONFIGURATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Management user configuration data"
+        private const val GET_USER_CONFIGURATION_ROUTE_SUMMARY = "Get user feature configuration for management"
+        private const val GET_USER_CONFIGURATION_ROUTE_DESCRIPTION =
+            "Retrieves configuration settings relevant for management tasks and staff workflows."
+        private const val GET_USER_CONFIGURATION_ROUTE_OPERATION_ID = "managementGetUserConfiguration"
+        private const val GET_USER_CONFIGURATION_ROUTE_RESPONSE_OK_DESCRIPTION = "Management user configuration data"
     }
 }

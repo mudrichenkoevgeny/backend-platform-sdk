@@ -5,11 +5,11 @@ import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
-import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.core.security.service.otp.OtpService
 import io.github.mudrichenkoevgeny.backend.core.security.usecase.open.passwordpolicy.ValidatePasswordUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
+import io.github.mudrichenkoevgeny.backend.feature.user.error.validation.validateAccessEligibility
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier.IdentifierManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.RequestContext
@@ -28,8 +28,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Use case to reset user password using email verification code.
+ */
 @Singleton
-class ResetPasswordUseCase @Inject constructor(
+public class ResetPasswordUseCase @Inject constructor(
     private val rateLimiter: RateLimiter,
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
@@ -62,13 +65,16 @@ class ResetPasswordUseCase @Inject constructor(
      * @param requestContext The context of the public request.
      * @return [AppResult.Success] if the password was updated, or an [AppResult.Error] otherwise.
      */
-    suspend operator fun invoke(
+    public suspend operator fun invoke(
         email: String,
         newPassword: String,
         confirmationCode: String,
         requestContext: RequestContext,
         allowedRoles: Set<UserRole> = UserRole.entries.toSet(),
-        allowedAccountStatuses: Set<UserAccountStatus> = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        allowedAccountStatuses: Set<UserAccountStatus> = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
     ): AppResult<Unit> {
         val auditMetadata = requestContext.clientInfo.toAuditMetadata().toMutableSet()
         auditMetadata.add(
@@ -141,7 +147,10 @@ class ResetPasswordUseCase @Inject constructor(
             )
         }
 
-        val validateResult = user.validateAccessEligibility(allowedRoles, allowedAccountStatuses)
+        val validateResult = user.validateAccessEligibility(
+            allowedRoles,
+            allowedAccountStatuses
+        )
         if (validateResult is AppResult.Error) {
             return handleError(
                 error = validateResult.error,
@@ -163,6 +172,7 @@ class ResetPasswordUseCase @Inject constructor(
                 resourceId = userIdentifier.userId.asHexDashString(),
                 baseMetadata = auditMetadata
             )
+
             is AppResult.Success -> {
                 userManager.unlockUserAccount(
                     userId = userIdentifier.userId,

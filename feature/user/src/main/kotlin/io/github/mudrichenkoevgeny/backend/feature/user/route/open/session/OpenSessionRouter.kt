@@ -75,7 +75,7 @@ import javax.inject.Singleton
  * 6. [OpenSessionRoutes.REAUTHENTICATE_SESSION] — MFA verification via [ReauthenticateSessionUseCase].
  */
 @Singleton
-class OpenSessionRouter @Inject constructor(
+public class OpenSessionRouter @Inject constructor(
     private val authenticationProvider: AuthenticationProvider,
     private val appLogger: AppLogger,
     private val appErrorParser: AppErrorParser,
@@ -105,8 +105,18 @@ class OpenSessionRouter @Inject constructor(
 
         route.post(
             path = OpenSessionRoutes.LOGOUT,
-            builder = { logoutDocs(allowedRoles, allowedAccountStatuses) },
-            body = { logout(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                logoutDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                logout(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -116,8 +126,18 @@ class OpenSessionRouter @Inject constructor(
 
         route.get(
             path = OpenSessionRoutes.GET_SESSIONS,
-            builder = { getSessionsDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getSessions(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getSessionsDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getSessions(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -127,41 +147,90 @@ class OpenSessionRouter @Inject constructor(
 
         route.get(
             path = OpenSessionRoutes.GET_SESSION,
-            builder = { getSessionDocs(allowedRoles, allowedAccountStatuses) },
-            body = { getSession(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                getSessionDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                getSession(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerDeleteSessionRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.delete(
             path = OpenSessionRoutes.DELETE_SESSION,
-            builder = { deleteSessionDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteSession(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteSessionDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteSession(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerDeleteAllOtherSessionsRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.delete(
             path = OpenSessionRoutes.DELETE_ALL_OTHER_SESSIONS,
-            builder = { deleteAllOtherSessionsDocs(allowedRoles, allowedAccountStatuses) },
-            body = { deleteAllOtherSessions(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                deleteAllOtherSessionsDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                deleteAllOtherSessions(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
     private fun registerReauthenticateSessionRoute(route: Route) {
         val allowedRoles = setOf(UserRole.USER)
-        val allowedAccountStatuses = setOf(UserAccountStatus.ACTIVE, UserAccountStatus.READ_ONLY)
+        val allowedAccountStatuses = setOf(
+            UserAccountStatus.ACTIVE,
+            UserAccountStatus.READ_ONLY
+        )
 
         route.post(
             path = OpenSessionRoutes.REAUTHENTICATE_SESSION,
-            builder = { reauthenticateSessionDocs(allowedRoles, allowedAccountStatuses) },
-            body = { reauthenticateSession(allowedRoles, allowedAccountStatuses) }
+            builder = {
+                reauthenticateSessionDocs(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            },
+            body = {
+                reauthenticateSession(
+                    allowedRoles,
+                    allowedAccountStatuses
+                )
+            }
         )
     }
 
@@ -206,7 +275,11 @@ class OpenSessionRouter @Inject constructor(
                 resourceId = authenticatedRequestContext.sessionId.asHexDashString(),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -214,7 +287,11 @@ class OpenSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun RouteConfig.getSessionsDocs(
@@ -254,7 +331,11 @@ class OpenSessionRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -263,7 +344,11 @@ class OpenSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { pagedSessions ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { pagedSessions ->
             pagedSessions.mapItems { userSessionSummary -> userSessionSummary.toUserSessionSummaryPayload() }
         }
     }
@@ -314,7 +399,11 @@ class OpenSessionRouter @Inject constructor(
         )
 
         if (authorizeResult is AppResult.Error) {
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -323,7 +412,11 @@ class OpenSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { userSessionPrivate ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { userSessionPrivate ->
             userSessionPrivate.toUserSessionPrivatePayload()
         }
     }
@@ -385,7 +478,11 @@ class OpenSessionRouter @Inject constructor(
                     )
                 )
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -394,7 +491,11 @@ class OpenSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun RouteConfig.deleteAllOtherSessionsDocs(
@@ -445,7 +546,11 @@ class OpenSessionRouter @Inject constructor(
                     )
                 )
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -453,7 +558,11 @@ class OpenSessionRouter @Inject constructor(
             authenticatedRequestContext = authenticatedRequestContext
         )
 
-        call.respondResult(result, appLogger, appErrorParser) { deletedSessions ->
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        ) { deletedSessions ->
             deletedSessions.toDeletedSessionsPayload()
         }
     }
@@ -504,7 +613,11 @@ class OpenSessionRouter @Inject constructor(
                 resourceId = authenticatedRequestContext.sessionId.asHexDashString(),
                 error = authorizeResult.error
             )
-            call.respondResult(authorizeResult, appLogger, appErrorParser)
+            call.respondResult(
+                authorizeResult,
+                appLogger,
+                appErrorParser
+            )
             return
         }
 
@@ -514,7 +627,11 @@ class OpenSessionRouter @Inject constructor(
             code = payload.code
         )
 
-        call.respondResult(result, appLogger, appErrorParser)
+        call.respondResult(
+            result,
+            appLogger,
+            appErrorParser
+        )
     }
 
     private fun logErrorToAudit(
@@ -539,37 +656,39 @@ class OpenSessionRouter @Inject constructor(
         )
     }
 
-    companion object {
-        const val LOGOUT_ROUTE_SUMMARY = "Logout current user"
-        const val LOGOUT_ROUTE_DESCRIPTION = "Terminates the current active session."
-        const val LOGOUT_ROUTE_OPERATION_ID = "openLogout"
-        const val LOGOUT_ROUTE_RESPONSE_OK_DESCRIPTION = "Logged out successfully"
+    public companion object {
+        private const val LOGOUT_ROUTE_SUMMARY = "Logout current user"
+        private const val LOGOUT_ROUTE_DESCRIPTION = "Terminates the current active session."
+        private const val LOGOUT_ROUTE_OPERATION_ID = "openLogout"
+        private const val LOGOUT_ROUTE_RESPONSE_OK_DESCRIPTION = "Logged out successfully"
 
-        const val GET_SESSIONS_ROUTE_SUMMARY = "List active user sessions"
-        const val GET_SESSIONS_ROUTE_DESCRIPTION = "Retrieves a paginated list of active sessions."
-        const val GET_SESSIONS_ROUTE_OPERATION_ID = "openGetSessions"
-        const val GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Active sessions retrieved successfully"
+        private const val GET_SESSIONS_ROUTE_SUMMARY = "List active user sessions"
+        private const val GET_SESSIONS_ROUTE_DESCRIPTION = "Retrieves a paginated list of active sessions."
+        private const val GET_SESSIONS_ROUTE_OPERATION_ID = "openGetSessions"
+        private const val GET_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "Active sessions retrieved successfully"
 
-        const val GET_SESSION_ROUTE_SUMMARY = "Get active user session"
-        const val GET_SESSION_ROUTE_DESCRIPTION = "Retrieves details of a specific active session."
-        const val GET_SESSION_ROUTE_OPERATION_ID = "openGetSession"
-        const val GET_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the session to retrieve."
-        const val GET_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session details retrieved successfully"
+        private const val GET_SESSION_ROUTE_SUMMARY = "Get active user session"
+        private const val GET_SESSION_ROUTE_DESCRIPTION = "Retrieves details of a specific active session."
+        private const val GET_SESSION_ROUTE_OPERATION_ID = "openGetSession"
+        private const val GET_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the session to retrieve."
+        private const val GET_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session details retrieved successfully"
 
-        const val DELETE_SESSION_ROUTE_SUMMARY = "Delete active user session"
-        const val DELETE_SESSION_ROUTE_DESCRIPTION = "Terminates a specific active session by ID."
-        const val DELETE_SESSION_ROUTE_OPERATION_ID = "openDeleteSession"
-        const val DELETE_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the session to delete."
-        const val DELETE_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session deleted successfully"
+        private const val DELETE_SESSION_ROUTE_SUMMARY = "Delete active user session"
+        private const val DELETE_SESSION_ROUTE_DESCRIPTION = "Terminates a specific active session by ID."
+        private const val DELETE_SESSION_ROUTE_OPERATION_ID = "openDeleteSession"
+        private const val DELETE_SESSION_ROUTE_PATH_PARAMETER_ID_DESCRIPTION = "The ID of the session to delete."
+        private const val DELETE_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session deleted successfully"
 
-        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_SUMMARY = "Delete all other active user sessions"
-        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_DESCRIPTION = "Terminates all active sessions except the current one."
-        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_OPERATION_ID = "openDeleteAllOtherSessions"
-        const val DELETE_ALL_OTHER_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION = "All other sessions deleted successfully"
+        private const val DELETE_ALL_OTHER_SESSIONS_ROUTE_SUMMARY = "Delete all other active user sessions"
+        private const val DELETE_ALL_OTHER_SESSIONS_ROUTE_DESCRIPTION =
+            "Terminates all active sessions except the current one."
+        private const val DELETE_ALL_OTHER_SESSIONS_ROUTE_OPERATION_ID = "openDeleteAllOtherSessions"
+        private const val DELETE_ALL_OTHER_SESSIONS_ROUTE_RESPONSE_OK_DESCRIPTION =
+            "All other sessions deleted successfully"
 
-        const val REAUTHENTICATE_SESSION_ROUTE_SUMMARY = "Reauthenticate session with TOTP"
-        const val REAUTHENTICATE_SESSION_ROUTE_DESCRIPTION = "Verifies TOTP code to confirm session security."
-        const val REAUTHENTICATE_SESSION_ROUTE_OPERATION_ID = "openReauthenticateSession"
-        const val REAUTHENTICATE_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session reauthenticated successfully"
+        private const val REAUTHENTICATE_SESSION_ROUTE_SUMMARY = "Reauthenticate session with TOTP"
+        private const val REAUTHENTICATE_SESSION_ROUTE_DESCRIPTION = "Verifies TOTP code to confirm session security."
+        private const val REAUTHENTICATE_SESSION_ROUTE_OPERATION_ID = "openReauthenticateSession"
+        private const val REAUTHENTICATE_SESSION_ROUTE_RESPONSE_OK_DESCRIPTION = "Session reauthenticated successfully"
     }
 }

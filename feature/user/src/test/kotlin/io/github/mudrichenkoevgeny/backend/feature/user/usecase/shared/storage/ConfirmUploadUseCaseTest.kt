@@ -9,17 +9,16 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.f
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.storage.UserStorageTargetScopes
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.storage.domain.model.file.createTestStorageFilePrivate
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import io.github.mudrichenkoevgeny.shared.foundation.testing.core.storage.domain.model.file.createTestStorageFilePrivate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.time.Clock
 
 class ConfirmUploadUseCaseTest {
-
     private val storageManager = mockk<StorageManager>()
     private val useCase = ConfirmUploadUseCase(storageManager)
 
@@ -50,9 +49,15 @@ class ConfirmUploadUseCaseTest {
             )
         } returns AppResult.Success(filePrivate)
 
-        val result = useCase(fileId, context)
+        val result = useCase(
+            fileId,
+            context
+        )
 
-        assertEquals(AppResult.Success(filePrivate), result)
+        assertEquals(
+            AppResult.Success(filePrivate),
+            result
+        )
     }
 
     @Test
@@ -66,7 +71,10 @@ class ConfirmUploadUseCaseTest {
             )
         } returns AppResult.Error(expectedError)
 
-        val result = useCase(fileId, context)
+        val result = useCase(
+            fileId,
+            context
+        )
 
         assertTrue(result is AppResult.Error && result.error == expectedError)
     }

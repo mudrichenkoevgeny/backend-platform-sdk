@@ -22,7 +22,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppInstanceM
  * @param serverUrl public base URL used in generated links and documentation.
  * @param allowedOrigins list of origins allowed by CORS.
  */
-data class CommonConfig(
+public data class CommonConfig(
     val environment: AppEnvironment,
     val instanceMode: AppInstanceMode,
     val version: String,

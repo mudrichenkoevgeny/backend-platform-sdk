@@ -12,8 +12,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.localization.Co
  * caches them, and allows retrieving messages by error code and locale, optionally
  * formatting them with arguments.
  */
-interface AppErrorParser {
-
+public interface AppErrorParser {
     /**
      * Builds a client-facing API error response by error code and optional arguments.
      *
@@ -26,7 +25,7 @@ interface AppErrorParser {
      * @param locale Preferred locale for the message (e.g. [CommonLocales.ENGLISH], [CommonLocales.RUSSIAN]); falls back to [CommonLocales.DEFAULT] if missing.
      * @return [ApiErrorResponse] with localized message and [args] for the client.
      */
-    fun getApiErrorResponse(
+    public fun getApiErrorResponse(
         errorId: ErrorId,
         code: String,
         args: Map<String, Any>? = null,
@@ -47,7 +46,7 @@ interface AppErrorParser {
      * @param locale Preferred locale for the message (e.g. [CommonLocales.ENGLISH], [CommonLocales.RUSSIAN]); falls back to [CommonLocales.DEFAULT] if missing.
      * @return [ApiErrorResponse] with localized message and public args for the client.
      */
-    fun getApiErrorResponse(
+    public fun getApiErrorResponse(
         appError: AppError,
         locale: String = CommonLocales.DEFAULT
     ): ApiErrorResponse

@@ -34,11 +34,13 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class UpdateStorageSettingsUseCaseTest {
-
     private val storageSettingsProvider = mockk<StorageSettingsProvider>()
     private val auditLogger = mockk<AuditLogger>(relaxed = true)
     private val commonAuditErrorParser = CommonAuditErrorParser()
-    private val auditErrorConverter = AuditErrorConverter(emptySet(), commonAuditErrorParser)
+    private val auditErrorConverter = AuditErrorConverter(
+        emptySet(),
+        commonAuditErrorParser
+    )
     private val webSocketManager = mockk<WebSocketManager>(relaxed = true)
     private val userManager = mockk<UserManager>()
     private val sessionManager = mockk<SessionManager>()
@@ -66,7 +68,13 @@ class UpdateStorageSettingsUseCaseTest {
         val userSession = createTestUserSessionInternal(userId = userId)
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionInternal(any()) } returns AppResult.Success(userSession)
-        coEvery { authenticationChallengeService.ensureSessionConfirmed(userInternal, userSession, true) } returns AppResult.Success(Unit)
+        coEvery {
+            authenticationChallengeService.ensureSessionConfirmed(
+                userInternal,
+                userSession,
+                true
+            )
+        } returns AppResult.Success(Unit)
     }
 
     @Test
@@ -79,9 +87,15 @@ class UpdateStorageSettingsUseCaseTest {
         every { storageSettingsProvider.getOpenStorageSettings() } returns createTestOpenStorageSettings()
         every { storageSettingsProvider.getManagementStorageSettings() } returns newSettings
 
-        val result = useCase(newSettings, context)
+        val result = useCase(
+            newSettings,
+            context
+        )
 
-        assertEquals(AppResult.Success(newSettings), result)
+        assertEquals(
+            AppResult.Success(newSettings),
+            result
+        )
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
@@ -112,9 +126,15 @@ class UpdateStorageSettingsUseCaseTest {
         val expectedError = AppResult.Error(CommonError.Internal(RuntimeException("Update error")))
         coEvery { storageSettingsProvider.updateManagementStorageSettings(newSettings) } returns expectedError
 
-        val result = useCase(newSettings, context)
+        val result = useCase(
+            newSettings,
+            context
+        )
 
-        assertEquals(expectedError, result)
+        assertEquals(
+            expectedError,
+            result
+        )
         coVerify(exactly = 1) {
             auditLogger.log(
                 actorId = userId.asHexDashString(),

@@ -11,11 +11,10 @@ import javax.sql.DataSource
  * @param namePrefix Prefix for the in-memory database name; defaults to "test".
  * @return A [DataSource] backed by H2 in-memory with PostgreSQL mode.
  */
-fun createTestDataSource(namePrefix: String = "test"): DataSource =
-    JdbcDataSource().apply {
-        setURL(
-            "jdbc:h2:mem:${namePrefix}_${System.nanoTime()};DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH"
-        )
-        user = "sa"
-        password = ""
-    }
+public fun createTestDataSource(namePrefix: String = "test"): DataSource = JdbcDataSource().apply {
+    setURL(
+        "jdbc:h2:mem:${namePrefix}_${System.nanoTime()};DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH"
+    )
+    user = "sa"
+    password = ""
+}

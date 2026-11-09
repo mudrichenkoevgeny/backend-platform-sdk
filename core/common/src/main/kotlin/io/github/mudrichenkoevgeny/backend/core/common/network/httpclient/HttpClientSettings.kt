@@ -6,7 +6,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.network.httpclient
  * Allows callers to override base URL, timeouts, retry count and default headers
  * for specific integrations while still relying on [HttpClientConfig] defaults.
  */
-data class HttpClientSettings(
+public data class HttpClientSettings(
     val baseUrl: String? = null,
     val requestTimeout: Long = HttpClientConfig.REQUEST_TIMEOUT,
     val connectTimeout: Long = HttpClientConfig.CONNECT_TIMEOUT,

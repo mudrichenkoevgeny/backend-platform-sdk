@@ -12,19 +12,20 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.p
  *
  * @param T The type of the wrapped value.
  */
-sealed class UpdateField<out T> {
-
+public sealed class UpdateField<out T> {
     /**
      * Indicates that the field should be ignored during update operations.
      */
-    data object Ignore : UpdateField<Nothing>()
+    public data object Ignore : UpdateField<Nothing>()
 
     /**
      * Indicates that the field must be updated to the provided [value].
      *
      * @property value The target value to set, or `null` to clear the field.
      */
-    data class Set<T>(val value: T?) : UpdateField<T>()
+    public data class Set<T>(
+        public val value: T?
+    ) : UpdateField<T>()
 }
 
 /**
@@ -33,7 +34,7 @@ sealed class UpdateField<out T> {
  * @param T The type of the wrapped value.
  * @param block The lambda invoked with the nullable target value.
  */
-fun <T> UpdateField<T>.onSet(block: (T?) -> Unit) {
+public fun <T> UpdateField<T>.onSet(block: (T?) -> Unit) {
     if (this is UpdateField.Set) {
         block(value)
     }
@@ -45,7 +46,7 @@ fun <T> UpdateField<T>.onSet(block: (T?) -> Unit) {
  * @param T The type of the wrapped value.
  * @return [UpdateField.Ignore] if unchanged, or [UpdateField.Set] wrapping the target value.
  */
-fun <T> PatchField<T>.toUpdateField(): UpdateField<T> = when (this) {
+public fun <T> PatchField<T>.toUpdateField(): UpdateField<T> = when (this) {
     is PatchField.Unchanged -> UpdateField.Ignore
     is PatchField.Value -> UpdateField.Set(value)
 }
@@ -59,7 +60,7 @@ fun <T> PatchField<T>.toUpdateField(): UpdateField<T> = when (this) {
  * @param transform Mapping function applied to non-null values.
  * @return [UpdateField.Ignore] if unchanged, or [UpdateField.Set] wrapping the transformed value or `null`.
  */
-fun <T, R> PatchField<T>.toUpdateField(transform: (T) -> R?): UpdateField<R> = when (this) {
+public fun <T, R> PatchField<T>.toUpdateField(transform: (T) -> R?): UpdateField<R> = when (this) {
     is PatchField.Unchanged -> UpdateField.Ignore
     is PatchField.Value -> UpdateField.Set(value?.let(transform))
 }
@@ -69,7 +70,7 @@ fun <T, R> PatchField<T>.toUpdateField(transform: (T) -> R?): UpdateField<R> = w
  *
  * @throws RequestHandlingException if [parser] returns null for a present value.
  */
-fun <T, R> PatchField<T>.validateAndMap(
+public fun <T, R> PatchField<T>.validateAndMap(
     fieldName: String,
     parser: (T) -> R?
 ): UpdateField<R> = when (this) {

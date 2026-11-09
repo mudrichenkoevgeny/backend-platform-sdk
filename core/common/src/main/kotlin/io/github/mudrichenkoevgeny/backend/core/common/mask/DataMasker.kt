@@ -4,12 +4,17 @@ import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetAddress
 
-object DataMasker {
+/**
+ * Utility functions for masking sensitive data (e.g. emails, IP addresses, IDs, phone numbers) in logs.
+ */
+public object DataMasker {
+    public const val SMALL_MASK: String = "*"
+    public const val LARGE_MASK: String = "***"
 
-    const val SMALL_MASK = "*"
-    const val LARGE_MASK = "***"
-
-    fun maskPartialValue(value: String): String {
+    /**
+     * Partially masks [value] by preserving initial/trailing characters.
+     */
+    public fun maskPartialValue(value: String): String {
         val v = value.trim()
         if (v.isEmpty()) {
             return v
@@ -21,15 +26,19 @@ object DataMasker {
         }
     }
 
-    fun maskFullValue(value: String): String {
-        return if (value.isBlank()) {
-            value.trim()
-        } else {
-            LARGE_MASK
-        }
+    /**
+     * Fully masks [value] with [LARGE_MASK].
+     */
+    public fun maskFullValue(value: String): String = if (value.isBlank()) {
+        value.trim()
+    } else {
+        LARGE_MASK
     }
 
-    fun maskEmail(email: String): String {
+    /**
+     * Masks [email] keeping only initial character of local part and domain.
+     */
+    public fun maskEmail(email: String): String {
         val parts = email.split("@")
         if (parts.size != 2) {
             return LARGE_MASK
@@ -67,7 +76,10 @@ object DataMasker {
         return "$maskedLocal@$maskedDomain"
     }
 
-    fun maskPhone(phone: String): String {
+    /**
+     * Masks [phone] preserving only the last 4 digits.
+     */
+    public fun maskPhone(phone: String): String {
         val digits = phone.filter { it.isDigit() }
         if (digits.length < 4) {
             return LARGE_MASK
@@ -77,20 +89,31 @@ object DataMasker {
         return "+$LARGE_MASK$last4"
     }
 
-    fun maskId(id: String): String {
+    /**
+     * Masks identifier [id] keeping initial 2 characters.
+     */
+    public fun maskId(id: String): String {
         if (id.length < 4) {
             return LARGE_MASK
         }
         return id.take(2) + LARGE_MASK
     }
 
-    fun maskIpAddress(ip: String): String {
+    /**
+     * Masks IPv4 or IPv6 address [ip].
+     */
+    public fun maskIpAddress(ip: String): String {
         val trimmed = ip.trim()
         if (trimmed.isEmpty()) {
             return LARGE_MASK
         }
 
-        val host = trimmed.removeSurrounding("[", "]").substringBefore('%').trim()
+        val host = trimmed
+            .removeSurrounding(
+                "[",
+                "]"
+            ).substringBefore('%')
+            .trim()
 
         val inet = try {
             InetAddress.getByName(host)
@@ -109,6 +132,7 @@ object DataMasker {
                     "${octets[0]}.$SMALL_MASK.$SMALL_MASK.$SMALL_MASK"
                 }
             }
+
             is Inet6Address -> {
                 val parts = hostAddress.split(':').filter { it.isNotEmpty() }
                 if (parts.isEmpty()) {
@@ -122,6 +146,7 @@ object DataMasker {
                     "$prefix:$LARGE_MASK"
                 }
             }
+
             else -> LARGE_MASK
         }
     }
