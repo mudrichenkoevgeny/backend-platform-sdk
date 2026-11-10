@@ -25,39 +25,7 @@ public class UserAuditErrorParser @Inject constructor() : AuditErrorParser {
             return null
         }
 
-        val deniedReasonValue = when (error) {
-            is UserError.UserForbidden -> UserAuditMetadataDeniedReasonValues.USER_FORBIDDEN
-            is UserError.UserReadOnly -> UserAuditMetadataDeniedReasonValues.USER_READ_ONLY
-            is UserError.UserBanned -> UserAuditMetadataDeniedReasonValues.USER_BANNED
-            is UserError.UserLocked -> UserAuditMetadataDeniedReasonValues.USER_LOCKED
-            is UserError.UserSecurityHold -> UserAuditMetadataDeniedReasonValues.USER_SECURITY_HOLD
-            is UserError.UserPendingDeletion -> UserAuditMetadataDeniedReasonValues.USER_PENDING_DELETION
-            is UserError.UserNotFound -> UserAuditMetadataDeniedReasonValues.USER_NOT_FOUND
-            is UserError.UserRoleNotAllowed -> UserAuditMetadataDeniedReasonValues.USER_ROLE_NOT_ALLOWED
-            is UserError.UserMissingPermissions -> UserAuditMetadataDeniedReasonValues.USER_MISSING_PERMISSIONS
-            is UserError.UserInsufficientAuthorityLevel ->
-                UserAuditMetadataDeniedReasonValues.USER_INSUFFICIENT_AUTHORITY_LEVEL
-
-            is UserError.UserIllegalAccountStatus ->
-                UserAuditMetadataDeniedReasonValues.USER_ILLEGAL_ACCOUNT_STATUS
-
-            is UserError.UserIdentifierLimitReached ->
-                UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_LIMIT_REACHED
-
-            is UserError.TotalUserIdentifiersLimitReached ->
-                UserAuditMetadataDeniedReasonValues.TOTAL_USER_IDENTIFIERS_LIMIT_REACHED
-
-            is UserError.PasswordSetupRequired ->
-                UserAuditMetadataDeniedReasonValues.PASSWORD_SETUP_REQUIRED
-
-            is UserError.UserIdentifierPasswordNotSupported ->
-                UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SUPPORTED
-
-            is UserError.UserIdentifierPasswordNotSet ->
-                UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SET
-
-            else -> return null
-        }
+        val deniedReasonValue = getDeniedReason(error) ?: return null
 
         val metadata = mutableSetOf(
             AuditEventMetadata(
@@ -91,5 +59,39 @@ public class UserAuditErrorParser @Inject constructor() : AuditErrorParser {
             status = AuditStatus.DENIED,
             metadata = metadata
         )
+    }
+
+    private fun getDeniedReason(error: UserError): String? = when (error) {
+        is UserError.UserForbidden -> UserAuditMetadataDeniedReasonValues.USER_FORBIDDEN
+        is UserError.UserReadOnly -> UserAuditMetadataDeniedReasonValues.USER_READ_ONLY
+        is UserError.UserBanned -> UserAuditMetadataDeniedReasonValues.USER_BANNED
+        is UserError.UserLocked -> UserAuditMetadataDeniedReasonValues.USER_LOCKED
+        is UserError.UserSecurityHold -> UserAuditMetadataDeniedReasonValues.USER_SECURITY_HOLD
+        is UserError.UserPendingDeletion -> UserAuditMetadataDeniedReasonValues.USER_PENDING_DELETION
+        is UserError.UserNotFound -> UserAuditMetadataDeniedReasonValues.USER_NOT_FOUND
+        is UserError.UserRoleNotAllowed -> UserAuditMetadataDeniedReasonValues.USER_ROLE_NOT_ALLOWED
+        is UserError.UserMissingPermissions -> UserAuditMetadataDeniedReasonValues.USER_MISSING_PERMISSIONS
+        is UserError.UserInsufficientAuthorityLevel ->
+            UserAuditMetadataDeniedReasonValues.USER_INSUFFICIENT_AUTHORITY_LEVEL
+
+        is UserError.UserIllegalAccountStatus ->
+            UserAuditMetadataDeniedReasonValues.USER_ILLEGAL_ACCOUNT_STATUS
+
+        is UserError.UserIdentifierLimitReached ->
+            UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_LIMIT_REACHED
+
+        is UserError.TotalUserIdentifiersLimitReached ->
+            UserAuditMetadataDeniedReasonValues.TOTAL_USER_IDENTIFIERS_LIMIT_REACHED
+
+        is UserError.PasswordSetupRequired ->
+            UserAuditMetadataDeniedReasonValues.PASSWORD_SETUP_REQUIRED
+
+        is UserError.UserIdentifierPasswordNotSupported ->
+            UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SUPPORTED
+
+        is UserError.UserIdentifierPasswordNotSet ->
+            UserAuditMetadataDeniedReasonValues.USER_IDENTIFIER_PASSWORD_NOT_SET
+
+        else -> null
     }
 }

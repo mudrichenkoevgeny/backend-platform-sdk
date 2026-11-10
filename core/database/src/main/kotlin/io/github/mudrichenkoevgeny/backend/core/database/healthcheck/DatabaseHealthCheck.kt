@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppSystemResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.sql.Connection
+import java.sql.SQLException
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.sql.DataSource
@@ -30,12 +31,16 @@ public class DatabaseHealthCheck @Inject constructor(
                 if (connection.isValid(1)) {
                     AppSystemResult.Success(Unit)
                 } else {
-                    throw RuntimeException("Database connection is invalid")
+                    AppSystemResult.Error(
+                        CommonError.Internal(IllegalStateException("Database connection is invalid"))
+                    )
                 }
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (e: SQLException) {
+            AppSystemResult.Error(CommonError.Internal(e))
+        } catch (e: IllegalStateException) {
             AppSystemResult.Error(CommonError.Internal(e))
         }
     }

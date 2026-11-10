@@ -16,9 +16,9 @@ import javax.inject.Singleton
 
 /**
  * Default [AuditService] implementation: [log] launches a coroutine on the injected
- * [BackgroundScope]
- * that calls [AuditEventRepository.createEvent] inside [dbQuery]; errors are logged via [AppLogger]
+ * [BackgroundScope] that calls [AuditEventRepository.createEvent] inside [dbQuery]; errors are logged via [AppLogger]
  * and do not propagate.
+ *
  * [awaitAll] joins all children of the scope's job so that tests or shutdown can wait for pending writes.
  */
 @Singleton
@@ -37,7 +37,7 @@ public class AuditServiceImpl @Inject constructor(
                 }
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                 appLogger.logError(CommonError.Internal(e))
             }
         }

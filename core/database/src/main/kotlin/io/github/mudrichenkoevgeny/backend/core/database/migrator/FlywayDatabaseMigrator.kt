@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.database.migrator
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import org.flywaydb.core.Flyway
+import org.flywaydb.core.api.FlywayException
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.sql.DataSource
@@ -35,7 +36,13 @@ public class FlywayDatabaseMigrator @Inject constructor(
                 .load()
 
             flyway.migrate()
-        } catch (e: Exception) {
+        } catch (e: FlywayException) {
+            appLogger.logError(CommonError.Internal(e))
+            throw e
+        } catch (e: IllegalArgumentException) {
+            appLogger.logError(CommonError.Internal(e))
+            throw e
+        } catch (e: IllegalStateException) {
             appLogger.logError(CommonError.Internal(e))
             throw e
         }

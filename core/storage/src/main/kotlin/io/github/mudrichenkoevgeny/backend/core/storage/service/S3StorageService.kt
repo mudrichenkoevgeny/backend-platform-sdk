@@ -17,6 +17,7 @@ import kotlinx.coroutines.future.await
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
 import software.amazon.awssdk.core.async.AsyncRequestBody
+import software.amazon.awssdk.core.exception.SdkException
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
 import software.amazon.awssdk.services.s3.S3Configuration
@@ -32,6 +33,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier
 import software.amazon.awssdk.services.s3.model.PutBucketPolicyRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.model.S3Exception
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest
@@ -135,10 +137,18 @@ public class S3StorageService @Inject constructor(
                 AppResult.Success(fileName)
             } catch (retryException: CancellationException) {
                 throw retryException
-            } catch (retryException: Exception) {
+            } catch (retryException: SdkException) {
+                AppResult.Error(CommonError.Internal(retryException))
+            } catch (retryException: IllegalArgumentException) {
+                AppResult.Error(CommonError.Internal(retryException))
+            } catch (retryException: IllegalStateException) {
                 AppResult.Error(CommonError.Internal(retryException))
             }
-        } catch (e: Exception) {
+        } catch (e: SdkException) {
+            AppResult.Error(CommonError.Internal(e))
+        } catch (e: IllegalArgumentException) {
+            AppResult.Error(CommonError.Internal(e))
+        } catch (e: IllegalStateException) {
             AppResult.Error(CommonError.Internal(e))
         }
     }
@@ -169,7 +179,11 @@ public class S3StorageService @Inject constructor(
             AppResult.Success(true)
         } catch (_: NoSuchKeyException) {
             AppResult.Success(true)
-        } catch (e: Exception) {
+        } catch (e: SdkException) {
+            AppResult.Error(CommonError.Internal(e))
+        } catch (e: IllegalArgumentException) {
+            AppResult.Error(CommonError.Internal(e))
+        } catch (e: IllegalStateException) {
             AppResult.Error(CommonError.Internal(e))
         }
     }
@@ -204,7 +218,11 @@ public class S3StorageService @Inject constructor(
             AppResult.Success(Unit)
         } catch (_: NoSuchKeyException) {
             AppResult.Success(Unit)
-        } catch (e: Exception) {
+        } catch (e: SdkException) {
+            AppResult.Error(CommonError.Internal(e))
+        } catch (e: IllegalArgumentException) {
+            AppResult.Error(CommonError.Internal(e))
+        } catch (e: IllegalStateException) {
             AppResult.Error(CommonError.Internal(e))
         }
     }
@@ -243,7 +261,11 @@ public class S3StorageService @Inject constructor(
 
         val presignedUrl = presigner.presignPutObject(presignRequest).url().toString()
         AppResult.Success(presignedUrl)
-    } catch (e: Exception) {
+    } catch (e: SdkException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalArgumentException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalStateException) {
         AppResult.Error(CommonError.Internal(e))
     }
 
@@ -271,7 +293,11 @@ public class S3StorageService @Inject constructor(
 
         val presignedUrl = presigner.presignGetObject(presignRequest).url().toString()
         AppResult.Success(presignedUrl)
-    } catch (e: Exception) {
+    } catch (e: SdkException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalArgumentException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalStateException) {
         AppResult.Error(CommonError.Internal(e))
     }
 
@@ -303,7 +329,17 @@ public class S3StorageService @Inject constructor(
         AppResult.Error(StorageError.FileNotFound())
     } catch (_: NoSuchBucketException) {
         AppResult.Error(StorageError.FileNotFound())
-    } catch (e: Exception) {
+    } catch (e: S3Exception) {
+        if (e.statusCode() == 404) {
+            AppResult.Error(StorageError.FileNotFound())
+        } else {
+            AppResult.Error(CommonError.Internal(e))
+        }
+    } catch (e: SdkException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalArgumentException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalStateException) {
         AppResult.Error(CommonError.Internal(e))
     }
 
@@ -350,23 +386,42 @@ public class S3StorageService @Inject constructor(
         return try {
             s3Client.headBucket(HeadBucketRequest.builder().bucket(targetBucket).build()).await()
             AppResult.Success(Unit)
-        } catch (_: NoSuchBucketException) {
-            try {
-                s3Client.createBucket(CreateBucketRequest.builder().bucket(targetBucket).build()).await()
-                if (isPublic) {
-                    s3Client.makeBucketPublic(targetBucket)
-                }
-                AppResult.Success(Unit)
-            } catch (retryException: CancellationException) {
-                throw retryException
-            } catch (retryException: Exception) {
-                AppResult.Error(CommonError.Internal(retryException))
-            }
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (_: NoSuchBucketException) {
+            createAndConfigureBucket(targetBucket, isPublic)
+        } catch (e: S3Exception) {
+            if (e.statusCode() == 404) {
+                createAndConfigureBucket(targetBucket, isPublic)
+            } else {
+                AppResult.Error(CommonError.Internal(e))
+            }
+        } catch (e: SdkException) {
+            AppResult.Error(CommonError.Internal(e))
+        } catch (e: IllegalArgumentException) {
+            AppResult.Error(CommonError.Internal(e))
+        } catch (e: IllegalStateException) {
             AppResult.Error(CommonError.Internal(e))
         }
+    }
+
+    private suspend fun createAndConfigureBucket(
+        bucketName: String,
+        isPublic: Boolean
+    ): AppResult<Unit> = try {
+        s3Client.createBucket(CreateBucketRequest.builder().bucket(bucketName).build()).await()
+        if (isPublic) {
+            s3Client.makeBucketPublic(bucketName)
+        }
+        AppResult.Success(Unit)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: SdkException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalArgumentException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalStateException) {
+        AppResult.Error(CommonError.Internal(e))
     }
 
     private fun resolveTargetBucket(

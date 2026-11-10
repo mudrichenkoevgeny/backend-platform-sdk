@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.database.datasource
 
 import com.zaxxer.hikari.HikariDataSource
+import com.zaxxer.hikari.pool.HikariPool.PoolInitializationException
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
@@ -83,7 +84,10 @@ class HikariDatasourceCreatorTest {
                 user = USER,
                 password = PASSWORD
             )
-        } catch (_: Exception) {
+        } catch (_: IllegalArgumentException) {
+        } catch (_: IllegalStateException) {
+        } catch (_: PoolInitializationException) {
+        } catch (_: RuntimeException) {
         }
 
         verify(exactly = 1) { appLoggerSpy.logError(any()) }

@@ -5,7 +5,7 @@ This document is the entry point for architectural and coding standards. These r
 ## Core Principles
 
 - **Precedence:** Local project standards (found in `.agent/`) override any global IDE, linter, or AI assistant defaults.
-- **SDK Nature:** This is a **foundational library**, not a standalone application. Prefer configuration (env + DI), modularity, and extensibility over hardcoded assumptions.
+- **SDK Nature:** This is a **foundational backend library**, not a standalone application. Prefer configuration (env + DI), modularity, and extensibility over hardcoded assumptions.
 - **FQN Forbidden:** Do not write fully qualified names (FQN) in expressions, types, or generics. Use imports or typealiases. Minimal FQN is allowed only if technically unavoidable (must be explained in the commit).
 - **No Implementation Comments (Preserve KDoc):** Do not write inline implementation comments (`//` or `/* ... */`) inside code bodies; logic must be self-documenting. **CRITICAL:** KDoc documentation (`/** ... */`) on classes, interfaces, properties, and functions is structured API documentation, NOT code comments. AI must NEVER delete or strip KDoc documentation during code edits or refactorings!
 - **No Trailing Commas:** Do not use trailing commas at the end of argument, parameter, or entry lists.
@@ -39,11 +39,21 @@ This document is the entry point for architectural and coding standards. These r
 
 ## Detailed Standards (`.agent/`)
 
-- **`project-overview.md`** — Project identity, Dagger/DI setup, module boundaries, and `AppInfo` requirements.
-- **`architecture-patterns.md`** — Ktor bootstrap, Dual-connector setup, Redis Pub/Sub sync, and Repository patterns.
-- **`docs-kdoc-basics.md`** — Language standards (English), link resolution, and KDoc Definition of Done.
-- **`docs-kdoc-type-requirements.md`** — Specific KDoc patterns for DTOs, Error Codes, Sealed classes, and Database entities.
+### Global Shared Standards (`.agent/global/`)
+- **Common (`.agent/global/common/`):**
+  - **`ai-collaboration-basics.md`** — Universal AI interaction constraints, operational rules (Git ban, test execution ban), dependency rules, and architectural layering.
+- **Kotlin (`.agent/global/kotlin/`):**
+  - **`kotlin-coding-style-basics.md`** — Naming, `when` subject rules, brace requirements, FQN/Comments ban, Trailing Commas ban, `!!` ban, companion objects, value classes, and `.value` usage.
+  - **`docs-kdoc-basics.md`** — Language standards, link resolution rules, and KDoc Definition of Done.
+  - **`docs-kdoc-type-basics.md`** — Specific KDoc patterns for DTOs, Error Codes, Sealed types, Routes, and Navigation Screen Params.
+  - **`kotlin-testing-basics.md`** — Unit and integration test standards, mocking policy, and manual execution rule.
+  - **`api-documentation-standard.md`** — Mandatory KDoc fields (Auth, Audit, Method, UI Presentation) for API route constants and navigation contracts.
+- **Backend Platform (`.agent/global/backend/`):**
+  - **`ai-collaboration-backend.md`** — Backend Platform SDK interaction constraints, module mapping, and Dual-Connector port standards.
+  - **`docs-kdoc-type-backend.md`** — Specific KDoc patterns for backend server component types (Exposed tables, Dagger modules, Use Cases Section 10).
+  - **`kotlin-testing-backend.md`** — JVM/Backend testing methodology (JUnit 5, MockK, Testcontainers, Exposed/Flyway integration tests).
+
+### Local Standards (`.agent/local/`)
+- **`project-overview.md`** — Identity, module boundaries, and consumer SDK relations.
+- **`architecture-patterns.md`** — Entity projections, serialization, WebSocket contracts, navigation structures, UI values/configs, presigned uploads, and API error DTO structures.
 - **`localization.md`** — Embedded strings in `shared-foundation`, modular error parsers, and `requestLocale()` resolution.
-- **`kotlin-coding-style.md`** — Naming conventions, `when` subject rules, brace requirements, FQN/Comments ban, and Trailing Commas ban.
-- **`testing-conventions.md`** — JUnit Jupiter/MockK standards, explicit Gradle dependencies, mandatory bug fix test coverage, and manual execution policy.
-- **`ai-collaboration-workflow.md`** — AI constraints, Version Catalog management, and SDK vs Sample application boundaries.

@@ -32,19 +32,25 @@ public class KtorConsistentRoutePermissionsRule(
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
 
+        if (isTestOrIgnoredFile(expression)) return
+
+        val calleeName = expression.calleeExpression?.text ?: return
+        if (calleeName !in routeMethods) return
+
+        checkRoutePermissions(expression)
+    }
+
+    private fun isTestOrIgnoredFile(expression: KtCallExpression): Boolean {
         val ktFile = expression.containingKtFile
         val fileName = ktFile.name
         val filePath = ktFile.virtualFilePath.replace('\\', '/')
         val isTestFile = fileName.endsWith("Test.kt") ||
             filePath.contains("/test/") ||
             filePath.contains("/testFixtures/")
-        if (isTestFile) return
+        return isTestFile || (!fileName.contains("Router") && !fileName.contains("Route"))
+    }
 
-        if (!fileName.contains("Router") && !fileName.contains("Route")) return
-
-        val calleeName = expression.calleeExpression?.text ?: return
-        if (calleeName !in routeMethods) return
-
+    private fun checkRoutePermissions(expression: KtCallExpression) {
         val builderArg = expression.valueArguments.find { it.getArgumentName()?.asName?.identifier == "builder" }
         val bodyArg = expression.valueArguments.find { it.getArgumentName()?.asName?.identifier == "body" }
 

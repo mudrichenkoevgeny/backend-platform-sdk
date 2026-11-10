@@ -21,11 +21,11 @@ public fun <SortBy> ApplicationCall.parseListingQueryParams(
 ): ListingQueryParams<SortBy> {
     val pageNumber = parsePositiveIntQuery(
         paramName = ListingParamNames.Pagination.PAGE_NUMBER,
-        default = ListingDefaultValues.Pagination.PAGE_NUMBER
+        default = ListingDefaultValues.Pagination.INITIAL_PAGE_NUMBER
     )
     val pageSize = parsePositiveIntQuery(
         paramName = ListingParamNames.Pagination.PAGE_SIZE,
-        default = ListingDefaultValues.Pagination.PAGE_SIZE
+        default = ListingDefaultValues.Pagination.DEFAULT_PAGE_SIZE
     )
 
     val sortByRaw = firstNonBlankQueryValue(ListingParamNames.Sort.SORT_BY)

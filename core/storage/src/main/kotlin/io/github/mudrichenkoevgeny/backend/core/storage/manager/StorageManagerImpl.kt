@@ -69,66 +69,18 @@ public class StorageManagerImpl @Inject constructor(
         customMaxUploadSizeBytes: Long?,
         customMaxPendingUploads: Int?
     ): AppResult<PresignedUrl> = dbQuery {
-        val minUploadSizeBytes = settingsProvider.getMinUploadSizeBytes()
-        if (fileSizeBytes < minUploadSizeBytes) {
-            return@dbQuery AppResult.Error(
-                StorageError.FileSizeBelowMinimum(
-                    fileSizeBytes = fileSizeBytes,
-                    minFileSizeBytes = minUploadSizeBytes,
-                    category = category.value,
-                    fileName = fileName
-                )
-            )
-        }
-
-        val maxUploadSizeBytes = customMaxUploadSizeBytes ?: settingsProvider.getMaxUploadSizeBytes()
-        if (fileSizeBytes > maxUploadSizeBytes) {
-            return@dbQuery AppResult.Error(
-                StorageError.FileSizeExceedsLimit(
-                    fileSizeBytes = fileSizeBytes,
-                    maxFileSizeBytes = maxUploadSizeBytes,
-                    category = category.value,
-                    fileName = fileName
-                )
-            )
-        }
-
-        val pendingCountResult = filesRepository.countPendingUploadsForUser(ownerUserId)
-        val pendingCount = when (pendingCountResult) {
-            is AppResult.Success -> pendingCountResult.data
-            is AppResult.Error -> return@dbQuery pendingCountResult
-        }
-
-        val maxPending = customMaxPendingUploads ?: if (isManagementUser) {
-            settingsProvider.getMaxPendingUploadsForManagementUser()
-        } else {
-            settingsProvider.getMaxPendingUploadsForOpenUser()
-        }
-
-        if (pendingCount >= maxPending) {
-            return@dbQuery AppResult.Error(StorageError.TooManyPendingUploads(maxPending))
-        }
-
-        val effectiveQuota = customStorageQuotaBytes ?: if (isManagementUser) {
-            settingsProvider.getTotalStorageQuotaForManagementUserBytes()
-        } else {
-            settingsProvider.getTotalStorageQuotaForOpenUserBytes()
-        }
-
-        if (effectiveQuota != null) {
-            val usedStorageResult = filesRepository.calculateUsedStorageForUser(ownerUserId)
-            val usedBytes = when (usedStorageResult) {
-                is AppResult.Success -> usedStorageResult.data
-                is AppResult.Error -> return@dbQuery usedStorageResult
-            }
-            if (usedBytes + fileSizeBytes > effectiveQuota) {
-                return@dbQuery AppResult.Error(
-                    StorageError.StorageQuotaExceeded(
-                        effectiveQuota,
-                        usedBytes
-                    )
-                )
-            }
+        val limitsResult = checkUploadLimits(
+            ownerUserId = ownerUserId,
+            isManagementUser = isManagementUser,
+            fileName = fileName,
+            fileSizeBytes = fileSizeBytes,
+            category = category,
+            customStorageQuotaBytes = customStorageQuotaBytes,
+            customMaxUploadSizeBytes = customMaxUploadSizeBytes,
+            customMaxPendingUploads = customMaxPendingUploads
+        )
+        if (limitsResult is AppResult.Error) {
+            return@dbQuery limitsResult
         }
 
         val now = Clock.System.now()
@@ -198,6 +150,79 @@ public class StorageManagerImpl @Inject constructor(
                 expiresAt = expiresAt
             )
         )
+    }
+
+    private suspend fun checkUploadLimits(
+        ownerUserId: String,
+        isManagementUser: Boolean,
+        fileName: String,
+        fileSizeBytes: Long,
+        category: StorageCategory,
+        customStorageQuotaBytes: Long?,
+        customMaxUploadSizeBytes: Long?,
+        customMaxPendingUploads: Int?
+    ): AppResult<Unit> {
+        val minUploadSizeBytes = settingsProvider.getMinUploadSizeBytes()
+        if (fileSizeBytes < minUploadSizeBytes) {
+            return AppResult.Error(
+                StorageError.FileSizeBelowMinimum(
+                    fileSizeBytes = fileSizeBytes,
+                    minFileSizeBytes = minUploadSizeBytes,
+                    category = category.value,
+                    fileName = fileName
+                )
+            )
+        }
+
+        val maxUploadSizeBytes = customMaxUploadSizeBytes ?: settingsProvider.getMaxUploadSizeBytes()
+        if (fileSizeBytes > maxUploadSizeBytes) {
+            return AppResult.Error(
+                StorageError.FileSizeExceedsLimit(
+                    fileSizeBytes = fileSizeBytes,
+                    maxFileSizeBytes = maxUploadSizeBytes,
+                    category = category.value,
+                    fileName = fileName
+                )
+            )
+        }
+
+        val pendingCount = when (val pendingCountResult = filesRepository.countPendingUploadsForUser(ownerUserId)) {
+            is AppResult.Success -> pendingCountResult.data
+            is AppResult.Error -> return pendingCountResult
+        }
+
+        val maxPending = customMaxPendingUploads ?: if (isManagementUser) {
+            settingsProvider.getMaxPendingUploadsForManagementUser()
+        } else {
+            settingsProvider.getMaxPendingUploadsForOpenUser()
+        }
+
+        if (pendingCount >= maxPending) {
+            return AppResult.Error(StorageError.TooManyPendingUploads(maxPending))
+        }
+
+        val effectiveQuota = customStorageQuotaBytes ?: if (isManagementUser) {
+            settingsProvider.getTotalStorageQuotaForManagementUserBytes()
+        } else {
+            settingsProvider.getTotalStorageQuotaForOpenUserBytes()
+        }
+
+        if (effectiveQuota != null) {
+            val usedBytes = when (val usedStorageResult = filesRepository.calculateUsedStorageForUser(ownerUserId)) {
+                is AppResult.Success -> usedStorageResult.data
+                is AppResult.Error -> return usedStorageResult
+            }
+            if (usedBytes + fileSizeBytes > effectiveQuota) {
+                return AppResult.Error(
+                    StorageError.StorageQuotaExceeded(
+                        effectiveQuota,
+                        usedBytes
+                    )
+                )
+            }
+        }
+
+        return AppResult.Success(Unit)
     }
 
     override suspend fun confirmUpload(

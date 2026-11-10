@@ -25,6 +25,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import javax.inject.Inject
@@ -32,9 +33,11 @@ import javax.inject.Singleton
 import kotlin.time.Clock
 
 /**
- * Management use case for administratively deleting a user account and revoking all active user sessions.
+ * Management use case for administratively deleting a user account
+ * and revoking all active user sessions.
  *
- * Enforces authority level hierarchy, rate limiting, and MFA step-up verification before removing user records and terminating active sessions.
+ * Enforces authority level hierarchy, rate limiting, and MFA step-up
+ * verification before removing user records and terminating active sessions.
  */
 @Singleton
 public class ManagementDeleteUserUseCase @Inject constructor(
@@ -89,128 +92,26 @@ public class ManagementDeleteUserUseCase @Inject constructor(
             )
         )
 
-        if (managementUserId == userId) {
-            return handleError(
-                error = UserError.UserForbidden(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val rateLimitCheck = rateLimiter.checkRateLimit(
-            action = UserManagementRateLimitAction.MANAGEMENT_USER_DELETE,
-            identifier = managementUserId.asHexDashString()
+        val checksResult = performPreChecks(
+            managementUserId = managementUserId,
+            userId = userId,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditResourceId = auditResourceId,
+            auditMetadata = auditMetadata
         )
-        if (rateLimitCheck is AppResult.Error) {
-            return handleError(
-                error = rateLimitCheck.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
+        if (checksResult is AppResult.Error) return checksResult
+        val managementUser = (checksResult as AppResult.Success).data
 
-        val managementUserResult = userManager.getUserInternalById(managementUserId)
-            .mapNotNullOrError(UserError.UserForbidden())
-
-        val managementUser = when (managementUserResult) {
-            is AppResult.Success -> managementUserResult.data
-            is AppResult.Error -> return handleError(
-                error = managementUserResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        if (managementUser.accountStatus != UserAccountStatus.ACTIVE) {
-            return handleError(
-                error = UserError.UserIllegalAccountStatus(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val targetUserResult = userManager.getUserInternalById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
-
-        val targetUser = when (targetUserResult) {
-            is AppResult.Success -> targetUserResult.data
-            is AppResult.Error -> return handleError(
-                error = targetUserResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        if (targetUser.authorityLevel >= managementUser.authorityLevel) {
-            return handleError(
-                error = UserError.UserInsufficientAuthorityLevel(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val requiredPermission = when (targetUser.role) {
-            UserRole.USER -> UserPermissionCode.USER_DELETE_FOR_USER
-            UserRole.STAFF -> UserPermissionCode.USER_DELETE_FOR_STAFF
-            UserRole.ADMIN -> return handleError(
-                error = UserError.UserForbidden(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        if (requiredPermission !in managementUser.permissionCodes) {
-            return handleError(
-                error = UserError.UserMissingPermissions(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val managementUserSessionResult = sessionManager.getUserSessionInternal(
-            userSessionId = authenticatedRequestContext.sessionId
-        ).mapNotNullOrError(UserError.InvalidSession())
-
-        val managementUserSession = when (managementUserSessionResult) {
-            is AppResult.Success -> managementUserSessionResult.data
-            is AppResult.Error -> return handleError(
-                error = managementUserSessionResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userInternal = managementUser,
-            userSession = managementUserSession,
-            requireTotp = true
+        val mfaResult = verifyMfa(
+            authenticatedRequestContext = authenticatedRequestContext,
+            managementUser = managementUser,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditResourceId = auditResourceId,
+            auditMetadata = auditMetadata
         )
-        if (ensureSessionConfirmedResult is AppResult.Error) {
-            return handleError(
-                error = ensureSessionConfirmedResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
+        if (mfaResult is AppResult.Error) return mfaResult
 
         val sessionsToDelete = sessionManager.getAllUserSessionsInternalList(
             userId = userId
@@ -249,6 +150,148 @@ public class ManagementDeleteUserUseCase @Inject constructor(
                 baseMetadata = auditMetadata
             )
         }
+    }
+
+    private suspend fun performPreChecks(
+        managementUserId: UserId,
+        userId: UserId,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<UserInternal> {
+        if (managementUserId == userId) {
+            return handleError(
+                UserError.UserForbidden(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        val rateLimitCheck = rateLimiter.checkRateLimit(
+            action = UserManagementRateLimitAction.MANAGEMENT_USER_DELETE,
+            identifier = managementUserId.asHexDashString()
+        )
+        if (rateLimitCheck is AppResult.Error) {
+            return handleError(
+                rateLimitCheck.error,
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        val managementUserResult = userManager.getUserInternalById(managementUserId)
+            .mapNotNullOrError(UserError.UserForbidden())
+        val managementUser = when (managementUserResult) {
+            is AppResult.Success -> managementUserResult.data
+            is AppResult.Error -> return handleError(
+                managementUserResult.error,
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        if (managementUser.accountStatus != UserAccountStatus.ACTIVE) {
+            return handleError(
+                UserError.UserIllegalAccountStatus(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        val targetUserResult = userManager.getUserInternalById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
+        val targetUser = when (targetUserResult) {
+            is AppResult.Success -> targetUserResult.data
+            is AppResult.Error -> return handleError(
+                targetUserResult.error,
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        if (targetUser.authorityLevel >= managementUser.authorityLevel) {
+            return handleError(
+                UserError.UserInsufficientAuthorityLevel(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        val requiredPermission = when (targetUser.role) {
+            UserRole.USER -> UserPermissionCode.USER_DELETE_FOR_USER
+            UserRole.STAFF -> UserPermissionCode.USER_DELETE_FOR_STAFF
+            UserRole.ADMIN -> return handleError(
+                UserError.UserForbidden(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        if (requiredPermission !in managementUser.permissionCodes) {
+            return handleError(
+                UserError.UserMissingPermissions(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        return AppResult.Success(managementUser)
+    }
+
+    private suspend fun verifyMfa(
+        authenticatedRequestContext: AuthenticatedRequestContext,
+        managementUser: UserInternal,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<Unit> {
+        val managementUserSessionResult = sessionManager.getUserSessionInternal(
+            userSessionId = authenticatedRequestContext.sessionId
+        ).mapNotNullOrError(UserError.InvalidSession())
+
+        val managementUserSession = when (managementUserSessionResult) {
+            is AppResult.Success -> managementUserSessionResult.data
+            is AppResult.Error -> return handleError(
+                managementUserSessionResult.error,
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
+            userInternal = managementUser,
+            userSession = managementUserSession,
+            requireTotp = true
+        )
+        if (ensureSessionConfirmedResult is AppResult.Error) {
+            return handleError(
+                ensureSessionConfirmedResult.error,
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+        return AppResult.Success(Unit)
     }
 
     private fun <T> handleError(

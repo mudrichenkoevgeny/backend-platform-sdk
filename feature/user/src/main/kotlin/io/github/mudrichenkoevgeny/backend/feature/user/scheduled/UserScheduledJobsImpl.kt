@@ -59,7 +59,7 @@ public class UserScheduledJobsImpl @Inject constructor(
                     }
                 } catch (e: CancellationException) {
                     throw e
-                } catch (e: Exception) {
+                } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                     appLogger.logError(CommonError.Internal(e))
                 }
 
@@ -88,7 +88,7 @@ public class UserScheduledJobsImpl @Inject constructor(
                     }
                 } catch (e: CancellationException) {
                     throw e
-                } catch (e: Exception) {
+                } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
                     appLogger.logError(CommonError.Internal(e))
                 }
 

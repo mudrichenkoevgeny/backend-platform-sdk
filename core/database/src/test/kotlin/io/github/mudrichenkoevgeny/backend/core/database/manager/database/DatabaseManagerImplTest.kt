@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.flywaydb.core.api.FlywayException
 import javax.sql.DataSource
 
 class DatabaseManagerImplTest {
@@ -65,7 +66,7 @@ class DatabaseManagerImplTest {
                     any(),
                     any()
                 )
-            } throws RuntimeException("migrate failed")
+            } throws FlywayException("migrate failed")
         }
         val databaseConfig = DatabaseConfig(
             dbUrl = "jdbc:postgresql://localhost/db",
@@ -84,7 +85,7 @@ class DatabaseManagerImplTest {
             appLogger = appLogger
         )
 
-        assertThrows<RuntimeException> { manager.create() }
+        assertThrows<FlywayException> { manager.create() }
         verify(exactly = 1) { appLogger.logError(any()) }
     }
 

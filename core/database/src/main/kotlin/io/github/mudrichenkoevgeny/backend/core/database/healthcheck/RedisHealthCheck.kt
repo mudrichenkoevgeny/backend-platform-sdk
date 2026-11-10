@@ -5,7 +5,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheck
 import io.github.mudrichenkoevgeny.backend.core.common.healthcheck.HealthCheckSeverity
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppSystemResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
-import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,24 +20,19 @@ public class RedisHealthCheck @Inject constructor(
 ) : HealthCheck {
     override val severity: HealthCheckSeverity = HealthCheckSeverity.CRITICAL
 
-    override suspend fun check(): AppSystemResult<Unit> {
-        return try {
-            val isAvailableResult = redisManager.isAvailable()
-
-            val isAvailable = when (isAvailableResult) {
-                is AppSystemResult.Success -> isAvailableResult.data
-                is AppSystemResult.Error -> return isAvailableResult
+    override suspend fun check(): AppSystemResult<Unit> = try {
+        val isAvailableResult = redisManager.isAvailable()
+        when (isAvailableResult) {
+            is AppSystemResult.Error -> isAvailableResult
+            is AppSystemResult.Success -> {
+                if (isAvailableResult.data) {
+                    AppSystemResult.Success(Unit)
+                } else {
+                    AppSystemResult.Error(CommonError.Internal(IllegalStateException("Redis is not available")))
+                }
             }
-
-            if (isAvailable) {
-                AppSystemResult.Success(Unit)
-            } else {
-                throw RuntimeException("Redis not available")
-            }
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            AppSystemResult.Error(CommonError.Internal(e))
         }
+    } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+        AppSystemResult.Error(CommonError.Internal(e))
     }
 }

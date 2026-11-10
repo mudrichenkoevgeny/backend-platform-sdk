@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.model.Api
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.CommonErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.CommonErrorCodes
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.localization.CommonModuleStrings
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.localization.ErrorsStrings
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,88 +22,7 @@ public class CommonAppErrorSpecificParser @Inject constructor() : AppErrorSpecif
         locale: String
     ): ApiErrorResponse? {
         val strings = CommonModuleStrings(locale = locale).errors
-
-        val message = when (code) {
-            CommonErrorCodes.UNKNOWN -> strings.unknown
-            CommonErrorCodes.INTERNAL -> strings.internal
-            CommonErrorCodes.BAD_REQUEST -> strings.badRequest
-            CommonErrorCodes.INVALID_JSON_BODY -> strings.badRequest
-            CommonErrorCodes.SERVICE_UNAVAILABLE -> strings.serviceUnavailable
-
-            CommonErrorCodes.NOT_FOUND -> {
-                val resource = args?.get(CommonErrorArgs.RESOURCE)
-                if (resource != null) {
-                    strings.notFound(resource)
-                } else {
-                    strings.notFoundWithoutArgs
-                }
-            }
-
-            CommonErrorCodes.TOO_MANY_REQUESTS -> {
-                val retryAfterSeconds = args?.get(CommonErrorArgs.RETRY_AFTER_SECONDS)
-                if (retryAfterSeconds != null) {
-                    strings.tooManyRequests(retryAfterSeconds)
-                } else {
-                    strings.tooManyRequestsWithoutArgs
-                }
-            }
-
-            CommonErrorCodes.MISSING_REQUIRED_PARAMETER -> {
-                val parameterName = args?.get(CommonErrorArgs.PARAMETER_NAME)
-                if (parameterName != null) {
-                    strings.missingField(parameterName)
-                } else {
-                    strings.missingFieldWithoutArgs
-                }
-            }
-
-            CommonErrorCodes.INVALID_PARAMETER_VALUE -> {
-                val parameterName = args?.get(CommonErrorArgs.PARAMETER_NAME)
-                if (parameterName != null) {
-                    strings.invalidField(parameterName)
-                } else {
-                    strings.invalidFieldWithoutArgs
-                }
-            }
-
-            CommonErrorCodes.MISSING_REQUIRED_FIELD -> {
-                val fieldName = args?.get(CommonErrorArgs.FIELD_NAME)
-                if (fieldName != null) {
-                    strings.missingField(fieldName)
-                } else {
-                    strings.missingFieldWithoutArgs
-                }
-            }
-
-            CommonErrorCodes.BLANK_STRING_FIELD -> {
-                val fieldName = args?.get(CommonErrorArgs.FIELD_NAME)
-                if (fieldName != null) {
-                    strings.blankField(fieldName)
-                } else {
-                    strings.blankFieldWithoutArgs
-                }
-            }
-
-            CommonErrorCodes.EMPTY_COLLECTION_FIELD -> {
-                val fieldName = args?.get(CommonErrorArgs.FIELD_NAME)
-                if (fieldName != null) {
-                    strings.missingField(fieldName)
-                } else {
-                    strings.missingFieldWithoutArgs
-                }
-            }
-
-            CommonErrorCodes.INVALID_FIELD_VALUE -> {
-                val fieldName = args?.get(CommonErrorArgs.FIELD_NAME)
-                if (fieldName != null) {
-                    strings.invalidField(fieldName)
-                } else {
-                    strings.invalidFieldWithoutArgs
-                }
-            }
-
-            else -> return null
-        }
+        val message = resolveMessage(code, args, strings) ?: return null
 
         return ApiErrorResponse(
             id = errorId.asHexDashString(),
@@ -121,4 +41,83 @@ public class CommonAppErrorSpecificParser @Inject constructor() : AppErrorSpecif
         args = appError.publicArgs,
         locale = locale
     )
+
+    private fun resolveMessage(
+        code: String,
+        args: Map<String, Any>?,
+        strings: ErrorsStrings
+    ): String? = when (code) {
+        CommonErrorCodes.UNKNOWN -> strings.unknown
+        CommonErrorCodes.INTERNAL -> strings.internal
+        CommonErrorCodes.BAD_REQUEST,
+        CommonErrorCodes.INVALID_JSON_BODY -> strings.badRequest
+
+        CommonErrorCodes.SERVICE_UNAVAILABLE -> strings.serviceUnavailable
+
+        CommonErrorCodes.NOT_FOUND -> {
+            val resource = args?.get(CommonErrorArgs.RESOURCE)
+            if (resource != null) {
+                strings.notFound(resource)
+            } else {
+                strings.notFoundWithoutArgs
+            }
+        }
+
+        CommonErrorCodes.TOO_MANY_REQUESTS -> {
+            val retryAfterSeconds = args?.get(CommonErrorArgs.RETRY_AFTER_SECONDS)
+            if (retryAfterSeconds != null) {
+                strings.tooManyRequests(retryAfterSeconds)
+            } else {
+                strings.tooManyRequestsWithoutArgs
+            }
+        }
+
+        CommonErrorCodes.MISSING_REQUIRED_PARAMETER -> {
+            val parameterName = args?.get(CommonErrorArgs.PARAMETER_NAME)
+            if (parameterName != null) {
+                strings.missingField(parameterName)
+            } else {
+                strings.missingFieldWithoutArgs
+            }
+        }
+
+        CommonErrorCodes.INVALID_PARAMETER_VALUE -> {
+            val parameterName = args?.get(CommonErrorArgs.PARAMETER_NAME)
+            if (parameterName != null) {
+                strings.invalidField(parameterName)
+            } else {
+                strings.invalidFieldWithoutArgs
+            }
+        }
+
+        CommonErrorCodes.MISSING_REQUIRED_FIELD,
+        CommonErrorCodes.EMPTY_COLLECTION_FIELD -> {
+            val fieldName = args?.get(CommonErrorArgs.FIELD_NAME)
+            if (fieldName != null) {
+                strings.missingField(fieldName)
+            } else {
+                strings.missingFieldWithoutArgs
+            }
+        }
+
+        CommonErrorCodes.BLANK_STRING_FIELD -> {
+            val fieldName = args?.get(CommonErrorArgs.FIELD_NAME)
+            if (fieldName != null) {
+                strings.blankField(fieldName)
+            } else {
+                strings.blankFieldWithoutArgs
+            }
+        }
+
+        CommonErrorCodes.INVALID_FIELD_VALUE -> {
+            val fieldName = args?.get(CommonErrorArgs.FIELD_NAME)
+            if (fieldName != null) {
+                strings.invalidField(fieldName)
+            } else {
+                strings.invalidFieldWithoutArgs
+            }
+        }
+
+        else -> null
+    }
 }

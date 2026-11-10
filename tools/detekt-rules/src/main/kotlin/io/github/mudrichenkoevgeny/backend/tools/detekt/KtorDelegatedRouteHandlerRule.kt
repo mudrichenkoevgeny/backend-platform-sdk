@@ -37,15 +37,7 @@ public class KtorDelegatedRouteHandlerRule(
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
 
-        val ktFile = expression.containingKtFile
-        val fileName = ktFile.name
-        val filePath = ktFile.virtualFilePath.replace('\\', '/')
-        val isTestFile = fileName.endsWith("Test.kt") ||
-            filePath.contains("/test/") ||
-            filePath.contains("/testFixtures/")
-        if (isTestFile) return
-
-        if (!fileName.contains("Router") && !fileName.contains("Route")) return
+        if (isTestOrIgnoredFile(expression)) return
 
         val calleeName = expression.calleeExpression?.text ?: return
         if (calleeName !in routeMethods) return
@@ -54,44 +46,61 @@ public class KtorDelegatedRouteHandlerRule(
             val name = arg.getArgumentName()?.asName?.identifier
             if (name == "body" || name == "builder") {
                 val lambda = arg.getArgumentExpression() as? KtLambdaExpression ?: return@forEach
-                val statements = lambda.bodyExpression?.statements ?: return@forEach
+                checkLambdaStatements(lambda, name)
+            }
+        }
+    }
 
-                if (statements.size > 1) {
-                    report(
-                        Finding(
-                            entity = Entity.from(lambda),
-                            message = "Route lambda '$name' must contain exactly one function call delegating " +
-                                "to a separate handler. Found multiple statements."
-                        )
+    private fun isTestOrIgnoredFile(expression: KtCallExpression): Boolean {
+        val ktFile = expression.containingKtFile
+        val fileName = ktFile.name
+        val filePath = ktFile.virtualFilePath.replace('\\', '/')
+        val isTestFile = fileName.endsWith("Test.kt") ||
+            filePath.contains("/test/") ||
+            filePath.contains("/testFixtures/")
+        return isTestFile || (!fileName.contains("Router") && !fileName.contains("Route"))
+    }
+
+    private fun checkLambdaStatements(
+        lambda: KtLambdaExpression,
+        name: String
+    ) {
+        val statements = lambda.bodyExpression?.statements ?: return
+
+        if (statements.size > 1) {
+            report(
+                Finding(
+                    entity = Entity.from(lambda),
+                    message = "Route lambda '$name' must contain exactly one function call delegating " +
+                        "to a separate handler. Found multiple statements."
+                )
+            )
+        } else if (statements.size == 1) {
+            val singleStatement = statements[0]
+            if (singleStatement !is KtCallExpression &&
+                singleStatement !is KtDotQualifiedExpression &&
+                singleStatement !is KtReturnExpression
+            ) {
+                report(
+                    Finding(
+                        entity = Entity.from(lambda),
+                        message = "Route lambda '$name' must delegate to a " +
+                            "function. Found inline logic."
                     )
-                } else if (statements.size == 1) {
-                    val singleStatement = statements[0]
-                    if (singleStatement !is KtCallExpression &&
-                        singleStatement !is KtDotQualifiedExpression &&
-                        singleStatement !is KtReturnExpression
-                    ) {
-                        report(
-                            Finding(
-                                entity = Entity.from(lambda),
-                                message = "Route lambda '$name' must delegate to a " +
-                                    "function. Found inline logic."
-                            )
-                        )
-                    }
-                    if (
-                        singleStatement is KtIfExpression ||
-                        singleStatement is KtWhenExpression ||
-                        singleStatement is KtTryExpression
-                    ) {
-                        report(
-                            Finding(
-                                entity = Entity.from(lambda),
-                                message = "Route lambda '$name' must not contain complex logic (if/when/try). " +
-                                    "Delegate to a function."
-                            )
-                        )
-                    }
-                }
+                )
+            }
+            if (
+                (singleStatement is KtIfExpression) ||
+                (singleStatement is KtWhenExpression) ||
+                (singleStatement is KtTryExpression)
+            ) {
+                report(
+                    Finding(
+                        entity = Entity.from(lambda),
+                        message = "Route lambda '$name' must not contain complex logic (if/when/try). " +
+                            "Delegate to a function."
+                    )
+                )
             }
         }
     }

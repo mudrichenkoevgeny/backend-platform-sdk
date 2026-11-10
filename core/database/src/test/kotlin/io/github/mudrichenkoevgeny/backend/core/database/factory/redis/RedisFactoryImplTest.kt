@@ -1,6 +1,5 @@
 package io.github.mudrichenkoevgeny.backend.core.database.factory.redis
 
-import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import io.github.mudrichenkoevgeny.backend.core.database.redisclient.RedisClientCreator
 import io.lettuce.core.RedisClient
@@ -32,11 +31,9 @@ class RedisFactoryImplTest {
                 )
             } returns redisClient
         }
-        val appLogger = mockk<AppLogger>(relaxUnitFun = true)
 
         val factory = RedisFactoryImpl(
             redisClientCreator = redisClientCreator,
-            appLogger = appLogger,
             databaseConfig = config
         )
 
@@ -63,18 +60,15 @@ class RedisFactoryImplTest {
                     any(),
                     any()
                 )
-            } throws RuntimeException("connect failed")
+            } throws IllegalArgumentException("connect failed")
         }
-        val appLogger = mockk<AppLogger>(relaxUnitFun = true)
 
         val factory = RedisFactoryImpl(
             redisClientCreator = redisClientCreator,
-            appLogger = appLogger,
             databaseConfig = config
         )
 
-        assertThrows<RuntimeException> { factory.create() }
-        verify(exactly = 1) { appLogger.logError(any()) }
+        assertThrows<IllegalArgumentException> { factory.create() }
     }
 
     private companion object {

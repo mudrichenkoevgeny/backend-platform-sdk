@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.contrac
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.SocketFrame
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.network.model.websocket.WebSocketInitializePayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.decodeFromJsonElement
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -46,7 +47,11 @@ public class CommonWebSocketMessageHandler @Inject constructor() : WebSocketMess
 
         val payload = try {
             FoundationJson.decodeFromJsonElement<WebSocketInitializePayload>(payloadElement)
-        } catch (e: Exception) {
+        } catch (e: SerializationException) {
+            return WebSocketMessageHandlerResult.Error(
+                CommonError.InvalidJsonBody(e.message)
+            )
+        } catch (e: IllegalArgumentException) {
             return WebSocketMessageHandlerResult.Error(
                 CommonError.InvalidJsonBody(e.message)
             )

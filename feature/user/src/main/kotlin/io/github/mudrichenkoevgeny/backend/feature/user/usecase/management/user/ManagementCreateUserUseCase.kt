@@ -27,15 +27,18 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Management use case for administratively creating a new user account with assigned roles, permissions, and authority levels.
+ * Management use case for administratively creating a new user account
+ * with assigned roles, permissions, and authority levels.
  *
- * Enforces authority bounds, rate limiting, password complexity validation, and MFA step-up verification for the management creator.
+ * Enforces authority bounds, rate limiting, password complexity validation,
+ * and MFA step-up verification for the management creator.
  */
 @Singleton
 public class ManagementCreateUserUseCase @Inject constructor(
@@ -92,133 +95,24 @@ public class ManagementCreateUserUseCase @Inject constructor(
             )
         )
 
-        val rateLimitCheck = rateLimiter.checkRateLimit(
-            action = UserManagementRateLimitAction.MANAGEMENT_USER_CREATE,
-            identifier = managementUserId.asHexDashString()
+        val checksResult = performPreChecks(
+            managementUserId = managementUserId,
+            createUserParams = createUserParams,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditMetadata = auditMetadata
         )
-        if (rateLimitCheck is AppResult.Error) {
-            return handleError(
-                error = rateLimitCheck.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
-        }
+        if (checksResult is AppResult.Error) return checksResult
+        val managementUser = (checksResult as AppResult.Success).data
 
-        val managementUserResult = userManager.getUserInternalById(managementUserId)
-            .mapNotNullOrError(UserError.UserForbidden())
-
-        val managementUser = when (managementUserResult) {
-            is AppResult.Error -> return handleError(
-                error = managementUserResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
-
-            is AppResult.Success -> managementUserResult.data
-        }
-
-        if (managementUser.accountStatus != UserAccountStatus.ACTIVE) {
-            return handleError(
-                error = UserError.UserIllegalAccountStatus(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        if (createUserParams.authorityLevel >= managementUser.authorityLevel) {
-            return handleError(
-                error = UserError.UserInsufficientAuthorityLevel(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val requiredPermission = when (createUserParams.role) {
-            UserRole.USER -> UserPermissionCode.USER_CREATE_AS_USER
-            UserRole.STAFF -> UserPermissionCode.USER_CREATE_AS_STAFF
-            UserRole.ADMIN -> return handleError(
-                error = UserError.UserForbidden(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        if (requiredPermission !in managementUser.permissionCodes ||
-            !managementUser.permissionCodes.containsAll(
-                createUserParams.permissions
-            )
-        ) {
-            return handleError(
-                error = UserError.UserMissingPermissions(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val password = createUserParams.password
-        if (password != null) {
-            val passwordPolicyCheckResult = validatePasswordUseCase(password)
-            if (passwordPolicyCheckResult is AppResult.Error) {
-                return handleError(
-                    error = passwordPolicyCheckResult.error,
-                    actorId = auditActorId,
-                    actorUserRole = auditActorUserRole,
-                    baseMetadata = auditMetadata
-                )
-            }
-        }
-
-        val policy = when (createUserParams.role) {
-            UserRole.USER -> authSettingsProvider.getOpenEmailRestrictionPolicy()
-            else -> authSettingsProvider.getManagementEmailRestrictionPolicy()
-        }
-
-        if (!emailRestrictionPolicyValidator.isEmailAllowed(
-                createUserParams.email,
-                policy
-            )
-        ) {
-            return handleError(
-                error = UserError.EmailNotAllowed(),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val managementUserSessionResult = sessionManager.getUserSessionInternal(
-            userSessionId = authenticatedRequestContext.sessionId
-        ).mapNotNullOrError(UserError.InvalidSession())
-
-        val managementUserSession = when (managementUserSessionResult) {
-            is AppResult.Success -> managementUserSessionResult.data
-            is AppResult.Error -> return handleError(
-                error = managementUserSessionResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userInternal = managementUser,
-            userSession = managementUserSession,
-            requireTotp = true
+        val mfaResult = verifyMfa(
+            authenticatedRequestContext = authenticatedRequestContext,
+            managementUser = managementUser,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditMetadata = auditMetadata
         )
-        if (ensureSessionConfirmedResult is AppResult.Error) {
-            return handleError(
-                error = ensureSessionConfirmedResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
-        }
+        if (mfaResult is AppResult.Error) return mfaResult
 
         val createUserResult = authManager.createUserAndIdentifier(
             createUserParams = createUserParams,
@@ -244,6 +138,126 @@ public class ManagementCreateUserUseCase @Inject constructor(
                 baseMetadata = auditMetadata
             )
         }
+    }
+
+    private suspend fun performPreChecks(
+        managementUserId: UserId,
+        createUserParams: CreateUserParams,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<UserInternal> {
+        val rateLimitCheck = rateLimiter.checkRateLimit(
+            action = UserManagementRateLimitAction.MANAGEMENT_USER_CREATE,
+            identifier = managementUserId.asHexDashString()
+        )
+        if (rateLimitCheck is AppResult.Error) {
+            return handleError(rateLimitCheck.error, auditActorId, auditActorUserRole, auditMetadata)
+        }
+
+        val managementUserResult = userManager.getUserInternalById(managementUserId)
+            .mapNotNullOrError(UserError.UserForbidden())
+        val managementUser = when (managementUserResult) {
+            is AppResult.Error -> return handleError(
+                managementUserResult.error,
+                auditActorId,
+                auditActorUserRole,
+                auditMetadata
+            )
+
+            is AppResult.Success -> managementUserResult.data
+        }
+
+        if (managementUser.accountStatus != UserAccountStatus.ACTIVE) {
+            return handleError(
+                UserError.UserIllegalAccountStatus(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditMetadata
+            )
+        }
+
+        if (createUserParams.authorityLevel >= managementUser.authorityLevel) {
+            return handleError(
+                UserError.UserInsufficientAuthorityLevel(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditMetadata
+            )
+        }
+
+        val requiredPermission = when (createUserParams.role) {
+            UserRole.USER -> UserPermissionCode.USER_CREATE_AS_USER
+            UserRole.STAFF -> UserPermissionCode.USER_CREATE_AS_STAFF
+            UserRole.ADMIN -> return handleError(
+                UserError.UserForbidden(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditMetadata
+            )
+        }
+
+        if (requiredPermission !in managementUser.permissionCodes ||
+            !managementUser.permissionCodes.containsAll(createUserParams.permissions)
+        ) {
+            return handleError(
+                UserError.UserMissingPermissions(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditMetadata
+            )
+        }
+
+        val password = createUserParams.password
+        if (password != null) {
+            val passwordPolicyCheckResult = validatePasswordUseCase(password)
+            if (passwordPolicyCheckResult is AppResult.Error) {
+                return handleError(passwordPolicyCheckResult.error, auditActorId, auditActorUserRole, auditMetadata)
+            }
+        }
+
+        val policy = when (createUserParams.role) {
+            UserRole.USER -> authSettingsProvider.getOpenEmailRestrictionPolicy()
+            else -> authSettingsProvider.getManagementEmailRestrictionPolicy()
+        }
+
+        if (!emailRestrictionPolicyValidator.isEmailAllowed(createUserParams.email, policy)) {
+            return handleError(UserError.EmailNotAllowed(), auditActorId, auditActorUserRole, auditMetadata)
+        }
+
+        return AppResult.Success(managementUser)
+    }
+
+    private suspend fun verifyMfa(
+        authenticatedRequestContext: AuthenticatedRequestContext,
+        managementUser: UserInternal,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<Unit> {
+        val managementUserSessionResult = sessionManager.getUserSessionInternal(
+            userSessionId = authenticatedRequestContext.sessionId
+        ).mapNotNullOrError(UserError.InvalidSession())
+
+        val managementUserSession = when (managementUserSessionResult) {
+            is AppResult.Success -> managementUserSessionResult.data
+            is AppResult.Error -> return handleError(
+                managementUserSessionResult.error,
+                auditActorId,
+                auditActorUserRole,
+                auditMetadata
+            )
+        }
+
+        val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
+            userInternal = managementUser,
+            userSession = managementUserSession,
+            requireTotp = true
+        )
+        if (ensureSessionConfirmedResult is AppResult.Error) {
+            return handleError(ensureSessionConfirmedResult.error, auditActorId, auditActorUserRole, auditMetadata)
+        }
+        return AppResult.Success(Unit)
     }
 
     private fun <T> handleError(

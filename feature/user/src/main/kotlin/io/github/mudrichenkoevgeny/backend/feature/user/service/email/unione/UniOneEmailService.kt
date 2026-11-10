@@ -22,6 +22,7 @@ import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
+import java.io.IOException
 import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -214,7 +215,11 @@ public class UniOneEmailService @Inject constructor(
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (e: IOException) {
+            AppResult.Error(CommonError.Internal(e))
+        } catch (e: IllegalArgumentException) {
+            AppResult.Error(CommonError.Internal(e))
+        } catch (e: IllegalStateException) {
             AppResult.Error(CommonError.Internal(e))
         }
     }

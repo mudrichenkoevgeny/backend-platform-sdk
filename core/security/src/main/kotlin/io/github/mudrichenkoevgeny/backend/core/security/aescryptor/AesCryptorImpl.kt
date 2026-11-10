@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.config.model.SecurityConfig
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
+import java.security.GeneralSecurityException
 import java.security.SecureRandom
 import java.util.Base64
 import javax.crypto.Cipher
@@ -59,7 +60,9 @@ public class AesCryptorImpl @Inject constructor(
 
         val combined = iv + encryptedBytes
         AppResult.Success(EncryptedString(Base64.getEncoder().encodeToString(combined)))
-    } catch (e: Exception) {
+    } catch (e: GeneralSecurityException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalArgumentException) {
         AppResult.Error(CommonError.Internal(e))
     }
 
@@ -93,7 +96,9 @@ public class AesCryptorImpl @Inject constructor(
                 )
             )
         )
-    } catch (e: Exception) {
+    } catch (e: GeneralSecurityException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalArgumentException) {
         AppResult.Error(CommonError.Internal(e))
     }
 }

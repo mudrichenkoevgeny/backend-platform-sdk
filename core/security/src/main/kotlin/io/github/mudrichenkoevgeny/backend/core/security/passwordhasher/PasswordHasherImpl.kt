@@ -1,5 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.core.security.passwordhasher
 
+import com.password4j.BadParametersException
 import com.password4j.Password
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
@@ -38,7 +39,13 @@ public class PasswordHasherImpl @Inject constructor(
             .withArgon2()
             .result
         AppResult.Success(PasswordHash(passwordHash))
-    } catch (e: Exception) {
+    } catch (e: BadParametersException) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
+    } catch (e: IllegalArgumentException) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
+    } catch (e: IllegalStateException) {
         appLogger.logError(CommonError.Internal(e))
         throw e
     }
@@ -53,7 +60,13 @@ public class PasswordHasherImpl @Inject constructor(
                 storedPasswordHash.value
             ).withArgon2()
         AppResult.Success(checkResult)
-    } catch (e: Exception) {
+    } catch (e: BadParametersException) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
+    } catch (e: IllegalArgumentException) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
+    } catch (e: IllegalStateException) {
         appLogger.logError(CommonError.Internal(e))
         throw e
     }
@@ -79,7 +92,13 @@ public class PasswordHasherImpl @Inject constructor(
                 fakeVerificationHash
             ).withArgon2()
         AppResult.Success(Unit)
-    } catch (e: Exception) {
+    } catch (e: BadParametersException) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
+    } catch (e: IllegalArgumentException) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
+    } catch (e: IllegalStateException) {
         appLogger.logError(CommonError.Internal(e))
         throw e
     }

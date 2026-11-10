@@ -8,6 +8,7 @@ import io.ktor.server.engine.EmbeddedServer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Duration.Companion.milliseconds
@@ -19,7 +20,6 @@ import kotlin.time.Duration.Companion.milliseconds
  * database and Redis resources.
  */
 @Singleton
-@Suppress("ProhibitPrintln")
 public class AppShutdownHookImpl @Inject constructor(
     private val databaseManager: DatabaseManager,
     private val redisManager: RedisManager,
@@ -49,9 +49,8 @@ public class AppShutdownHookImpl @Inject constructor(
                         redisManager.shutdown()
                     } catch (e: CancellationException) {
                         throw e
-                    } catch (e: Exception) {
-                        println("Error during shutdown: ${e.message}")
-                        e.printStackTrace()
+                    } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
+                        logger.error("Error during shutdown", e)
                     }
                 }
             }
@@ -59,6 +58,7 @@ public class AppShutdownHookImpl @Inject constructor(
     }
 
     private companion object {
+        private val logger = LoggerFactory.getLogger(AppShutdownHookImpl::class.java)
         private const val GRACE_PERIOD_MS = 3000L
         private const val TIMEOUT_MS = 5000L
     }

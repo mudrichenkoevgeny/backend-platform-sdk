@@ -404,166 +404,274 @@ public class UserSessionRepositoryImpl @Inject constructor() : UserSessionReposi
         isUpdatedAtSet: Boolean?,
         searchQuery: String?
     ): Query {
-        var query = this
+        this.applySessionIdentityFilters(sessionIds, identifier, identifierIds, identifierDisplayName)
+        this.applyAuthProviderFilters(identifierAuthProviders, excludeIdentifierAuthProviders)
+        this.applyClientInfoFilters(
+            clientTypes, excludeClientTypes, isClientTypeSet, deviceId, isDeviceIdSet,
+            deviceName, isDeviceNameSet, language, isLanguageSet, appVersion, isAppVersionSet,
+            osVersion, isOperationSystemVersionSet, userAgent, isUserAgentSet, ipAddress, isIpAddressSet
+        )
+        this.applySessionTimestampFilters(
+            expiresAtFrom, expiresAtTo, lastAccessedAtFrom, lastAccessedAtTo,
+            lastReauthenticatedAtFrom, lastReauthenticatedAtTo, createdAtFrom, createdAtTo,
+            updatedAtFrom, updatedAtTo, isUpdatedAtSet
+        )
+        this.applySessionSearchFilter(searchQuery)
 
+        return this
+    }
+
+    private fun Query.applySessionIdentityFilters(
+        sessionIds: List<String>,
+        identifier: String?,
+        identifierIds: List<String>,
+        identifierDisplayName: String?
+    ): Query {
         if (sessionIds.isNotEmpty()) {
             val entityIds = sessionIds.mapNotNull { idStr ->
                 runCatching {
-                    EntityID(
-                        Uuid.parse(idStr),
-                        UserSessionsTable
-                    )
+                    EntityID(Uuid.parse(idStr), UserSessionsTable)
                 }.getOrNull()
             }
             if (entityIds.isNotEmpty()) {
-                query = query.andWhere { UserSessionsTable.id inList entityIds }
+                this.andWhere { UserSessionsTable.id inList entityIds }
             }
         }
-
         if (!identifier.isNullOrBlank()) {
-            query = query.andWhere { UserSessionsTable.identifier.lowerCase() eq identifier.lowercase() }
+            this.andWhere { UserSessionsTable.identifier.lowerCase() eq identifier.lowercase() }
         }
         if (identifierIds.isNotEmpty()) {
             val idEntityIds = identifierIds.mapNotNull { idStr ->
                 runCatching {
-                    EntityID(
-                        Uuid.parse(idStr),
-                        UserIdentifiersTable
-                    )
+                    EntityID(Uuid.parse(idStr), UserIdentifiersTable)
                 }.getOrNull()
             }
             if (idEntityIds.isNotEmpty()) {
-                query = query.andWhere { UserSessionsTable.identifierId inList idEntityIds }
+                this.andWhere { UserSessionsTable.identifierId inList idEntityIds }
             }
         }
         if (!identifierDisplayName.isNullOrBlank()) {
-            query = query.andWhere {
+            this.andWhere {
                 UserSessionsTable.identifierDisplayName.lowerCase() eq identifierDisplayName.lowercase()
             }
         }
+        return this
+    }
 
+    private fun Query.applyAuthProviderFilters(
+        identifierAuthProviders: List<UserAuthProvider>,
+        excludeIdentifierAuthProviders: List<UserAuthProvider>
+    ): Query {
         if (identifierAuthProviders.isNotEmpty()) {
-            query = query.andWhere { UserSessionsTable.identifierAuthProvider inList identifierAuthProviders }
+            this.andWhere { UserSessionsTable.identifierAuthProvider inList identifierAuthProviders }
         }
         if (excludeIdentifierAuthProviders.isNotEmpty()) {
-            query = query.andWhere { UserSessionsTable.identifierAuthProvider notInList excludeIdentifierAuthProviders }
+            this.andWhere { UserSessionsTable.identifierAuthProvider notInList excludeIdentifierAuthProviders }
         }
+        return this
+    }
 
+    private fun Query.applyClientInfoFilters(
+        clientTypes: List<ClientType>,
+        excludeClientTypes: List<ClientType>,
+        isClientTypeSet: Boolean?,
+        deviceId: String?,
+        isDeviceIdSet: Boolean?,
+        deviceName: String?,
+        isDeviceNameSet: Boolean?,
+        language: String?,
+        isLanguageSet: Boolean?,
+        appVersion: String?,
+        isAppVersionSet: Boolean?,
+        osVersion: String?,
+        isOperationSystemVersionSet: Boolean?,
+        userAgent: String?,
+        isUserAgentSet: Boolean?,
+        ipAddress: String?,
+        isIpAddressSet: Boolean?
+    ): Query {
+        applyClientTypeFilters(clientTypes, excludeClientTypes, isClientTypeSet)
+        applyDeviceIdFilters(deviceId, isDeviceIdSet)
+        applyDeviceNameFilters(deviceName, isDeviceNameSet)
+        applyLanguageFilters(language, isLanguageSet)
+        applyAppAndOsVersionFilters(
+            appVersion,
+            isAppVersionSet,
+            osVersion,
+            isOperationSystemVersionSet
+        )
+        applyUserAgentAndIpFilters(
+            userAgent,
+            isUserAgentSet,
+            ipAddress,
+            isIpAddressSet
+        )
+        return this
+    }
+
+    private fun Query.applyClientTypeFilters(
+        clientTypes: List<ClientType>,
+        excludeClientTypes: List<ClientType>,
+        isClientTypeSet: Boolean?
+    ) {
         if (clientTypes.isNotEmpty()) {
-            query = query.andWhere { UserSessionsTable.clientType inList clientTypes }
+            this.andWhere { UserSessionsTable.clientType inList clientTypes }
         }
         if (excludeClientTypes.isNotEmpty()) {
-            query = query.andWhere { UserSessionsTable.clientType notInList excludeClientTypes }
+            this.andWhere { UserSessionsTable.clientType notInList excludeClientTypes }
         }
         if (isClientTypeSet == true) {
-            query = query.andWhere { UserSessionsTable.clientType.isNotNull() }
+            this.andWhere { UserSessionsTable.clientType.isNotNull() }
         } else if (isClientTypeSet == false) {
-            query = query.andWhere { UserSessionsTable.clientType.isNull() }
+            this.andWhere { UserSessionsTable.clientType.isNull() }
         }
+    }
 
+    private fun Query.applyDeviceIdFilters(
+        deviceId: String?,
+        isDeviceIdSet: Boolean?
+    ) {
         if (!deviceId.isNullOrBlank()) {
             val deviceIdUuid = Uuid.parseOrNull(deviceId)
             if (deviceIdUuid != null) {
-                query = query.andWhere { UserSessionsTable.deviceId eq deviceIdUuid }
+                this.andWhere { UserSessionsTable.deviceId eq deviceIdUuid }
             }
         }
         if (isDeviceIdSet == true) {
-            query = query.andWhere { UserSessionsTable.deviceId.isNotNull() }
+            this.andWhere { UserSessionsTable.deviceId.isNotNull() }
         } else if (isDeviceIdSet == false) {
-            query = query.andWhere { UserSessionsTable.deviceId.isNull() }
+            this.andWhere { UserSessionsTable.deviceId.isNull() }
         }
+    }
 
+    private fun Query.applyDeviceNameFilters(
+        deviceName: String?,
+        isDeviceNameSet: Boolean?
+    ) {
         if (!deviceName.isNullOrBlank()) {
-            query = query.andWhere { UserSessionsTable.deviceName.lowerCase() eq deviceName.lowercase() }
+            this.andWhere { UserSessionsTable.deviceName.lowerCase() eq deviceName.lowercase() }
         }
         if (isDeviceNameSet == true) {
-            query = query.andWhere { UserSessionsTable.deviceName.isNotNull() }
+            this.andWhere { UserSessionsTable.deviceName.isNotNull() }
         } else if (isDeviceNameSet == false) {
-            query = query.andWhere { UserSessionsTable.deviceName.isNull() }
+            this.andWhere { UserSessionsTable.deviceName.isNull() }
         }
+    }
 
+    private fun Query.applyLanguageFilters(
+        language: String?,
+        isLanguageSet: Boolean?
+    ) {
         if (!language.isNullOrBlank()) {
-            query = query.andWhere { UserSessionsTable.language.lowerCase() eq language.lowercase() }
+            this.andWhere { UserSessionsTable.language.lowerCase() eq language.lowercase() }
         }
         if (isLanguageSet == true) {
-            query = query.andWhere { UserSessionsTable.language.isNotNull() }
+            this.andWhere { UserSessionsTable.language.isNotNull() }
         } else if (isLanguageSet == false) {
-            query = query.andWhere { UserSessionsTable.language.isNull() }
+            this.andWhere { UserSessionsTable.language.isNull() }
         }
+    }
 
+    private fun Query.applyAppAndOsVersionFilters(
+        appVersion: String?,
+        isAppVersionSet: Boolean?,
+        osVersion: String?,
+        isOperationSystemVersionSet: Boolean?
+    ) {
         if (!appVersion.isNullOrBlank()) {
-            query = query.andWhere { UserSessionsTable.appVersion eq appVersion }
+            this.andWhere { UserSessionsTable.appVersion eq appVersion }
         }
         if (isAppVersionSet == true) {
-            query = query.andWhere { UserSessionsTable.appVersion.isNotNull() }
+            this.andWhere { UserSessionsTable.appVersion.isNotNull() }
         } else if (isAppVersionSet == false) {
-            query = query.andWhere { UserSessionsTable.appVersion.isNull() }
+            this.andWhere { UserSessionsTable.appVersion.isNull() }
         }
-
         if (!osVersion.isNullOrBlank()) {
-            query = query.andWhere { UserSessionsTable.operationSystemVersion eq osVersion }
+            this.andWhere { UserSessionsTable.operationSystemVersion eq osVersion }
         }
         if (isOperationSystemVersionSet == true) {
-            query = query.andWhere { UserSessionsTable.operationSystemVersion.isNotNull() }
+            this.andWhere { UserSessionsTable.operationSystemVersion.isNotNull() }
         } else if (isOperationSystemVersionSet == false) {
-            query = query.andWhere { UserSessionsTable.operationSystemVersion.isNull() }
+            this.andWhere { UserSessionsTable.operationSystemVersion.isNull() }
         }
+    }
 
+    private fun Query.applyUserAgentAndIpFilters(
+        userAgent: String?,
+        isUserAgentSet: Boolean?,
+        ipAddress: String?,
+        isIpAddressSet: Boolean?
+    ) {
         if (!userAgent.isNullOrBlank()) {
-            query = query.andWhere { UserSessionsTable.userAgent.lowerCase() eq userAgent.lowercase() }
+            this.andWhere { UserSessionsTable.userAgent.lowerCase() eq userAgent.lowercase() }
         }
         if (isUserAgentSet == true) {
-            query = query.andWhere { UserSessionsTable.userAgent.isNotNull() }
+            this.andWhere { UserSessionsTable.userAgent.isNotNull() }
         } else if (isUserAgentSet == false) {
-            query = query.andWhere { UserSessionsTable.userAgent.isNull() }
+            this.andWhere { UserSessionsTable.userAgent.isNull() }
         }
-
         if (!ipAddress.isNullOrBlank()) {
-            query = query.andWhere { UserSessionsTable.ipAddress eq ipAddress }
+            this.andWhere { UserSessionsTable.ipAddress eq ipAddress }
         }
         if (isIpAddressSet == true) {
-            query = query.andWhere { UserSessionsTable.ipAddress.isNotNull() }
+            this.andWhere { UserSessionsTable.ipAddress.isNotNull() }
         } else if (isIpAddressSet == false) {
-            query = query.andWhere { UserSessionsTable.ipAddress.isNull() }
+            this.andWhere { UserSessionsTable.ipAddress.isNull() }
         }
+    }
 
-        query.applyTimestampFilter(
+    private fun Query.applySessionTimestampFilters(
+        expiresAtFrom: KotlinInstant?,
+        expiresAtTo: KotlinInstant?,
+        lastAccessedAtFrom: KotlinInstant?,
+        lastAccessedAtTo: KotlinInstant?,
+        lastReauthenticatedAtFrom: KotlinInstant?,
+        lastReauthenticatedAtTo: KotlinInstant?,
+        createdAtFrom: KotlinInstant?,
+        createdAtTo: KotlinInstant?,
+        updatedAtFrom: KotlinInstant?,
+        updatedAtTo: KotlinInstant?,
+        isUpdatedAtSet: Boolean?
+    ): Query {
+        this.applyTimestampFilter(
             column = UserSessionsTable.expiresAt,
             fromInstant = expiresAtFrom,
             toInstant = expiresAtTo
         )
-        query.applyTimestampFilter(
+        this.applyTimestampFilter(
             column = UserSessionsTable.lastAccessedAt,
             fromInstant = lastAccessedAtFrom,
             toInstant = lastAccessedAtTo
         )
-        query.applyTimestampFilter(
+        this.applyTimestampFilter(
             column = UserSessionsTable.lastReauthenticatedAt,
             fromInstant = lastReauthenticatedAtFrom,
             toInstant = lastReauthenticatedAtTo
         )
-        query.applyTimestampFilter(
+        this.applyTimestampFilter(
             column = UserSessionsTable.createdAt,
             fromInstant = createdAtFrom,
             toInstant = createdAtTo
         )
-        query.applyTimestampFilter(
+        this.applyTimestampFilter(
             column = UserSessionsTable.updatedAt,
             fromInstant = updatedAtFrom,
             toInstant = updatedAtTo,
             isSet = isUpdatedAtSet
         )
+        return this
+    }
 
+    private fun Query.applySessionSearchFilter(searchQuery: String?): Query {
         if (!searchQuery.isNullOrBlank()) {
             val pattern = substringSqlLikePattern(searchQuery.lowercase())
-            query = query.andWhere {
+            this.andWhere {
                 (UserSessionsTable.identifier.lowerCase() like pattern) or
                     (UserSessionsTable.identifierDisplayName.lowerCase() like pattern) or
                     (UserSessionsTable.deviceName.lowerCase() like pattern)
             }
         }
-
-        return query
+        return this
     }
 
     private fun executeUserSessionsPagedQuery(

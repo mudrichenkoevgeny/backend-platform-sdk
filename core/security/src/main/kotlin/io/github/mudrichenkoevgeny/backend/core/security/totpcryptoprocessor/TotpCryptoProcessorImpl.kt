@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.util.Base32
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
 import java.nio.ByteBuffer
+import java.security.GeneralSecurityException
 import java.security.SecureRandom
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
@@ -48,7 +49,9 @@ public class TotpCryptoProcessorImpl @Inject constructor(
                 otpAuthUrl = otpAuthUrl
             )
         }
-    } catch (e: Exception) {
+    } catch (e: IllegalArgumentException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalStateException) {
         AppResult.Error(CommonError.Internal(e))
     }
 
@@ -67,7 +70,11 @@ public class TotpCryptoProcessorImpl @Inject constructor(
                 ) == code
             }
         }
-    } catch (e: Exception) {
+    } catch (e: GeneralSecurityException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalArgumentException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalStateException) {
         AppResult.Error(CommonError.Internal(e))
     }
 
@@ -81,7 +88,9 @@ public class TotpCryptoProcessorImpl @Inject constructor(
                 decryptedSecret
             )
         }
-    } catch (e: Exception) {
+    } catch (e: IllegalArgumentException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalStateException) {
         AppResult.Error(CommonError.Internal(e))
     }
 
@@ -97,7 +106,9 @@ public class TotpCryptoProcessorImpl @Inject constructor(
             DecryptedString(rawCode)
         }
         AppResult.Success(codes)
-    } catch (e: Exception) {
+    } catch (e: IllegalArgumentException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalStateException) {
         AppResult.Error(CommonError.Internal(e))
     }
 
@@ -132,7 +143,8 @@ public class TotpCryptoProcessorImpl @Inject constructor(
         accountName: String,
         decryptedSecret: DecryptedString
     ): String =
-        "otpauth://totp/$issuer:$accountName?secret=${decryptedSecret.value}&issuer=$issuer&algorithm=$URL_ALGORITHM&digits=$OTP_DIGITS&period=$TIME_STEP_SECONDS"
+        "otpauth://totp/$issuer:$accountName?secret=${decryptedSecret.value}&issuer=$issuer" +
+            "&algorithm=$URL_ALGORITHM&digits=$OTP_DIGITS&period=$TIME_STEP_SECONDS"
 
     public companion object {
         private const val MILLIS_PER_SECOND: Long = 1000L

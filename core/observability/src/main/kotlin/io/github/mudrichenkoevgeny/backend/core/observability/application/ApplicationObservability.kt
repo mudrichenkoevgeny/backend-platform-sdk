@@ -121,7 +121,7 @@ private fun Application.setupTracing(
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (@Suppress("TooGenericExceptionCaught") e: Exception) {
             appLogger.logError(CommonError.Internal(e))
             isThrowable = true
             span.recordException(e)

@@ -45,6 +45,7 @@ import org.jetbrains.exposed.v1.core.not
 import org.jetbrains.exposed.v1.core.notInList
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
+import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
@@ -263,11 +264,64 @@ public class UserRepositoryImpl @Inject constructor() : UserRepository {
     ): AppResult<PagedResult<UserInternal>> = try {
         val query = UsersTable.selectAll()
 
+        applyRoleAccessFilter(query, accessFilter)
+        applyIdentityFilters(query, queryParams)
+        applyAccountStatusFilters(query, queryParams)
+        applyAuthorityFilters(query, queryParams)
+        applyLockoutFilters(query, queryParams)
+        applyProfileFilters(query, queryParams)
+        applyTimestampFilters(query, queryParams)
+        applyStorageFilters(query, queryParams)
+        applySearchFilter(query, queryParams)
+        applyPermissionFilters(query, queryParams)
+
+        val totalCount = query.count()
+
+        val sortColumn = when (queryParams.listing.sortBy) {
+            UserSortBy.AUTHORITY_LEVEL -> UsersTable.authorityLevel
+            UserSortBy.LAST_LOGIN_AT -> UsersTable.lastLoginAt
+            UserSortBy.LAST_ACTIVE_AT -> UsersTable.lastActiveAt
+            UserSortBy.SCHEDULED_PERMANENT_DELETION_AT -> UsersTable.scheduledPermanentDeletionAt
+            UserSortBy.TEMPORARY_LOCKOUT_UNTIL -> UsersTable.temporaryLockoutUntil
+            UserSortBy.NICKNAME -> UsersTable.nickname
+            UserSortBy.DISPLAY_NAME -> UsersTable.displayName
+            UserSortBy.BIRTHDATE -> UsersTable.birthdate
+            UserSortBy.CREATED_AT -> UsersTable.createdAt
+            UserSortBy.UPDATED_AT -> UsersTable.updatedAt
+        }
+
+        val users = query.orderBy(sortColumn to queryParams.listing.sortOrder.toExposedSortOrder())
+            .applyPagination(queryParams.listing.pageParams).map { it.toUserInternal() }
+
+        val totalPages = getNumOfTotalPages(totalCount, queryParams.listing.pageParams.size)
+
+        AppResult.Success(
+            PagedResult(
+                items = users,
+                totalCount = totalCount,
+                pageNumber = queryParams.listing.pageParams.page,
+                pageSize = queryParams.listing.pageParams.size,
+                totalPages = totalPages
+            )
+        )
+    } catch (e: ExposedSQLException) {
+        AppResult.Error(CommonError.Database("Error retrieving users page: ${e.message}"))
+    }
+
+    private fun applyRoleAccessFilter(
+        query: Query,
+        accessFilter: UserRoleAccessFilter
+    ) {
         query.andWhere {
             val roleConditions = accessFilter.allowedUserRoles.map { allowedRole -> UsersTable.role eq allowedRole }
             roleConditions.reduceOrNull { acc, op -> acc or op } ?: Op.FALSE
         }
+    }
 
+    private fun applyIdentityFilters(
+        query: Query,
+        queryParams: UserListQueryParams
+    ) {
         if (queryParams.userIds.isNotEmpty()) {
             val entityIds = queryParams.userIds.mapNotNull { userIdString ->
                 runCatching { EntityID(Uuid.parse(userIdString), UsersTable) }.getOrNull()
@@ -276,21 +330,24 @@ public class UserRepositoryImpl @Inject constructor() : UserRepository {
                 query.andWhere { UsersTable.id inList entityIds }
             }
         }
-
         if (queryParams.roles.isNotEmpty()) {
             query.andWhere { UsersTable.role inList queryParams.roles }
         }
         if (queryParams.excludeRoles.isNotEmpty()) {
             query.andWhere { UsersTable.role notInList queryParams.excludeRoles }
         }
+    }
 
+    private fun applyAccountStatusFilters(
+        query: Query,
+        queryParams: UserListQueryParams
+    ) {
         if (queryParams.accountStatuses.isNotEmpty()) {
             query.andWhere { UsersTable.accountStatus inList queryParams.accountStatuses }
         }
         if (queryParams.excludeAccountStatuses.isNotEmpty()) {
             query.andWhere { UsersTable.accountStatus notInList queryParams.excludeAccountStatuses }
         }
-
         if (queryParams.accountStatusesOnRestore.isNotEmpty()) {
             query.andWhere { UsersTable.accountStatusOnRestore inList queryParams.accountStatusesOnRestore }
         }
@@ -300,25 +357,39 @@ public class UserRepositoryImpl @Inject constructor() : UserRepository {
             }
         }
         query.applyNullabilityFilter(UsersTable.accountStatusOnRestore, queryParams.isAccountStatusOnRestoreSet)
+    }
 
+    private fun applyAuthorityFilters(
+        query: Query,
+        queryParams: UserListQueryParams
+    ) {
         if (queryParams.authorityLevelFrom != null) {
             query.andWhere { UsersTable.authorityLevel greaterEq queryParams.authorityLevelFrom }
         }
         if (queryParams.authorityLevelTo != null) {
             query.andWhere { UsersTable.authorityLevel lessEq queryParams.authorityLevelTo }
         }
-
         if (queryParams.isTotpEnabled != null) {
             query.andWhere { UsersTable.isTotpEnabled eq queryParams.isTotpEnabled }
         }
+    }
 
+    private fun applyLockoutFilters(
+        query: Query,
+        queryParams: UserListQueryParams
+    ) {
         if (queryParams.accountLockoutTypes.isNotEmpty()) {
             query.andWhere { UsersTable.accountLockoutType inList queryParams.accountLockoutTypes }
         }
         if (queryParams.excludeAccountLockoutTypes.isNotEmpty()) {
             query.andWhere { UsersTable.accountLockoutType notInList queryParams.excludeAccountLockoutTypes }
         }
+    }
 
+    private fun applyProfileFilters(
+        query: Query,
+        queryParams: UserListQueryParams
+    ) {
         if (!queryParams.nickname.isNullOrBlank()) {
             query.andWhere { UsersTable.nickname.lowerCase() eq queryParams.nickname.lowercase() }
         }
@@ -330,7 +401,12 @@ public class UserRepositoryImpl @Inject constructor() : UserRepository {
         query.applyNullabilityFilter(UsersTable.displayName, queryParams.isDisplayNameSet)
 
         query.applyNullabilityFilter(UsersTable.avatarFileId, queryParams.isAvatarSet)
+    }
 
+    private fun applyTimestampFilters(
+        query: Query,
+        queryParams: UserListQueryParams
+    ) {
         query.applyTimestampFilter(
             column = UsersTable.createdAt,
             fromInstant = queryParams.createdAtFrom,
@@ -372,7 +448,12 @@ public class UserRepositoryImpl @Inject constructor() : UserRepository {
             toInstant = queryParams.birthdateTo,
             isSet = queryParams.isBirthdateSet
         )
+    }
 
+    private fun applyStorageFilters(
+        query: Query,
+        queryParams: UserListQueryParams
+    ) {
         if (queryParams.storageQuotaBytesFrom != null) {
             query.andWhere { UsersTable.storageQuotaBytes greaterEq queryParams.storageQuotaBytesFrom }
         }
@@ -425,14 +506,24 @@ public class UserRepositoryImpl @Inject constructor() : UserRepository {
                     UsersTable.storageMaxPendingUploads.isNull()
             }
         }
+    }
 
+    private fun applySearchFilter(
+        query: Query,
+        queryParams: UserListQueryParams
+    ) {
         if (!queryParams.searchQuery.isNullOrBlank()) {
             val pattern = substringSqlLikePattern(queryParams.searchQuery.lowercase())
             query.andWhere {
                 (UsersTable.nickname.lowerCase() like pattern) or (UsersTable.displayName.lowerCase() like pattern)
             }
         }
+    }
 
+    private fun applyPermissionFilters(
+        query: Query,
+        queryParams: UserListQueryParams
+    ) {
         if (queryParams.requiredPermissionCodes.isNotEmpty()) {
             query.andWhere {
                 UsersTable.permissionCodes jsonbContainsAllStrings
@@ -447,38 +538,6 @@ public class UserRepositoryImpl @Inject constructor() : UserRepository {
                 )
             }
         }
-
-        val totalCount = query.count()
-
-        val sortColumn = when (queryParams.listing.sortBy) {
-            UserSortBy.AUTHORITY_LEVEL -> UsersTable.authorityLevel
-            UserSortBy.LAST_LOGIN_AT -> UsersTable.lastLoginAt
-            UserSortBy.LAST_ACTIVE_AT -> UsersTable.lastActiveAt
-            UserSortBy.SCHEDULED_PERMANENT_DELETION_AT -> UsersTable.scheduledPermanentDeletionAt
-            UserSortBy.TEMPORARY_LOCKOUT_UNTIL -> UsersTable.temporaryLockoutUntil
-            UserSortBy.NICKNAME -> UsersTable.nickname
-            UserSortBy.DISPLAY_NAME -> UsersTable.displayName
-            UserSortBy.BIRTHDATE -> UsersTable.birthdate
-            UserSortBy.CREATED_AT -> UsersTable.createdAt
-            UserSortBy.UPDATED_AT -> UsersTable.updatedAt
-        }
-
-        val users = query.orderBy(sortColumn to queryParams.listing.sortOrder.toExposedSortOrder())
-            .applyPagination(queryParams.listing.pageParams).map { it.toUserInternal() }
-
-        val totalPages = getNumOfTotalPages(totalCount, queryParams.listing.pageParams.size)
-
-        AppResult.Success(
-            PagedResult(
-                items = users,
-                totalCount = totalCount,
-                pageNumber = queryParams.listing.pageParams.page,
-                pageSize = queryParams.listing.pageParams.size,
-                totalPages = totalPages
-            )
-        )
-    } catch (e: ExposedSQLException) {
-        AppResult.Error(CommonError.Database("Error retrieving users page: ${e.message}"))
     }
 
     override suspend fun deleteUsersDueForPermanentDeletion(asOf: KotlinInstant): AppResult<Int> = try {

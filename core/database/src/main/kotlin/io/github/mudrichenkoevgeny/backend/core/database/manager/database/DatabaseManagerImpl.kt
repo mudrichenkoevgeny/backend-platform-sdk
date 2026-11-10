@@ -4,6 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.database.config.model.DatabaseConfig
 import io.github.mudrichenkoevgeny.backend.core.database.migrator.DatabaseMigrator
+import org.flywaydb.core.api.FlywayException
 import org.jetbrains.exposed.v1.jdbc.Database
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -34,7 +35,13 @@ public class DatabaseManagerImpl @Inject constructor(
         }
 
         database
-    } catch (e: Exception) {
+    } catch (e: FlywayException) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
+    } catch (e: IllegalArgumentException) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
+    } catch (e: IllegalStateException) {
         appLogger.logError(CommonError.Internal(e))
         throw e
     }

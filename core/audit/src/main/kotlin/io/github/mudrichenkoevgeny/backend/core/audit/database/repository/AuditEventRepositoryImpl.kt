@@ -33,6 +33,7 @@ import org.jetbrains.exposed.v1.core.lowerCase
 import org.jetbrains.exposed.v1.core.notInList
 import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
+import org.jetbrains.exposed.v1.jdbc.Query
 import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -94,13 +95,7 @@ public class AuditEventRepositoryImpl @Inject constructor(
         queryParams: ManagementAuditEventListQueryParams
     ): AppResult<PagedResult<AuditEventInternal>> {
         return try {
-            val simpleTypes = accessFilter.allowedActorTypes.filter { it != AuditActorType.USER }
-            val allowsUser = accessFilter.allowedActorTypes.contains(AuditActorType.USER)
-
-            if (
-                accessFilter.allowedActorTypes.isEmpty() ||
-                (allowsUser && simpleTypes.isEmpty() && accessFilter.allowedUserRoles.isEmpty())
-            ) {
+            if (isAccessFilterEmpty(accessFilter)) {
                 return AppResult.Success(
                     PagedResult(
                         items = emptyList(),
@@ -113,69 +108,8 @@ public class AuditEventRepositoryImpl @Inject constructor(
             }
 
             val query = AuditEventsTable.selectAll()
-
-            query.andWhere {
-                val conditions = mutableListOf<Op<Boolean>>()
-
-                if (simpleTypes.isNotEmpty()) {
-                    conditions.add(AuditEventsTable.actorType inList simpleTypes)
-                }
-
-                if (allowsUser && accessFilter.allowedUserRoles.isNotEmpty()) {
-                    conditions.add(
-                        (AuditEventsTable.actorType eq AuditActorType.USER) and
-                            (AuditEventsTable.actorUserRole inList accessFilter.allowedUserRoles)
-                    )
-                }
-
-                conditions.reduceOrNull { acc, op -> acc or op } ?: Op.FALSE
-            }
-
-            if (queryParams.eventIds.isNotEmpty()) {
-                query.andWhere { AuditEventsTable.id inList queryParams.eventIds.map { it.value } }
-            }
-            if (queryParams.actorIds.isNotEmpty()) {
-                query.andWhere { AuditEventsTable.actorId inList queryParams.actorIds }
-            }
-            if (queryParams.actorTypes.isNotEmpty()) {
-                query.andWhere { AuditEventsTable.actorType inList queryParams.actorTypes }
-            }
-            if (queryParams.excludeActorTypes.isNotEmpty()) {
-                query.andWhere { AuditEventsTable.actorType notInList queryParams.excludeActorTypes }
-            }
-            if (queryParams.actorUserRoles.isNotEmpty()) {
-                query.andWhere { AuditEventsTable.actorUserRole inList queryParams.actorUserRoles }
-            }
-            if (queryParams.actions.isNotEmpty()) {
-                query.andWhere { AuditEventsTable.action inList queryParams.actions.map { it.value } }
-            }
-            if (queryParams.excludeActions.isNotEmpty()) {
-                query.andWhere { AuditEventsTable.action notInList queryParams.excludeActions.map { it.value } }
-            }
-            if (queryParams.resources.isNotEmpty()) {
-                query.andWhere { AuditEventsTable.resource inList queryParams.resources.map { it.value } }
-            }
-            if (queryParams.resourceIds.isNotEmpty()) {
-                query.andWhere { AuditEventsTable.resourceId inList queryParams.resourceIds }
-            }
-            if (queryParams.statuses.isNotEmpty()) {
-                query.andWhere { AuditEventsTable.status inList queryParams.statuses }
-            }
-            if (queryParams.excludeStatuses.isNotEmpty()) {
-                query.andWhere { AuditEventsTable.status notInList queryParams.excludeStatuses }
-            }
-
-            query.applyTimestampFilter(
-                column = AuditEventsTable.createdAt,
-                fromInstant = queryParams.createdAtFrom,
-                toInstant = queryParams.createdAtTo
-            )
-
-            val searchQuery = queryParams.searchQuery
-            if (!searchQuery.isNullOrBlank()) {
-                val pattern = substringSqlLikePattern(searchQuery.lowercase())
-                query.andWhere { AuditEventsTable.message.lowerCase() like pattern }
-            }
+            query.applyAccessFilter(accessFilter)
+            query.applyAuditEventFilters(queryParams)
 
             val totalCount = query.count()
 
@@ -203,6 +137,84 @@ public class AuditEventRepositoryImpl @Inject constructor(
             )
         } catch (e: ExposedSQLException) {
             AppResult.Error(CommonError.Database("Error executing audit events paged query: ${e.message}"))
+        }
+    }
+
+    private fun isAccessFilterEmpty(accessFilter: AuditAccessFilter): Boolean {
+        val simpleTypes = accessFilter.allowedActorTypes.filter { it != AuditActorType.USER }
+        val allowsUser = accessFilter.allowedActorTypes.contains(AuditActorType.USER)
+
+        return accessFilter.allowedActorTypes.isEmpty() ||
+            (allowsUser && simpleTypes.isEmpty() && accessFilter.allowedUserRoles.isEmpty())
+    }
+
+    private fun Query.applyAccessFilter(accessFilter: AuditAccessFilter) {
+        val simpleTypes = accessFilter.allowedActorTypes.filter { it != AuditActorType.USER }
+        val allowsUser = accessFilter.allowedActorTypes.contains(AuditActorType.USER)
+
+        andWhere {
+            val conditions = mutableListOf<Op<Boolean>>()
+
+            if (simpleTypes.isNotEmpty()) {
+                conditions.add(AuditEventsTable.actorType inList simpleTypes)
+            }
+
+            if (allowsUser && accessFilter.allowedUserRoles.isNotEmpty()) {
+                conditions.add(
+                    (AuditEventsTable.actorType eq AuditActorType.USER) and
+                        (AuditEventsTable.actorUserRole inList accessFilter.allowedUserRoles)
+                )
+            }
+
+            conditions.reduceOrNull { acc, op -> acc or op } ?: Op.FALSE
+        }
+    }
+
+    private fun Query.applyAuditEventFilters(queryParams: ManagementAuditEventListQueryParams) {
+        if (queryParams.eventIds.isNotEmpty()) {
+            andWhere { AuditEventsTable.id inList queryParams.eventIds.map { it.value } }
+        }
+        if (queryParams.actorIds.isNotEmpty()) {
+            andWhere { AuditEventsTable.actorId inList queryParams.actorIds }
+        }
+        if (queryParams.actorTypes.isNotEmpty()) {
+            andWhere { AuditEventsTable.actorType inList queryParams.actorTypes }
+        }
+        if (queryParams.excludeActorTypes.isNotEmpty()) {
+            andWhere { AuditEventsTable.actorType notInList queryParams.excludeActorTypes }
+        }
+        if (queryParams.actorUserRoles.isNotEmpty()) {
+            andWhere { AuditEventsTable.actorUserRole inList queryParams.actorUserRoles }
+        }
+        if (queryParams.actions.isNotEmpty()) {
+            andWhere { AuditEventsTable.action inList queryParams.actions.map { it.value } }
+        }
+        if (queryParams.excludeActions.isNotEmpty()) {
+            andWhere { AuditEventsTable.action notInList queryParams.excludeActions.map { it.value } }
+        }
+        if (queryParams.resources.isNotEmpty()) {
+            andWhere { AuditEventsTable.resource inList queryParams.resources.map { it.value } }
+        }
+        if (queryParams.resourceIds.isNotEmpty()) {
+            andWhere { AuditEventsTable.resourceId inList queryParams.resourceIds }
+        }
+        if (queryParams.statuses.isNotEmpty()) {
+            andWhere { AuditEventsTable.status inList queryParams.statuses }
+        }
+        if (queryParams.excludeStatuses.isNotEmpty()) {
+            andWhere { AuditEventsTable.status notInList queryParams.excludeStatuses }
+        }
+
+        applyTimestampFilter(
+            column = AuditEventsTable.createdAt,
+            fromInstant = queryParams.createdAtFrom,
+            toInstant = queryParams.createdAtTo
+        )
+
+        val searchQuery = queryParams.searchQuery
+        if (!searchQuery.isNullOrBlank()) {
+            val pattern = substringSqlLikePattern(searchQuery.lowercase())
+            andWhere { AuditEventsTable.message.lowerCase() like pattern }
         }
     }
 

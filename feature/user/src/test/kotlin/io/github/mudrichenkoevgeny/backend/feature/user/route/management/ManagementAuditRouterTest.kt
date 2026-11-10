@@ -170,8 +170,8 @@ class ManagementAuditRouterTest : BaseRouterTest() {
         val emptyPagedResult = PagedResult(
             items = emptyList<AuditEventSummary>(),
             totalCount = 0,
-            pageNumber = ListingDefaultValues.Pagination.PAGE_NUMBER,
-            pageSize = ListingDefaultValues.Pagination.PAGE_SIZE,
+            pageNumber = ListingDefaultValues.Pagination.INITIAL_PAGE_NUMBER,
+            pageSize = ListingDefaultValues.Pagination.DEFAULT_PAGE_SIZE,
             totalPages = 0
         )
 

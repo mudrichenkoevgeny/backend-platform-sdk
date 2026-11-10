@@ -7,7 +7,7 @@ import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisMana
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
-import kotlinx.coroutines.CancellationException
+import kotlinx.serialization.SerializationException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.uuid.Uuid
@@ -65,7 +65,6 @@ public class MfaServiceImpl @Inject constructor(
 
         val serializedData = when (result) {
             is AppResult.Success -> result.data ?: return AppResult.Error(SecurityError.MfaTokenExpired())
-
             is AppResult.Error -> return result
         }
 
@@ -77,9 +76,9 @@ public class MfaServiceImpl @Inject constructor(
             }
 
             AppResult.Success(data)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
+        } catch (e: SerializationException) {
+            AppResult.Error(CommonError.Internal(e))
+        } catch (e: IllegalArgumentException) {
             AppResult.Error(CommonError.Internal(e))
         }
     }

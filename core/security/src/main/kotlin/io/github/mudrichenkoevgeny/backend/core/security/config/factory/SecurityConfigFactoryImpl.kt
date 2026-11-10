@@ -28,47 +28,16 @@ public class SecurityConfigFactoryImpl @Inject constructor(
         val authRealm = envReader.getByKey(SecurityEnvKeys.AUTH_REALM)
         val totpEncryptionSecret = envReader.readSecret(totpEncryptionSecretFile)
 
+        val passwordPolicy = createPasswordPolicy()
+        val otpConfirmation = createOtpConfirmation()
+        val accountLockoutPolicy = createAccountLockoutPolicy()
+        val openIpRestrictionPolicy = createOpenIpRestrictionPolicy()
+        val managementIpRestrictionPolicy = createManagementIpRestrictionPolicy()
+
         val recentAuthenticationValidityInSeconds = envReader
-            .getByKey(
-                SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS
-            ).toInt()
-
+            .getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS).toInt()
         val recentAuthenticationValidityInSecondsForManagement = envReader
-            .getByKey(
-                SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT
-            ).toInt()
-
-        val minLength = envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_MIN_LENGTH)?.toInt()
-            ?: ManagementPasswordPolicy.DEFAULT_MIN_LENGTH
-
-        val requireLetter = envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_LETTER)?.toBoolean()
-            ?: true
-
-        val requireUpperCase = envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_UPPER_CASE)?.toBoolean()
-            ?: false
-
-        val requireLowerCase = envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_LOWER_CASE)?.toBoolean()
-            ?: false
-
-        val requireDigit = envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_DIGIT)?.toBoolean() ?: false
-
-        val requireSpecialChar = envReader
-            .getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_SPECIAL_CHAR)
-            ?.toBoolean() ?: false
-
-        val commonPasswords = envReader
-            .getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_COMMON_PASSWORDS)
-            ?.split(",")
-            ?.asSequence()
-            ?.map { it.trim() }
-            ?.filter { it.isNotEmpty() }
-            ?.toSet()
-            ?: ManagementPasswordPolicy.DEFAULT_COMMON_PASSWORDS
-
-        val otpRetryAfterSeconds = envReader.getByKey(SecurityEnvKeys.OTP_RETRY_AFTER_SECONDS).toInt()
-        val otpNumberOfSymbols = envReader.getByKey(SecurityEnvKeys.OTP_NUMBER_OF_SYMBOLS).toInt()
-        val otpExpirationSeconds = envReader.getByKey(SecurityEnvKeys.OTP_EXPIRATION_SECONDS).toInt()
-
+            .getByKey(SecurityEnvKeys.RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT).toInt()
         val mfaTokenExpirationSeconds = envReader.getByKey(SecurityEnvKeys.MFA_TOKEN_EXPIRATION_SECONDS).toInt()
 
         val maxRequestsPerPeriod = envReader.getByKeyOrNull(SecurityEnvKeys.RATE_LIMIT_MAX_REQUESTS_PER_PERIOD)?.toInt()
@@ -77,97 +46,13 @@ public class SecurityConfigFactoryImpl @Inject constructor(
         val rateLimitPeriodSeconds = envReader.getByKeyOrNull(SecurityEnvKeys.RATE_LIMIT_PERIOD_SECONDS)?.toInt()
             ?: SecurityConfig.DEFAULT_RATE_LIMIT_PERIOD_SECONDS
 
-        val maxFailedPasswordAttempts = envReader
-            .getByKeyOrNull(
-                SecurityEnvKeys.ACCOUNT_LOCKOUT_MAX_FAILED_PASSWORD_ATTEMPTS
-            )?.toInt() ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.maxFailedPasswordAttempts
-        val maxFailedOtpAttempts = envReader
-            .getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_MAX_FAILED_OTP_ATTEMPTS)
-            ?.toInt() ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.maxFailedOtpAttempts
-        val maxFailedTotpAttempts = envReader
-            .getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_MAX_FAILED_TOTP_ATTEMPTS)
-            ?.toInt() ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.maxFailedTotpAttempts
-        val failedAttemptsWindowSeconds = envReader
-            .getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_WINDOW_SECONDS)
-            ?.toInt() ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.failedAttemptsWindowSeconds
-        val lockoutDurationSeconds = envReader.getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_DURATION_SECONDS)?.toInt()
-            ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.lockoutDurationSeconds
-        val indefiniteLockoutThreshold = envReader
-            .getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_INDEFINITE_THRESHOLD)
-            ?.toInt() ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.indefiniteLockoutThreshold
-        val isSelfServiceUnlockEnabled = envReader
-            .getByKeyOrNull(SecurityEnvKeys.IS_SELF_SERVICE_UNLOCK_ENABLED)
-            ?.toBooleanStrictOrNull() ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.isSelfServiceUnlockEnabled
-
-        val accountLockoutPolicy = AccountLockoutPolicy(
-            maxFailedPasswordAttempts = maxFailedPasswordAttempts,
-            maxFailedOtpAttempts = maxFailedOtpAttempts,
-            maxFailedTotpAttempts = maxFailedTotpAttempts,
-            failedAttemptsWindowSeconds = failedAttemptsWindowSeconds,
-            lockoutDurationSeconds = lockoutDurationSeconds,
-            indefiniteLockoutThreshold = indefiniteLockoutThreshold,
-            isSelfServiceUnlockEnabled = isSelfServiceUnlockEnabled
-        )
-
         val accountLockoutCheckIntervalSeconds = envReader
-            .getByKeyOrNull(
-                SecurityEnvKeys.ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS
-            )?.toInt() ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS
+            .getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS)?.toInt()
+            ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS
 
         val refreshTokenRotationGracePeriodSeconds = envReader
-            .getByKeyOrNull(
-                SecurityEnvKeys.REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS
-            )?.toInt() ?: SecurityConfig.DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS
-
-        val isOpenIpBlacklistEnabled = envReader
-            .getByKeyOrNull(SecurityEnvKeys.IS_IP_BLACKLIST_ENABLED_OPEN)
-            ?.toBooleanStrictOrNull() ?: false
-        val openIpBlacklist = envReader.getStringList(SecurityEnvKeys.IP_BLACKLIST_OPEN)
-        val isOpenIpWhitelistEnabled = envReader
-            .getByKeyOrNull(SecurityEnvKeys.IS_IP_WHITELIST_ENABLED_OPEN)
-            ?.toBooleanStrictOrNull() ?: false
-        val openIpWhitelist = envReader.getStringList(SecurityEnvKeys.IP_WHITELIST_OPEN)
-
-        val openIpRestrictionPolicy = IpRestrictionPolicy(
-            isBlacklistEnabled = isOpenIpBlacklistEnabled,
-            blacklist = openIpBlacklist,
-            isWhitelistEnabled = isOpenIpWhitelistEnabled,
-            whitelist = openIpWhitelist
-        )
-
-        val isManagementIpBlacklistEnabled = envReader
-            .getByKeyOrNull(
-                SecurityEnvKeys.IS_IP_BLACKLIST_ENABLED_MANAGEMENT
-            )?.toBooleanStrictOrNull() ?: false
-        val managementIpBlacklist = envReader.getStringList(SecurityEnvKeys.IP_BLACKLIST_MANAGEMENT)
-        val isManagementIpWhitelistEnabled = envReader
-            .getByKeyOrNull(
-                SecurityEnvKeys.IS_IP_WHITELIST_ENABLED_MANAGEMENT
-            )?.toBooleanStrictOrNull() ?: false
-        val managementIpWhitelist = envReader.getStringList(SecurityEnvKeys.IP_WHITELIST_MANAGEMENT)
-
-        val managementIpRestrictionPolicy = IpRestrictionPolicy(
-            isBlacklistEnabled = isManagementIpBlacklistEnabled,
-            blacklist = managementIpBlacklist,
-            isWhitelistEnabled = isManagementIpWhitelistEnabled,
-            whitelist = managementIpWhitelist
-        )
-
-        val passwordPolicy = ManagementPasswordPolicy(
-            minLength = minLength,
-            requireLetter = requireLetter,
-            requireUpperCase = requireUpperCase,
-            requireLowerCase = requireLowerCase,
-            requireDigit = requireDigit,
-            requireSpecialChar = requireSpecialChar,
-            commonPasswords = commonPasswords
-        )
-
-        val otpConfirmation = OtpConfirmation(
-            retryAfterSeconds = otpRetryAfterSeconds,
-            numberOfSymbols = otpNumberOfSymbols,
-            expirationSeconds = otpExpirationSeconds
-        )
+            .getByKeyOrNull(SecurityEnvKeys.REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS)?.toInt()
+            ?: SecurityConfig.DEFAULT_REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS
 
         val managementSecuritySettings = ManagementSecuritySettings(
             recentAuthenticationValiditySecondsForOpenUser = recentAuthenticationValidityInSeconds,
@@ -188,6 +73,122 @@ public class SecurityConfigFactoryImpl @Inject constructor(
             authRealm = authRealm,
             totpEncryptionSecret = totpEncryptionSecret,
             managementSecuritySettings = managementSecuritySettings
+        )
+    }
+
+    private fun createPasswordPolicy(): ManagementPasswordPolicy {
+        val minLength = envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_MIN_LENGTH)?.toInt()
+            ?: ManagementPasswordPolicy.DEFAULT_MIN_LENGTH
+
+        val requireLetter =
+            envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_LETTER)?.toBoolean() ?: true
+        val requireUpperCase =
+            envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_UPPER_CASE)?.toBoolean() ?: false
+        val requireLowerCase =
+            envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_LOWER_CASE)?.toBoolean() ?: false
+        val requireDigit = envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_DIGIT)?.toBoolean() ?: false
+        val requireSpecialChar =
+            envReader.getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_REQUIRE_SPECIAL_CHAR)?.toBoolean() ?: false
+
+        val commonPasswords = envReader
+            .getByKeyOrNull(SecurityEnvKeys.PASSWORD_POLICY_COMMON_PASSWORDS)
+            ?.split(",")
+            ?.asSequence()
+            ?.map { it.trim() }
+            ?.filter { it.isNotEmpty() }
+            ?.toSet()
+            ?: ManagementPasswordPolicy.DEFAULT_COMMON_PASSWORDS
+
+        return ManagementPasswordPolicy(
+            minLength = minLength,
+            requireLetter = requireLetter,
+            requireUpperCase = requireUpperCase,
+            requireLowerCase = requireLowerCase,
+            requireDigit = requireDigit,
+            requireSpecialChar = requireSpecialChar,
+            commonPasswords = commonPasswords
+        )
+    }
+
+    private fun createOtpConfirmation(): OtpConfirmation {
+        val otpRetryAfterSeconds = envReader.getByKey(SecurityEnvKeys.OTP_RETRY_AFTER_SECONDS).toInt()
+        val otpNumberOfSymbols = envReader.getByKey(SecurityEnvKeys.OTP_NUMBER_OF_SYMBOLS).toInt()
+        val otpExpirationSeconds = envReader.getByKey(SecurityEnvKeys.OTP_EXPIRATION_SECONDS).toInt()
+
+        return OtpConfirmation(
+            retryAfterSeconds = otpRetryAfterSeconds,
+            numberOfSymbols = otpNumberOfSymbols,
+            expirationSeconds = otpExpirationSeconds
+        )
+    }
+
+    private fun createAccountLockoutPolicy(): AccountLockoutPolicy {
+        val maxFailedPasswordAttempts = envReader
+            .getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_MAX_FAILED_PASSWORD_ATTEMPTS)?.toInt()
+            ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.maxFailedPasswordAttempts
+        val maxFailedOtpAttempts = envReader
+            .getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_MAX_FAILED_OTP_ATTEMPTS)?.toInt()
+            ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.maxFailedOtpAttempts
+        val maxFailedTotpAttempts = envReader
+            .getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_MAX_FAILED_TOTP_ATTEMPTS)?.toInt()
+            ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.maxFailedTotpAttempts
+        val failedAttemptsWindowSeconds = envReader
+            .getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_WINDOW_SECONDS)?.toInt()
+            ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.failedAttemptsWindowSeconds
+        val lockoutDurationSeconds = envReader
+            .getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_DURATION_SECONDS)?.toInt()
+            ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.lockoutDurationSeconds
+        val indefiniteLockoutThreshold = envReader
+            .getByKeyOrNull(SecurityEnvKeys.ACCOUNT_LOCKOUT_INDEFINITE_THRESHOLD)?.toInt()
+            ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.indefiniteLockoutThreshold
+        val isSelfServiceUnlockEnabled = envReader
+            .getByKeyOrNull(SecurityEnvKeys.IS_SELF_SERVICE_UNLOCK_ENABLED)?.toBooleanStrictOrNull()
+            ?: SecurityConfig.DEFAULT_ACCOUNT_LOCKOUT_POLICY.isSelfServiceUnlockEnabled
+
+        return AccountLockoutPolicy(
+            maxFailedPasswordAttempts = maxFailedPasswordAttempts,
+            maxFailedOtpAttempts = maxFailedOtpAttempts,
+            maxFailedTotpAttempts = maxFailedTotpAttempts,
+            failedAttemptsWindowSeconds = failedAttemptsWindowSeconds,
+            lockoutDurationSeconds = lockoutDurationSeconds,
+            indefiniteLockoutThreshold = indefiniteLockoutThreshold,
+            isSelfServiceUnlockEnabled = isSelfServiceUnlockEnabled
+        )
+    }
+
+    private fun createOpenIpRestrictionPolicy(): IpRestrictionPolicy {
+        val isOpenIpBlacklistEnabled = envReader
+            .getByKeyOrNull(SecurityEnvKeys.IS_IP_BLACKLIST_ENABLED_OPEN)
+            ?.toBooleanStrictOrNull() ?: false
+        val openIpBlacklist = envReader.getStringList(SecurityEnvKeys.IP_BLACKLIST_OPEN)
+        val isOpenIpWhitelistEnabled = envReader
+            .getByKeyOrNull(SecurityEnvKeys.IS_IP_WHITELIST_ENABLED_OPEN)
+            ?.toBooleanStrictOrNull() ?: false
+        val openIpWhitelist = envReader.getStringList(SecurityEnvKeys.IP_WHITELIST_OPEN)
+
+        return IpRestrictionPolicy(
+            isBlacklistEnabled = isOpenIpBlacklistEnabled,
+            blacklist = openIpBlacklist,
+            isWhitelistEnabled = isOpenIpWhitelistEnabled,
+            whitelist = openIpWhitelist
+        )
+    }
+
+    private fun createManagementIpRestrictionPolicy(): IpRestrictionPolicy {
+        val isManagementIpBlacklistEnabled = envReader
+            .getByKeyOrNull(SecurityEnvKeys.IS_IP_BLACKLIST_ENABLED_MANAGEMENT)
+            ?.toBooleanStrictOrNull() ?: false
+        val managementIpBlacklist = envReader.getStringList(SecurityEnvKeys.IP_BLACKLIST_MANAGEMENT)
+        val isManagementIpWhitelistEnabled = envReader
+            .getByKeyOrNull(SecurityEnvKeys.IS_IP_WHITELIST_ENABLED_MANAGEMENT)
+            ?.toBooleanStrictOrNull() ?: false
+        val managementIpWhitelist = envReader.getStringList(SecurityEnvKeys.IP_WHITELIST_MANAGEMENT)
+
+        return IpRestrictionPolicy(
+            isBlacklistEnabled = isManagementIpBlacklistEnabled,
+            blacklist = managementIpBlacklist,
+            isWhitelistEnabled = isManagementIpWhitelistEnabled,
+            whitelist = managementIpWhitelist
         )
     }
 }

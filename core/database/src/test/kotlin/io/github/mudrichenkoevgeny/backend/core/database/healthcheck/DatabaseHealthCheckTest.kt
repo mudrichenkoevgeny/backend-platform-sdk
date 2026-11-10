@@ -9,6 +9,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.sql.Connection
+import java.sql.SQLException
 import javax.sql.DataSource
 
 class DatabaseHealthCheckTest {
@@ -32,7 +33,7 @@ class DatabaseHealthCheckTest {
     @Test
     fun `check returns Error when getConnection throws`() = runBlocking {
         val dataSource = mockk<DataSource> {
-            every { connection } throws RuntimeException("connection failed")
+            every { connection } throws SQLException("connection failed")
         }
 
         val healthCheck = DatabaseHealthCheck(dataSource)

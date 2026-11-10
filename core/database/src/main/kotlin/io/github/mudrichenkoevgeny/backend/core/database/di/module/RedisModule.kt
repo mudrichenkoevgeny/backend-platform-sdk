@@ -36,7 +36,6 @@ public interface RedisModule {
             databaseConfig: DatabaseConfig
         ): RedisFactory = RedisFactoryImpl(
             redisClientCreator = redisClientCreator,
-            appLogger = appLogger,
             databaseConfig = databaseConfig
         )
 

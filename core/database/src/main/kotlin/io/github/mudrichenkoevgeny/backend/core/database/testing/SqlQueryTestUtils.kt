@@ -104,154 +104,171 @@ public fun createSampleValueForType(
     val classifier = type.classifier as? KClass<*> ?: return null
 
     return when {
-        classifier == String::class -> {
-            if (propertyName.endsWith(
-                    "Id",
-                    ignoreCase = true
-                ) ||
-                propertyName.endsWith(
-                    "Ids",
-                    ignoreCase = true
-                )
-            ) {
-                "00000000-0000-0000-0000-000000000001"
-            } else {
-                "sample_${propertyName}_val"
-            }
-        }
-
+        classifier == String::class -> createStringSample(propertyName)
         classifier == Int::class -> 9999
         classifier == Long::class -> 8888L
         classifier == Boolean::class -> true
         classifier == Instant::class -> Clock.System.now()
-        classifier.java.isEnum -> classifier.java.enumConstants.let { constants ->
-            if (constants.size > 1) constants[1] else constants.firstOrNull()
-        }
-
-        classifier == ListingQueryParams::class -> {
-            val sortByType = type.arguments
-                .firstOrNull()
-                ?.type
-                ?.classifier as? KClass<*>
-            val sortBySample = if (sortByType != null && sortByType.java.isEnum) {
-                val constants = sortByType.java.enumConstants
-                if (constants.size > 1) constants[1] else constants.firstOrNull()
-            } else {
-                null
-            }
-
-            if (sortBySample != null) {
-                ListingQueryParams(
-                    pageParams = PageParams(
-                        page = 2,
-                        size = 15
-                    ),
-                    sortBy = sortBySample,
-                    sortOrder = SortOrder.DESC
-                )
-            } else {
-                null
-            }
-        }
-
-        classifier == List::class || classifier == Set::class -> {
-            val elementType = type.arguments
-                .firstOrNull()
-                ?.type
-                ?.classifier as? KClass<*>
-            val sampleElement = if (elementType != null) {
-                if (elementType == String::class &&
-                    (
-                        propertyName.endsWith(
-                            "Id",
-                            ignoreCase = true
-                        ) ||
-                            propertyName.endsWith(
-                                "Ids",
-                                ignoreCase = true
-                            )
-                        )
-                ) {
-                    "00000000-0000-0000-0000-000000000001"
-                } else {
-                    createSampleInstanceForClass(elementType)
-                }
-            } else {
-                "sample_item"
-            }
-
-            if (sampleElement != null) {
-                if (classifier == Set::class) setOf(sampleElement) else listOf(sampleElement)
-            } else {
-                null
-            }
-        }
-
+        classifier.java.isEnum -> createEnumSample(classifier)
+        classifier == ListingQueryParams::class -> createListingQueryParamsSample(type)
+        classifier == List::class || classifier == Set::class -> createCollectionSample(classifier, type, propertyName)
         else -> createSampleInstanceForClass(classifier)
     }
+}
+
+private fun createStringSample(propertyName: String): String = if (propertyName.endsWith(
+        "Id",
+        ignoreCase = true
+    ) ||
+    propertyName.endsWith(
+        "Ids",
+        ignoreCase = true
+    )
+) {
+    "00000000-0000-0000-0000-000000000001"
+} else {
+    "sample_${propertyName}_val"
+}
+
+private fun createEnumSample(classifier: KClass<*>): Any? {
+    val constants = classifier.java.enumConstants
+    return if (constants.size > 1) constants[1] else constants.firstOrNull()
+}
+
+private fun createListingQueryParamsSample(type: KType): Any? {
+    val sortByType = type.arguments
+        .firstOrNull()
+        ?.type
+        ?.classifier as? KClass<*>
+    val sortBySample = if (sortByType != null && sortByType.java.isEnum) {
+        val constants = sortByType.java.enumConstants
+        if (constants.size > 1) constants[1] else constants.firstOrNull()
+    } else {
+        null
+    }
+
+    return if (sortBySample != null) {
+        ListingQueryParams(
+            pageParams = PageParams(
+                page = 2,
+                size = 15
+            ),
+            sortBy = sortBySample,
+            sortOrder = SortOrder.DESC
+        )
+    } else {
+        null
+    }
+}
+
+private fun createCollectionSample(
+    classifier: KClass<*>,
+    type: KType,
+    propertyName: String
+): Any {
+    val elementType = type.arguments
+        .firstOrNull()
+        ?.type
+        ?.classifier as? KClass<*>
+    val sampleElement = if (elementType != null) {
+        if (elementType == String::class &&
+            (
+                propertyName.endsWith(
+                    "Id",
+                    ignoreCase = true
+                ) ||
+                    propertyName.endsWith(
+                        "Ids",
+                        ignoreCase = true
+                    )
+                )
+        ) {
+            "00000000-0000-0000-0000-000000000001"
+        } else {
+            createSampleInstanceForClass(elementType)
+        }
+    } else {
+        "sample_item"
+    }
+
+    return if (classifier == Set::class) setOf(sampleElement) else listOf(sampleElement)
 }
 
 /**
  * Creates a non-null sample instance of [kClass] for reflection-based query testing.
  */
-public fun createSampleInstanceForClass(kClass: KClass<*>): Any? {
-    if (kClass == String::class) return "sample_item"
-    if (kClass == Int::class) return 9999
-    if (kClass == Long::class) return 8888L
-    if (kClass == Boolean::class) return true
-    if (kClass == Instant::class) return Clock.System.now()
-    if (kClass.java.isEnum) return kClass.java.enumConstants.firstOrNull()
+public fun createSampleInstanceForClass(kClass: KClass<*>): Any {
+    createPrimitiveSample(kClass)?.let { return it }
 
-    if (kClass.java.isInterface) {
-        try {
-            return Proxy.newProxyInstance(
-                kClass.java.classLoader,
-                arrayOf(kClass.java)
-            ) { _, method, _ ->
-                when (method.name) {
-                    "getValue" -> "sample_item"
-                    "toString" -> "sample_item"
-                    "hashCode" -> 123
-                    "equals" -> false
-                    else -> "sample_item"
-                }
-            }
-        } catch (_: Exception) {
-        }
-    }
+    createInterfaceProxy(kClass)?.let { return it }
 
-    try {
-        val companionObj = kClass.companionObjectInstance
-        if (companionObj != null) {
-            val generateFunc = companionObj::class.memberFunctions.firstOrNull {
-                it.name == "generate" && it.parameters.size == 1
-            }
-            if (generateFunc != null) {
-                return generateFunc.call(companionObj)
-            }
-        }
-    } catch (_: Exception) {
-    }
+    createCompanionInstance(kClass)?.let { return it }
 
-    try {
-        val constructor = kClass.primaryConstructor
-        if (constructor != null && constructor.parameters.size == 1) {
-            val paramType = constructor.parameters
-                .first()
-                .type.classifier as? KClass<*>
-            if (paramType != null) {
-                val paramSample = createSampleInstanceForClass(paramType)
-                if (paramSample != null) {
-                    return constructor.call(paramSample)
-                }
-            }
-        }
-    } catch (_: Exception) {
-    }
+    createConstructorInstance(kClass)?.let { return it }
 
     if (kClass.simpleName == "Uuid") {
         return Uuid.random()
     }
 
     return "sample_item"
+}
+
+private fun createPrimitiveSample(kClass: KClass<*>): Any? = when {
+    kClass == String::class -> "sample_item"
+    kClass == Int::class -> 9999
+    kClass == Long::class -> 8888L
+    kClass == Boolean::class -> true
+    kClass == Instant::class -> Clock.System.now()
+    kClass.java.isEnum -> kClass.java.enumConstants.firstOrNull()
+    else -> null
+}
+
+private fun createInterfaceProxy(kClass: KClass<*>): Any? {
+    if (!kClass.java.isInterface) return null
+    return try {
+        Proxy.newProxyInstance(
+            kClass.java.classLoader,
+            arrayOf(kClass.java)
+        ) { _, method, _ ->
+            when (method.name) {
+                "getValue" -> "sample_item"
+                "toString" -> "sample_item"
+                "hashCode" -> 123
+                "equals" -> false
+                else -> "sample_item"
+            }
+        }
+    } catch (_: Exception) {
+        null
+    }
+}
+
+private fun createCompanionInstance(kClass: KClass<*>): Any? {
+    return try {
+        val companionObj = kClass.companionObjectInstance ?: return null
+        val generateFunc = companionObj::class.memberFunctions.firstOrNull {
+            it.name == "generate" && it.parameters.size == 1
+        }
+        generateFunc?.call(companionObj)
+    } catch (_: Exception) {
+        null
+    }
+}
+
+private fun createConstructorInstance(kClass: KClass<*>): Any? {
+    return try {
+        val constructor = kClass.primaryConstructor ?: return null
+        if (constructor.parameters.size == 1) {
+            val paramType = constructor.parameters
+                .first()
+                .type.classifier as? KClass<*>
+            if (paramType != null) {
+                val paramSample = createSampleInstanceForClass(paramType)
+                return constructor.call(paramSample)
+            }
+        }
+        null
+    } catch (_: Exception) {
+        null
+    }
 }

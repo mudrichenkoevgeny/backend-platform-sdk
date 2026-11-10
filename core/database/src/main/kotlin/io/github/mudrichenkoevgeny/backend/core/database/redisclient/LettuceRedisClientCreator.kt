@@ -26,7 +26,10 @@ public class LettuceRedisClientCreator @Inject constructor(
         }
 
         RedisClient.create(uri)
-    } catch (e: Exception) {
+    } catch (e: IllegalArgumentException) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
+    } catch (e: IllegalStateException) {
         appLogger.logError(CommonError.Internal(e))
         throw e
     }

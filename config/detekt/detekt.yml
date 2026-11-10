@@ -2,144 +2,6 @@ config:
   validation: true
   warningsAsErrors: false
 
-complexity:
-  active: true
-  ComplexCondition:
-    active: true
-    allowedConditions: 10
-  CyclomaticComplexMethod:
-    active: true
-    allowedComplexity: 50
-    ignoreSingleWhenExpression: true
-  LargeClass:
-    active: true
-    allowedLines: 1500
-  LongMethod:
-    active: true
-    allowedLines: 300
-  LongParameterList:
-    active: true
-    allowedFunctionParameters: 15
-    allowedConstructorParameters: 15
-  NestedBlockDepth:
-    active: true
-    allowedDepth: 6
-  TooManyFunctions:
-    active: true
-    allowedFunctionsPerFile: 100
-    allowedFunctionsPerClass: 100
-    allowedFunctionsPerInterface: 100
-    allowedFunctionsPerObject: 100
-    allowedFunctionsPerEnum: 100
-
-naming:
-  active: true
-  ClassNaming:
-    active: true
-    classPattern: '[A-Z][a-zA-Z0-9]*'
-  ConstructorParameterNaming:
-    active: true
-    parameterPattern: '[a-z][a-zA-Z0-9]*'
-  EnumNaming:
-    active: true
-    enumEntryPattern: '[A-Za-z0-9_]*'
-  FunctionNaming:
-    active: true
-    functionPattern: '([a-z][a-zA-Z0-9]*)|(`[^`]+`)'
-    ignoreAnnotated:
-      - 'Test'
-      - 'ParameterizedTest'
-      - 'org.junit.jupiter.api.Test'
-  MatchingDeclarationName:
-    active: true
-  ObjectPropertyNaming:
-    active: true
-    propertyPattern: '[A-Za-z0-9_]*'
-  PackageNaming:
-    active: true
-    packagePattern: '[a-z]+(\.[a-z][a-z0-9]*)*'
-  TopLevelPropertyNaming:
-    active: true
-    constantPattern: '[A-Za-z0-9_]*'
-    propertyPattern: '[A-Za-z0-9_]*'
-  VariableNaming:
-    active: true
-    variablePattern: '[a-z][a-zA-Z0-9]*'
-
-style:
-  active: true
-  ClassOrdering:
-    active: true
-  BracesOnIfStatements:
-    active: true
-  LoopWithTooManyJumpStatements:
-    active: false
-  MagicNumber:
-    active: false
-  MandatoryBracesLoops:
-    active: true
-  MaxLineLength:
-    active: false
-  ReturnCount:
-    active: false
-  ThrowsCount:
-    active: false
-  UnusedImport:
-    active: true
-  UnusedPrivateClass:
-    active: true
-  UnusedPrivateFunction:
-    active: true
-  UnusedPrivateProperty:
-    active: true
-  WildcardImport:
-    active: true
-
-exceptions:
-  active: true
-  SwallowedException:
-    active: false
-  TooGenericExceptionCaught:
-    active: false
-  TooGenericExceptionThrown:
-    active: false
-  PrintStackTrace:
-    active: false
-
-potential-bugs:
-  active: true
-  UnsafeCallOnNullableType:
-    active: true
-
-custom-rules:
-  active: true
-  KtorConsistentRoutePermissions:
-    active: true
-  KtorDelegatedRouteHandler:
-    active: true
-  KtorRoutePathConstant:
-    active: true
-  KtorStrictRouteDefinition:
-    active: true
-  NoDirectSystemEnv:
-    active: true
-  NoFullyQualifiedName:
-    active: true
-  NoInlineComment:
-    active: true
-  NoSuspendInsideDatabaseTransaction:
-    active: true
-  PreferConstructorInjection:
-    active: true
-  PreferValueOverName:
-    active: true
-  ProhibitNonSafeAssertion:
-    active: true
-  ProhibitPrintln:
-    active: true
-  RequireUtcTime:
-    active: true
-
 comments:
   active: true
   UndocumentedPublicClass:
@@ -153,11 +15,6 @@ comments:
       - '**/di/**'
       - '**/*Module.kt'
       - '**/*Component.kt'
-    searchInNestedClass: true
-    searchInInnerClass: true
-    searchInInnerObject: false
-    searchInInnerInterface: true
-    ignoreDefaultCompanionObject: true
   UndocumentedPublicFunction:
     active: true
     excludes:
@@ -167,5 +24,26 @@ comments:
       - '**/tools/**'
       - '**/sample/**'
       - '**/di/**'
+      - '**/*Module.kt'
+      - '**/*Component.kt'
   UndocumentedPublicProperty:
     active: false
+
+backend-rules:
+  active: true
+  KtorConsistentRoutePermissions:
+    active: true
+  KtorDelegatedRouteHandler:
+    active: true
+  KtorRoutePathConstant:
+    active: true
+  KtorStrictRouteDefinition:
+    active: true
+  NoDirectSystemEnv:
+    active: true
+  NoSuspendInsideDatabaseTransaction:
+    active: true
+  PreferConstructorInjection:
+    active: true
+  RequireUtcTime:
+    active: true

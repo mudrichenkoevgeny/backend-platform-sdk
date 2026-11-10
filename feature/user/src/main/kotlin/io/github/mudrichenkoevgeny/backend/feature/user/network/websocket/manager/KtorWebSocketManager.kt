@@ -23,8 +23,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserPrivatePayload
+import io.ktor.server.engine.internal.ClosedChannelException
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
@@ -32,10 +34,12 @@ import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.channels.ClosedSendChannelException
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.decodeFromJsonElement
+import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -73,7 +77,9 @@ public class KtorWebSocketManager @Inject constructor(
                 handlePubSubMessageLocally(message)
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (e: SerializationException) {
+                appLogger.logError(CommonError.Internal(e))
+            } catch (e: IllegalArgumentException) {
                 appLogger.logError(CommonError.Internal(e))
             }
         }
@@ -278,7 +284,16 @@ public class KtorWebSocketManager @Inject constructor(
                     val text = frame.readText()
                     val socketFrame = try {
                         FoundationJson.decodeFromString<SocketFrame>(text).apply { validateDto() }
-                    } catch (e: Exception) {
+                    } catch (e: RequestHandlingException) {
+                        handleSocketError(e)
+                        continue
+                    } catch (e: SerializationException) {
+                        handleSocketError(e)
+                        continue
+                    } catch (e: IllegalArgumentException) {
+                        handleSocketError(e)
+                        continue
+                    } catch (e: IllegalStateException) {
                         handleSocketError(e)
                         continue
                     }
@@ -291,10 +306,11 @@ public class KtorWebSocketManager @Inject constructor(
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (e: Exception) {
-            if (e !is ClosedReceiveChannelException) {
-                appLogger.logError(CommonError.Internal(e))
-            }
+        } catch (_: ClosedReceiveChannelException) {
+        } catch (e: ClosedChannelException) {
+            appLogger.logError(CommonError.Internal(e))
+        } catch (e: IOException) {
+            appLogger.logError(CommonError.Internal(e))
         }
     }
 
@@ -360,14 +376,18 @@ public class KtorWebSocketManager @Inject constructor(
         context.userId?.asHexDashString()?.let { uid ->
             userIdToWebSocketSessions[uid]?.let { sessions ->
                 sessions.remove(session)
-                if (sessions.isEmpty()) userIdToWebSocketSessions.remove(uid)
+                if (sessions.isEmpty()) {
+                    userIdToWebSocketSessions.remove(uid)
+                }
             }
         }
 
         context.userSessionId?.asHexDashString()?.let { sid ->
             userSessionIdToWebSocketSessions[sid]?.let { sessions ->
                 sessions.remove(session)
-                if (sessions.isEmpty()) userSessionIdToWebSocketSessions.remove(sid)
+                if (sessions.isEmpty()) {
+                    userSessionIdToWebSocketSessions.remove(sid)
+                }
             }
         }
     }
@@ -385,8 +405,9 @@ public class KtorWebSocketManager @Inject constructor(
                 if (frame.type == UserWebSocketEventTypes.USER_UPDATED) {
                     frame.payload?.let { payload ->
                         val userPrivatePayload = FoundationJson.decodeFromJsonElement<UserPrivatePayload>(payload)
-                        val userAccountStatus = UserAccountStatus.fromValueOrNull(userPrivatePayload.accountStatus)
-                        val accountLockoutType = AccountLockoutType.fromValueOrNull(userPrivatePayload.lockoutType)
+                        val userPrivate = userPrivatePayload.toUserPrivate()
+                        val userAccountStatus = userPrivate.accountStatus
+                        val accountLockoutType = userPrivate.lockoutType
 
                         if (userAccountStatus == UserAccountStatus.BANNED ||
                             userAccountStatus == UserAccountStatus.SECURITY_HOLD ||
@@ -401,7 +422,16 @@ public class KtorWebSocketManager @Inject constructor(
             }
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (e: ClosedSendChannelException) {
+            appLogger.logError(CommonError.Internal(e))
+        } catch (e: ClosedReceiveChannelException) {
+            appLogger.logError(CommonError.Internal(e))
+        } catch (e: IOException) {
+            appLogger.logError(CommonError.Internal(e))
+        } catch (e: SerializationException) {
+            appLogger.logError(CommonError.Internal(e))
+        } catch (e: IllegalArgumentException) {
+            appLogger.logError(CommonError.Internal(e))
         }
     }
 

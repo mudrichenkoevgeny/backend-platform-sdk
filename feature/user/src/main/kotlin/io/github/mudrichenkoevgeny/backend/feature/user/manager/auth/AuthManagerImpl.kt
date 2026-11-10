@@ -32,6 +32,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.i
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.identifier.toUserIdentifierPrivate
@@ -506,16 +507,10 @@ public class AuthManagerImpl @Inject constructor(
         ),
         bypassTotp: Boolean = false
     ): AppResult<AuthData> {
-        val user = if (existingUser != null && existingUser.id == userIdentifier.userId) {
-            existingUser
-        } else {
-            val userResult = userManager.getUserInternalById(userIdentifier.userId)
-                .mapNotNullOrError(UserError.UserNotFound())
-
-            when (userResult) {
-                is AppResult.Success -> userResult.data
-                is AppResult.Error -> return userResult
-            }
+        val userResult = resolveExistingUser(userIdentifier, existingUser)
+        val user = when (userResult) {
+            is AppResult.Success -> userResult.data
+            is AppResult.Error -> return userResult
         }
 
         val validateResult = user.validateAccessEligibility(
@@ -526,33 +521,10 @@ public class AuthManagerImpl @Inject constructor(
             return AppResult.Error(validateResult.error)
         }
 
-        if (!bypassTotp && user.isTotpEnabled) {
-            val mfaResult = mfaService.createChallenge(
-                userId = user.id.asHexDashString(),
-                userRole = user.role.value,
-                type = MfaChallengeType.LOGIN_TOTP,
-                identifierId = userIdentifier.id.asHexDashString()
-            )
+        val mfaCheckResult = checkMfaChallenge(user, userIdentifier, bypassTotp)
+        if (mfaCheckResult != null) return mfaCheckResult
 
-            return when (mfaResult) {
-                is AppResult.Success -> AppResult.Error(
-                    SecurityError.MfaConfirmationRequired(mfaToken = mfaResult.data.token)
-                )
-
-                is AppResult.Error -> AppResult.Error(mfaResult.error)
-            }
-        }
-
-        if (user.lockoutType == AccountLockoutType.TEMPORARY) {
-            val now = Clock.System.now()
-            val temporaryLockoutUntil = user.temporaryLockoutUntil
-            if (temporaryLockoutUntil != null && now >= temporaryLockoutUntil) {
-                userManager.unlockUserAccount(
-                    userId = user.id,
-                    clearLockoutForIdentifiers = listOf(userIdentifier.identifier)
-                )
-            }
-        }
+        checkTemporaryLockout(user, userIdentifier)
 
         lockoutManager.clearLockout(userIdentifier.identifier)
         lockoutManager.clearLockout(user.id.asHexDashString())
@@ -563,49 +535,8 @@ public class AuthManagerImpl @Inject constructor(
             is AppResult.Error -> return userSessionsResult
         }
 
-        val currentDeviceId = clientInfo.clientDeviceInfo.deviceId
-        val remainingSessions = if (currentDeviceId != null) {
-            val matchingSessions = userSessions.filter { session ->
-                session.clientDeviceInfo.deviceId == currentDeviceId
-            }
-            for (oldSession in matchingSessions) {
-                val deleteResult = sessionManager.deleteSessionById(oldSession.id)
-                if (deleteResult is AppResult.Success) {
-                    webSocketManager.sendMessageToUserSession(
-                        userSessionId = oldSession.id,
-                        frame = SocketFrame(
-                            type = UserWebSocketEventTypes.SESSION_DELETED,
-                            timestamp = Clock.System.now().toEpochMilliseconds(),
-                            payload = null,
-                            metadata = emptyMap()
-                        )
-                    )
-                }
-            }
-            userSessions.filter { session -> session.clientDeviceInfo.deviceId != currentDeviceId }
-        } else {
-            userSessions
-        }
-
-        val maxActiveSessions = when (user.role) {
-            UserRole.USER -> authSettingsProvider.getMaxActiveSessionsForOpenUser()
-            UserRole.STAFF, UserRole.ADMIN -> authSettingsProvider.getMaxActiveSessionsForManagementUser()
-        }
-
-        if (remainingSessions.size >= maxActiveSessions) {
-            val deletedSessionResult = sessionManager.deleteLeastRecentlyUsedUserSession(user.id)
-            if (deletedSessionResult is AppResult.Success) {
-                webSocketManager.sendMessageToUserSession(
-                    userSessionId = deletedSessionResult.data,
-                    frame = SocketFrame(
-                        type = UserWebSocketEventTypes.SESSION_DELETED,
-                        timestamp = Clock.System.now().toEpochMilliseconds(),
-                        payload = null,
-                        metadata = emptyMap()
-                    )
-                )
-            }
-        }
+        val remainingSessions = deleteOldSessionsByDeviceId(userSessions, clientInfo)
+        enforceMaxActiveSessions(user, remainingSessions)
 
         val sessionTokenResult = sessionManager.createSession(
             userId = user.id,
@@ -628,6 +559,110 @@ public class AuthManagerImpl @Inject constructor(
                 sessionToken = sessionToken
             )
         )
+    }
+
+    private suspend fun resolveExistingUser(
+        userIdentifier: UserIdentifierInternal,
+        existingUser: UserInternal?
+    ): AppResult<UserInternal> = if (existingUser != null && existingUser.id == userIdentifier.userId) {
+        AppResult.Success(existingUser)
+    } else {
+        userManager.getUserInternalById(userIdentifier.userId)
+            .mapNotNullOrError(UserError.UserNotFound())
+    }
+
+    private suspend fun checkMfaChallenge(
+        user: UserInternal,
+        userIdentifier: UserIdentifierInternal,
+        bypassTotp: Boolean
+    ): AppResult<AuthData>? {
+        if (!bypassTotp && user.isTotpEnabled) {
+            val mfaResult = mfaService.createChallenge(
+                userId = user.id.asHexDashString(),
+                userRole = user.role.value,
+                type = MfaChallengeType.LOGIN_TOTP,
+                identifierId = userIdentifier.id.asHexDashString()
+            )
+
+            return when (mfaResult) {
+                is AppResult.Success -> AppResult.Error(
+                    SecurityError.MfaConfirmationRequired(mfaToken = mfaResult.data.token)
+                )
+
+                is AppResult.Error -> AppResult.Error(mfaResult.error)
+            }
+        }
+        return null
+    }
+
+    private suspend fun checkTemporaryLockout(
+        user: UserInternal,
+        userIdentifier: UserIdentifierInternal
+    ) {
+        if (user.lockoutType == AccountLockoutType.TEMPORARY) {
+            val now = Clock.System.now()
+            val temporaryLockoutUntil = user.temporaryLockoutUntil
+            if (temporaryLockoutUntil != null && now >= temporaryLockoutUntil) {
+                userManager.unlockUserAccount(
+                    userId = user.id,
+                    clearLockoutForIdentifiers = listOf(userIdentifier.identifier)
+                )
+            }
+        }
+    }
+
+    private suspend fun deleteOldSessionsByDeviceId(
+        userSessions: List<UserSessionInternal>,
+        clientInfo: ClientInfo
+    ): List<UserSessionInternal> {
+        val currentDeviceId = clientInfo.clientDeviceInfo.deviceId
+        return if (currentDeviceId != null) {
+            val matchingSessions = userSessions.filter { session ->
+                session.clientDeviceInfo.deviceId == currentDeviceId
+            }
+            for (oldSession in matchingSessions) {
+                val deleteResult = sessionManager.deleteSessionById(oldSession.id)
+                if (deleteResult is AppResult.Success) {
+                    webSocketManager.sendMessageToUserSession(
+                        userSessionId = oldSession.id,
+                        frame = SocketFrame(
+                            type = UserWebSocketEventTypes.SESSION_DELETED,
+                            timestamp = Clock.System.now().toEpochMilliseconds(),
+                            payload = null,
+                            metadata = emptyMap()
+                        )
+                    )
+                }
+            }
+            userSessions.filter { session -> session.clientDeviceInfo.deviceId != currentDeviceId }
+        } else {
+            userSessions
+        }
+    }
+
+    private suspend fun enforceMaxActiveSessions(
+        user: UserInternal,
+        remainingSessions: List<UserSessionInternal>
+    ) {
+        val maxActiveSessions = when (user.role) {
+            UserRole.USER -> authSettingsProvider.getMaxActiveSessionsForOpenUser()
+            UserRole.STAFF, UserRole.ADMIN -> authSettingsProvider.getMaxActiveSessionsForManagementUser()
+        }
+
+        if (remainingSessions.size >= maxActiveSessions) {
+            val deletedSessionResult = sessionManager.deleteLeastRecentlyUsedUserSession(user.id)
+            if (deletedSessionResult is AppResult.Success) {
+                webSocketManager.sendMessageToUserSession(
+                    userSessionId = deletedSessionResult.data,
+                    frame = SocketFrame(
+                        type = UserWebSocketEventTypes.SESSION_DELETED,
+                        timestamp = Clock.System.now().toEpochMilliseconds(),
+                        payload = null,
+                        metadata = emptyMap()
+                    )
+                )
+            }
+        }
     }
 
     /**

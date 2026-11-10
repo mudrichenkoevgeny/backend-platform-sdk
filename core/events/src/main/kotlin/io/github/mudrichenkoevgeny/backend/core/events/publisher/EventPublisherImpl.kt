@@ -8,13 +8,16 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.F
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerializationException
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.KafkaException
 import org.apache.kafka.common.serialization.StringSerializer
 import java.util.Properties
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 /**
@@ -72,9 +75,10 @@ public class EventPublisherImpl @Inject constructor(
                 serializer,
                 event
             )
-        } catch (e: CancellationException) {
+        } catch (e: SerializationException) {
+            appLogger.logError(CommonError.Internal(e))
             throw e
-        } catch (e: Exception) {
+        } catch (e: IllegalArgumentException) {
             appLogger.logError(CommonError.Internal(e))
             throw e
         }
@@ -91,25 +95,39 @@ public class EventPublisherImpl @Inject constructor(
                     )
                 }
             }
-        } catch (e: CancellationException) {
+        } catch (e: IllegalArgumentException) {
+            appLogger.logError(CommonError.Internal(e))
             throw e
-        } catch (e: Exception) {
+        } catch (e: IllegalStateException) {
             appLogger.logError(CommonError.Internal(e))
             throw e
         }
 
-        suspendCancellableCoroutine { continuation ->
-            val future = producer.send(record) { _, exception ->
-                if (exception != null) {
-                    continuation.resumeWithException(exception)
-                } else {
-                    continuation.resumeWith(Result.success(Unit))
+        try {
+            suspendCancellableCoroutine<Unit> { continuation ->
+                val future = producer.send(record) { _, exception ->
+                    if (exception != null) {
+                        continuation.resumeWithException(exception)
+                    } else {
+                        continuation.resume(Unit)
+                    }
+                }
+
+                continuation.invokeOnCancellation {
+                    future.cancel(true)
                 }
             }
-
-            continuation.invokeOnCancellation {
-                future.cancel(true)
-            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: KafkaException) {
+            appLogger.logError(CommonError.Internal(e))
+            throw e
+        } catch (e: IllegalStateException) {
+            appLogger.logError(CommonError.Internal(e))
+            throw e
+        } catch (e: IllegalArgumentException) {
+            appLogger.logError(CommonError.Internal(e))
+            throw e
         }
     }
 }

@@ -28,6 +28,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
@@ -37,9 +38,11 @@ import javax.inject.Singleton
 import kotlin.time.Clock
 
 /**
- * Management use case for updating account statuses, roles, authority levels, permissions, or profile details for a user account.
+ * Management use case for updating account statuses, roles, authority levels,
+ * permissions, or profile details for a user account.
  *
- * Enforces authority level hierarchy, permission checks, rate limiting, and MFA step-up verification before applying updates.
+ * Enforces authority level hierarchy, permission checks, rate limiting, and
+ * MFA step-up verification before applying updates.
  */
 @Singleton
 public class ManagementUpdateUserUseCase @Inject constructor(
@@ -91,205 +94,38 @@ public class ManagementUpdateUserUseCase @Inject constructor(
 
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata().toMutableSet()
 
-        if (managementUserId == userId) {
-            return handleError(
-                error = UserError.UserForbidden(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val rateLimitCheck = rateLimiter.checkRateLimit(
-            action = UserManagementRateLimitAction.MANAGEMENT_USER_UPDATE,
-            identifier = managementUserId.asHexDashString()
+        val preChecksResult = performPreChecks(
+            managementUserId = managementUserId,
+            userId = userId,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditResourceId = auditResourceId,
+            auditMetadata = auditMetadata
         )
-        if (rateLimitCheck is AppResult.Error) {
-            return handleError(
-                error = rateLimitCheck.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
+        if (preChecksResult is AppResult.Error) return preChecksResult
+        val (managementUser, targetUser) = (preChecksResult as AppResult.Success).data
 
-        val managementUserResult = userManager.getUserInternalById(managementUserId)
-            .mapNotNullOrError(UserError.UserForbidden())
-
-        val managementUser = when (managementUserResult) {
-            is AppResult.Success -> managementUserResult.data
-            is AppResult.Error -> return handleError(
-                error = managementUserResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        if (managementUser.accountStatus != UserAccountStatus.ACTIVE) {
-            return handleError(
-                error = UserError.UserIllegalAccountStatus(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val targetUserResult = userManager.getUserInternalById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
-
-        val targetUser = when (targetUserResult) {
-            is AppResult.Success -> targetUserResult.data
-            is AppResult.Error -> return handleError(
-                error = targetUserResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        if (targetUser.authorityLevel >= managementUser.authorityLevel) {
-            return handleError(
-                error = UserError.UserInsufficientAuthorityLevel(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val requiredPermissions = mutableSetOf<PermissionCode>()
-
-        val targetAccountStatus = (updateUserParams.accountStatus as? UpdateField.Set)?.value
-        if (targetAccountStatus != null) {
-            val updateStatusPermission = when (targetUser.role) {
-                UserRole.USER -> UserPermissionCode.USER_UPDATE_STATUS_FOR_USER
-                UserRole.STAFF -> UserPermissionCode.USER_UPDATE_STATUS_FOR_STAFF
-                else -> return handleError(
-                    error = UserError.UserForbidden(managementUserId),
-                    actorId = auditActorId,
-                    actorUserRole = auditActorUserRole,
-                    resourceId = auditResourceId,
-                    baseMetadata = auditMetadata
-                )
-            }
-            requiredPermissions.add(updateStatusPermission)
-        }
-
-        val targetAuthorityLevel = (updateUserParams.authorityLevel as? UpdateField.Set)?.value
-        if (targetAuthorityLevel != null) {
-            if (targetAuthorityLevel >= managementUser.authorityLevel) {
-                return handleError(
-                    error = UserError.UserInsufficientAuthorityLevel(managementUserId),
-                    actorId = auditActorId,
-                    actorUserRole = auditActorUserRole,
-                    resourceId = auditResourceId,
-                    baseMetadata = auditMetadata
-                )
-            }
-            val updateAuthorityLevelPermission = when (targetUser.role) {
-                UserRole.USER -> UserPermissionCode.USER_UPDATE_AUTHORITY_FOR_USER
-                UserRole.STAFF -> UserPermissionCode.USER_UPDATE_AUTHORITY_FOR_STAFF
-                else -> return handleError(
-                    error = UserError.UserForbidden(managementUserId),
-                    actorId = auditActorId,
-                    actorUserRole = auditActorUserRole,
-                    resourceId = auditResourceId,
-                    baseMetadata = auditMetadata
-                )
-            }
-            requiredPermissions.add(updateAuthorityLevelPermission)
-        }
-
-        val targetPermissions = (updateUserParams.permissions as? UpdateField.Set)?.value
-        if (targetPermissions != null) {
-            val updatePermissionsPermission = when (targetUser.role) {
-                UserRole.USER -> UserPermissionCode.USER_UPDATE_PERMISSIONS_FOR_USER
-                UserRole.STAFF -> UserPermissionCode.USER_UPDATE_PERMISSIONS_FOR_STAFF
-                else -> return handleError(
-                    error = UserError.UserForbidden(managementUserId),
-                    actorId = auditActorId,
-                    actorUserRole = auditActorUserRole,
-                    resourceId = auditResourceId,
-                    baseMetadata = auditMetadata
-                )
-            }
-            requiredPermissions.add(updatePermissionsPermission)
-
-            val forbiddenManagementPermissions = targetPermissions.filter { it !in managementUser.permissionCodes }
-            if (forbiddenManagementPermissions.isNotEmpty()) {
-                return handleError(
-                    error = UserError.UserMissingPermissions(managementUserId),
-                    actorId = auditActorId,
-                    actorUserRole = auditActorUserRole,
-                    resourceId = auditResourceId,
-                    baseMetadata = auditMetadata
-                )
-            }
-        }
-
-        if (updateUserParams.lockoutType !is UpdateField.Ignore ||
-            updateUserParams.temporaryLockoutUntil !is UpdateField.Ignore ||
-            updateUserParams.storageConfiguration !is UpdateField.Ignore
-        ) {
-            val updateSecurityPermission = when (targetUser.role) {
-                UserRole.USER -> UserPermissionCode.USER_UPDATE_SECURITY_FOR_USER
-                UserRole.STAFF -> UserPermissionCode.USER_UPDATE_SECURITY_FOR_STAFF
-                else -> return handleError(
-                    error = UserError.UserForbidden(managementUserId),
-                    actorId = auditActorId,
-                    actorUserRole = auditActorUserRole,
-                    resourceId = auditResourceId,
-                    baseMetadata = auditMetadata
-                )
-            }
-            requiredPermissions.add(updateSecurityPermission)
-        }
-
-        val missingRequiredPermissions = requiredPermissions.filter { it !in managementUser.permissionCodes }
-        if (missingRequiredPermissions.isNotEmpty()) {
-            return handleError(
-                error = UserError.UserMissingPermissions(managementUserId),
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val managementUserSessionResult = sessionManager.getUserSessionInternal(
-            userSessionId = authenticatedRequestContext.sessionId
-        ).mapNotNullOrError(UserError.InvalidSession())
-
-        val managementUserSession = when (managementUserSessionResult) {
-            is AppResult.Success -> managementUserSessionResult.data
-            is AppResult.Error -> return handleError(
-                error = managementUserSessionResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userInternal = managementUser,
-            userSession = managementUserSession,
-            requireTotp = true
+        val permissionResult = checkPermissions(
+            updateUserParams = updateUserParams,
+            managementUser = managementUser,
+            targetUser = targetUser,
+            managementUserId = managementUserId,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditResourceId = auditResourceId,
+            auditMetadata = auditMetadata
         )
-        if (ensureSessionConfirmedResult is AppResult.Error) {
-            return handleError(
-                error = ensureSessionConfirmedResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
+        if (permissionResult is AppResult.Error) return permissionResult
+
+        val mfaResult = verifyMfa(
+            authenticatedRequestContext = authenticatedRequestContext,
+            managementUser = managementUser,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditResourceId = auditResourceId,
+            auditMetadata = auditMetadata
+        )
+        if (mfaResult is AppResult.Error) return mfaResult
 
         val userValidationResult = userUpdateValidator.validate(
             user = targetUser,
@@ -297,11 +133,11 @@ public class ManagementUpdateUserUseCase @Inject constructor(
         )
         if (userValidationResult is AppResult.Error) {
             return handleError(
-                error = userValidationResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
+                userValidationResult.error,
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
             )
         }
 
@@ -345,6 +181,361 @@ public class ManagementUpdateUserUseCase @Inject constructor(
                 baseMetadata = auditMetadata
             )
         }
+    }
+
+    private suspend fun performPreChecks(
+        managementUserId: UserId,
+        userId: UserId,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<Pair<UserInternal, UserInternal>> {
+        if (managementUserId == userId) {
+            return handleError(
+                UserError.UserForbidden(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        val rateLimitCheck = rateLimiter.checkRateLimit(
+            action = UserManagementRateLimitAction.MANAGEMENT_USER_UPDATE,
+            identifier = managementUserId.asHexDashString()
+        )
+        if (rateLimitCheck is AppResult.Error) {
+            return handleError(
+                rateLimitCheck.error,
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        val managementUserResult = userManager.getUserInternalById(managementUserId)
+            .mapNotNullOrError(UserError.UserForbidden())
+        val managementUser = when (managementUserResult) {
+            is AppResult.Success -> managementUserResult.data
+            is AppResult.Error -> return handleError(
+                managementUserResult.error,
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        if (managementUser.accountStatus != UserAccountStatus.ACTIVE) {
+            return handleError(
+                UserError.UserIllegalAccountStatus(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        val targetUserResult = userManager.getUserInternalById(userId).mapNotNullOrError(UserError.UserNotFound(userId))
+        val targetUser = when (targetUserResult) {
+            is AppResult.Success -> targetUserResult.data
+            is AppResult.Error -> return handleError(
+                targetUserResult.error,
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        if (targetUser.authorityLevel >= managementUser.authorityLevel) {
+            return handleError(
+                UserError.UserInsufficientAuthorityLevel(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+
+        return AppResult.Success(Pair(managementUser, targetUser))
+    }
+
+    private fun checkPermissions(
+        updateUserParams: UpdateUserParams,
+        managementUser: UserInternal,
+        targetUser: UserInternal,
+        managementUserId: UserId,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<Unit> {
+        val requiredPermissions = mutableSetOf<PermissionCode>()
+
+        val statusResult = checkAccountStatusPermission(
+            updateUserParams,
+            targetUser,
+            managementUserId,
+            auditActorId,
+            auditActorUserRole,
+            auditResourceId,
+            auditMetadata,
+            requiredPermissions
+        )
+        if (statusResult is AppResult.Error) return statusResult
+
+        val authorityResult = checkAuthorityLevelPermission(
+            updateUserParams,
+            managementUser,
+            targetUser,
+            managementUserId,
+            auditActorId,
+            auditActorUserRole,
+            auditResourceId,
+            auditMetadata,
+            requiredPermissions
+        )
+        if (authorityResult is AppResult.Error) return authorityResult
+
+        val permissionsResult = checkPermissionsFieldPermission(
+            updateUserParams,
+            managementUser,
+            targetUser,
+            managementUserId,
+            auditActorId,
+            auditActorUserRole,
+            auditResourceId,
+            auditMetadata,
+            requiredPermissions
+        )
+        if (permissionsResult is AppResult.Error) return permissionsResult
+
+        val securityResult = checkSecurityFieldsPermission(
+            updateUserParams,
+            targetUser,
+            managementUserId,
+            auditActorId,
+            auditActorUserRole,
+            auditResourceId,
+            auditMetadata,
+            requiredPermissions
+        )
+        if (securityResult is AppResult.Error) return securityResult
+
+        return validateRequiredPermissions(
+            managementUser,
+            managementUserId,
+            auditActorId,
+            auditActorUserRole,
+            auditResourceId,
+            auditMetadata,
+            requiredPermissions
+        )
+    }
+
+    private fun checkAccountStatusPermission(
+        updateUserParams: UpdateUserParams,
+        targetUser: UserInternal,
+        managementUserId: UserId,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>,
+        requiredPermissions: MutableSet<PermissionCode>
+    ): AppResult<Unit> {
+        val targetAccountStatus = (updateUserParams.accountStatus as? UpdateField.Set)?.value
+        if (targetAccountStatus != null) {
+            val updateStatusPermission = when (targetUser.role) {
+                UserRole.USER -> UserPermissionCode.USER_UPDATE_STATUS_FOR_USER
+                UserRole.STAFF -> UserPermissionCode.USER_UPDATE_STATUS_FOR_STAFF
+                else -> return handleError(
+                    UserError.UserForbidden(managementUserId),
+                    auditActorId,
+                    auditActorUserRole,
+                    auditResourceId,
+                    auditMetadata
+                )
+            }
+            requiredPermissions.add(updateStatusPermission)
+        }
+        return AppResult.Success(Unit)
+    }
+
+    private fun checkAuthorityLevelPermission(
+        updateUserParams: UpdateUserParams,
+        managementUser: UserInternal,
+        targetUser: UserInternal,
+        managementUserId: UserId,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>,
+        requiredPermissions: MutableSet<PermissionCode>
+    ): AppResult<Unit> {
+        val targetAuthorityLevel = (updateUserParams.authorityLevel as? UpdateField.Set)?.value
+        if (targetAuthorityLevel != null) {
+            if (targetAuthorityLevel >= managementUser.authorityLevel) {
+                return handleError(
+                    UserError.UserInsufficientAuthorityLevel(managementUserId),
+                    auditActorId,
+                    auditActorUserRole,
+                    auditResourceId,
+                    auditMetadata
+                )
+            }
+            val updateAuthorityLevelPermission = when (targetUser.role) {
+                UserRole.USER -> UserPermissionCode.USER_UPDATE_AUTHORITY_FOR_USER
+                UserRole.STAFF -> UserPermissionCode.USER_UPDATE_AUTHORITY_FOR_STAFF
+                else -> return handleError(
+                    UserError.UserForbidden(managementUserId),
+                    auditActorId,
+                    auditActorUserRole,
+                    auditResourceId,
+                    auditMetadata
+                )
+            }
+            requiredPermissions.add(updateAuthorityLevelPermission)
+        }
+        return AppResult.Success(Unit)
+    }
+
+    private fun checkPermissionsFieldPermission(
+        updateUserParams: UpdateUserParams,
+        managementUser: UserInternal,
+        targetUser: UserInternal,
+        managementUserId: UserId,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>,
+        requiredPermissions: MutableSet<PermissionCode>
+    ): AppResult<Unit> {
+        val targetPermissions = (updateUserParams.permissions as? UpdateField.Set)?.value
+        if (targetPermissions != null) {
+            val updatePermissionsPermission = when (targetUser.role) {
+                UserRole.USER -> UserPermissionCode.USER_UPDATE_PERMISSIONS_FOR_USER
+                UserRole.STAFF -> UserPermissionCode.USER_UPDATE_PERMISSIONS_FOR_STAFF
+                else -> return handleError(
+                    UserError.UserForbidden(managementUserId),
+                    auditActorId,
+                    auditActorUserRole,
+                    auditResourceId,
+                    auditMetadata
+                )
+            }
+            requiredPermissions.add(updatePermissionsPermission)
+
+            val forbiddenManagementPermissions = targetPermissions.filter {
+                it !in managementUser.permissionCodes
+            }
+            if (forbiddenManagementPermissions.isNotEmpty()) {
+                return handleError(
+                    UserError.UserMissingPermissions(managementUserId),
+                    auditActorId,
+                    auditActorUserRole,
+                    auditResourceId,
+                    auditMetadata
+                )
+            }
+        }
+        return AppResult.Success(Unit)
+    }
+
+    private fun checkSecurityFieldsPermission(
+        updateUserParams: UpdateUserParams,
+        targetUser: UserInternal,
+        managementUserId: UserId,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>,
+        requiredPermissions: MutableSet<PermissionCode>
+    ): AppResult<Unit> {
+        if (updateUserParams.lockoutType !is UpdateField.Ignore ||
+            updateUserParams.temporaryLockoutUntil !is UpdateField.Ignore ||
+            updateUserParams.storageConfiguration !is UpdateField.Ignore
+        ) {
+            val updateSecurityPermission = when (targetUser.role) {
+                UserRole.USER -> UserPermissionCode.USER_UPDATE_SECURITY_FOR_USER
+                UserRole.STAFF -> UserPermissionCode.USER_UPDATE_SECURITY_FOR_STAFF
+                else -> return handleError(
+                    UserError.UserForbidden(managementUserId),
+                    auditActorId,
+                    auditActorUserRole,
+                    auditResourceId,
+                    auditMetadata
+                )
+            }
+            requiredPermissions.add(updateSecurityPermission)
+        }
+        return AppResult.Success(Unit)
+    }
+
+    private fun validateRequiredPermissions(
+        managementUser: UserInternal,
+        managementUserId: UserId,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>,
+        requiredPermissions: Set<PermissionCode>
+    ): AppResult<Unit> {
+        val missingRequiredPermissions = requiredPermissions.filter {
+            it !in managementUser.permissionCodes
+        }
+        if (missingRequiredPermissions.isNotEmpty()) {
+            return handleError(
+                UserError.UserMissingPermissions(managementUserId),
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+        }
+        return AppResult.Success(Unit)
+    }
+
+    private suspend fun verifyMfa(
+        authenticatedRequestContext: AuthenticatedRequestContext,
+        managementUser: UserInternal,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<Unit> {
+        val managementUserSessionResult = sessionManager.getUserSessionInternal(
+            userSessionId = authenticatedRequestContext.sessionId
+        ).mapNotNullOrError(UserError.InvalidSession())
+
+        val managementUserSession = when (managementUserSessionResult) {
+            is AppResult.Success -> managementUserSessionResult.data
+            is AppResult.Error -> return handleError(
+                error = managementUserSessionResult.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
+                baseMetadata = auditMetadata
+            )
+        }
+
+        val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
+            userInternal = managementUser,
+            userSession = managementUserSession,
+            requireTotp = true
+        )
+        if (ensureSessionConfirmedResult is AppResult.Error) {
+            return handleError(
+                error = ensureSessionConfirmedResult.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
+                baseMetadata = auditMetadata
+            )
+        }
+        return AppResult.Success(Unit)
     }
 
     private fun <T> handleError(

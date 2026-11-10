@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppSystemResult
 import io.lettuce.core.RedisClient
+import io.lettuce.core.RedisException
 import io.lettuce.core.ScriptOutputType
 import io.lettuce.core.api.StatefulRedisConnection
 import io.lettuce.core.pubsub.RedisPubSubAdapter
@@ -56,7 +57,7 @@ public class RedisManagerImpl @Inject constructor(
         key: String,
         value: String,
         expirationSeconds: Long
-    ): AppResult<Unit> = try {
+    ): AppResult<Unit> = execute {
         getConnection()
             .async()
             .setex(
@@ -64,18 +65,13 @@ public class RedisManagerImpl @Inject constructor(
                 expirationSeconds,
                 value
             ).await()
-        AppResult.Success(Unit)
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        AppResult.Error(CommonError.Internal(e))
     }
 
     override suspend fun incrementWithExpiration(
         key: String,
         expirationSeconds: Long
-    ): AppResult<Long> = try {
-        val incrementResult = getConnection()
+    ): AppResult<Long> = execute {
+        getConnection()
             .async()
             .eval<Long>(
                 incrementScript,
@@ -83,76 +79,43 @@ public class RedisManagerImpl @Inject constructor(
                 arrayOf(key),
                 expirationSeconds.toString()
             ).await()
-        AppResult.Success(incrementResult)
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        AppResult.Error(CommonError.Internal(e))
     }
 
-    override suspend fun get(key: String): AppResult<String?> = try {
-        val value = getConnection().async().get(key).await()
-        AppResult.Success(value)
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        AppResult.Error(CommonError.Internal(e))
+    override suspend fun get(key: String): AppResult<String?> = execute {
+        getConnection().async().get(key).await()
     }
 
-    override suspend fun getTtl(key: String): AppResult<Long> = try {
-        val ttl = getConnection().async().ttl(key).await()
-        AppResult.Success(ttl)
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        AppResult.Error(CommonError.Internal(e))
+    override suspend fun getTtl(key: String): AppResult<Long> = execute {
+        getConnection().async().ttl(key).await()
     }
 
-    override suspend fun exists(key: String): AppResult<Boolean> = try {
-        val exist = getConnection().async().exists(key).await() > 0
-        AppResult.Success(exist)
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        AppResult.Error(CommonError.Internal(e))
+    override suspend fun exists(key: String): AppResult<Boolean> = execute {
+        getConnection().async().exists(key).await() > 0
     }
 
-    override suspend fun delete(key: String): AppResult<Unit> = try {
+    override suspend fun delete(key: String): AppResult<Unit> = execute {
         getConnection().async().del(key).await()
-        AppResult.Success(Unit)
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        AppResult.Error(CommonError.Internal(e))
     }
 
     override suspend fun deleteBatch(keys: List<String>): AppResult<Unit> {
-        if (keys.isEmpty()) return AppResult.Success(Unit)
-        return try {
+        if (keys.isEmpty()) {
+            return AppResult.Success(Unit)
+        }
+        return execute {
             getConnection().async().del(*keys.toTypedArray()).await()
-            AppResult.Success(Unit)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            AppResult.Error(CommonError.Internal(e))
         }
     }
 
     override suspend fun publish(
         channel: String,
         message: String
-    ): AppResult<Unit> = try {
+    ): AppResult<Unit> = execute {
         getConnection()
             .async()
             .publish(
                 channel,
                 message
             ).await()
-        AppResult.Success(Unit)
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        AppResult.Error(CommonError.Internal(e))
     }
 
     override fun subscribe(
@@ -200,24 +163,14 @@ public class RedisManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun isAvailable(): AppSystemResult<Boolean> = try {
+    override suspend fun isAvailable(): AppSystemResult<Boolean> = executeSystem {
         val response = getConnection().async().ping().await()
-        val isAvailable = response == PING_RESPONSE
-        AppSystemResult.Success(isAvailable)
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        AppSystemResult.Error(CommonError.Internal(e))
+        response == PING_RESPONSE
     }
 
-    override suspend fun warmup(): AppSystemResult<Unit> = try {
+    override suspend fun warmup(): AppSystemResult<Unit> = executeSystem {
         getConnection()
         getPubSubConnection()
-        AppSystemResult.Success(Unit)
-    } catch (e: CancellationException) {
-        throw e
-    } catch (e: Exception) {
-        AppSystemResult.Error(CommonError.Internal(e))
     }
 
     override fun shutdown(): AppSystemResult<Unit> = try {
@@ -225,7 +178,9 @@ public class RedisManagerImpl @Inject constructor(
         pubSubConnection?.close()
         redisClient.shutdown()
         AppSystemResult.Success(Unit)
-    } catch (e: Exception) {
+    } catch (e: RedisException) {
+        AppSystemResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalStateException) {
         AppSystemResult.Error(CommonError.Internal(e))
     }
 
@@ -246,6 +201,30 @@ public class RedisManagerImpl @Inject constructor(
                 newConn
             }
         }
+    }
+
+    private suspend fun <T> execute(block: suspend () -> T): AppResult<T> = try {
+        AppResult.Success(block())
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: RedisException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalArgumentException) {
+        AppResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalStateException) {
+        AppResult.Error(CommonError.Internal(e))
+    }
+
+    private suspend fun <T> executeSystem(block: suspend () -> T): AppSystemResult<T> = try {
+        AppSystemResult.Success(block())
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: RedisException) {
+        AppSystemResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalArgumentException) {
+        AppSystemResult.Error(CommonError.Internal(e))
+    } catch (e: IllegalStateException) {
+        AppSystemResult.Error(CommonError.Internal(e))
     }
 
     public companion object {

@@ -6,8 +6,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.li
  * SQL-oriented pagination: 1-based [page] and non-negative [size], exposed as [limit]/[offset] for `LIMIT`/`OFFSET`.
  */
 public data class PageParams(
-    val page: Int = ListingDefaultValues.Pagination.PAGE_NUMBER,
-    val size: Int = ListingDefaultValues.Pagination.PAGE_SIZE
+    val page: Int = ListingDefaultValues.Pagination.INITIAL_PAGE_NUMBER,
+    val size: Int = ListingDefaultValues.Pagination.DEFAULT_PAGE_SIZE
 ) {
     val limit: Int
         get() = size.coerceAtLeast(0)

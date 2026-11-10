@@ -13,7 +13,7 @@ bcv = "0.18.2"
 dokka = "2.3.0"
 
 # Shared Foundation
-shared-foundation = "0.1.4"
+shared-foundation = "0.1.9"
 
 # Kotlin
 kotlinx-serialization = "1.12.0"
@@ -199,3 +199,9 @@ detekt = { id = "dev.detekt", version.ref = "detekt" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "bcv" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+
+# Shared Foundation Plugins
+shared-foundation-agent-sync = { id = "io.github.mudrichenkoevgeny.shared-foundation-agent-sync", version.ref = "shared-foundation" }
+shared-foundation-quality = { id = "io.github.mudrichenkoevgeny.shared-foundation-quality", version.ref = "shared-foundation" }
+shared-foundation-kotlin = { id = "io.github.mudrichenkoevgeny.shared-foundation-kotlin", version.ref = "shared-foundation" }
+shared-foundation-publish = { id = "io.github.mudrichenkoevgeny.shared-foundation-publish", version.ref = "shared-foundation" }

@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.error.parser.AppErrorSpec
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.model.ApiErrorResponse
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.error.naming.CommonErrorArgs
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.error.naming.SecurityErrorCodes
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.localization.ErrorsStrings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.localization.SecurityModuleStrings
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.localization.resolvePasswordTooWeakReasons
 import javax.inject.Inject
@@ -23,33 +24,7 @@ public class SecurityErrorParser @Inject constructor() : AppErrorSpecificParser 
         locale: String
     ): ApiErrorResponse? {
         val moduleStrings = SecurityModuleStrings(locale = locale)
-        val strings = moduleStrings.errors
-
-        val message = when (code) {
-            SecurityErrorCodes.TOTP_ALREADY_ENABLED -> strings.totpAlreadyEnabled
-            SecurityErrorCodes.TOTP_NOT_ENABLED -> strings.totpNotEnabled
-            SecurityErrorCodes.MFA_TOKEN_EXPIRED -> strings.mfaTokenExpired
-            SecurityErrorCodes.INVALID_MFA_TOKEN -> strings.mfaTokenExpired
-            SecurityErrorCodes.INVALID_TOTP_CODE -> strings.invalidTotpCode
-            SecurityErrorCodes.RECOVERY_CODE_ALREADY_USED -> strings.recoveryCodeAlreadyUsed
-            SecurityErrorCodes.IP_NOT_ALLOWED -> strings.ipNotAllowed
-            SecurityErrorCodes.MFA_CONFIRMATION_REQUIRED -> strings.mfaConfirmationRequired
-
-            SecurityErrorCodes.OTP_RETRY_TOO_SOON -> {
-                val retryAfterSeconds = args?.get(CommonErrorArgs.RETRY_AFTER_SECONDS)
-                if (retryAfterSeconds != null) {
-                    strings.otpRetryTooSoon(retryAfterSeconds)
-                } else {
-                    strings.otpRetryTooSoonWithoutArgs
-                }
-            }
-
-            SecurityErrorCodes.PASSWORD_TOO_WEAK -> {
-                moduleStrings.resolvePasswordTooWeakReasons(args).joinToString("\n")
-            }
-
-            else -> return null
-        }
+        val message = resolveMessage(code, args, moduleStrings, moduleStrings.errors) ?: return null
 
         return ApiErrorResponse(
             id = errorId.asHexDashString(),
@@ -68,4 +43,36 @@ public class SecurityErrorParser @Inject constructor() : AppErrorSpecificParser 
         args = appError.publicArgs,
         locale = locale
     )
+
+    private fun resolveMessage(
+        code: String,
+        args: Map<String, Any>?,
+        moduleStrings: SecurityModuleStrings,
+        strings: ErrorsStrings
+    ): String? = when (code) {
+        SecurityErrorCodes.TOTP_ALREADY_ENABLED -> strings.totpAlreadyEnabled
+        SecurityErrorCodes.TOTP_NOT_ENABLED -> strings.totpNotEnabled
+        SecurityErrorCodes.MFA_TOKEN_EXPIRED,
+        SecurityErrorCodes.INVALID_MFA_TOKEN -> strings.mfaTokenExpired
+
+        SecurityErrorCodes.INVALID_TOTP_CODE -> strings.invalidTotpCode
+        SecurityErrorCodes.RECOVERY_CODE_ALREADY_USED -> strings.recoveryCodeAlreadyUsed
+        SecurityErrorCodes.IP_NOT_ALLOWED -> strings.ipNotAllowed
+        SecurityErrorCodes.MFA_CONFIRMATION_REQUIRED -> strings.mfaConfirmationRequired
+
+        SecurityErrorCodes.OTP_RETRY_TOO_SOON -> {
+            val retryAfterSeconds = args?.get(CommonErrorArgs.RETRY_AFTER_SECONDS)
+            if (retryAfterSeconds != null) {
+                strings.otpRetryTooSoon(retryAfterSeconds)
+            } else {
+                strings.otpRetryTooSoonWithoutArgs
+            }
+        }
+
+        SecurityErrorCodes.PASSWORD_TOO_WEAK -> {
+            moduleStrings.resolvePasswordTooWeakReasons(args).joinToString("\n")
+        }
+
+        else -> null
+    }
 }

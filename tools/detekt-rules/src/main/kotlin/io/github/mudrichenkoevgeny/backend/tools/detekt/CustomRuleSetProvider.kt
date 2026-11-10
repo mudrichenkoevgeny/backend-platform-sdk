@@ -5,10 +5,10 @@ import dev.detekt.api.RuleSetId
 import dev.detekt.api.RuleSetProvider
 
 /**
- * Detekt rule set provider for project-specific custom static analysis rules.
+ * Detekt rule set provider for backend platform specific custom static analysis rules.
  */
 public class CustomRuleSetProvider : RuleSetProvider {
-    override val ruleSetId: RuleSetId = RuleSetId("custom-rules")
+    override val ruleSetId: RuleSetId = RuleSetId("backend-rules")
 
     override fun instance(): RuleSet = RuleSet(
         ruleSetId,
@@ -18,13 +18,8 @@ public class CustomRuleSetProvider : RuleSetProvider {
             ::KtorRoutePathConstantRule,
             ::KtorStrictRouteDefinitionRule,
             ::NoDirectSystemEnvRule,
-            ::NoFullyQualifiedNameRule,
-            ::NoInlineCommentRule,
             ::NoSuspendInsideDatabaseTransactionRule,
             ::PreferConstructorInjectionRule,
-            ::PreferValueOverNameRule,
-            ::ProhibitNonSafeAssertionRule,
-            ::ProhibitPrintlnRule,
             ::RequireUtcTimeRule
         )
     )

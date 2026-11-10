@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshToken
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.token.RefreshTokenHash
 import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 import java.util.Base64
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -14,10 +15,10 @@ import kotlin.uuid.Uuid
  * Default [RefreshTokenProvider] implementation.
  *
  * Token format:
- * - two random UUIDs separated by a dot (`.`) to keep it opaque and hard to guess.
+ * two random UUIDs separated by a dot (`.`) to keep it opaque and hard to guess.
  *
  * Hashing:
- * - SHA-256 digest encoded as Base64 to make storage and transmission safe.
+ * SHA-256 digest encoded as Base64 to make storage and transmission safe.
  */
 @Singleton
 public class RefreshTokenProviderImpl @Inject constructor() : RefreshTokenProvider {
@@ -26,10 +27,14 @@ public class RefreshTokenProviderImpl @Inject constructor() : RefreshTokenProvid
     )
 
     override fun getRefreshTokenHash(refreshToken: RefreshToken): AppResult<RefreshTokenHash> = try {
-        val digest = MessageDigest.getInstance("SHA-256")
+        val digest = MessageDigest.getInstance(ALGORITHM_SHA_256)
         val hash = digest.digest(refreshToken.value.toByteArray())
         AppResult.Success(RefreshTokenHash(Base64.getEncoder().encodeToString(hash)))
-    } catch (e: Exception) {
+    } catch (e: NoSuchAlgorithmException) {
         AppResult.Error(CommonError.Internal(e))
+    }
+
+    private companion object {
+        private const val ALGORITHM_SHA_256 = "SHA-256"
     }
 }

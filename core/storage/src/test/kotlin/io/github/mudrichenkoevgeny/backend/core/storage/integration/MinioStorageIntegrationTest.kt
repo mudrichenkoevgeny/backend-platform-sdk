@@ -11,11 +11,11 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import java.net.URI
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.MinIOContainer
+import java.net.URI
 
 @RequiresDocker
 internal class MinioStorageIntegrationTest {

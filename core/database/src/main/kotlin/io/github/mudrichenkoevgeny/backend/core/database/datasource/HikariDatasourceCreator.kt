@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.database.datasource
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import com.zaxxer.hikari.metrics.micrometer.MicrometerMetricsTrackerFactory
+import com.zaxxer.hikari.pool.HikariPool
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.logs.AppLogger
 import io.github.mudrichenkoevgeny.backend.core.database.di.qualifiers.DriverClassName
@@ -45,7 +46,16 @@ public class HikariDatasourceCreator @Inject constructor(
         dataSource.metricsTrackerFactory = MicrometerMetricsTrackerFactory(prometheusMeterRegistry)
 
         dataSource
-    } catch (e: Exception) {
+    } catch (e: IllegalArgumentException) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
+    } catch (e: IllegalStateException) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
+    } catch (e: HikariPool.PoolInitializationException) {
+        appLogger.logError(CommonError.Internal(e))
+        throw e
+    } catch (e: RuntimeException) {
         appLogger.logError(CommonError.Internal(e))
         throw e
     }

@@ -27,13 +27,17 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
  * Shared use case for changing the password associated with an email-based authentication identifier.
  *
- * Enforces MFA step-up verification, rate limiting, password complexity policies, and old password credential verification.
+ * Enforces MFA step-up verification, rate limiting, password complexity
+ * policies, and old password credential verification.
  */
 @Singleton
 public class IdentifierEmailChangePasswordUseCase @Inject constructor(
@@ -91,59 +95,25 @@ public class IdentifierEmailChangePasswordUseCase @Inject constructor(
             )
         )
 
-        val rateLimitCheck = rateLimiter.checkRateLimit(
-            action = UserRateLimitAction.PASSWORD_CHANGE,
-            identifier = userIdentifierId.asHexDashString()
+        val preChecksResult = performPreChecks(
+            userIdentifierId = userIdentifierId,
+            currentUserId = currentUserId,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditResourceId = auditResourceId,
+            auditMetadata = auditMetadata
         )
-        if (rateLimitCheck is AppResult.Error) {
-            return handleError(
-                error = rateLimitCheck.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
+        if (preChecksResult is AppResult.Error) return preChecksResult
+        val currentUser = (preChecksResult as AppResult.Success).data
 
-        val userResult = userManager.getUserInternalById(currentUserId).mapNotNullOrError(UserError.UserForbidden())
-
-        val currentUser = when (userResult) {
-            is AppResult.Error -> return handleError(
-                error = userResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
-
-            is AppResult.Success -> userResult.data
-        }
-
-        val userSessionResult = sessionManager.getUserSessionInternal(
-            userSessionId = currentSessionId
-        ).mapNotNullOrError(UserError.InvalidSession())
-
-        val currentSession = when (userSessionResult) {
-            is AppResult.Success -> userSessionResult.data
-            is AppResult.Error -> return handleError(
-                error = userSessionResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
-        }
-
-        val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
-            userInternal = currentUser,
-            userSession = currentSession
+        val mfaResult = verifyMfa(
+            currentUser = currentUser,
+            currentSessionId = currentSessionId,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditMetadata = auditMetadata
         )
-        if (ensureSessionConfirmedResult is AppResult.Error) {
-            return handleError(
-                error = ensureSessionConfirmedResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                baseMetadata = auditMetadata
-            )
-        }
+        if (mfaResult is AppResult.Error) return mfaResult
 
         val passwordPolicyCheckResult = validatePasswordUseCase(newPassword)
         if (passwordPolicyCheckResult is AppResult.Error) {
@@ -252,6 +222,76 @@ public class IdentifierEmailChangePasswordUseCase @Inject constructor(
         }
 
         return updateResult
+    }
+
+    private suspend fun performPreChecks(
+        userIdentifierId: UserIdentifierId,
+        currentUserId: UserId,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<UserInternal> {
+        val rateLimitCheck = rateLimiter.checkRateLimit(
+            action = UserRateLimitAction.PASSWORD_CHANGE,
+            identifier = userIdentifierId.asHexDashString()
+        )
+        if (rateLimitCheck is AppResult.Error) {
+            return handleError(rateLimitCheck.error, auditActorId, auditActorUserRole, auditResourceId, auditMetadata)
+        }
+
+        val userResult = userManager.getUserInternalById(currentUserId).mapNotNullOrError(UserError.UserForbidden())
+        val currentUser = when (userResult) {
+            is AppResult.Error -> return handleError(
+                userResult.error,
+                auditActorId,
+                auditActorUserRole,
+                auditResourceId,
+                auditMetadata
+            )
+
+            is AppResult.Success -> userResult.data
+        }
+
+        return AppResult.Success(currentUser)
+    }
+
+    private suspend fun verifyMfa(
+        currentUser: UserInternal,
+        currentSessionId: UserSessionId,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<Unit> {
+        val userSessionResult = sessionManager.getUserSessionInternal(
+            userSessionId = currentSessionId
+        ).mapNotNullOrError(UserError.InvalidSession())
+
+        val currentSession = when (userSessionResult) {
+            is AppResult.Success -> userSessionResult.data
+            is AppResult.Error -> return handleError(
+                userSessionResult.error,
+                auditActorId,
+                auditActorUserRole,
+                null,
+                auditMetadata
+            )
+        }
+
+        val ensureSessionConfirmedResult = authenticationChallengeService.ensureSessionConfirmed(
+            userInternal = currentUser,
+            userSession = currentSession
+        )
+        if (ensureSessionConfirmedResult is AppResult.Error) {
+            return handleError(
+                ensureSessionConfirmedResult.error,
+                auditActorId,
+                auditActorUserRole,
+                null,
+                auditMetadata
+            )
+        }
+        return AppResult.Success(Unit)
     }
 
     private fun <T> handleError(

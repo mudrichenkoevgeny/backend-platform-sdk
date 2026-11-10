@@ -39,18 +39,15 @@ public class GoogleAuthVerifier @Inject constructor(
                 val jwt = authVerifier.verify(token)
                 val payload = jwt.payload
                 val externalId = payload.subject
-                val isEmailVerified = payload.get("email_verified") as? Boolean ?: false
+                val isEmailVerified = payload["email_verified"] as? Boolean ?: false
                 val email = if (isEmailVerified) {
-                    payload.get("email") as? String
+                    payload["email"] as? String
                 } else {
                     null
                 }
 
-                val displayName = (payload.get("name") as? String)?.takeIf { it.isNotBlank() } ?: (
-                    payload.get(
-                        "given_name"
-                    ) as? String
-                    )?.takeIf { it.isNotBlank() }
+                val displayName = (payload["name"] as? String)?.takeIf { it.isNotBlank() }
+                    ?: (payload["given_name"] as? String)?.takeIf { it.isNotBlank() }
 
                 if (externalId == null) {
                     AppResult.Error(UserError.ExternalIdentifierLinkageFailed())
@@ -66,7 +63,9 @@ public class GoogleAuthVerifier @Inject constructor(
                 }
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (e: TokenVerifier.VerificationException) {
+                AppResult.Error(UserError.ExternalIdentifierLinkageFailed(e.message))
+            } catch (e: IllegalArgumentException) {
                 AppResult.Error(UserError.ExternalIdentifierLinkageFailed(e.message))
             }
         }

@@ -26,6 +26,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.SessionPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import javax.inject.Inject
@@ -35,7 +37,9 @@ import kotlin.time.Clock
 /**
  * Management use case for administratively terminating a specific active user session.
  *
- * Enforces authority level hierarchy, rate limiting, and MFA step-up verification before revoking the target session and dispatching WebSocket disconnect frames.
+ * Enforces authority level hierarchy, rate limiting, and MFA step-up
+ * verification before revoking the target session and dispatching
+ * WebSocket disconnect frames.
  */
 @Singleton
 public class ManagementDeleteSessionUseCase @Inject constructor(
@@ -84,6 +88,68 @@ public class ManagementDeleteSessionUseCase @Inject constructor(
 
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata().toMutableSet()
 
+        val checksResult = performPreChecks(
+            managementUserId = managementUserId,
+            userSessionId = userSessionId,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditResourceId = auditResourceId,
+            auditMetadata = auditMetadata
+        )
+        if (checksResult is AppResult.Error) return checksResult
+        val managementUser = (checksResult as AppResult.Success).data
+
+        val mfaResult = verifyMfa(
+            authenticatedRequestContext = authenticatedRequestContext,
+            managementUser = managementUser,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditResourceId = auditResourceId,
+            auditMetadata = auditMetadata
+        )
+        if (mfaResult is AppResult.Error) return mfaResult
+
+        val deleteResult = sessionManager.deleteSessionById(userSessionId)
+
+        return when (deleteResult) {
+            is AppResult.Success -> {
+                webSocketManager.sendMessageToUserSession(
+                    userSessionId = userSessionId,
+                    frame = SocketFrame(
+                        type = UserWebSocketEventTypes.SESSION_DELETED,
+                        payload = null,
+                        metadata = emptyMap(),
+                        timestamp = Clock.System.now().toEpochMilliseconds()
+                    )
+                )
+                logAudit(
+                    status = AuditStatus.SUCCESS,
+                    actorId = auditActorId,
+                    actorUserRole = auditActorUserRole,
+                    resourceId = auditResourceId,
+                    metadata = auditMetadata
+                )
+                deleteResult
+            }
+
+            is AppResult.Error -> handleError(
+                error = deleteResult.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
+                baseMetadata = auditMetadata
+            )
+        }
+    }
+
+    private suspend fun performPreChecks(
+        managementUserId: UserId,
+        userSessionId: UserSessionId,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<UserInternal> {
         val rateLimitCheck = rateLimiter.checkRateLimit(
             action = UserManagementRateLimitAction.MANAGEMENT_SESSION_DELETE,
             identifier = managementUserId.asHexDashString()
@@ -100,7 +166,6 @@ public class ManagementDeleteSessionUseCase @Inject constructor(
 
         val managementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
-
         val managementUser = when (managementUserResult) {
             is AppResult.Success -> managementUserResult.data
             is AppResult.Error -> return handleError(
@@ -128,7 +193,6 @@ public class ManagementDeleteSessionUseCase @Inject constructor(
                 identifier = userSessionId.asHexDashString()
             )
         )
-
         val userSession = when (userSessionResult) {
             is AppResult.Success -> userSessionResult.data
             is AppResult.Error -> return handleError(
@@ -142,7 +206,6 @@ public class ManagementDeleteSessionUseCase @Inject constructor(
 
         val targetUserResult = userManager.getUserInternalById(userSession.userId)
             .mapNotNullOrError(UserError.UserNotFound(userSession.userId))
-
         val targetUser = when (targetUserResult) {
             is AppResult.Success -> targetUserResult.data
             is AppResult.Error -> return handleError(
@@ -203,6 +266,17 @@ public class ManagementDeleteSessionUseCase @Inject constructor(
             )
         }
 
+        return AppResult.Success(managementUser)
+    }
+
+    private suspend fun verifyMfa(
+        authenticatedRequestContext: AuthenticatedRequestContext,
+        managementUser: UserInternal,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<Unit> {
         val managementUserSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
@@ -232,38 +306,7 @@ public class ManagementDeleteSessionUseCase @Inject constructor(
                 baseMetadata = auditMetadata
             )
         }
-
-        val deleteResult = sessionManager.deleteSessionById(userSessionId)
-
-        return when (deleteResult) {
-            is AppResult.Success -> {
-                webSocketManager.sendMessageToUserSession(
-                    userSessionId = userSessionId,
-                    frame = SocketFrame(
-                        type = UserWebSocketEventTypes.SESSION_DELETED,
-                        payload = null,
-                        metadata = emptyMap(),
-                        timestamp = Clock.System.now().toEpochMilliseconds()
-                    )
-                )
-                logAudit(
-                    status = AuditStatus.SUCCESS,
-                    actorId = auditActorId,
-                    actorUserRole = auditActorUserRole,
-                    resourceId = auditResourceId,
-                    metadata = auditMetadata
-                )
-                deleteResult
-            }
-
-            is AppResult.Error -> handleError(
-                error = deleteResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
+        return AppResult.Success(Unit)
     }
 
     private fun <T> handleError(

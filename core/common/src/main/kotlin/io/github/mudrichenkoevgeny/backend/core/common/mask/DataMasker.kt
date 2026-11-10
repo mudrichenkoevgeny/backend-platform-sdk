@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.mask
 import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetAddress
+import java.net.UnknownHostException
 
 /**
  * Utility functions for masking sensitive data (e.g. emails, IP addresses, IDs, phone numbers) in logs.
@@ -117,7 +118,7 @@ public object DataMasker {
 
         val inet = try {
             InetAddress.getByName(host)
-        } catch (e: Exception) {
+        } catch (_: UnknownHostException) {
             null
         } ?: return LARGE_MASK
 

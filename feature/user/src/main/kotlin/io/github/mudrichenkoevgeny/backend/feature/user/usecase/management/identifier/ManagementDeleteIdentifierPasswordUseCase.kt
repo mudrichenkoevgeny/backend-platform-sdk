@@ -27,8 +27,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import javax.inject.Inject
@@ -38,7 +41,8 @@ import kotlin.time.Clock
 /**
  * Management use case for administratively revoking and clearing a user identifier password.
  *
- * Enforces authority level hierarchy, rate limiting, and MFA step-up verification before revoking password credentials and terminating
+ * Enforces authority level hierarchy, rate limiting, and MFA step-up
+ * verification before revoking password credentials and terminating
  * associated sessions.
  */
 @Singleton
@@ -93,6 +97,78 @@ public class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
 
         val auditMetadata = authenticatedRequestContext.clientInfo.toAuditMetadata().toMutableSet()
 
+        val checksResult = performPreChecks(
+            managementUserId = managementUserId,
+            userIdentifierId = userIdentifierId,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditResourceId = auditResourceId,
+            auditMetadata = auditMetadata
+        )
+        if (checksResult is AppResult.Error) return checksResult
+        val (managementUser, targetUser, userIdentifier) = (checksResult as AppResult.Success).data
+
+        val mfaResult = verifyMfa(
+            authenticatedRequestContext = authenticatedRequestContext,
+            managementUser = managementUser,
+            auditActorId = auditActorId,
+            auditActorUserRole = auditActorUserRole,
+            auditResourceId = auditResourceId,
+            auditMetadata = auditMetadata
+        )
+        if (mfaResult is AppResult.Error) return mfaResult
+
+        val sessionsForIdentifier = sessionManager.getUserSessionsInternalListByIdentifierId(
+            userIdentifierId = userIdentifierId,
+            userId = targetUser.id
+        ).dataOrNull() ?: emptyList()
+
+        val clearPasswordResult = identifierManager.clearUserIdentifierPassword(
+            userIdentifier = userIdentifier
+        )
+
+        return when (clearPasswordResult) {
+            is AppResult.Success -> {
+                sessionsForIdentifier.forEach { session ->
+                    sessionManager.deleteSessionById(session.id)
+                    webSocketManager.sendMessageToUserSession(
+                        userSessionId = session.id,
+                        frame = SocketFrame(
+                            type = UserWebSocketEventTypes.SESSION_DELETED,
+                            payload = null,
+                            metadata = emptyMap(),
+                            timestamp = Clock.System.now().toEpochMilliseconds()
+                        )
+                    )
+                }
+                logAudit(
+                    status = AuditStatus.SUCCESS,
+                    actorId = auditActorId,
+                    actorUserRole = auditActorUserRole,
+                    resourceId = auditResourceId,
+                    metadata = auditMetadata
+                )
+                AppResult.Success(Unit)
+            }
+
+            is AppResult.Error -> handleError(
+                error = clearPasswordResult.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
+                baseMetadata = auditMetadata
+            )
+        }
+    }
+
+    private suspend fun performPreChecks(
+        managementUserId: UserId,
+        userIdentifierId: UserIdentifierId,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<Triple<UserInternal, UserInternal, UserIdentifierInternal>> {
         val rateLimitCheck = rateLimiter.checkRateLimit(
             action = UserManagementRateLimitAction.MANAGEMENT_IDENTIFIER_DELETE_PASSWORD,
             identifier = managementUserId.asHexDashString()
@@ -109,7 +185,6 @@ public class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
 
         val managementUserResult = userManager.getUserInternalById(managementUserId)
             .mapNotNullOrError(UserError.UserForbidden())
-
         val managementUser = when (managementUserResult) {
             is AppResult.Success -> managementUserResult.data
             is AppResult.Error -> return handleError(
@@ -137,7 +212,6 @@ public class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
                 identifier = userIdentifierId.asHexDashString()
             )
         )
-
         val userIdentifier = when (userIdentifierResult) {
             is AppResult.Success -> userIdentifierResult.data
             is AppResult.Error -> return handleError(
@@ -151,7 +225,6 @@ public class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
 
         val targetUserResult = userManager.getUserInternalById(userIdentifier.userId)
             .mapNotNullOrError(UserError.UserNotFound(userIdentifier.userId))
-
         val targetUser = when (targetUserResult) {
             is AppResult.Success -> targetUserResult.data
             is AppResult.Error -> return handleError(
@@ -232,6 +305,17 @@ public class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
             )
         }
 
+        return AppResult.Success(Triple(managementUser, targetUser, userIdentifier))
+    }
+
+    private suspend fun verifyMfa(
+        authenticatedRequestContext: AuthenticatedRequestContext,
+        managementUser: UserInternal,
+        auditActorId: String,
+        auditActorUserRole: UserRole,
+        auditResourceId: String,
+        auditMetadata: MutableSet<AuditEventMetadata>
+    ): AppResult<Unit> {
         val managementUserSessionResult = sessionManager.getUserSessionInternal(
             userSessionId = authenticatedRequestContext.sessionId
         ).mapNotNullOrError(UserError.InvalidSession())
@@ -261,48 +345,7 @@ public class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
                 baseMetadata = auditMetadata
             )
         }
-
-        val sessionsForIdentifier = sessionManager.getUserSessionsInternalListByIdentifierId(
-            userIdentifierId = userIdentifierId,
-            userId = targetUser.id
-        ).dataOrNull() ?: emptyList()
-
-        val clearPasswordResult = identifierManager.clearUserIdentifierPassword(
-            userIdentifier = userIdentifier
-        )
-
-        return when (clearPasswordResult) {
-            is AppResult.Success -> {
-                sessionsForIdentifier.forEach { session ->
-                    sessionManager.deleteSessionById(session.id)
-                    webSocketManager.sendMessageToUserSession(
-                        userSessionId = session.id,
-                        frame = SocketFrame(
-                            type = UserWebSocketEventTypes.SESSION_DELETED,
-                            payload = null,
-                            metadata = emptyMap(),
-                            timestamp = Clock.System.now().toEpochMilliseconds()
-                        )
-                    )
-                }
-                logAudit(
-                    status = AuditStatus.SUCCESS,
-                    actorId = auditActorId,
-                    actorUserRole = auditActorUserRole,
-                    resourceId = auditResourceId,
-                    metadata = auditMetadata
-                )
-                AppResult.Success(Unit)
-            }
-
-            is AppResult.Error -> handleError(
-                error = clearPasswordResult.error,
-                actorId = auditActorId,
-                actorUserRole = auditActorUserRole,
-                resourceId = auditResourceId,
-                baseMetadata = auditMetadata
-            )
-        }
+        return AppResult.Success(Unit)
     }
 
     private fun <T> handleError(
