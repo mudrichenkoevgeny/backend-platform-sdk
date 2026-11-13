@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="sample" type="JetRunConfigurationType">
+    <configuration name="sample" default="false" type="JetRunConfigurationType">
         <module name="backend-platform-sdk.sample.main" />
         <option name="MAIN_CLASS_NAME" value="io.github.mudrichenkoevgeny.backend.sample.MainKt" />
         <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />

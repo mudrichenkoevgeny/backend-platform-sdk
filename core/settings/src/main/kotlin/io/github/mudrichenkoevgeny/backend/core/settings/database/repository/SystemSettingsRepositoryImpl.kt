@@ -11,10 +11,10 @@ import org.jetbrains.exposed.v1.jdbc.batchUpsert
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.upsert
-import java.time.Clock
-import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Clock
+import kotlin.time.toJavaInstant
 
 /**
  * Exposed-based implementation of [SystemSettingsRepository] operating on [SystemSettingsTable].
@@ -26,7 +26,7 @@ import javax.inject.Singleton
  */
 @Singleton
 public class SystemSettingsRepositoryImpl @Inject constructor(
-    private val clock: Clock = Clock.systemUTC()
+    private val clock: Clock
 ) : SystemSettingsRepository {
     override suspend fun saveSettings(settings: List<SystemSetting>): AppResult<List<SystemSetting>> {
         if (settings.isEmpty()) {
@@ -34,7 +34,7 @@ public class SystemSettingsRepositoryImpl @Inject constructor(
         }
 
         return try {
-            val now = Instant.now(clock)
+            val now = clock.now().toJavaInstant()
 
             SystemSettingsTable.batchUpsert(
                 data = settings,
@@ -57,7 +57,7 @@ public class SystemSettingsRepositoryImpl @Inject constructor(
     }
 
     override suspend fun saveSetting(setting: SystemSetting): AppResult<SystemSetting> = try {
-        val now = Instant.now(clock)
+        val now = clock.now().toJavaInstant()
 
         SystemSettingsTable.upsert(SystemSettingsTable.key) { row ->
             row[id] = setting.id

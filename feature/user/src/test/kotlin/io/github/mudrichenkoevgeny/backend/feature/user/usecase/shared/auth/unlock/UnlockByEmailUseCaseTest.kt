@@ -33,6 +33,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
 class UnlockByEmailUseCaseTest {
     private val rateLimiter = mockk<RateLimiter>()
@@ -54,7 +55,8 @@ class UnlockByEmailUseCaseTest {
         securitySettingsProvider = securitySettingsProvider,
         identifierManager = identifierManager,
         otpService = otpService,
-        userManager = userManager
+        userManager = userManager,
+        clock = Clock.System
     )
 
     @Test

@@ -1,4 +1,4 @@
-package io.github.mudrichenkoevgeny.backend.tools.detekt
+package io.github.mudrichenkoevgeny.backend.tools.detektrules
 
 import dev.detekt.api.RuleSet
 import dev.detekt.api.RuleSetId

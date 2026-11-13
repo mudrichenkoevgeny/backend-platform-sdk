@@ -54,7 +54,8 @@ public class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
     private val sessionManager: SessionManager,
     private val identifierManager: IdentifierManager,
     private val webSocketManager: WebSocketManager,
-    private val authenticationChallengeService: AuthenticationChallengeService
+    private val authenticationChallengeService: AuthenticationChallengeService,
+    private val clock: Clock
 ) {
     /**
      * Administratively revokes and removes the password credential from a specific user identifier
@@ -137,7 +138,7 @@ public class ManagementDeleteIdentifierPasswordUseCase @Inject constructor(
                             type = UserWebSocketEventTypes.SESSION_DELETED,
                             payload = null,
                             metadata = emptyMap(),
-                            timestamp = Clock.System.now().toEpochMilliseconds()
+                            timestamp = clock.now().toEpochMilliseconds()
                         )
                     )
                 }

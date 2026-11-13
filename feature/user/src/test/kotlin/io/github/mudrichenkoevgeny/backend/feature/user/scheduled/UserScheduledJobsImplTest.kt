@@ -12,6 +12,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.advanceTimeBy
@@ -21,6 +22,7 @@ import kotlin.time.Duration.Companion.seconds
 
 private const val TEST_INTERVAL_SECONDS = 60
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class UserScheduledJobsImplTest {
     private val userManager = mockk<UserManager>()
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()

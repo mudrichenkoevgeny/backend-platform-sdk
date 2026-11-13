@@ -33,7 +33,8 @@ public class DeleteSessionUseCase @Inject constructor(
     private val auditLogger: AuditLogger,
     private val auditErrorConverter: AuditErrorConverter,
     private val sessionManager: SessionManager,
-    private val webSocketManager: WebSocketManager
+    private val webSocketManager: WebSocketManager,
+    private val clock: Clock
 ) {
     /**
      * Deletes a specific user session by its identifier.
@@ -93,7 +94,7 @@ public class DeleteSessionUseCase @Inject constructor(
                         type = UserWebSocketEventTypes.SESSION_DELETED,
                         payload = null,
                         metadata = emptyMap(),
-                        timestamp = Clock.System.now().toEpochMilliseconds()
+                        timestamp = clock.now().toEpochMilliseconds()
                     )
                 )
             }

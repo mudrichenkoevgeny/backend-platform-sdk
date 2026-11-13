@@ -17,7 +17,8 @@ import kotlin.time.Clock
  */
 @Singleton
 public class AuditLoggerImpl @Inject constructor(
-    private val auditService: AuditService
+    private val auditService: AuditService,
+    private val clock: Clock
 ) : AuditLogger {
     override fun log(
         actorId: String?,
@@ -43,7 +44,7 @@ public class AuditLoggerImpl @Inject constructor(
                 status = status,
                 metadata = metadata,
                 message = message,
-                createdAt = Clock.System.now()
+                createdAt = clock.now()
             )
         )
     }

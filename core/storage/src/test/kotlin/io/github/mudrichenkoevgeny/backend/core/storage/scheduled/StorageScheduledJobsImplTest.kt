@@ -11,6 +11,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.advanceTimeBy
@@ -22,6 +23,7 @@ import kotlin.time.Duration.Companion.seconds
 private const val TEST_INTERVAL_SECONDS = 300
 private const val TEST_EXPIRATION_SECONDS = 900
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class StorageScheduledJobsImplTest {
     private val storageManager = mockk<StorageManager>()
     private val storageSettingsProvider = mockk<StorageSettingsProvider>()

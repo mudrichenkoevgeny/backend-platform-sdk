@@ -43,7 +43,8 @@ import kotlin.time.Clock
 public class IdentifierManagerImpl @Inject constructor(
     private val passwordHasher: PasswordHasher,
     private val userManager: UserManager,
-    private val userIdentifierRepository: UserIdentifierRepository
+    private val userIdentifierRepository: UserIdentifierRepository,
+    private val clock: Clock
 ) : IdentifierManager {
     override suspend fun getUserIdentifierInternalByProvider(
         userAuthProvider: UserAuthProvider,
@@ -159,7 +160,7 @@ public class IdentifierManagerImpl @Inject constructor(
                 displayName = displayName,
                 passwordHash = passwordHash,
                 externalProviderEmail = externalProviderEmail,
-                createdAt = Clock.System.now(),
+                createdAt = clock.now(),
                 updatedAt = null
             )
 

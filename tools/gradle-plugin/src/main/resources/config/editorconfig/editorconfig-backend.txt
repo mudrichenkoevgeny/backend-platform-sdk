@@ -1,0 +1,2 @@
+# --- BACKEND OVERRIDES ---
+# Add backend-specific editorconfig rules below

@@ -1,8 +1,8 @@
 plugins {
+    alias(libs.plugins.backend.platform.quality)
+    alias(libs.plugins.backend.platform.kotlin)
+    alias(libs.plugins.backend.platform.publish)
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.shared.foundation.quality)
-    alias(libs.plugins.shared.foundation.kotlin)
-    alias(libs.plugins.shared.foundation.publish)
     alias(libs.plugins.dependency.analysis)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
@@ -77,14 +77,6 @@ dependencies {
     compileOnly(libs.h2database)
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
-
-tasks.withType<dev.detekt.gradle.Detekt>().configureEach {
-    dependsOn(":tools:detekt-rules:jar")
-    pluginClasspath.from(rootProject.project(":tools:detekt-rules").tasks.named("jar"))
-}
 
 dependencyAnalysis {
     issues {

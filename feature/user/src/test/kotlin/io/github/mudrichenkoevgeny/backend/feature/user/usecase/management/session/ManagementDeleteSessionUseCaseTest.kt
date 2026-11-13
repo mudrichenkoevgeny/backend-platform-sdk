@@ -31,6 +31,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
 class ManagementDeleteSessionUseCaseTest {
     private val rateLimiter = mockk<RateLimiter>()
@@ -52,7 +53,8 @@ class ManagementDeleteSessionUseCaseTest {
         userManager = userManager,
         sessionManager = sessionManager,
         webSocketManager = webSocketManager,
-        authenticationChallengeService = authenticationChallengeService
+        authenticationChallengeService = authenticationChallengeService,
+        clock = Clock.System
     )
 
     @Test

@@ -55,7 +55,7 @@ public class HikariDatasourceCreator @Inject constructor(
     } catch (e: HikariPool.PoolInitializationException) {
         appLogger.logError(CommonError.Internal(e))
         throw e
-    } catch (e: RuntimeException) {
+    } catch (@Suppress("TooGenericExceptionCaught") e: RuntimeException) {
         appLogger.logError(CommonError.Internal(e))
         throw e
     }

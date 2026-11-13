@@ -32,6 +32,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
 class ResetPasswordUseCaseTest {
     private val rateLimiter = mockk<RateLimiter>()
@@ -53,7 +54,8 @@ class ResetPasswordUseCaseTest {
         otpService = otpService,
         identifierManager = identifierManager,
         validatePasswordUseCase = validatePasswordUseCase,
-        userManager = userManager
+        userManager = userManager,
+        clock = Clock.System
     )
 
     @Test

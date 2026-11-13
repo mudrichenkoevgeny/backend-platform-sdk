@@ -11,6 +11,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.decodeFromJsonElement
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 /**
@@ -18,7 +19,9 @@ import kotlin.uuid.Uuid
  * such as ping–pong and client initialization.
  */
 @Singleton
-public class CommonWebSocketMessageHandler @Inject constructor() : WebSocketMessageHandler {
+public class CommonWebSocketMessageHandler @Inject constructor(
+    private val clock: Clock
+) : WebSocketMessageHandler {
     override suspend fun handle(
         frame: SocketFrame,
         webSocketSessionContext: WebSocketSessionContext
@@ -36,7 +39,7 @@ public class CommonWebSocketMessageHandler @Inject constructor() : WebSocketMess
             type = CommonWebSocketEventTypes.PONG,
             payload = null,
             metadata = emptyMap(),
-            timestamp = System.currentTimeMillis()
+            timestamp = clock.now().toEpochMilliseconds()
         )
     )
 
@@ -63,7 +66,7 @@ public class CommonWebSocketMessageHandler @Inject constructor() : WebSocketMess
                 type = CommonWebSocketEventTypes.INITIALIZED_SUCCESS,
                 payload = null,
                 metadata = emptyMap(),
-                timestamp = System.currentTimeMillis()
+                timestamp = clock.now().toEpochMilliseconds()
             ),
             payload = payload
         )

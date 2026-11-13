@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
 class ManagementUpdateUserUseCaseTest {
     private val rateLimiter = mockk<RateLimiter>()
@@ -54,7 +55,8 @@ class ManagementUpdateUserUseCaseTest {
         sessionManager = sessionManager,
         webSocketManager = webSocketManager,
         authenticationChallengeService = authenticationChallengeService,
-        userUpdateValidator = userUpdateValidator
+        userUpdateValidator = userUpdateValidator,
+        clock = Clock.System
     )
 
     private val context = createTestAuthenticatedRequestContext()

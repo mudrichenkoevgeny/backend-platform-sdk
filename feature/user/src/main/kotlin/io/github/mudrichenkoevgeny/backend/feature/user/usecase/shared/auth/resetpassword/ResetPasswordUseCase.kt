@@ -27,6 +27,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Clock
 
 /**
  * Shared use case for resetting a user account password using an email OTP verification code.
@@ -41,7 +42,8 @@ public class ResetPasswordUseCase @Inject constructor(
     private val otpService: OtpService,
     private val identifierManager: IdentifierManager,
     private val validatePasswordUseCase: ValidatePasswordUseCase,
-    private val userManager: UserManager
+    private val userManager: UserManager,
+    private val clock: Clock
 ) {
     /**
      * Resets a user's password using an OTP verification code sent to their email.
@@ -151,7 +153,8 @@ public class ResetPasswordUseCase @Inject constructor(
 
         val validateResult = user.validateAccessEligibility(
             allowedRoles,
-            allowedAccountStatuses
+            allowedAccountStatuses,
+            clock
         )
         if (validateResult is AppResult.Error) {
             return handleError(

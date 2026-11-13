@@ -1,7 +1,7 @@
 plugins {
+    alias(libs.plugins.backend.platform.quality)
+    alias(libs.plugins.backend.platform.kotlin)
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.shared.foundation.quality)
-    alias(libs.plugins.shared.foundation.kotlin)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.java.library)
@@ -55,9 +55,6 @@ dependencies {
     testImplementation(libs.exposed.jdbc)
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
 
 tasks.register(
     "copyLibs",

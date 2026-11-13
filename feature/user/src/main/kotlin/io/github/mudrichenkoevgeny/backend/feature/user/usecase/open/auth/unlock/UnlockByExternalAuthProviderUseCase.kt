@@ -28,6 +28,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.r
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import kotlin.time.Clock
+
 /**
  * Open use case for self-service account unlocking via external OAuth2/OIDC provider verification.
  *
@@ -42,7 +44,8 @@ public class UnlockByExternalAuthProviderUseCase @Inject constructor(
     private val authSettingsProvider: AuthSettingsProvider,
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val identifierManager: IdentifierManager,
-    private val userManager: UserManager
+    private val userManager: UserManager,
+    private val clock: Clock
 ) {
     /**
      * Unlocks a temporarily locked user account using an external OAuth2/OIDC provider token.
@@ -155,7 +158,8 @@ public class UnlockByExternalAuthProviderUseCase @Inject constructor(
 
         val validateResult = user.validateAccessEligibility(
             allowedRoles,
-            allowedAccountStatuses
+            allowedAccountStatuses,
+            clock
         )
         if (validateResult is AppResult.Error) {
             return handleError(

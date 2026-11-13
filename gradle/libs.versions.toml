@@ -6,14 +6,14 @@ jvmToolchain = "25"
 targetJvm = "21"
 kotlin = "2.4.21"
 ksp = "2.3.12"
-maven-publish-plugin = "0.37.0"
+maven-publish = "0.37.0"
 dependency-analysis = "3.19.2"
-gradle-versions-plugin = "0.66.0"
+gradle-versions = "0.66.0"
 bcv = "0.18.2"
 dokka = "2.3.0"
 
 # Shared Foundation
-shared-foundation = "0.1.9"
+shared-foundation = "0.1.13"
 
 # Kotlin
 kotlinx-serialization = "1.12.0"
@@ -173,6 +173,14 @@ aws-sdk-core = { group = "software.amazon.awssdk", name = "sdk-core", version.re
 detekt-api = { group = "dev.detekt", name = "detekt-api", version.ref = "detekt" }
 konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
 
+# Gradle Plugins
+detekt-gradle-plugin = { group = "dev.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
+ktlint-gradle-plugin = { group = "org.jlleitschuh.gradle", name = "ktlint-gradle", version.ref = "ktlint" }
+maven-publish-gradle-plugin = { group = "com.vanniktech", name = "gradle-maven-publish-plugin", version.ref = "maven-publish" }
+dokka-gradle-plugin = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "dokka" }
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+shared-foundation-gradle-plugin = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-gradle-plugin", version.ref = "shared-foundation" }
+
 # Testing
 kotlin-test-junit5 = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit5", version.ref = "kotlin" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
@@ -188,20 +196,18 @@ testcontainers-kafka = { group = "org.testcontainers", name = "kafka", version.r
 testcontainers-minio = { group = "org.testcontainers", name = "minio", version.ref = "testcontainers" }
 
 [plugins]
+backend-platform-agent-sync = { id = "io.github.mudrichenkoevgeny.backend-platform-agent-sync" }
+backend-platform-quality = { id = "io.github.mudrichenkoevgeny.backend-platform-quality" }
+backend-platform-kotlin = { id = "io.github.mudrichenkoevgeny.backend-platform-kotlin" }
+backend-platform-publish = { id = "io.github.mudrichenkoevgeny.backend-platform-publish" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 java-library = { id = "java-library" }
-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish-plugin" }
+maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
 dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependency-analysis" }
-gradle-versions-plugin = { id = "io.github.ben-manes.versions", version.ref = "gradle-versions-plugin" }
+gradle-versions-plugin = { id = "io.github.ben-manes.versions", version.ref = "gradle-versions" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
 binary-compatibility-validator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "bcv" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
-
-# Shared Foundation Plugins
-shared-foundation-agent-sync = { id = "io.github.mudrichenkoevgeny.shared-foundation-agent-sync", version.ref = "shared-foundation" }
-shared-foundation-quality = { id = "io.github.mudrichenkoevgeny.shared-foundation-quality", version.ref = "shared-foundation" }
-shared-foundation-kotlin = { id = "io.github.mudrichenkoevgeny.shared-foundation-kotlin", version.ref = "shared-foundation" }
-shared-foundation-publish = { id = "io.github.mudrichenkoevgeny.shared-foundation-publish", version.ref = "shared-foundation" }

@@ -48,6 +48,7 @@ class StorageManagerImplTest {
         storageService = storageService,
         storageConfig = storageConfig,
         httpClientProvider = httpClientProvider,
+        clock = Clock.System,
         scope = testScope
     )
 

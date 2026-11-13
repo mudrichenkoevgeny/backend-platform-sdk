@@ -32,15 +32,17 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
 class UserIdentifierManagerImplTest {
     private val passwordHasher = mockk<PasswordHasher>()
     private val userManager = mockk<UserManager>()
     private val repository = mockk<UserIdentifierRepository>()
     private val manager = IdentifierManagerImpl(
-        passwordHasher,
-        userManager,
-        repository
+        passwordHasher = passwordHasher,
+        userManager = userManager,
+        userIdentifierRepository = repository,
+        clock = Clock.System
     )
 
     private val userId = UserId.generate()

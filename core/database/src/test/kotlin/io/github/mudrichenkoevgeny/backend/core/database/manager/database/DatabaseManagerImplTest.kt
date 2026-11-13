@@ -8,11 +8,11 @@ import io.github.mudrichenkoevgeny.backend.core.database.migrator.DatabaseMigrat
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.flywaydb.core.api.FlywayException
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.flywaydb.core.api.FlywayException
 import javax.sql.DataSource
 
 class DatabaseManagerImplTest {

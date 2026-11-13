@@ -51,7 +51,7 @@ This document is the entry point for architectural and coding standards. These r
 - **Backend Platform (`.agent/global/backend/`):**
   - **`ai-collaboration-backend.md`** — Backend Platform SDK interaction constraints, module mapping, and Dual-Connector port standards.
   - **`docs-kdoc-type-backend.md`** — Specific KDoc patterns for backend server component types (Exposed tables, Dagger modules, Use Cases Section 10).
-  - **`kotlin-testing-backend.md`** — JVM/Backend testing methodology (JUnit 5, MockK, Testcontainers, Exposed/Flyway integration tests).
+  - **`testing-backend.md`** — JVM/Backend testing methodology (JUnit 5, MockK, Testcontainers, Exposed/Flyway integration tests).
 
 ### Local Standards (`.agent/local/`)
 - **`project-overview.md`** — Identity, module boundaries, and consumer SDK relations.

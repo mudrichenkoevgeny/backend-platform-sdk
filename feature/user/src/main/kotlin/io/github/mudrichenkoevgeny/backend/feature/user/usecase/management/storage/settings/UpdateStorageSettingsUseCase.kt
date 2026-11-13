@@ -32,6 +32,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 /**
@@ -48,7 +49,8 @@ public class UpdateStorageSettingsUseCase @Inject constructor(
     private val webSocketManager: WebSocketManager,
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
-    private val authenticationChallengeService: AuthenticationChallengeService
+    private val authenticationChallengeService: AuthenticationChallengeService,
+    private val clock: Clock
 ) {
     /**
      * Updates global storage settings and synchronizes storage policies across all clients.
@@ -141,7 +143,7 @@ public class UpdateStorageSettingsUseCase @Inject constructor(
             metadata = auditMetadata
         )
 
-        val timestamp = System.currentTimeMillis()
+        val timestamp = clock.now().toEpochMilliseconds()
 
         val openSettingsPayload = storageSettingsProvider.getOpenStorageSettings().toOpenStorageSettingsPayload()
         webSocketManager.sendMessageToScope(

@@ -27,6 +27,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Clock
 
 /**
  * Shared use case for unlocking a temporarily locked user account using an email OTP verification code.
@@ -41,7 +42,8 @@ public class UnlockByEmailUseCase @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider,
     private val identifierManager: IdentifierManager,
     private val otpService: OtpService,
-    private val userManager: UserManager
+    private val userManager: UserManager,
+    private val clock: Clock
 ) {
     /**
      * Unlocks a temporarily locked user account using an email confirmation code.
@@ -146,7 +148,8 @@ public class UnlockByEmailUseCase @Inject constructor(
 
         val validateResult = user.validateAccessEligibility(
             allowedRoles,
-            allowedAccountStatuses
+            allowedAccountStatuses,
+            clock
         )
         if (validateResult is AppResult.Error) {
             return handleError(

@@ -31,6 +31,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
 class UpdateGlobalSettingsUseCaseTest {
     private val globalSettingsProvider = mockk<GlobalSettingsProvider>()
@@ -52,7 +53,8 @@ class UpdateGlobalSettingsUseCaseTest {
         webSocketManager,
         userManager,
         sessionManager,
-        authenticationChallengeService
+        authenticationChallengeService,
+        Clock.System
     )
 
     private fun mockMfaCheckSuccess(userId: UserId) {

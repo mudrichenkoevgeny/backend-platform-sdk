@@ -17,6 +17,7 @@ import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.pow
+import kotlin.time.Clock
 
 /**
  * Default [TotpCryptoProcessor] implementation for managing MFA lifecycles.
@@ -28,7 +29,8 @@ import kotlin.math.pow
 @Singleton
 public class TotpCryptoProcessorImpl @Inject constructor(
     private val aesCryptor: AesCryptor,
-    private val securityConfig: SecurityConfig
+    private val securityConfig: SecurityConfig,
+    private val clock: Clock
 ) : TotpCryptoProcessor {
     private val secureRandom = SecureRandom()
     private val issuer: String get() = securityConfig.authRealm
@@ -61,7 +63,7 @@ public class TotpCryptoProcessorImpl @Inject constructor(
     ): AppResult<Boolean> = try {
         aesCryptor.decrypt(encryptedSecret).mapSuccess { decryptedSecret ->
             val secretBytes = Base32.decode(decryptedSecret.value)
-            val counter = System.currentTimeMillis() / MILLIS_PER_SECOND / TIME_STEP_SECONDS
+            val counter = clock.now().toEpochMilliseconds() / MILLIS_PER_SECOND / TIME_STEP_SECONDS
 
             VALIDATION_WINDOW_RANGE.any { window ->
                 generateTotp(

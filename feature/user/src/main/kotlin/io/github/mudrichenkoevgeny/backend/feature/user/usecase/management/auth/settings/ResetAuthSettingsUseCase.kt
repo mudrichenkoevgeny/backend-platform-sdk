@@ -31,6 +31,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.settings.OpenAuthSettingsPayload
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 /**
@@ -47,7 +48,8 @@ public class ResetAuthSettingsUseCase @Inject constructor(
     private val webSocketManager: WebSocketManager,
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
-    private val authenticationChallengeService: AuthenticationChallengeService
+    private val authenticationChallengeService: AuthenticationChallengeService,
+    private val clock: Clock
 ) {
     /**
      * Resets global authentication settings to defaults and notifies all clients of the change.
@@ -135,7 +137,7 @@ public class ResetAuthSettingsUseCase @Inject constructor(
             metadata = auditMetadata
         )
 
-        val timestamp = System.currentTimeMillis()
+        val timestamp = clock.now().toEpochMilliseconds()
 
         val publicAuthSettingPayload = authSettingsProvider.getOpenAuthSettings().toOpenAuthSettingsPayload()
         webSocketManager.sendMessageToScope(

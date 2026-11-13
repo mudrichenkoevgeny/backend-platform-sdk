@@ -32,7 +32,8 @@ class UserValidationTest {
 
         val result = user.validateAccessEligibility(
             defaultAllowedRoles,
-            defaultAllowedStatuses
+            defaultAllowedStatuses,
+            Clock.System
         )
 
         assertTrue(result is AppResult.Success)
@@ -44,7 +45,8 @@ class UserValidationTest {
 
         val result = user.validateAccessEligibility(
             setOf(UserRole.USER),
-            defaultAllowedStatuses
+            defaultAllowedStatuses,
+            Clock.System
         )
 
         assertTrue(result is AppResult.Error)
@@ -62,7 +64,8 @@ class UserValidationTest {
 
         val result = user.validateAccessEligibility(
             defaultAllowedRoles,
-            setOf(UserAccountStatus.ACTIVE)
+            setOf(UserAccountStatus.ACTIVE),
+            Clock.System
         )
 
         assertTrue(result is AppResult.Error)
@@ -80,7 +83,8 @@ class UserValidationTest {
 
         val result = user.validateAccessEligibility(
             defaultAllowedRoles,
-            defaultAllowedStatuses
+            defaultAllowedStatuses,
+            Clock.System
         )
 
         assertTrue(result is AppResult.Error)
@@ -98,7 +102,8 @@ class UserValidationTest {
 
         val result = user.validateAccessEligibility(
             defaultAllowedRoles,
-            defaultAllowedStatuses
+            defaultAllowedStatuses,
+            Clock.System
         )
 
         assertTrue(result is AppResult.Error)
@@ -116,7 +121,8 @@ class UserValidationTest {
 
         val result = user.validateAccessEligibility(
             defaultAllowedRoles,
-            defaultAllowedStatuses
+            defaultAllowedStatuses,
+            Clock.System
         )
 
         assertTrue(result is AppResult.Error)
@@ -138,7 +144,8 @@ class UserValidationTest {
 
         val result = user.validateAccessEligibility(
             defaultAllowedRoles,
-            defaultAllowedStatuses
+            defaultAllowedStatuses,
+            Clock.System
         )
 
         assertTrue(result is AppResult.Error)
@@ -162,7 +169,8 @@ class UserValidationTest {
 
         val result = user.validateAccessEligibility(
             defaultAllowedRoles,
-            defaultAllowedStatuses
+            defaultAllowedStatuses,
+            Clock.System
         )
 
         assertTrue(result is AppResult.Error)
@@ -190,7 +198,8 @@ class UserValidationTest {
 
         val result = user.validateAccessEligibility(
             defaultAllowedRoles,
-            defaultAllowedStatuses
+            defaultAllowedStatuses,
+            Clock.System
         )
 
         assertTrue(result is AppResult.Error)
@@ -214,7 +223,8 @@ class UserValidationTest {
 
         val result = user.validateAccessEligibility(
             defaultAllowedRoles,
-            defaultAllowedStatuses
+            defaultAllowedStatuses,
+            Clock.System
         )
 
         assertTrue(result is AppResult.Success)

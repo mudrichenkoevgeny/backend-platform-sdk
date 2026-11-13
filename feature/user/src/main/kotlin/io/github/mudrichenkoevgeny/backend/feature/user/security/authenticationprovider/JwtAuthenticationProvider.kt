@@ -31,6 +31,8 @@ import io.ktor.server.response.respond
 import javax.inject.Inject
 import javax.inject.Singleton
 
+import kotlin.time.Clock
+
 /**
  * JWT-based implementation of [AuthenticationProvider] for Ktor.
  *
@@ -43,7 +45,8 @@ public class JwtAuthenticationProvider @Inject constructor(
     private val userConfig: UserConfig,
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
-    private val appErrorParser: AppErrorParser
+    private val appErrorParser: AppErrorParser,
+    private val clock: Clock
 ) : AuthenticationProvider {
     override fun configureAuthentication(application: Application) {
         application.install(Authentication) {
@@ -89,7 +92,7 @@ public class JwtAuthenticationProvider @Inject constructor(
                     ) {
                         try {
                             val jwt = JWT.decode(authHeader.blob)
-                            if (jwt.expiresAt != null && jwt.expiresAt.time < System.currentTimeMillis()) {
+                            if (jwt.expiresAt != null && jwt.expiresAt.time < clock.now().toEpochMilliseconds()) {
                                 isExpired = true
                             }
                         } catch (_: Exception) {
@@ -140,7 +143,8 @@ public class JwtAuthenticationProvider @Inject constructor(
 
         val validateResult = user.validateAccessEligibility(
             allowedRoles,
-            allowedAccountStatuses
+            allowedAccountStatuses,
+            clock
         )
         if (validateResult is AppResult.Error) {
             return AppResult.Error(validateResult.error)

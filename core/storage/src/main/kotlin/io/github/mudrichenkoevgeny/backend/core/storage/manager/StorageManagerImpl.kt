@@ -52,6 +52,7 @@ public class StorageManagerImpl @Inject constructor(
     private val storageService: StorageService,
     private val storageConfig: StorageConfig,
     private val httpClientProvider: HttpClientProvider,
+    private val clock: Clock,
     @param:BackgroundScope private val scope: CoroutineScope
 ) : StorageManager {
     private val httpClient by lazy { httpClientProvider.create(HttpClientSettings()) }
@@ -83,7 +84,7 @@ public class StorageManagerImpl @Inject constructor(
             return@dbQuery limitsResult
         }
 
-        val now = Clock.System.now()
+        val now = clock.now()
         val fileId = FileId.generate()
         val s3Key = "${now.epochSeconds}/${fileId.value}"
 
@@ -446,7 +447,7 @@ public class StorageManagerImpl @Inject constructor(
     override suspend fun processExpiredPendingUploads(batchSize: Int?): AppResult<Int> = dbQuery {
         val effectiveBatchSize = batchSize ?: storageConfig.maintenanceBatchSize
         val expirationSeconds = settingsProvider.getPresignedUrlExpirationSeconds()
-        val createdBefore = Clock.System.now() - expirationSeconds.seconds
+        val createdBefore = clock.now() - expirationSeconds.seconds
 
         val filesResult = filesRepository.getExpiredPendingUploadFiles(
             createdBefore = createdBefore,

@@ -90,6 +90,7 @@ public class SessionManagerImpl @Inject constructor(
     private val redisManager: RedisManager,
     private val auditLogger: AuditLogger,
     private val userRepository: UserRepository,
+    private val clock: Clock,
     @param:BackgroundScope private val scope: CoroutineScope
 ) : SessionManager {
     override suspend fun createSession(
@@ -145,7 +146,7 @@ public class SessionManagerImpl @Inject constructor(
     ): AppResult<SessionToken> = dbQuery {
         val userSessionId = UserSessionId.generate()
 
-        val now = Clock.System.now()
+        val now = clock.now()
         val accessExpiry = now + authSettingsProvider.getAccessTokenExpirationSeconds().seconds
         val refreshExpiry = now + authSettingsProvider.getRefreshTokenExpirationSeconds().seconds
 
@@ -301,7 +302,7 @@ public class SessionManagerImpl @Inject constructor(
             is AppResult.Error -> return@dbQuery currentUserSessionResult
         }
 
-        val now = Clock.System.now()
+        val now = clock.now()
 
         val isSessionValid = currentUserSession?.isValid(
             clientDeviceId = clientInfo.clientDeviceInfo.deviceId,
@@ -319,7 +320,8 @@ public class SessionManagerImpl @Inject constructor(
 
             val validateResult = user.validateAccessEligibility(
                 allowedRoles,
-                allowedAccountStatuses
+                allowedAccountStatuses,
+                clock
             )
             if (validateResult is AppResult.Error) {
                 return@dbQuery validateResult

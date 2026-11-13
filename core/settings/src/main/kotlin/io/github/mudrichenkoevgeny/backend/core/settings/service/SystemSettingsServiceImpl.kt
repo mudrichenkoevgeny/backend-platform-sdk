@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.concurrent.atomics.AtomicBoolean
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.uuid.Uuid
 
 /**
@@ -35,11 +36,13 @@ public class SystemSettingsServiceImpl @Inject constructor(
     private val redisManager: RedisManager,
     @param:BackgroundScope private val scope: CoroutineScope
 ) : SystemSettingsService {
+    @OptIn(ExperimentalAtomicApi::class)
     private val isSubscribed = AtomicBoolean(false)
     private val instanceId = Uuid.random().toHexDashString()
     private val cache = ConcurrentHashMap<String, SystemSetting>()
     private val reloadMutex = Mutex()
 
+    @OptIn(ExperimentalAtomicApi::class)
     override suspend fun initialize(): AppResult<Unit> {
         val result = systemSettingsManager.getAllSettings()
 

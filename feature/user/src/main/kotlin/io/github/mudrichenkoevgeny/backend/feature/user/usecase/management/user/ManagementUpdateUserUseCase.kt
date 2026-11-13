@@ -53,7 +53,8 @@ public class ManagementUpdateUserUseCase @Inject constructor(
     private val sessionManager: SessionManager,
     private val webSocketManager: WebSocketManager,
     private val authenticationChallengeService: AuthenticationChallengeService,
-    private val userUpdateValidator: UserUpdateValidator
+    private val userUpdateValidator: UserUpdateValidator,
+    private val clock: Clock
 ) {
     /**
      * Updates account status, authority level, permissions, or profile details for a target user.
@@ -159,7 +160,7 @@ public class ManagementUpdateUserUseCase @Inject constructor(
                             type = UserWebSocketEventTypes.USER_UPDATED,
                             payload = null,
                             metadata = emptyMap(),
-                            timestamp = Clock.System.now().toEpochMilliseconds()
+                            timestamp = clock.now().toEpochMilliseconds()
                         )
                     )
                 }

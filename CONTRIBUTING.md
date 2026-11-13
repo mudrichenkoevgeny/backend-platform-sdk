@@ -56,6 +56,37 @@ The report will display outdated milestone and release versions in the console a
 
 The project utilizes the `com.vanniktech.maven.publish` plugin for artifact management.
 
+### 1. Local Maven Deployment (`mavenLocal`)
+
+Because `tools/gradle-plugin` is configured as an included build (`includeBuild`), running a plain `./gradlew publishToMavenLocal` only publishes library artifacts (`backend-platform-sdk-bom`, `core-*`, `feature-*`, `detekt-rules`). To publish both libraries and Gradle convention plugins to your machine's local Maven cache (`~/.m2/repository/`), specify both task targets in a single command:
+
+1. **Publish all libraries and Gradle convention plugins:**
+   ```bash
+   ./gradlew publishToMavenLocal
+   ./gradlew -p tools/gradle-plugin publishToMavenLocal
+   ```
+
+2. **Connect in consumer projects:**
+   Add `mavenLocal()` to both `pluginManagement` (for convention plugins) and `dependencyResolutionManagement` (for library artifacts) in your consumer project's `settings.gradle.kts`:
+   ```kotlin
+   pluginManagement {
+       repositories {
+           mavenLocal() // Required for backend-platform Gradle convention plugins
+           gradlePluginPortal()
+           google()
+           mavenCentral()
+       }
+   }
+
+   dependencyResolutionManagement {
+       repositories {
+           mavenLocal() // Required for backend-platform library artifacts (BOM, core-*, feature-*)
+           mavenCentral()
+           google()
+       }
+   }
+   ```
+
 ### 1. Remote Staging
 Uploads all publications to the remote staging repository (Maven Central) without performing a final release. Use this for manual verification in the repository manager:
 
@@ -74,21 +105,31 @@ Performs a complete deployment workflow, including uploading, closing the stagin
 
 To test a locally built version of the `shared-foundation` KMP library in this project:
 
-### 1. Publish Shared Library to Local Maven Cache
-In the `shared-foundation` project repository, run:
+### 1. Publish Shared Library and Plugins to Local Maven Cache
+Because `shared-foundation` also uses an included build (`tools/gradle-plugin`) for its Gradle plugins, publish both library artifacts and Gradle convention plugins in the `shared-foundation` project repository:
 
 ```bash
-./gradlew publishToMavenLocal
+./gradlew publishToMavenLocal :shared-foundation-gradle-plugin:publishToMavenLocal
 ```
 
 ### 2. Connect in Consumer Project (`backend-platform-sdk`)
-1. Ensure `mavenLocal()` is declared at the top of `dependencyResolutionManagement.repositories` in [settings.gradle.kts](file:///C:/Users/Loop/IdeaProjects/backend-platform-sdk/settings.gradle.kts):
+1. Ensure `mavenLocal()` is declared in both `pluginManagement` and `dependencyResolutionManagement` in [settings.gradle.kts](file:///C:/Users/Loop/IdeaProjects/backend-platform-sdk/settings.gradle.kts):
    ```kotlin
+   pluginManagement {
+       repositories {
+           mavenLocal()
+           gradlePluginPortal()
+           google()
+           mavenCentral()
+       }
+   }
+
    dependencyResolutionManagement {
        repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
        repositories {
            mavenLocal()
            mavenCentral()
+           google()
        }
    }
    ```
@@ -96,4 +137,3 @@ In the `shared-foundation` project repository, run:
    ```bash
    ./gradlew build --refresh-dependencies
    ```
-

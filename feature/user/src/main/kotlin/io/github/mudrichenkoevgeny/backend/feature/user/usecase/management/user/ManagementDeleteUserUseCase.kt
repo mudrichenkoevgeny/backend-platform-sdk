@@ -47,7 +47,8 @@ public class ManagementDeleteUserUseCase @Inject constructor(
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
     private val webSocketManager: WebSocketManager,
-    private val authenticationChallengeService: AuthenticationChallengeService
+    private val authenticationChallengeService: AuthenticationChallengeService,
+    private val clock: Clock
 ) {
     /**
      * Permanently deletes a user account and terminates all associated active sessions.
@@ -128,7 +129,7 @@ public class ManagementDeleteUserUseCase @Inject constructor(
                             type = UserWebSocketEventTypes.SESSION_DELETED,
                             payload = null,
                             metadata = emptyMap(),
-                            timestamp = Clock.System.now().toEpochMilliseconds()
+                            timestamp = clock.now().toEpochMilliseconds()
                         )
                     )
                 }

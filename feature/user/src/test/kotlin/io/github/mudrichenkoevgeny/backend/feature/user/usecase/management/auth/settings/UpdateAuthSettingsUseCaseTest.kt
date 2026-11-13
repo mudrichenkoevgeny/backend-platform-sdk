@@ -31,6 +31,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
 class UpdateAuthSettingsUseCaseTest {
     private val authSettingsProvider = mockk<AuthSettingsProvider>()
@@ -52,7 +53,8 @@ class UpdateAuthSettingsUseCaseTest {
         webSocketManager = webSocketManager,
         userManager = userManager,
         sessionManager = sessionManager,
-        authenticationChallengeService = authenticationChallengeService
+        authenticationChallengeService = authenticationChallengeService,
+        clock = Clock.System
     )
 
     private fun mockMfaCheckSuccess(userId: UserId) {

@@ -16,10 +16,11 @@ import kotlinx.serialization.json.buildJsonObject
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 import kotlin.uuid.Uuid
 
 class CommonWebSocketMessageHandlerTest {
-    private val handler = CommonWebSocketMessageHandler()
+    private val handler = CommonWebSocketMessageHandler(clock = Clock.System)
     private val dummyContext = WebSocketSessionContext(
         socketSessionId = "socket-1",
         apiScope = ApiScope.OPEN,

@@ -14,7 +14,8 @@ import kotlin.time.Clock
  */
 public fun UserInternal.validateAccessEligibility(
     allowedRoles: Set<UserRole>,
-    allowedAccountStatuses: Set<UserAccountStatus>
+    allowedAccountStatuses: Set<UserAccountStatus>,
+    clock: Clock
 ): AppResult<Unit> {
     if (this.role !in allowedRoles) {
         return AppResult.Error(UserError.UserRoleNotAllowed(userId = this.id))
@@ -41,7 +42,7 @@ public fun UserInternal.validateAccessEligibility(
     }
 
     if (this.lockoutType == AccountLockoutType.TEMPORARY) {
-        val now = Clock.System.now()
+        val now = clock.now()
         val temporaryLockoutUntil = this.temporaryLockoutUntil
         if (temporaryLockoutUntil == null || now < temporaryLockoutUntil) {
             return AppResult.Error(

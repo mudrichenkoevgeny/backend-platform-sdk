@@ -87,6 +87,7 @@ class SessionManagerImplTest {
         redisManager = redisManager,
         auditLogger = auditLogger,
         userRepository = userRepository,
+        clock = Clock.System,
         scope = CoroutineScope(Dispatchers.Unconfined)
     )
 

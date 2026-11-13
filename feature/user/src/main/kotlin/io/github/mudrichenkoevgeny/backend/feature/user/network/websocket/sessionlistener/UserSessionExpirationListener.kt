@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.Uuid
 
@@ -29,7 +30,8 @@ import kotlin.uuid.Uuid
  */
 @Singleton
 public class UserSessionExpirationListener @Inject constructor(
-    @param:BackgroundScope private val scope: CoroutineScope
+    @param:BackgroundScope private val scope: CoroutineScope,
+    private val clock: Clock
 ) : WebSocketSessionListener {
     private val expirationJobs = ConcurrentHashMap<String, Job>()
 
@@ -44,7 +46,7 @@ public class UserSessionExpirationListener @Inject constructor(
         }
 
         val socketId = context.socketSessionId
-        val currentTimestamp = System.currentTimeMillis()
+        val currentTimestamp = clock.now().toEpochMilliseconds()
         val delayTime = (expiresAt - currentTimestamp) - TOKEN_EXPIRATION_BUFFER_MS
 
         expirationJobs[socketId] = scope.launch {
@@ -52,7 +54,7 @@ public class UserSessionExpirationListener @Inject constructor(
                 delay(delayTime.milliseconds)
             }
 
-            val messageTimestamp = System.currentTimeMillis()
+            val messageTimestamp = clock.now().toEpochMilliseconds()
             webSocketManager.sendMessageToSocket(
                 socketId,
                 SocketFrame(

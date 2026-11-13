@@ -44,7 +44,8 @@ public class ManagementDeleteAllSessionsUseCase @Inject constructor(
     private val userManager: UserManager,
     private val sessionManager: SessionManager,
     private val webSocketManager: WebSocketManager,
-    private val authenticationChallengeService: AuthenticationChallengeService
+    private val authenticationChallengeService: AuthenticationChallengeService,
+    private val clock: Clock
 ) {
     /**
      * Administratively deletes all active sessions for a specific user and notifies each client via WebSocket.
@@ -217,7 +218,7 @@ public class ManagementDeleteAllSessionsUseCase @Inject constructor(
                             type = UserWebSocketEventTypes.SESSION_DELETED,
                             payload = null,
                             metadata = emptyMap(),
-                            timestamp = Clock.System.now().toEpochMilliseconds()
+                            timestamp = clock.now().toEpochMilliseconds()
                         )
                     )
                 }

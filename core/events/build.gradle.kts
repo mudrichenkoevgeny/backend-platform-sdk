@@ -1,8 +1,8 @@
 plugins {
+    alias(libs.plugins.backend.platform.quality)
+    alias(libs.plugins.backend.platform.kotlin)
+    alias(libs.plugins.backend.platform.publish)
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.shared.foundation.quality)
-    alias(libs.plugins.shared.foundation.kotlin)
-    alias(libs.plugins.shared.foundation.publish)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.java.library)
@@ -43,6 +43,3 @@ dependencies {
     testImplementation(libs.testcontainers.junit.jupiter)
 }
 
-tasks.test {
-    useJUnitPlatform()
-}

@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
 class AuthManagerImplTest {
     private val userManager = mockk<UserManager>()
@@ -53,7 +54,8 @@ class AuthManagerImplTest {
         webSocketManager,
         lockoutManager,
         userLockoutService,
-        mfaService
+        mfaService,
+        Clock.System
     )
 
     @BeforeEach

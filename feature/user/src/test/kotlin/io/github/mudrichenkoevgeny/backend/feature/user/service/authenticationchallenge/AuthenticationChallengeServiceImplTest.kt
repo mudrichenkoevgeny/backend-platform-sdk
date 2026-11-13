@@ -28,7 +28,11 @@ import kotlin.time.Instant
 class AuthenticationChallengeServiceImplTest {
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val mfaService = mockk<MfaService>()
-    private val service = AuthenticationChallengeServiceImpl(securitySettingsProvider, mfaService)
+    private val service = AuthenticationChallengeServiceImpl(
+        securitySettingsProvider = securitySettingsProvider,
+        mfaService = mfaService,
+        clock = Clock.System
+    )
 
     private val testMfaToken = "test-token"
     private val validityUser = 60

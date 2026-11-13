@@ -19,7 +19,8 @@ import kotlin.time.Instant
 @Singleton
 public class LockoutManagerImpl @Inject constructor(
     private val redisManager: RedisManager,
-    private val securitySettingsProvider: SecuritySettingsProvider
+    private val securitySettingsProvider: SecuritySettingsProvider,
+    private val clock: Clock
 ) : LockoutManager {
     override suspend fun recordFailedAttempt(
         identifier: String,
@@ -48,7 +49,7 @@ public class LockoutManagerImpl @Inject constructor(
 
         if (currentCount >= maxAttempts) {
             val lockoutDurationSeconds = policy.lockoutDurationSeconds.toLong()
-            val lockoutUntil = Clock.System.now() + lockoutDurationSeconds.seconds
+            val lockoutUntil = clock.now() + lockoutDurationSeconds.seconds
             val lockoutKey = buildLockoutKey(identifier)
 
             val setLockoutResult = redisManager.setWithExpiration(
@@ -108,7 +109,7 @@ public class LockoutManagerImpl @Inject constructor(
             return AppResult.Success(null)
         }
 
-        val lockoutUntil = Clock.System.now() + ttl.seconds
+        val lockoutUntil = clock.now() + ttl.seconds
         return AppResult.Success(lockoutUntil)
     }
 

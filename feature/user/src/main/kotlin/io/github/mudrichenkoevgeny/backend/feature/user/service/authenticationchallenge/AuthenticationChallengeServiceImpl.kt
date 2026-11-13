@@ -21,7 +21,8 @@ import kotlin.time.Instant
 @Singleton
 public class AuthenticationChallengeServiceImpl @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider,
-    private val mfaService: MfaService
+    private val mfaService: MfaService,
+    private val clock: Clock
 ) : AuthenticationChallengeService {
     override suspend fun ensureSessionConfirmed(
         userInternal: UserInternal,
@@ -64,7 +65,7 @@ public class AuthenticationChallengeServiceImpl @Inject constructor(
     ): Boolean {
         val at = lastReauthenticatedAt ?: return false
         val validityEnd = at + validitySeconds.seconds
-        return validityEnd > Clock.System.now()
+        return validityEnd > clock.now()
     }
 
     private suspend fun createChallenge(

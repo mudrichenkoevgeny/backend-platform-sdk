@@ -1,6 +1,6 @@
 plugins {
     `java-platform`
-    alias(libs.plugins.shared.foundation.publish)
+    alias(libs.plugins.backend.platform.publish)
 }
 
 dependencies {

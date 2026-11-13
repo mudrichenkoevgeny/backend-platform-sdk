@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
 class TotpCryptoProcessorImplTest {
     private val aesCryptor = mockk<AesCryptor>()
@@ -27,8 +28,9 @@ class TotpCryptoProcessorImplTest {
     @BeforeEach
     fun setup() {
         processor = TotpCryptoProcessorImpl(
-            aesCryptor,
-            securityConfig
+            aesCryptor = aesCryptor,
+            securityConfig = securityConfig,
+            clock = Clock.System
         )
     }
 

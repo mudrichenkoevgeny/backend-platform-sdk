@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.di
 import dagger.Module
 import io.github.mudrichenkoevgeny.backend.core.common.di.module.AppErrorParserModule
 import io.github.mudrichenkoevgeny.backend.core.common.di.module.AppLoggerModule
+import io.github.mudrichenkoevgeny.backend.core.common.di.module.ClockModule
 import io.github.mudrichenkoevgeny.backend.core.common.di.module.CommonConfigModule
 import io.github.mudrichenkoevgeny.backend.core.common.di.module.EnvModule
 import io.github.mudrichenkoevgeny.backend.core.common.di.module.SwaggerModule
@@ -18,6 +19,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.di.qualifiers.BackgroundS
 @Module(
     includes = [
         EnvModule::class,
+        ClockModule::class,
         CommonConfigModule::class,
         AppErrorParserModule::class,
         AppLoggerModule::class,

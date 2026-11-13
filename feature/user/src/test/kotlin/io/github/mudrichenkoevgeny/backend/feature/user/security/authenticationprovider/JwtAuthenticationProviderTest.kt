@@ -56,7 +56,8 @@ class JwtAuthenticationProviderTest {
             userConfig,
             userManager,
             sessionManager,
-            appErrorParser
+            appErrorParser,
+            Clock.System
         )
         mockkStatic("io.github.mudrichenkoevgeny.backend.feature.user.security.jwt.JwtUtilsKt")
     }

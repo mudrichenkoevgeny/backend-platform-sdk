@@ -14,10 +14,14 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
 class AuditLoggerImplTest {
     private val auditService: AuditService = mockk(relaxed = true)
-    private val logger = AuditLoggerImpl(auditService = auditService)
+    private val logger = AuditLoggerImpl(
+        auditService = auditService,
+        clock = Clock.System
+    )
 
     @Test
     fun `log builds AuditEventInternal and forwards to auditService`() {

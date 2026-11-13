@@ -37,10 +37,11 @@ class UserManagerImplTest {
     private val lockoutManager = mockk<LockoutManager>(relaxed = true)
     private val storageManager = mockk<StorageManager>(relaxed = true)
     private val userManager = UserManagerImpl(
-        userRepository,
-        authSettingsProvider,
-        lockoutManager,
-        storageManager
+        userRepository = userRepository,
+        authSettingsProvider = authSettingsProvider,
+        lockoutManager = lockoutManager,
+        storageManager = storageManager,
+        clock = Clock.System
     )
 
     private val userId = UserId.generate()

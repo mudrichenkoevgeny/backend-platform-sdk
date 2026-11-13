@@ -7,17 +7,23 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contra
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class UserSessionExpirationListenerTest {
     private val dispatcher = StandardTestDispatcher()
     private val scope = TestScope(dispatcher)
 
-    private val listener = UserSessionExpirationListener(scope = scope)
+    private val listener = UserSessionExpirationListener(
+        scope = scope,
+        clock = Clock.System
+    )
 
     @Test
     fun `onSessionRegistered sends unauthorized then disconnects after expiration`() = scope.runTest {

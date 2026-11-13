@@ -39,7 +39,8 @@ public class UserManagerImpl @Inject constructor(
     private val userRepository: UserRepository,
     private val authSettingsProvider: AuthSettingsProvider,
     private val lockoutManager: LockoutManager,
-    private val storageManager: StorageManager
+    private val storageManager: StorageManager,
+    private val clock: Clock
 ) : UserManager {
     override suspend fun getUserInternalById(userId: UserId): AppResult<UserInternal?> = dbQuery {
         val userResult = userRepository.getUserInternalById(userId)
@@ -53,7 +54,7 @@ public class UserManagerImpl @Inject constructor(
     override suspend fun createUser(
         createUserAccountParams: CreateUserAccountParams
     ): AppResult<UserInternal> = dbQuery {
-        val now = Clock.System.now()
+        val now = clock.now()
 
         val user = UserInternal(
             id = UserId.generate(),
@@ -264,11 +265,11 @@ public class UserManagerImpl @Inject constructor(
     }
 
     override suspend fun deleteUsersDueForPermanentDeletion(): AppResult<Int> = dbQuery {
-        userRepository.deleteUsersDueForPermanentDeletion(Clock.System.now())
+        userRepository.deleteUsersDueForPermanentDeletion(clock.now())
     }
 
     override suspend fun unlockExpiredAccountLockouts(): AppResult<Int> = dbQuery {
-        val expiredUsersResult = userRepository.getExpiredTemporaryLockouts(Clock.System.now())
+        val expiredUsersResult = userRepository.getExpiredTemporaryLockouts(clock.now())
         val userIds = when (expiredUsersResult) {
             is AppResult.Success -> expiredUsersResult.data
             is AppResult.Error -> return@dbQuery expiredUsersResult
@@ -333,7 +334,7 @@ public class UserManagerImpl @Inject constructor(
         }
 
         if (user.lockoutType == AccountLockoutType.TEMPORARY) {
-            val now = Clock.System.now()
+            val now = clock.now()
             val tempUntil = user.temporaryLockoutUntil
             if (tempUntil != null && now >= tempUntil) {
                 return user.copy(
@@ -360,5 +361,5 @@ public class UserManagerImpl @Inject constructor(
     }
 
     private fun getScheduledPermanentDeletionAt(): Instant =
-        Clock.System.now() + authSettingsProvider.getAccountDeletionGracePeriodSeconds().seconds
+        clock.now() + authSettingsProvider.getAccountDeletionGracePeriodSeconds().seconds
 }

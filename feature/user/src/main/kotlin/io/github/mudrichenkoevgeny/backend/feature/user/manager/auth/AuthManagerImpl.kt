@@ -61,7 +61,8 @@ public class AuthManagerImpl @Inject constructor(
     private val webSocketManager: WebSocketManager,
     private val lockoutManager: LockoutManager,
     private val userLockoutService: UserLockoutService,
-    private val mfaService: MfaService
+    private val mfaService: MfaService,
+    private val clock: Clock
 ) : AuthManager {
     override suspend fun authenticateOrCreateUser(
         clientInfo: ClientInfo,
@@ -515,7 +516,8 @@ public class AuthManagerImpl @Inject constructor(
 
         val validateResult = user.validateAccessEligibility(
             allowedRoles,
-            allowedAccountStatuses
+            allowedAccountStatuses,
+            clock
         )
         if (validateResult is AppResult.Error) {
             return AppResult.Error(validateResult.error)
@@ -546,7 +548,7 @@ public class AuthManagerImpl @Inject constructor(
             identifierDisplayName = userIdentifier.displayName,
             identifierAuthProvider = userIdentifier.userAuthProvider,
             clientInfo = clientInfo,
-            lastReauthenticatedAt = Clock.System.now()
+            lastReauthenticatedAt = clock.now()
         )
         val sessionToken = when (sessionTokenResult) {
             is AppResult.Success -> sessionTokenResult.data
@@ -600,7 +602,7 @@ public class AuthManagerImpl @Inject constructor(
         userIdentifier: UserIdentifierInternal
     ) {
         if (user.lockoutType == AccountLockoutType.TEMPORARY) {
-            val now = Clock.System.now()
+            val now = clock.now()
             val temporaryLockoutUntil = user.temporaryLockoutUntil
             if (temporaryLockoutUntil != null && now >= temporaryLockoutUntil) {
                 userManager.unlockUserAccount(
@@ -627,7 +629,7 @@ public class AuthManagerImpl @Inject constructor(
                         userSessionId = oldSession.id,
                         frame = SocketFrame(
                             type = UserWebSocketEventTypes.SESSION_DELETED,
-                            timestamp = Clock.System.now().toEpochMilliseconds(),
+                            timestamp = clock.now().toEpochMilliseconds(),
                             payload = null,
                             metadata = emptyMap()
                         )
@@ -656,7 +658,7 @@ public class AuthManagerImpl @Inject constructor(
                     userSessionId = deletedSessionResult.data,
                     frame = SocketFrame(
                         type = UserWebSocketEventTypes.SESSION_DELETED,
-                        timestamp = Clock.System.now().toEpochMilliseconds(),
+                        timestamp = clock.now().toEpochMilliseconds(),
                         payload = null,
                         metadata = emptyMap()
                     )

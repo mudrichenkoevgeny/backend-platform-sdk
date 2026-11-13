@@ -16,13 +16,15 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import kotlin.time.Clock
 
 class LockoutManagerImplTest {
     private val redisManager = mockk<RedisManager>()
     private val securitySettingsProvider = mockk<SecuritySettingsProvider>()
     private val lockoutManager = LockoutManagerImpl(
-        redisManager,
-        securitySettingsProvider
+        redisManager = redisManager,
+        securitySettingsProvider = securitySettingsProvider,
+        clock = Clock.System
     )
 
     private val testPolicy = createTestAccountLockoutPolicy()

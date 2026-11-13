@@ -1,0 +1,42 @@
+comments:
+  UndocumentedPublicClass:
+    excludes:
+      - '**/*Test*.kt'
+      - '**/*Test*/**'
+      - '**/testing/**'
+      - '**/testFixtures/**'
+      - '**/tools/**'
+      - '**/sample/**'
+      - '**/di/**'
+      - '**/*Module.kt'
+      - '**/*Component.kt'
+  UndocumentedPublicFunction:
+    excludes:
+      - '**/*Test*.kt'
+      - '**/*Test*/**'
+      - '**/testing/**'
+      - '**/testFixtures/**'
+      - '**/tools/**'
+      - '**/sample/**'
+      - '**/di/**'
+      - '**/*Module.kt'
+      - '**/*Component.kt'
+
+backend-rules:
+  active: true
+  KtorConsistentRoutePermissions:
+    active: true
+  KtorDelegatedRouteHandler:
+    active: true
+  KtorRoutePathConstant:
+    active: true
+  KtorStrictRouteDefinition:
+    active: true
+  NoDirectSystemEnv:
+    active: true
+  NoSuspendInsideDatabaseTransaction:
+    active: true
+  PreferConstructorInjection:
+    active: true
+  RequireUtcTime:
+    active: true

@@ -75,5 +75,8 @@ ij_formatter_enabled = false
 [*.json]
 indent_size = 2
 
+# --- BACKEND OVERRIDES ---
+# Add backend-specific editorconfig rules below
+
 # --- LOCAL OVERRIDES ---
 # Add project-specific editorconfig rules below
