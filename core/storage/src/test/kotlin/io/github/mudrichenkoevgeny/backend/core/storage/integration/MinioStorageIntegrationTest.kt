@@ -15,13 +15,15 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.testcontainers.containers.MinIOContainer
+import org.testcontainers.utility.DockerImageName
 import java.net.URI
 
 @RequiresDocker
 internal class MinioStorageIntegrationTest {
     @Test
     fun `s3 storage service should perform object lifecycle operations on minio`() {
-        MinIOContainer(MINIO_IMAGE).use { minio ->
+        val minioImage = DockerImageName.parse(MINIO_IMAGE).asCompatibleSubstituteFor("minio/minio")
+        MinIOContainer(minioImage).use { minio ->
             minio.withUserName(ACCESS_KEY)
             minio.withPassword(SECRET_KEY)
             minio.start()
@@ -173,7 +175,7 @@ internal class MinioStorageIntegrationTest {
     }
 
     private companion object {
-        private const val MINIO_IMAGE = "minio/minio:RELEASE.2024-01-16T16-07-38Z"
+        private const val MINIO_IMAGE = "minio/minio:RELEASE.2023-09-04T19-57-37Z"
         private const val ACCESS_KEY = "minioadmin"
         private const val SECRET_KEY = "minioadmin"
         private const val PUBLIC_BUCKET = "test-public-bucket"
