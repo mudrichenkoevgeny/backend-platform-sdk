@@ -14,10 +14,15 @@ public class BackendKotlinConventionPlugin : Plugin<Project> {
      * @param target The target Gradle project to configure.
      */
     override fun apply(target: Project) {
-        target.pluginManager.apply("io.github.mudrichenkoevgeny.shared-foundation-kotlin")
+        target.pluginManager.apply(SHARED_FOUNDATION_KOTLIN_PLUGIN_ID)
 
         target.tasks.withType(Test::class.java).configureEach { testTask ->
             testTask.useJUnitPlatform()
         }
+    }
+
+    private companion object {
+        private const val SHARED_FOUNDATION_KOTLIN_PLUGIN_ID: String =
+            "io.github.mudrichenkoevgeny.shared-foundation-kotlin"
     }
 }

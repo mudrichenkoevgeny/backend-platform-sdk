@@ -1,9 +1,5 @@
 [versions]
-# @keep
-jvmToolchain = "25"
-
 # Plugins & Core
-targetJvm = "21"
 kotlin = "2.4.21"
 ksp = "2.3.12"
 maven-publish = "0.37.0"
@@ -13,7 +9,7 @@ bcv = "0.18.2"
 dokka = "2.3.0"
 
 # Shared Foundation
-shared-foundation = "0.1.13"
+shared-foundation = "0.1.16"
 
 # Kotlin
 kotlinx-serialization = "1.12.0"
@@ -196,6 +192,9 @@ testcontainers-kafka = { group = "org.testcontainers", name = "kafka", version.r
 testcontainers-minio = { group = "org.testcontainers", name = "minio", version.ref = "testcontainers" }
 
 [plugins]
+shared-foundation-kotlin = { id = "io.github.mudrichenkoevgeny.shared-foundation-kotlin", version.ref = "shared-foundation" }
+shared-foundation-quality = { id = "io.github.mudrichenkoevgeny.shared-foundation-quality", version.ref = "shared-foundation" }
+shared-foundation-publish = { id = "io.github.mudrichenkoevgeny.shared-foundation-publish", version.ref = "shared-foundation" }
 backend-platform-agent-sync = { id = "io.github.mudrichenkoevgeny.backend-platform-agent-sync" }
 backend-platform-quality = { id = "io.github.mudrichenkoevgeny.backend-platform-quality" }
 backend-platform-kotlin = { id = "io.github.mudrichenkoevgeny.backend-platform-kotlin" }

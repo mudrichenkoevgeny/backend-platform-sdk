@@ -62,3 +62,5 @@ include(":sample")
 
 include(":tools:detekt-rules")
 project(":tools:detekt-rules").projectDir = file("tools/detekt-rules")
+
+includeBuild("tools/gradle-plugin")

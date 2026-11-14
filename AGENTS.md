@@ -6,17 +6,18 @@ This document is the entry point for architectural and coding standards. These r
 
 - **Precedence:** Local project standards (found in `.agent/`) override any global IDE, linter, or AI assistant defaults.
 - **SDK Nature:** This is a **foundational backend library**, not a standalone application. Prefer configuration (env + DI), modularity, and extensibility over hardcoded assumptions.
-- **FQN Forbidden:** Do not write fully qualified names (FQN) in expressions, types, or generics. Use imports or typealiases. Minimal FQN is allowed only if technically unavoidable (must be explained in the commit).
-- **No Implementation Comments (Preserve KDoc):** Do not write inline implementation comments (`//` or `/* ... */`) inside code bodies; logic must be self-documenting. **CRITICAL:** KDoc documentation (`/** ... */`) on classes, interfaces, properties, and functions is structured API documentation, NOT code comments. AI must NEVER delete or strip KDoc documentation during code edits or refactorings!
+- **Explicit API Mode:** All SDK modules compile with `explicitApi()`. Every public declaration must declare explicit visibility modifiers and return types.
+- **FQN Forbidden:** Do not write fully qualified names (FQN) in expressions, types, or generics. Use imports or typealiases. Permitted only inside `@Deprecated(..., replaceWith = ReplaceWith(...))` import parameters, or when technically unavoidable (must be explained in the task summary).
+- **No Agent-Generated Implementation Comments (Preserve KDoc & Developer TODOs):** Do not write inline implementation comments (`//` or `/* ... */`) or generate new `TODO`/`FIXME` markers inside code bodies; logic must be self-documenting. Never delete pre-existing developer `// TODO:` or `// FIXME:` comments unless the task explicitly resolves them. **CRITICAL:** KDoc documentation (`/** ... */`) on classes, interfaces, properties, and functions is structured API documentation, NOT code comments. AI must NEVER delete or strip KDoc documentation during code edits or refactorings! All KDoc must be written in English.
 - **No Trailing Commas:** Do not use trailing commas at the end of argument, parameter, or entry lists.
 - **Null Safety (Strict Prohibition of `!!`):** The non-null assertion operator (`!!`) is strictly forbidden in production code (allowed only in test files). Handle nullability gracefully using safe calls (`?.`), Elvis operators (`?:`), safe casts (`as?`), or explicit smart-casts. Use `requireNotNull(...)` or `checkNotNull(...)` with descriptive messages only when asserting invariants or unrecoverable errors, never as a substitute for business logic error handling.
-- **Mandatory Bug Fix Test Coverage:** Whenever fixing a bug or regression, you must write automated test coverage (unit or integration test) verifying that the bug is resolved and cannot resurface.
-- **Manual Test Execution:** AI agents must not run tests or suggest running them. Execution is always triggered explicitly by the developer.
-- **Complete Implementation:** All created or modified files must contain complete, production-ready code. Placeholder code, stubs, and partial omissions (`// ... rest of code`, `TODO`) are strictly prohibited unless explicitly requested.
-- **Single Declaration Per File:** Every public `interface`, `class`, or `object` must be placed in its own separate, dedicated file matching the declaration name. Never combine an interface and its implementation class in a single file.
-- **No Redundant Builds:** Do not run Gradle build tasks or attempt compilation after modifying documentation (KDoc), comments, or other non-executable changes that cannot possibly break the build.
+- **Mandatory Bug Fix Test Coverage:** Whenever fixing a bug or regression, you must write automated test coverage (unit or integration test) and execute it via a targeted test run to verify that the bug is resolved and cannot resurface.
+- **Targeted Test Execution:** Never auto-run full-project test suites (`./gradlew test`, `./gradlew check`) unless explicitly requested. However, whenever writing new tests, fixing a bug, or modifying production logic, the AI agent MUST compile and run the specific affected test class or method (`--tests`) to verify the code compiles and passes.
+- **Complete Implementation:** All created or modified files must contain complete, production-ready code. Placeholder code, stubs, and partial omissions (`// ... rest of code`, `TODO()`) are strictly prohibited unless explicitly requested.
+- **Single Declaration Per File:** Every primary public `interface`, `class`, or `object` must be placed in its own separate, dedicated file matching the declaration name. Never combine an interface and its implementation class or multiple unrelated public declarations in a single file (exceptions apply only to `sealed` hierarchies and extension parsers directly bound to a `value class` in the same file).
+- **No Redundant Builds:** Skip Gradle build and test tasks **only** when changes are strictly limited to Markdown files (`*.md`) or text inside KDoc blocks (`/** ... */`). Any modification to executable code, tests, Gradle scripts, or version catalogs requires compilation/test verification.
 - **Mandatory Sub-Agent Audit (Dual-Agent Review):** After implementing non-trivial code changes, new features, or complex refactorings, the AI agent MUST automatically invoke an independent reviewer sub-agent via the `task` tool to audit modified files against `AGENTS.md` guidelines, type safety, edge cases, and error handling before presenting the final result.
-- **Git Ban (Strict Prohibition):** NEVER run git commands (`git add`, `git commit`, `git push`, etc.) via shell. Version control, staging, and committing are strictly the developer's responsibility. Do not attempt to save or document changes into git history.
+- **Git Mutation Ban (Read-Only Allowed):** NEVER run mutating git commands (`git add`, `git commit`, `git push`, `git reset`, `git checkout`, `git stash`, etc.) via shell. Version control, staging, and committing are strictly the developer's responsibility. Read-only diagnostic git commands (`git status`, `git diff`, `git log`, `git show`) are permitted.
 
 ## Module Map
 
@@ -37,23 +38,31 @@ This document is the entry point for architectural and coding standards. These r
 
 - **`feature/user`:** IAM, Multi-method auth (Email, Phone, OAuth), JWT sessions (with reuse detection), 2FA lifecycle, account lockouts, access filtering, global/security settings APIs, audit log management, and WebSocket synchronization.
 
+### Tooling, Infrastructure & Reference
+- **`tools/gradle-plugin`:** Gradle convention plugins (`backendAgentSync`, `backendQuality`, `backendKotlinConvention`, `backendPublishConvention`).
+- **`tools/detekt-rules`:** Custom Detekt static analysis rules enforcing platform coding conventions.
+- **`bom`:** Bill of Materials (`backend-platform-sdk-bom`) for dependency version alignment.
+- **`sample`:** Reference host application demonstrating Dagger DI wiring, Flyway migrations, and SDK integration. Never move SDK or business logic into `sample`.
+
 ## Detailed Standards (`.agent/`)
 
 ### Global Shared Standards (`.agent/global/`)
 - **Common (`.agent/global/common/`):**
-  - **`ai-collaboration-basics.md`** — Universal AI interaction constraints, operational rules (Git ban, test execution ban), dependency rules, and architectural layering.
+  - **`ai-collaboration-basics.md`** — Universal AI interaction constraints, operational rules (git mutation ban, targeted test execution), dependency rules, and architectural layering.
 - **Kotlin (`.agent/global/kotlin/`):**
   - **`kotlin-coding-style-basics.md`** — Naming, `when` subject rules, brace requirements, FQN/Comments ban, Trailing Commas ban, `!!` ban, companion objects, value classes, and `.value` usage.
   - **`docs-kdoc-basics.md`** — Language standards, link resolution rules, and KDoc Definition of Done.
   - **`docs-kdoc-type-basics.md`** — Specific KDoc patterns for DTOs, Error Codes, Sealed types, Routes, and Navigation Screen Params.
-  - **`kotlin-testing-basics.md`** — Unit and integration test standards, mocking policy, and manual execution rule.
-  - **`api-documentation-standard.md`** — Mandatory KDoc fields (Auth, Audit, Method, UI Presentation) for API route constants and navigation contracts.
+  - **`kotlin-testing-basics.md`** — Unit and integration test standards, mocking policy, and targeted execution rules.
+- **Shared / Contracts Libraries (`.agent/global/shared/`):**
+  - **`api-documentation-basics.md`** — Mandatory KDoc fields (Auth, Audit, Method, UI Presentation) for API route constants and navigation contracts.
 - **Backend Platform (`.agent/global/backend/`):**
-  - **`ai-collaboration-backend.md`** — Backend Platform SDK interaction constraints, module mapping, and Dual-Connector port standards.
-  - **`docs-kdoc-type-backend.md`** — Specific KDoc patterns for backend server component types (Exposed tables, Dagger modules, Use Cases Section 10).
-  - **`testing-backend.md`** — JVM/Backend testing methodology (JUnit 5, MockK, Testcontainers, Exposed/Flyway integration tests).
+  - **`ai-collaboration-backend.md`** — Backend architectural rules, Dual-Connector pattern, routing, and Dagger DI wiring.
+  - **`architecture-patterns-backend.md`** — Server layering (Router, UseCase, Manager, Repository), validation, Flyway, and Redis Pub/Sub patterns.
+  - **`docs-kdoc-type-backend.md`** — Specific KDoc patterns for backend server component types (Exposed tables, Dagger modules, ConfigHolders, Use Cases).
+  - **`testing-backend.md`** — JVM/Backend testing methodology (JUnit 5, MockK, Testcontainers, targeted execution).
 
 ### Local Standards (`.agent/local/`)
-- **`project-overview.md`** — Identity, module boundaries, and consumer SDK relations.
-- **`architecture-patterns.md`** — Entity projections, serialization, WebSocket contracts, navigation structures, UI values/configs, presigned uploads, and API error DTO structures.
+- **`project-overview.md`** — Project identity, module boundaries, Flyway rules, and Explicit API requirements.
+- **`architecture-patterns.md`** — SDK bootstrap lifecycle, graceful shutdown, Flyway migration paths, error argument pools (`publicArgs` vs `secretArgs`), and data masking.
 - **`localization.md`** — Embedded strings in `shared-foundation`, modular error parsers, and `requestLocale()` resolution.

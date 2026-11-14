@@ -13,6 +13,11 @@ public class BackendPublishConventionPlugin : Plugin<Project> {
      * @param target The target Gradle project to configure.
      */
     override fun apply(target: Project) {
-        target.pluginManager.apply("io.github.mudrichenkoevgeny.shared-foundation-publish")
+        target.pluginManager.apply(SHARED_FOUNDATION_PUBLISH_PLUGIN_ID)
+    }
+
+    private companion object {
+        private const val SHARED_FOUNDATION_PUBLISH_PLUGIN_ID: String =
+            "io.github.mudrichenkoevgeny.shared-foundation-publish"
     }
 }

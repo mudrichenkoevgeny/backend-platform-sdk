@@ -1,29 +1,11 @@
-import com.vanniktech.maven.publish.GradlePlugin
-import com.vanniktech.maven.publish.JavadocJar
-import com.vanniktech.maven.publish.SourcesJar
-import java.util.Properties
-
 val repoRootDir: File = rootDir.parentFile.parentFile
-
-val rootProps = Properties().apply {
-    val rootPropsFile = repoRootDir.resolve("gradle.properties")
-    check(rootPropsFile.exists()) {
-        "Root gradle.properties not found at: ${rootPropsFile.absolutePath}"
-    }
-    rootPropsFile.inputStream().use { load(it) }
-}
-
-group = checkNotNull(rootProps.getProperty("group")) { "Missing 'group' property in root gradle.properties" }
-version = checkNotNull(rootProps.getProperty("version")) { "Missing 'version' property in root gradle.properties" }
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     `java-gradle-plugin`
-    alias(libs.plugins.maven.publish)
-}
-
-kotlin {
-    explicitApi()
+    alias(libs.plugins.shared.foundation.kotlin)
+    alias(libs.plugins.shared.foundation.quality)
+    alias(libs.plugins.shared.foundation.publish)
 }
 
 gradlePlugin {
@@ -55,24 +37,6 @@ gradlePlugin {
                 "Gradle plugin configuring Vanniktech Maven Publishing, Dokka, and POM metadata for backend modules"
         }
     }
-}
-
-mavenPublishing {
-    coordinates(
-        group.toString(),
-        "backend-platform-sdk-gradle-plugin",
-        version.toString()
-    )
-
-    publishToMavenCentral()
-    signAllPublications()
-
-    configure(
-        GradlePlugin(
-            javadocJar = JavadocJar.Javadoc(),
-            sourcesJar = SourcesJar.Sources()
-        )
-    )
 }
 
 dependencies {

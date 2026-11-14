@@ -14,34 +14,48 @@ public class BackendQualityPlugin : Plugin<Project> {
      * @param target The target Gradle project to configure.
      */
     override fun apply(target: Project) {
-        target.pluginManager.apply("io.github.mudrichenkoevgeny.shared-foundation-quality")
+        target.pluginManager.apply(SHARED_FOUNDATION_QUALITY_PLUGIN_ID)
 
         QualityUtils.registerDetektConfigExtraction(
             target = target,
-            taskName = "extractDetektBackendConfig",
+            taskName = DETEKT_TASK_NAME,
             classLoader = javaClass.classLoader,
-            resourcePath = "config/detekt/detekt-backend.yml",
-            outputFileName = "detekt-backend.yml"
+            resourcePath = DETEKT_RESOURCE_PATH,
+            outputFileName = DETEKT_OUTPUT_FILE_NAME
         )
 
         QualityUtils.registerEditorConfigLayer(
             target = target,
             classLoader = javaClass.classLoader,
-            resourcePath = "config/editorconfig/editorconfig-backend.txt"
+            resourcePath = EDITORCONFIG_RESOURCE_PATH
         )
 
         val pluginVersion = QualityUtils.resolvePluginVersion(
             classLoader = javaClass.classLoader,
-            versionResourceName = "backend-platform-sdk-plugin-version.txt",
+            versionResourceName = VERSION_RESOURCE_NAME,
             manifestPackage = javaClass.`package`
         )
 
         QualityUtils.applyDetektRulesDependency(
             target = target,
-            expectedRootProjectName = "backend-platform-sdk",
-            rulesProjectPath = ":tools:detekt-rules",
-            mavenCoordinates = "io.github.mudrichenkoevgeny:backend-platform-sdk-detekt-rules",
+            expectedRootProjectName = SDK_ROOT_PROJECT_NAME,
+            rulesProjectPath = DETEKT_RULES_PROJECT_PATH,
+            mavenCoordinates = DETEKT_RULES_MAVEN_COORDINATES,
             pluginVersion = pluginVersion
         )
+    }
+
+    private companion object {
+        private const val SHARED_FOUNDATION_QUALITY_PLUGIN_ID: String =
+            "io.github.mudrichenkoevgeny.shared-foundation-quality"
+        private const val DETEKT_TASK_NAME: String = "extractDetektBackendConfig"
+        private const val DETEKT_RESOURCE_PATH: String = "config/detekt/detekt-backend.yml"
+        private const val DETEKT_OUTPUT_FILE_NAME: String = "detekt-backend.yml"
+        private const val EDITORCONFIG_RESOURCE_PATH: String = "config/editorconfig/editorconfig-backend.txt"
+        private const val VERSION_RESOURCE_NAME: String = "backend-platform-sdk-plugin-version.txt"
+        private const val SDK_ROOT_PROJECT_NAME: String = "backend-platform-sdk"
+        private const val DETEKT_RULES_PROJECT_PATH: String = ":tools:detekt-rules"
+        private const val DETEKT_RULES_MAVEN_COORDINATES: String =
+            "io.github.mudrichenkoevgeny:backend-platform-sdk-detekt-rules"
     }
 }
