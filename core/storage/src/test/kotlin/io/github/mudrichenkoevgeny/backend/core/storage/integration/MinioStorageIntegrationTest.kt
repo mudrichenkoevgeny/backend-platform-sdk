@@ -175,7 +175,7 @@ internal class MinioStorageIntegrationTest {
     }
 
     private companion object {
-        private const val MINIO_IMAGE = "minio/minio:RELEASE.2023-09-04T19-57-37Z"
+        private const val MINIO_IMAGE = "elestio/minio:latest"
         private const val ACCESS_KEY = "minioadmin"
         private const val SECRET_KEY = "minioadmin"
         private const val PUBLIC_BUCKET = "test-public-bucket"
