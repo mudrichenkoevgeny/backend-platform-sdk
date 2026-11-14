@@ -24,7 +24,7 @@ import javax.inject.Singleton
  * [EventSubscriber] implementation backed by Apache Kafka.
  *
  * Launches a poll loop in the [CoroutineScope] qualified with [BackgroundScope], deserializes
- * messages to type [T] via [FoundationJson], extracts metadata from headers, and invokes the given handler. Deserialization or
+ * messages to type `T` via [FoundationJson], extracts metadata from headers, and invokes the given handler. Deserialization or
  * handler errors are logged via [AppLogger]; the loop continues until the scope is cancelled. Uses `auto.offset.reset=earliest`
  * and a 1s poll timeout.
  */

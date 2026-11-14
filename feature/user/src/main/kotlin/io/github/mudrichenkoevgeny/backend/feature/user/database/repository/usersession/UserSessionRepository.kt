@@ -118,22 +118,7 @@ public interface UserSessionRepository {
      * to sessions belonging to users within the allowed administrative scope.
      *
      * @param accessFilter row-level visibility based on user roles
-     * @param pageParams pagination settings (page index and size)
-     * @param sortBy field to sort by
-     * @param sortOrder sorting direction
-     * @param userIds optional filters for specific user IDs
-     * @param userRoles optional filters for specific user roles
-     * @param identifiers optional filters for identifier values (e.g., emails) associated with the session
-     * @param identifierIds optional filters for specific user identifier IDs
-     * @param identifierAuthProviders optional filters for authentication providers
-     * @param clientTypes optional filter by client platform types (Web, Mobile, etc.)
-     * @param userAgents optional filters for browser/client user-agent strings
-     * @param ipAddresses optional filters for client IP addresses
-     * @param languages optional filters for client language headers
-     * @param deviceIds optional filters for unique hardware device IDs
-     * @param deviceNames optional filters for human-readable device names
-     * @param appVersions optional filters for specific application versions
-     * @param operationSystemVersions optional filters for OS versions
+     * @param queryParams query parameters for filtering and paginating user sessions (such as page settings, user IDs, roles, metadata, and client info)
      * @return paged result or a database error
      */
     public suspend fun getUserSessionsPageWithAccessFilter(
