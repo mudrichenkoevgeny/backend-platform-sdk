@@ -1,0 +1,336 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>StorageSettingsProvider</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    backend-platform-sdk
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">0.0.23
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":core:storage/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":core:storage/main" data-filter=":core:storage/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    backend-platform-sdk
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="storage::io.github.mudrichenkoevgeny.backend.core.storage.settings.provider/StorageSettingsProvider///PointingToDeclaration//-199525728">
+  <div class="breadcrumbs"><a href="../../index.html">storage</a><span class="delimiter">/</span><a href="../index.html">io.github.mudrichenkoevgeny.backend.core.storage.settings.provider</a><span class="delimiter">/</span><span class="current">StorageSettingsProvider</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Storage</span><wbr><span>Settings</span><wbr><span><span>Provider</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">StorageSettingsProvider</a></div><p class="paragraph">Provider contract for accessing and managing persisted storage configuration settings.</p><h4 class="tableheader">Inheritors</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-storage-settings-provider-impl/index.html">StorageSettingsProviderImpl</a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="1841711100%2FFunctions%2F-199525728" anchor-label="getDeletedFilesCleanupIntervalSeconds" id="1841711100%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-deleted-files-cleanup-interval-seconds.html"><span>get</span><wbr><span>Deleted</span><wbr><span>Files</span><wbr><span>Cleanup</span><wbr><span>Interval</span><wbr><span><span>Seconds</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1841711100%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-deleted-files-cleanup-interval-seconds.html"><span class="token function">getDeletedFilesCleanupIntervalSeconds</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the interval in seconds for background cleanup of deleted files.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="564572978%2FFunctions%2F-199525728" anchor-label="getIsDeduplicationEnabled" id="564572978%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-is-deduplication-enabled.html"><span>get</span><wbr><span>Is</span><wbr><span>Deduplication</span><wbr><span><span>Enabled</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="564572978%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-is-deduplication-enabled.html"><span class="token function">getIsDeduplicationEnabled</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Returns whether Content-Addressable Storage (CAS) file deduplication is enabled.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="921202127%2FFunctions%2F-199525728" anchor-label="getManagementStorageSettings" id="921202127%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-management-storage-settings.html"><span>get</span><wbr><span>Management</span><wbr><span>Storage</span><wbr><span><span>Settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="921202127%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-management-storage-settings.html"><span class="token function">getManagementStorageSettings</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.storagesettings/ManagementStorageSettings///PointingToDeclaration/">ManagementStorageSettings</span></div><div class="brief "><p class="paragraph">Returns the current effective management storage settings.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-391493480%2FFunctions%2F-199525728" anchor-label="getMaxPendingUploadsForManagementUser" id="-391493480%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-max-pending-uploads-for-management-user.html"><span>get</span><wbr><span>Max</span><wbr><span>Pending</span><wbr><span>Uploads</span><wbr><span>For</span><wbr><span>Management</span><wbr><span><span>User</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-391493480%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-max-pending-uploads-for-management-user.html"><span class="token function">getMaxPendingUploadsForManagementUser</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the maximum allowed concurrent unfinalized upload sessions for management users.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1185884495%2FFunctions%2F-199525728" anchor-label="getMaxPendingUploadsForOpenUser" id="-1185884495%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-max-pending-uploads-for-open-user.html"><span>get</span><wbr><span>Max</span><wbr><span>Pending</span><wbr><span>Uploads</span><wbr><span>For</span><wbr><span>Open</span><wbr><span><span>User</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1185884495%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-max-pending-uploads-for-open-user.html"><span class="token function">getMaxPendingUploadsForOpenUser</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the maximum allowed concurrent unfinalized upload sessions for open users.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1365547883%2FFunctions%2F-199525728" anchor-label="getMaxUploadSizeBytes" id="1365547883%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-max-upload-size-bytes.html"><span>get</span><wbr><span>Max</span><wbr><span>Upload</span><wbr><span>Size</span><wbr><span><span>Bytes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1365547883%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-max-upload-size-bytes.html"><span class="token function">getMaxUploadSizeBytes</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></div><div class="brief "><p class="paragraph">Returns the maximum permitted single file upload size in bytes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="239900249%2FFunctions%2F-199525728" anchor-label="getMinUploadSizeBytes" id="239900249%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-min-upload-size-bytes.html"><span>get</span><wbr><span>Min</span><wbr><span>Upload</span><wbr><span>Size</span><wbr><span><span>Bytes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="239900249%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-min-upload-size-bytes.html"><span class="token function">getMinUploadSizeBytes</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a></div><div class="brief "><p class="paragraph">Returns the minimum permitted file upload size in bytes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1288958314%2FFunctions%2F-199525728" anchor-label="getOpenStorageSettings" id="-1288958314%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-open-storage-settings.html"><span>get</span><wbr><span>Open</span><wbr><span>Storage</span><wbr><span><span>Settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1288958314%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-open-storage-settings.html"><span class="token function">getOpenStorageSettings</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.storagesettings/OpenStorageSettings///PointingToDeclaration/">OpenStorageSettings</span></div><div class="brief "><p class="paragraph">Returns the current effective open storage settings.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="768162474%2FFunctions%2F-199525728" anchor-label="getPresignedUrlExpirationSeconds" id="768162474%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-presigned-url-expiration-seconds.html"><span>get</span><wbr><span>Presigned</span><wbr><span>Url</span><wbr><span>Expiration</span><wbr><span><span>Seconds</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="768162474%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-presigned-url-expiration-seconds.html"><span class="token function">getPresignedUrlExpirationSeconds</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the presigned URL expiration duration in seconds.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2126673163%2FFunctions%2F-199525728" anchor-label="getTotalStorageQuotaForManagementUserBytes" id="-2126673163%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-total-storage-quota-for-management-user-bytes.html"><span>get</span><wbr><span>Total</span><wbr><span>Storage</span><wbr><span>Quota</span><wbr><span>For</span><wbr><span>Management</span><wbr><span>User</span><wbr><span><span>Bytes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2126673163%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-total-storage-quota-for-management-user-bytes.html"><span class="token function">getTotalStorageQuotaForManagementUserBytes</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Returns the cumulative storage quota in bytes for staff/management users.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1081316092%2FFunctions%2F-199525728" anchor-label="getTotalStorageQuotaForOpenUserBytes" id="1081316092%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-total-storage-quota-for-open-user-bytes.html"><span>get</span><wbr><span>Total</span><wbr><span>Storage</span><wbr><span>Quota</span><wbr><span>For</span><wbr><span>Open</span><wbr><span>User</span><wbr><span><span>Bytes</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1081316092%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-total-storage-quota-for-open-user-bytes.html"><span class="token function">getTotalStorageQuotaForOpenUserBytes</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Returns the cumulative storage quota in bytes for regular open users.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1032138076%2FFunctions%2F-199525728" anchor-label="initialize" id="-1032138076%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="initialize.html"><span><span>initialize</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1032138076%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="initialize.html"><span class="token function">initialize</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Seeds initial default settings from configuration into system settings storage.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="979392968%2FFunctions%2F-199525728" anchor-label="resetManagementStorageSettings" id="979392968%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="reset-management-storage-settings.html"><span>reset</span><wbr><span>Management</span><wbr><span>Storage</span><wbr><span><span>Settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="979392968%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="reset-management-storage-settings.html"><span class="token function">resetManagementStorageSettings</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.storagesettings/ManagementStorageSettings///PointingToDeclaration/">ManagementStorageSettings</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Resets platform-wide management storage settings to default configuration values.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="781840052%2FFunctions%2F-199525728" anchor-label="updateManagementStorageSettings" id="781840052%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update-management-storage-settings.html"><span>update</span><wbr><span>Management</span><wbr><span>Storage</span><wbr><span><span>Settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="781840052%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="update-management-storage-settings.html"><span class="token function">updateManagementStorageSettings</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">managementStorageSettings<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.storagesettings/ManagementStorageSettings///PointingToDeclaration/">ManagementStorageSettings</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Updates platform-wide management storage settings.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

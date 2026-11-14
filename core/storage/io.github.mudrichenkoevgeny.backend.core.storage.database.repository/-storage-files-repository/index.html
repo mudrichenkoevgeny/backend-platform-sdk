@@ -1,0 +1,321 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>StorageFilesRepository</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    backend-platform-sdk
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">0.0.23
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":core:storage/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":core:storage/main" data-filter=":core:storage/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    backend-platform-sdk
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="storage::io.github.mudrichenkoevgeny.backend.core.storage.database.repository/StorageFilesRepository///PointingToDeclaration//-199525728">
+  <div class="breadcrumbs"><a href="../../index.html">storage</a><span class="delimiter">/</span><a href="../index.html">io.github.mudrichenkoevgeny.backend.core.storage.database.repository</a><span class="delimiter">/</span><span class="current">StorageFilesRepository</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Storage</span><wbr><span>Files</span><wbr><span><span>Repository</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">StorageFilesRepository</a></div><p class="paragraph">Data access for storage files (persistence and querying).</p><p class="paragraph">Implementations are responsible for storing file records and returning paginated lists with optional filters.</p><h4 class="tableheader">Inheritors</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-storage-files-repository-impl/index.html">StorageFilesRepositoryImpl</a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-310201054%2FFunctions%2F-199525728" anchor-label="calculateUsedStorageForUser" id="-310201054%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="calculate-used-storage-for-user.html"><span>calculate</span><wbr><span>Used</span><wbr><span>Storage</span><wbr><span>For</span><wbr><span><span>User</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-310201054%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="calculate-used-storage-for-user.html"><span class="token function">calculateUsedStorageForUser</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ownerUserId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Calculates the cumulative total file size in bytes for active files owned by a user.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1594057582%2FFunctions%2F-199525728" anchor-label="countPendingUploadsForUser" id="-1594057582%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="count-pending-uploads-for-user.html"><span>count</span><wbr><span>Pending</span><wbr><span>Uploads</span><wbr><span>For</span><wbr><span><span>User</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1594057582%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="count-pending-uploads-for-user.html"><span class="token function">countPendingUploadsForUser</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ownerUserId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Counts active unfinalized upload records for a given user.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1037473392%2FFunctions%2F-199525728" anchor-label="createStorageFile" id="-1037473392%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-storage-file.html"><span>create</span><wbr><span>Storage</span><wbr><span><span>File</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1037473392%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="create-storage-file.html"><span class="token function">createStorageFile</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">storageFile<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/StorageFileInternal///PointingToDeclaration/">StorageFileInternal</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/StorageFileInternal///PointingToDeclaration/">StorageFileInternal</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Persists a storage file metadata record.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-406986530%2FFunctions%2F-199525728" anchor-label="deleteStorageFile" id="-406986530%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delete-storage-file.html"><span>delete</span><wbr><span>Storage</span><wbr><span><span>File</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-406986530%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="delete-storage-file.html"><span class="token function">deleteStorageFile</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fileId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/FileId///PointingToDeclaration/">FileId</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Deletes a file record by the unique file identifier.</p></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="delete-storage-file.html"><span class="token function">deleteStorageFile</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fileId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/FileId///PointingToDeclaration/">FileId</span><span class="token punctuation">, </span></span><span class="parameter ">ownerUserId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Soft deletes a file record by the unique file identifier, optionally scoped to an owner.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1637041294%2FFunctions%2F-199525728" anchor-label="deleteStorageFilesBatch" id="-1637041294%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delete-storage-files-batch.html"><span>delete</span><wbr><span>Storage</span><wbr><span>Files</span><wbr><span><span>Batch</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1637041294%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="delete-storage-files-batch.html"><span class="token function">deleteStorageFilesBatch</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fileIds<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/FileId///PointingToDeclaration/">FileId</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Deletes multiple file records in a single batch operation by their unique file identifiers.</p></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="delete-storage-files-batch.html"><span class="token function">deleteStorageFilesBatch</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fileIds<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/FileId///PointingToDeclaration/">FileId</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">ownerUserId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Deletes multiple file records in a single batch operation. Optionally filters by owner.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="542832438%2FFunctions%2F-199525728" anchor-label="getExpiredPendingUploadFiles" id="542832438%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-expired-pending-upload-files.html"><span>get</span><wbr><span>Expired</span><wbr><span>Pending</span><wbr><span>Upload</span><wbr><span><span>Files</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="542832438%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-expired-pending-upload-files.html"><span class="token function">getExpiredPendingUploadFiles</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">createdBefore<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a><span class="token punctuation">, </span></span><span class="parameter ">limit<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/StorageFileInternal///PointingToDeclaration/">StorageFileInternal</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves a list of storage file records in PENDING_UPLOAD status created before the specified timestamp.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1356464161%2FFunctions%2F-199525728" anchor-label="getStorageFileById" id="1356464161%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-storage-file-by-id.html"><span>get</span><wbr><span>Storage</span><wbr><span>File</span><wbr><span>By</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1356464161%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-storage-file-by-id.html"><span class="token function">getStorageFileById</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fileId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/FileId///PointingToDeclaration/">FileId</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/StorageFileInternal///PointingToDeclaration/">StorageFileInternal</span><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves a file record by its unique identifier.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="440530872%2FFunctions%2F-199525728" anchor-label="getStorageFilesByStatus" id="440530872%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-storage-files-by-status.html"><span>get</span><wbr><span>Storage</span><wbr><span>Files</span><wbr><span>By</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="440530872%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-storage-files-by-status.html"><span class="token function">getStorageFilesByStatus</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">status<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status/StorageFileStatus///PointingToDeclaration/">StorageFileStatus</span><span class="token punctuation">, </span></span><span class="parameter ">limit<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/StorageFileInternal///PointingToDeclaration/">StorageFileInternal</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves a list of storage file records filtered by status.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1702310356%2FFunctions%2F-199525728" anchor-label="getStorageFilesPageByOwnerUserId" id="-1702310356%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-storage-files-page-by-owner-user-id.html"><span>get</span><wbr><span>Storage</span><wbr><span>Files</span><wbr><span>Page</span><wbr><span>By</span><wbr><span>Owner</span><wbr><span>User</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1702310356%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-storage-files-page-by-owner-user-id.html"><span class="token function">getStorageFilesPageByOwnerUserId</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">ownerUserId<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">queryParams<span class="token operator">: </span><a href="../../io.github.mudrichenkoevgeny.backend.core.storage.network.model/-self-storage-file-list-query-params/index.html">SelfStorageFileListQueryParams</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing/PagedResult///PointingToDeclaration/">PagedResult</span><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/StorageFileInternal///PointingToDeclaration/">StorageFileInternal</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves a paginated list of storage files belonging to a specific user.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1489745818%2FFunctions%2F-199525728" anchor-label="getStorageFilesPageForManagement" id="1489745818%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-storage-files-page-for-management.html"><span>get</span><wbr><span>Storage</span><wbr><span>Files</span><wbr><span>Page</span><wbr><span>For</span><wbr><span><span>Management</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1489745818%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="get-storage-files-page-for-management.html"><span class="token function">getStorageFilesPageForManagement</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">queryParams<span class="token operator">: </span><a href="../../io.github.mudrichenkoevgeny.backend.core.storage.network.model/-management-storage-file-list-query-params/index.html">ManagementStorageFileListQueryParams</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing/PagedResult///PointingToDeclaration/">PagedResult</span><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/StorageFileInternal///PointingToDeclaration/">StorageFileInternal</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves a paginated list of storage files for management purposes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="59514650%2FFunctions%2F-199525728" anchor-label="hardDeleteStorageFilesBatch" id="59514650%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="hard-delete-storage-files-batch.html"><span>hard</span><wbr><span>Delete</span><wbr><span>Storage</span><wbr><span>Files</span><wbr><span><span>Batch</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="59514650%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="hard-delete-storage-files-batch.html"><span class="token function">hardDeleteStorageFilesBatch</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fileIds<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/FileId///PointingToDeclaration/">FileId</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Hard deletes storage file records from the database permanently by their unique file identifiers.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-465883611%2FFunctions%2F-199525728" anchor-label="updateStorageFile" id="-465883611%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update-storage-file.html"><span>update</span><wbr><span>Storage</span><wbr><span><span>File</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-465883611%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="update-storage-file.html"><span class="token function">updateStorageFile</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fileId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/FileId///PointingToDeclaration/">FileId</span><span class="token punctuation">, </span></span><span class="parameter ">status<span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.model/-update-field/index.html">UpdateField</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status/StorageFileStatus///PointingToDeclaration/">StorageFileStatus</span><span class="token operator">&gt;</span><span class="token operator"> = </span>UpdateField.Ignore<span class="token punctuation">, </span></span><span class="parameter ">fileSizeBytes<span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.model/-update-field/index.html">UpdateField</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-long/index.html">Long</a><span class="token operator">&gt;</span><span class="token operator"> = </span>UpdateField.Ignore<span class="token punctuation">, </span></span><span class="parameter ">contentHash<span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.model/-update-field/index.html">UpdateField</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token operator"> = </span>UpdateField.Ignore</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/StorageFileInternal///PointingToDeclaration/">StorageFileInternal</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Updates storage file fields.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1707273446%2FFunctions%2F-199525728" anchor-label="updateStorageFilesBatch" id="1707273446%2FFunctions%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update-storage-files-batch.html"><span>update</span><wbr><span>Storage</span><wbr><span>Files</span><wbr><span><span>Batch</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1707273446%2FFunctions%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="update-storage-files-batch.html"><span class="token function">updateStorageFilesBatch</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">files<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/StorageFileInternal///PointingToDeclaration/">StorageFileInternal</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Batch updates metadata and status for a list of storage file records.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

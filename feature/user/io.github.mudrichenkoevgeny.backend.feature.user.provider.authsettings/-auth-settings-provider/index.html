@@ -1,0 +1,486 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>AuthSettingsProvider</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    backend-platform-sdk
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">0.0.23
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":feature:user/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":feature:user/main" data-filter=":feature:user/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    backend-platform-sdk
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="user::io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings/AuthSettingsProvider///PointingToDeclaration//251403983">
+  <div class="breadcrumbs"><a href="../../index.html">user</a><span class="delimiter">/</span><a href="../index.html">io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings</a><span class="delimiter">/</span><span class="current">AuthSettingsProvider</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Auth</span><wbr><span>Settings</span><wbr><span><span>Provider</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">AuthSettingsProvider</a></div><p class="paragraph">Provides persisted authentication settings for the user feature.</p><p class="paragraph">The provider is expected to:</p><ul><li><p class="paragraph">seed defaults on application startup (<a href="initialize.html">initialize</a>)</p></li><li><p class="paragraph">expose a management snapshot (<a href="get-management-auth-settings.html">getManagementAuthSettings</a>)</p></li><li><p class="paragraph">expose a public snapshot (<a href="get-open-auth-settings.html">getOpenAuthSettings</a>)</p></li><li><p class="paragraph">persist updates from management flows (<a href="update-management-auth-settings.html">updateManagementAuthSettings</a>)</p></li></ul><h4 class="tableheader">Inheritors</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-auth-settings-provider-impl/index.html">AuthSettingsProviderImpl</a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="358395673%2FFunctions%2F251403983" anchor-label="getAccessTokenExpirationSeconds" id="358395673%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-access-token-expiration-seconds.html"><span>get</span><wbr><span>Access</span><wbr><span>Token</span><wbr><span>Expiration</span><wbr><span><span>Seconds</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="358395673%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-access-token-expiration-seconds.html"><span class="token function">getAccessTokenExpirationSeconds</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the validity window for new access tokens in seconds.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="438156697%2FFunctions%2F251403983" anchor-label="getAccountDeletionCheckIntervalSeconds" id="438156697%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-account-deletion-check-interval-seconds.html"><span>get</span><wbr><span>Account</span><wbr><span>Deletion</span><wbr><span>Check</span><wbr><span>Interval</span><wbr><span><span>Seconds</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="438156697%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-account-deletion-check-interval-seconds.html"><span class="token function">getAccountDeletionCheckIntervalSeconds</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the background worker check interval in seconds for processing accounts pending permanent deletion.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-711892283%2FFunctions%2F251403983" anchor-label="getAccountDeletionGracePeriodSeconds" id="-711892283%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-account-deletion-grace-period-seconds.html"><span>get</span><wbr><span>Account</span><wbr><span>Deletion</span><wbr><span>Grace</span><wbr><span>Period</span><wbr><span><span>Seconds</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-711892283%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-account-deletion-grace-period-seconds.html"><span class="token function">getAccountDeletionGracePeriodSeconds</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the grace period in seconds between scheduling an account for deletion and its permanent removal from the system.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-123931677%2FFunctions%2F251403983" anchor-label="getAvailableAuthProviders" id="-123931677%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-available-auth-providers.html"><span>get</span><wbr><span>Available</span><wbr><span>Auth</span><wbr><span><span>Providers</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-123931677%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-available-auth-providers.html"><span class="token function">getAvailableAuthProviders</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings/AvailableAuthProviders///PointingToDeclaration/">AvailableAuthProviders</span></div><div class="brief "><p class="paragraph">Returns the list of enabled authentication providers.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2058621256%2FFunctions%2F251403983" anchor-label="getIsRegistrationEnabled" id="2058621256%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-is-registration-enabled.html"><span>get</span><wbr><span>Is</span><wbr><span>Registration</span><wbr><span><span>Enabled</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2058621256%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-is-registration-enabled.html"><span class="token function">getIsRegistrationEnabled</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Returns whether new user registrations are currently permitted.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2082590769%2FFunctions%2F251403983" anchor-label="getIsUserNicknameChangeAllowed" id="2082590769%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-is-user-nickname-change-allowed.html"><span>get</span><wbr><span>Is</span><wbr><span>User</span><wbr><span>Nickname</span><wbr><span>Change</span><wbr><span><span>Allowed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2082590769%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-is-user-nickname-change-allowed.html"><span class="token function">getIsUserNicknameChangeAllowed</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Returns whether users are permitted to modify their nickname.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-394610618%2FFunctions%2F251403983" anchor-label="getManagementAuthSettings" id="-394610618%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-management-auth-settings.html"><span>get</span><wbr><span>Management</span><wbr><span>Auth</span><wbr><span><span>Settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-394610618%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-management-auth-settings.html"><span class="token function">getManagementAuthSettings</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings/ManagementAuthSettings///PointingToDeclaration/">ManagementAuthSettings</span></div><div class="brief "><p class="paragraph">Returns current effective management settings.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="955555119%2FFunctions%2F251403983" anchor-label="getManagementEmailRestrictionPolicy" id="955555119%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-management-email-restriction-policy.html"><span>get</span><wbr><span>Management</span><wbr><span>Email</span><wbr><span>Restriction</span><wbr><span><span>Policy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="955555119%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-management-email-restriction-policy.html"><span class="token function">getManagementEmailRestrictionPolicy</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.emailrestriction/EmailRestrictionPolicy///PointingToDeclaration/">EmailRestrictionPolicy</span></div><div class="brief "><p class="paragraph">Returns the management email restriction policy.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="205938564%2FFunctions%2F251403983" anchor-label="getMaxActiveSessionsForManagementUser" id="205938564%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-max-active-sessions-for-management-user.html"><span>get</span><wbr><span>Max</span><wbr><span>Active</span><wbr><span>Sessions</span><wbr><span>For</span><wbr><span>Management</span><wbr><span><span>User</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="205938564%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-max-active-sessions-for-management-user.html"><span class="token function">getMaxActiveSessionsForManagementUser</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the maximum number of active sessions allowed per management user account.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1842581149%2FFunctions%2F251403983" anchor-label="getMaxActiveSessionsForOpenUser" id="1842581149%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-max-active-sessions-for-open-user.html"><span>get</span><wbr><span>Max</span><wbr><span>Active</span><wbr><span>Sessions</span><wbr><span>For</span><wbr><span>Open</span><wbr><span><span>User</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1842581149%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-max-active-sessions-for-open-user.html"><span class="token function">getMaxActiveSessionsForOpenUser</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the maximum number of active sessions allowed per open user account.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2017209236%2FFunctions%2F251403983" anchor-label="getMaxEmailIdentifiers" id="2017209236%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-max-email-identifiers.html"><span>get</span><wbr><span>Max</span><wbr><span>Email</span><wbr><span><span>Identifiers</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2017209236%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-max-email-identifiers.html"><span class="token function">getMaxEmailIdentifiers</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the maximum number of email-based identifiers allowed per account.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-366055213%2FFunctions%2F251403983" anchor-label="getMaxIdentifiersPerExternalProvider" id="-366055213%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-max-identifiers-per-external-provider.html"><span>get</span><wbr><span>Max</span><wbr><span>Identifiers</span><wbr><span>Per</span><wbr><span>External</span><wbr><span><span>Provider</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-366055213%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-max-identifiers-per-external-provider.html"><span class="token function">getMaxIdentifiersPerExternalProvider</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the maximum number of identifiers allowed for each unique external provider.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="714873958%2FFunctions%2F251403983" anchor-label="getMaxPhoneIdentifiers" id="714873958%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-max-phone-identifiers.html"><span>get</span><wbr><span>Max</span><wbr><span>Phone</span><wbr><span><span>Identifiers</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="714873958%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-max-phone-identifiers.html"><span class="token function">getMaxPhoneIdentifiers</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the maximum number of phone-based identifiers allowed per account.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1146619708%2FFunctions%2F251403983" anchor-label="getMaxTotalIdentifiers" id="1146619708%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-max-total-identifiers.html"><span>get</span><wbr><span>Max</span><wbr><span>Total</span><wbr><span><span>Identifiers</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1146619708%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-max-total-identifiers.html"><span class="token function">getMaxTotalIdentifiers</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the maximum number of identifiers of any type allowed per account.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1913556959%2FFunctions%2F251403983" anchor-label="getOpenAuthSettings" id="1913556959%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-open-auth-settings.html"><span>get</span><wbr><span>Open</span><wbr><span>Auth</span><wbr><span><span>Settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1913556959%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-open-auth-settings.html"><span class="token function">getOpenAuthSettings</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings/OpenAuthSettings///PointingToDeclaration/">OpenAuthSettings</span></div><div class="brief "><p class="paragraph">Returns settings safe to expose to unauthenticated clients.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="899058056%2FFunctions%2F251403983" anchor-label="getOpenEmailRestrictionPolicy" id="899058056%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-open-email-restriction-policy.html"><span>get</span><wbr><span>Open</span><wbr><span>Email</span><wbr><span>Restriction</span><wbr><span><span>Policy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="899058056%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-open-email-restriction-policy.html"><span class="token function">getOpenEmailRestrictionPolicy</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.emailrestriction/EmailRestrictionPolicy///PointingToDeclaration/">EmailRestrictionPolicy</span></div><div class="brief "><p class="paragraph">Returns the open email restriction policy.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="657189108%2FFunctions%2F251403983" anchor-label="getRefreshTokenExpirationSeconds" id="657189108%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-refresh-token-expiration-seconds.html"><span>get</span><wbr><span>Refresh</span><wbr><span>Token</span><wbr><span>Expiration</span><wbr><span><span>Seconds</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="657189108%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-refresh-token-expiration-seconds.html"><span class="token function">getRefreshTokenExpirationSeconds</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the validity window for new refresh tokens in seconds.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2058945452%2FFunctions%2F251403983" anchor-label="getUserDisplayNameMaxLength" id="2058945452%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-user-display-name-max-length.html"><span>get</span><wbr><span>User</span><wbr><span>Display</span><wbr><span>Name</span><wbr><span>Max</span><wbr><span><span>Length</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2058945452%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-user-display-name-max-length.html"><span class="token function">getUserDisplayNameMaxLength</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the maximum character length for user display names.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="395601150%2FFunctions%2F251403983" anchor-label="getUserDisplayNameMinLength" id="395601150%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-user-display-name-min-length.html"><span>get</span><wbr><span>User</span><wbr><span>Display</span><wbr><span>Name</span><wbr><span>Min</span><wbr><span><span>Length</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="395601150%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-user-display-name-min-length.html"><span class="token function">getUserDisplayNameMinLength</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the minimum character length for user display names.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="939674453%2FFunctions%2F251403983" anchor-label="getUserNicknameMaxLength" id="939674453%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-user-nickname-max-length.html"><span>get</span><wbr><span>User</span><wbr><span>Nickname</span><wbr><span>Max</span><wbr><span><span>Length</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="939674453%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-user-nickname-max-length.html"><span class="token function">getUserNicknameMaxLength</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the maximum character length for user nicknames.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-723669849%2FFunctions%2F251403983" anchor-label="getUserNicknameMinLength" id="-723669849%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-user-nickname-min-length.html"><span>get</span><wbr><span>User</span><wbr><span>Nickname</span><wbr><span>Min</span><wbr><span><span>Length</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-723669849%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-user-nickname-min-length.html"><span class="token function">getUserNicknameMinLength</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the minimum character length for user nicknames.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1877025536%2FFunctions%2F251403983" anchor-label="initialize" id="-1877025536%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="initialize.html"><span><span>initialize</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1877025536%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="initialize.html"><span class="token function">initialize</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Registers default values for auth settings if they are missing.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="935984621%2FFunctions%2F251403983" anchor-label="resetManagementAuthSettings" id="935984621%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="reset-management-auth-settings.html"><span>reset</span><wbr><span>Management</span><wbr><span>Auth</span><wbr><span><span>Settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="935984621%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="reset-management-auth-settings.html"><span class="token function">resetManagementAuthSettings</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings/ManagementAuthSettings///PointingToDeclaration/">ManagementAuthSettings</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Resets management auth settings to default configuration values.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1199088734%2FFunctions%2F251403983" anchor-label="updateManagementAuthSettings" id="1199088734%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update-management-auth-settings.html"><span>update</span><wbr><span>Management</span><wbr><span>Auth</span><wbr><span><span>Settings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1199088734%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="update-management-auth-settings.html"><span class="token function">updateManagementAuthSettings</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">managementAuthSettings<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.settings/ManagementAuthSettings///PointingToDeclaration/">ManagementAuthSettings</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Persists management auth settings.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

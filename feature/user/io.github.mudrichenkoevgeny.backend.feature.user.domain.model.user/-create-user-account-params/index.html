@@ -1,0 +1,280 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>CreateUserAccountParams</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    backend-platform-sdk
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">0.0.23
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":feature:user/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":feature:user/main" data-filter=":feature:user/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    backend-platform-sdk
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="user::io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user/CreateUserAccountParams///PointingToDeclaration//251403983">
+  <div class="breadcrumbs"><a href="../../index.html">user</a><span class="delimiter">/</span><a href="../index.html">io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user</a><span class="delimiter">/</span><span class="current">CreateUserAccountParams</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Create</span><wbr><span>User</span><wbr><span>Account</span><wbr><span><span>Params</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">CreateUserAccountParams</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>role<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role/UserRole///PointingToDeclaration/">UserRole</span><span class="token operator"> = </span>UserRole.USER<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>accountStatus<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus/UserAccountStatus///PointingToDeclaration/">UserAccountStatus</span><span class="token operator"> = </span>UserAccountStatus.ACTIVE<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>authorityLevel<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>permissions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission/PermissionCode///PointingToDeclaration/">PermissionCode</span><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>storageConfiguration<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user/UserStorageConfiguration///PointingToDeclaration/">UserStorageConfiguration</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>nickname<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>displayName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>avatarFileId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/FileId///PointingToDeclaration/">FileId</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>birthdate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><p class="paragraph">Domain-layer parameter holder for creating a user entity profile in <a href="../../io.github.mudrichenkoevgeny.backend.feature.user.manager.user/-user-manager/index.html">UserManager</a>.</p><p class="paragraph">Encapsulates core user account settings, role, authority level, permissions, and profile fields, excluding authentication credentials (email/password).</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="798112735%2FConstructors%2F251403983" anchor-label="CreateUserAccountParams" id="798112735%2FConstructors%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-create-user-account-params.html"><span>Create</span><wbr><span>User</span><wbr><span>Account</span><wbr><span><span>Params</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="798112735%2FConstructors%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">role<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role/UserRole///PointingToDeclaration/">UserRole</span><span class="token operator"> = </span>UserRole.USER<span class="token punctuation">, </span></span><span class="parameter ">accountStatus<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus/UserAccountStatus///PointingToDeclaration/">UserAccountStatus</span><span class="token operator"> = </span>UserAccountStatus.ACTIVE<span class="token punctuation">, </span></span><span class="parameter ">authorityLevel<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter ">permissions<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission/PermissionCode///PointingToDeclaration/">PermissionCode</span><span class="token operator">&gt;</span><span class="token operator"> = </span>emptySet()<span class="token punctuation">, </span></span><span class="parameter ">storageConfiguration<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user/UserStorageConfiguration///PointingToDeclaration/">UserStorageConfiguration</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">nickname<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">displayName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">avatarFileId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/FileId///PointingToDeclaration/">FileId</span><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">birthdate<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-711202795%2FProperties%2F251403983" anchor-label="accountStatus" id="-711202795%2FProperties%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="account-status.html"><span>account</span><wbr><span><span>Status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-711202795%2FProperties%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="account-status.html">accountStatus</a><span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus/UserAccountStatus///PointingToDeclaration/">UserAccountStatus</span></div><div class="brief "><p class="paragraph">initial account status</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1795700795%2FProperties%2F251403983" anchor-label="authorityLevel" id="-1795700795%2FProperties%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="authority-level.html"><span>authority</span><wbr><span><span>Level</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1795700795%2FProperties%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="authority-level.html">authorityLevel</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">numerical rank of the user's authority</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1096489078%2FProperties%2F251403983" anchor-label="avatarFileId" id="1096489078%2FProperties%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="avatar-file-id.html"><span>avatar</span><wbr><span>File</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1096489078%2FProperties%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="avatar-file-id.html">avatarFileId</a><span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file/FileId///PointingToDeclaration/">FileId</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">optional avatar image file identifier</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-965085465%2FProperties%2F251403983" anchor-label="birthdate" id="-965085465%2FProperties%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="birthdate.html"><span><span>birthdate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-965085465%2FProperties%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="birthdate.html">birthdate</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-instant/index.html">Instant</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">optional user birthdate timestamp</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2067154009%2FProperties%2F251403983" anchor-label="displayName" id="-2067154009%2FProperties%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="display-name.html"><span>display</span><wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2067154009%2FProperties%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="display-name.html">displayName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">optional profile display name</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-398517064%2FProperties%2F251403983" anchor-label="nickname" id="-398517064%2FProperties%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="nickname.html"><span><span>nickname</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-398517064%2FProperties%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="nickname.html">nickname</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">optional handle nickname</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1535563120%2FProperties%2F251403983" anchor-label="permissions" id="1535563120%2FProperties%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="permissions.html"><span><span>permissions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1535563120%2FProperties%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="permissions.html">permissions</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission/PermissionCode///PointingToDeclaration/">PermissionCode</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">set of explicit permission codes assigned to the new user</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-982574544%2FProperties%2F251403983" anchor-label="role" id="-982574544%2FProperties%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="role.html"><span><span>role</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-982574544%2FProperties%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="role.html">role</a><span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role/UserRole///PointingToDeclaration/">UserRole</span></div><div class="brief "><p class="paragraph">assigned role for the new user account</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-290472437%2FProperties%2F251403983" anchor-label="storageConfiguration" id="-290472437%2FProperties%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="storage-configuration.html"><span>storage</span><wbr><span><span>Configuration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-290472437%2FProperties%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="storage-configuration.html">storageConfiguration</a><span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user/UserStorageConfiguration///PointingToDeclaration/">UserStorageConfiguration</span><span class="token operator">?</span></div><div class="brief "><p class="paragraph">optional storage configuration overrides and limits</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

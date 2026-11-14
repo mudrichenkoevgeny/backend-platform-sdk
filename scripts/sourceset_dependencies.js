@@ -1,0 +1,1 @@
+sourceset_dependencies = '{":core:settings/main":[],":core:database/main":[],":core:security/main":[],":core:common/main":[],":core:audit/main":[],":core:storage/main":[],":tools:detekt-rules/main":[],":core:observability/main":[],":feature:user/main":[],":core:events/main":[]}'

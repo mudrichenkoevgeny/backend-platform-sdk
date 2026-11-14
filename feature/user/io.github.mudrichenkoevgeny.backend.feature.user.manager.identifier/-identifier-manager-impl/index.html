@@ -1,0 +1,280 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>IdentifierManagerImpl</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    backend-platform-sdk
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">0.0.23
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":feature:user/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":feature:user/main" data-filter=":feature:user/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    backend-platform-sdk
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="user::io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier/IdentifierManagerImpl///PointingToDeclaration//251403983">
+  <div class="breadcrumbs"><a href="../../index.html">user</a><span class="delimiter">/</span><a href="../index.html">io.github.mudrichenkoevgeny.backend.feature.user.manager.identifier</a><span class="delimiter">/</span><span class="current">IdentifierManagerImpl</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Identifier</span><wbr><span>Manager</span><wbr><span><span>Impl</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Singleton///PointingToDeclaration/"><span class="token annotation builtin">Singleton</span></span></div></div><span class="token keyword">class </span><a href="index.html">IdentifierManagerImpl</a>&nbsp;<span><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Inject///PointingToDeclaration/"><span class="token annotation builtin">Inject</span></span>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">passwordHasher<span class="token operator">: </span><a href="../../../../core/security/io.github.mudrichenkoevgeny.backend.core.security.passwordhasher/-password-hasher/index.html">PasswordHasher</a><span class="token punctuation">, </span></span><span class="parameter ">userManager<span class="token operator">: </span><a href="../../io.github.mudrichenkoevgeny.backend.feature.user.manager.user/-user-manager/index.html">UserManager</a><span class="token punctuation">, </span></span><span class="parameter ">userIdentifierRepository<span class="token operator">: </span><a href="../../io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier/-user-identifier-repository/index.html">UserIdentifierRepository</a><span class="token punctuation">, </span></span><span class="parameter ">clock<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-clock/index.html">Clock</a></span></span><span class="token punctuation">)</span> : <a href="../-identifier-manager/index.html">IdentifierManager</a></div><p class="paragraph">Default <a href="../-identifier-manager/index.html">IdentifierManager</a> implementation.</p><p class="paragraph">Wraps repository operations in <a href="../../../../core/database/io.github.mudrichenkoevgeny.backend.core.database.util/index.html">dbQuery</a> and uses <a href="../../../../core/security/io.github.mudrichenkoevgeny.backend.core.security.passwordhasher/-password-hasher/index.html">PasswordHasher</a> to hash passwords for password-based providers before persisting identifier records via <a href="../../io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier/-user-identifier-repository/index.html">UserIdentifierRepository</a>.</p><p class="paragraph">For management reads, applies role-scoped visibility and masked/unmasked output rules derived from <span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission/IdentifierPermissionCode///PointingToDeclaration/">IdentifierPermissionCode</span>.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="tableheader">Constructors</h2>
+        <div class="table"><a data-name="-205127129%2FConstructors%2F251403983" anchor-label="IdentifierManagerImpl" id="-205127129%2FConstructors%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-identifier-manager-impl.html"><span>Identifier</span><wbr><span>Manager</span><wbr><span><span>Impl</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-205127129%2FConstructors%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Inject///PointingToDeclaration/"><span class="token annotation builtin">Inject</span></span></div></div><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">passwordHasher<span class="token operator">: </span><a href="../../../../core/security/io.github.mudrichenkoevgeny.backend.core.security.passwordhasher/-password-hasher/index.html">PasswordHasher</a><span class="token punctuation">, </span></span><span class="parameter ">userManager<span class="token operator">: </span><a href="../../io.github.mudrichenkoevgeny.backend.feature.user.manager.user/-user-manager/index.html">UserManager</a><span class="token punctuation">, </span></span><span class="parameter ">userIdentifierRepository<span class="token operator">: </span><a href="../../io.github.mudrichenkoevgeny.backend.feature.user.database.repository.useridentifier/-user-identifier-repository/index.html">UserIdentifierRepository</a><span class="token punctuation">, </span></span><span class="parameter ">clock<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-clock/index.html">Clock</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="559792802%2FFunctions%2F251403983" anchor-label="clearUserIdentifierPassword" id="559792802%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="clear-user-identifier-password.html"><span>clear</span><wbr><span>User</span><wbr><span>Identifier</span><wbr><span><span>Password</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="559792802%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="clear-user-identifier-password.html"><span class="token function">clearUserIdentifierPassword</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">userIdentifier<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierInternal///PointingToDeclaration/">UserIdentifierInternal</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierPrivate///PointingToDeclaration/">UserIdentifierPrivate</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Revokes and clears the password hash from the specified user identifier record.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1918705090%2FFunctions%2F251403983" anchor-label="createUserIdentifier" id="1918705090%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-user-identifier.html"><span>create</span><wbr><span>User</span><wbr><span><span>Identifier</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1918705090%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="create-user-identifier.html"><span class="token function">createUserIdentifier</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">userId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user/UserId///PointingToDeclaration/">UserId</span><span class="token punctuation">, </span></span><span class="parameter ">userAuthProvider<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider/UserAuthProvider///PointingToDeclaration/">UserAuthProvider</span><span class="token punctuation">, </span></span><span class="parameter ">identifier<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">password<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">externalProviderEmail<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">externalProviderDisplayName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierInternal///PointingToDeclaration/">UserIdentifierInternal</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Creates a new identifier for a user.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1178244201%2FFunctions%2F251403983" anchor-label="deleteUserIdentifier" id="1178244201%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="delete-user-identifier.html"><span>delete</span><wbr><span>User</span><wbr><span><span>Identifier</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1178244201%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="delete-user-identifier.html"><span class="token function">deleteUserIdentifier</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">userIdentifierId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierId///PointingToDeclaration/">UserIdentifierId</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Deletes an identifier by id.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="385845409%2FFunctions%2F251403983" anchor-label="getUserIdentifierInternalById" id="385845409%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-user-identifier-internal-by-id.html"><span>get</span><wbr><span>User</span><wbr><span>Identifier</span><wbr><span>Internal</span><wbr><span>By</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="385845409%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="get-user-identifier-internal-by-id.html"><span class="token function">getUserIdentifierInternalById</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">userIdentifierId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierId///PointingToDeclaration/">UserIdentifierId</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierInternal///PointingToDeclaration/">UserIdentifierInternal</span><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Loads an identifier by its ID for internal system use. Returns full internal data including sensitive fields like hashed passwords.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1829081303%2FFunctions%2F251403983" anchor-label="getUserIdentifierInternalByProvider" id="1829081303%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-user-identifier-internal-by-provider.html"><span>get</span><wbr><span>User</span><wbr><span>Identifier</span><wbr><span>Internal</span><wbr><span>By</span><wbr><span><span>Provider</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1829081303%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="get-user-identifier-internal-by-provider.html"><span class="token function">getUserIdentifierInternalByProvider</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">userAuthProvider<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider/UserAuthProvider///PointingToDeclaration/">UserAuthProvider</span><span class="token punctuation">, </span></span><span class="parameter ">identifier<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierInternal///PointingToDeclaration/">UserIdentifierInternal</span><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Loads an identifier by provider and identifier value for internal system use.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1127004585%2FFunctions%2F251403983" anchor-label="getUserIdentifierPrivateById" id="-1127004585%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-user-identifier-private-by-id.html"><span>get</span><wbr><span>User</span><wbr><span>Identifier</span><wbr><span>Private</span><wbr><span>By</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1127004585%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="get-user-identifier-private-by-id.html"><span class="token function">getUserIdentifierPrivateById</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">userIdentifierId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierId///PointingToDeclaration/">UserIdentifierId</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierPrivate///PointingToDeclaration/">UserIdentifierPrivate</span><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Loads an identifier by its ID for the current user's self-management.</p></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="get-user-identifier-private-by-id.html"><span class="token function">getUserIdentifierPrivateById</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">userIdentifierId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierId///PointingToDeclaration/">UserIdentifierId</span><span class="token punctuation">, </span></span><span class="parameter ">managementUserId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user/UserId///PointingToDeclaration/">UserId</span><span class="token punctuation">, </span></span><span class="parameter ">managementUserPermissionCodes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission/PermissionCode///PointingToDeclaration/">PermissionCode</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierPrivate///PointingToDeclaration/">UserIdentifierPrivate</span><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Loads an identifier by id with permission-aware access checks for management use.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-708557657%2FFunctions%2F251403983" anchor-label="getUserIdentifiersInternalPageByUserId" id="-708557657%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-user-identifiers-internal-page-by-user-id.html"><span>get</span><wbr><span>User</span><wbr><span>Identifiers</span><wbr><span>Internal</span><wbr><span>Page</span><wbr><span>By</span><wbr><span>User</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-708557657%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="get-user-identifiers-internal-page-by-user-id.html"><span class="token function">getUserIdentifiersInternalPageByUserId</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">userId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user/UserId///PointingToDeclaration/">UserId</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierInternal///PointingToDeclaration/">UserIdentifierInternal</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns all internal identifiers belonging to a user.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="639429658%2FFunctions%2F251403983" anchor-label="getUserIdentifiersSummaryPage" id="639429658%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-user-identifiers-summary-page.html"><span>get</span><wbr><span>User</span><wbr><span>Identifiers</span><wbr><span>Summary</span><wbr><span><span>Page</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="639429658%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="get-user-identifiers-summary-page.html"><span class="token function">getUserIdentifiersSummaryPage</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">userId<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user/UserId///PointingToDeclaration/">UserId</span><span class="token punctuation">, </span></span><span class="parameter ">queryParams<span class="token operator">: </span><a href="../../io.github.mudrichenkoevgeny.backend.feature.user.network.model/-self-identifier-list-query-params/index.html">SelfIdentifierListQueryParams</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing/PagedResult///PointingToDeclaration/">PagedResult</span><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierSummary///PointingToDeclaration/">UserIdentifierSummary</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns a paginated list of identifier summaries belonging to the current user.</p></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="get-user-identifiers-summary-page.html"><span class="token function">getUserIdentifiersSummaryPage</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">managementUserPermissionCodes<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission/PermissionCode///PointingToDeclaration/">PermissionCode</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">queryParams<span class="token operator">: </span><a href="../../io.github.mudrichenkoevgeny.backend.feature.user.network.model/-management-identifier-list-query-params/index.html">ManagementIdentifierListQueryParams</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing/PagedResult///PointingToDeclaration/">PagedResult</span><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierSummary///PointingToDeclaration/">UserIdentifierSummary</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns a paginated list of identifier summaries for management purposes. Applies role-scoped visibility based on <a href="../-identifier-manager/get-user-identifiers-summary-page.html">managementUserPermissionCodes</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1957726277%2FFunctions%2F251403983" anchor-label="updateUserIdentifierPassword" id="1957726277%2FFunctions%2F251403983" data-filterable-set=":feature:user/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":feature:user/main" data-filterable-set=":feature:user/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update-user-identifier-password.html"><span>update</span><wbr><span>User</span><wbr><span>Identifier</span><wbr><span><span>Password</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1957726277%2FFunctions%2F251403983"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":feature:user/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">suspend override </span><span class="token keyword">fun </span><a href="update-user-identifier-password.html"><span class="token function">updateUserIdentifierPassword</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">userIdentifier<span class="token operator">: </span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierInternal///PointingToDeclaration/">UserIdentifierInternal</span><span class="token punctuation">, </span></span><span class="parameter ">password<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../../../core/common/io.github.mudrichenkoevgeny.backend.core.common.result/-app-result/index.html">AppResult</a><span class="token operator">&lt;</span><span data-unresolved-link="io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier/UserIdentifierPrivate///PointingToDeclaration/">UserIdentifierPrivate</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Updates the identifier value and password for an existing identifier.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

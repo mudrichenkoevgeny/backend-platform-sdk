@@ -1,0 +1,636 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>SecurityEnvKeys</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    backend-platform-sdk
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">0.0.23
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":core:security/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":core:security/main" data-filter=":core:security/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    backend-platform-sdk
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="security::io.github.mudrichenkoevgeny.backend.core.security.config.envkeys/SecurityEnvKeys///PointingToDeclaration//-747618391">
+  <div class="breadcrumbs"><a href="../../index.html">security</a><span class="delimiter">/</span><a href="../index.html">io.github.mudrichenkoevgeny.backend.core.security.config.envkeys</a><span class="delimiter">/</span><span class="current">SecurityEnvKeys</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Security</span><wbr><span>Env</span><wbr><span><span>Keys</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">SecurityEnvKeys</a></div><p class="paragraph">Environment variable keys used to build <a href="../../io.github.mudrichenkoevgeny.backend.core.security.config.model/-security-config/index.html">SecurityConfig</a>.</p><p class="paragraph">These keys are read by <a href="../../io.github.mudrichenkoevgeny.backend.core.security.config.factory/-security-config-factory-impl/index.html">SecurityConfigFactoryImpl</a>. Consumers typically provide these variables in the host application's deployment configuration.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1825966954%2FProperties%2F-747618391" anchor-label="ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS" id="-1825966954%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-c-h-e-c-k_-i-n-t-e-r-v-a-l_-s-e-c-o-n-d-s.html"><span>ACCOUNT_</span><wbr><span>LOCKOUT_</span><wbr><span>CHECK_</span><wbr><span>INTERVAL_</span><wbr><span>SECONDS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1825966954%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-c-h-e-c-k_-i-n-t-e-r-v-a-l_-s-e-c-o-n-d-s.html">ACCOUNT_LOCKOUT_CHECK_INTERVAL_SECONDS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1162349566%2FProperties%2F-747618391" anchor-label="ACCOUNT_LOCKOUT_DURATION_SECONDS" id="1162349566%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-d-u-r-a-t-i-o-n_-s-e-c-o-n-d-s.html"><span>ACCOUNT_</span><wbr><span>LOCKOUT_</span><wbr><span>DURATION_</span><wbr><span>SECONDS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1162349566%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-d-u-r-a-t-i-o-n_-s-e-c-o-n-d-s.html">ACCOUNT_LOCKOUT_DURATION_SECONDS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="833741745%2FProperties%2F-747618391" anchor-label="ACCOUNT_LOCKOUT_INDEFINITE_THRESHOLD" id="833741745%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-i-n-d-e-f-i-n-i-t-e_-t-h-r-e-s-h-o-l-d.html"><span>ACCOUNT_</span><wbr><span>LOCKOUT_</span><wbr><span>INDEFINITE_</span><wbr><span>THRESHOLD</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="833741745%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-i-n-d-e-f-i-n-i-t-e_-t-h-r-e-s-h-o-l-d.html">ACCOUNT_LOCKOUT_INDEFINITE_THRESHOLD</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2145253767%2FProperties%2F-747618391" anchor-label="ACCOUNT_LOCKOUT_MAX_FAILED_OTP_ATTEMPTS" id="2145253767%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-m-a-x_-f-a-i-l-e-d_-o-t-p_-a-t-t-e-m-p-t-s.html"><span>ACCOUNT_</span><wbr><span>LOCKOUT_</span><wbr><span>MAX_</span><wbr><span>FAILED_</span><wbr><span>OTP_</span><wbr><span>ATTEMPTS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2145253767%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-m-a-x_-f-a-i-l-e-d_-o-t-p_-a-t-t-e-m-p-t-s.html">ACCOUNT_LOCKOUT_MAX_FAILED_OTP_ATTEMPTS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1628370289%2FProperties%2F-747618391" anchor-label="ACCOUNT_LOCKOUT_MAX_FAILED_PASSWORD_ATTEMPTS" id="-1628370289%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-m-a-x_-f-a-i-l-e-d_-p-a-s-s-w-o-r-d_-a-t-t-e-m-p-t-s.html"><span>ACCOUNT_</span><wbr><span>LOCKOUT_</span><wbr><span>MAX_</span><wbr><span>FAILED_</span><wbr><span>PASSWORD_</span><wbr><span>ATTEMPTS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1628370289%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-m-a-x_-f-a-i-l-e-d_-p-a-s-s-w-o-r-d_-a-t-t-e-m-p-t-s.html">ACCOUNT_LOCKOUT_MAX_FAILED_PASSWORD_ATTEMPTS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-305972949%2FProperties%2F-747618391" anchor-label="ACCOUNT_LOCKOUT_MAX_FAILED_TOTP_ATTEMPTS" id="-305972949%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-m-a-x_-f-a-i-l-e-d_-t-o-t-p_-a-t-t-e-m-p-t-s.html"><span>ACCOUNT_</span><wbr><span>LOCKOUT_</span><wbr><span>MAX_</span><wbr><span>FAILED_</span><wbr><span>TOTP_</span><wbr><span>ATTEMPTS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-305972949%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-m-a-x_-f-a-i-l-e-d_-t-o-t-p_-a-t-t-e-m-p-t-s.html">ACCOUNT_LOCKOUT_MAX_FAILED_TOTP_ATTEMPTS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1768869474%2FProperties%2F-747618391" anchor-label="ACCOUNT_LOCKOUT_WINDOW_SECONDS" id="1768869474%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-w-i-n-d-o-w_-s-e-c-o-n-d-s.html"><span>ACCOUNT_</span><wbr><span>LOCKOUT_</span><wbr><span>WINDOW_</span><wbr><span>SECONDS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1768869474%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-c-c-o-u-n-t_-l-o-c-k-o-u-t_-w-i-n-d-o-w_-s-e-c-o-n-d-s.html">ACCOUNT_LOCKOUT_WINDOW_SECONDS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="338446120%2FProperties%2F-747618391" anchor-label="AUTH_REALM" id="338446120%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-u-t-h_-r-e-a-l-m.html"><span>AUTH_</span><wbr><span>REALM</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="338446120%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-a-u-t-h_-r-e-a-l-m.html">AUTH_REALM</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="335555805%2FProperties%2F-747618391" anchor-label="IP_BLACKLIST_MANAGEMENT" id="335555805%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-p_-b-l-a-c-k-l-i-s-t_-m-a-n-a-g-e-m-e-n-t.html"><span>IP_</span><wbr><span>BLACKLIST_</span><wbr><span>MANAGEMENT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="335555805%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-p_-b-l-a-c-k-l-i-s-t_-m-a-n-a-g-e-m-e-n-t.html">IP_BLACKLIST_MANAGEMENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1568143094%2FProperties%2F-747618391" anchor-label="IP_BLACKLIST_OPEN" id="1568143094%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-p_-b-l-a-c-k-l-i-s-t_-o-p-e-n.html"><span>IP_</span><wbr><span>BLACKLIST_</span><wbr><span>OPEN</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1568143094%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-p_-b-l-a-c-k-l-i-s-t_-o-p-e-n.html">IP_BLACKLIST_OPEN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="327251719%2FProperties%2F-747618391" anchor-label="IP_WHITELIST_MANAGEMENT" id="327251719%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-p_-w-h-i-t-e-l-i-s-t_-m-a-n-a-g-e-m-e-n-t.html"><span>IP_</span><wbr><span>WHITELIST_</span><wbr><span>MANAGEMENT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="327251719%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-p_-w-h-i-t-e-l-i-s-t_-m-a-n-a-g-e-m-e-n-t.html">IP_WHITELIST_MANAGEMENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1100916896%2FProperties%2F-747618391" anchor-label="IP_WHITELIST_OPEN" id="1100916896%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-p_-w-h-i-t-e-l-i-s-t_-o-p-e-n.html"><span>IP_</span><wbr><span>WHITELIST_</span><wbr><span>OPEN</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1100916896%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-p_-w-h-i-t-e-l-i-s-t_-o-p-e-n.html">IP_WHITELIST_OPEN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="972696410%2FProperties%2F-747618391" anchor-label="IS_IP_BLACKLIST_ENABLED_MANAGEMENT" id="972696410%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-s_-i-p_-b-l-a-c-k-l-i-s-t_-e-n-a-b-l-e-d_-m-a-n-a-g-e-m-e-n-t.html"><span>IS_</span><wbr><span>IP_</span><wbr><span>BLACKLIST_</span><wbr><span>ENABLED_</span><wbr><span>MANAGEMENT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="972696410%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-s_-i-p_-b-l-a-c-k-l-i-s-t_-e-n-a-b-l-e-d_-m-a-n-a-g-e-m-e-n-t.html">IS_IP_BLACKLIST_ENABLED_MANAGEMENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1937909965%2FProperties%2F-747618391" anchor-label="IS_IP_BLACKLIST_ENABLED_OPEN" id="-1937909965%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-s_-i-p_-b-l-a-c-k-l-i-s-t_-e-n-a-b-l-e-d_-o-p-e-n.html"><span>IS_</span><wbr><span>IP_</span><wbr><span>BLACKLIST_</span><wbr><span>ENABLED_</span><wbr><span>OPEN</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1937909965%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-s_-i-p_-b-l-a-c-k-l-i-s-t_-e-n-a-b-l-e-d_-o-p-e-n.html">IS_IP_BLACKLIST_ENABLED_OPEN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1137421188%2FProperties%2F-747618391" anchor-label="IS_IP_WHITELIST_ENABLED_MANAGEMENT" id="1137421188%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-s_-i-p_-w-h-i-t-e-l-i-s-t_-e-n-a-b-l-e-d_-m-a-n-a-g-e-m-e-n-t.html"><span>IS_</span><wbr><span>IP_</span><wbr><span>WHITELIST_</span><wbr><span>ENABLED_</span><wbr><span>MANAGEMENT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1137421188%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-s_-i-p_-w-h-i-t-e-l-i-s-t_-e-n-a-b-l-e-d_-m-a-n-a-g-e-m-e-n-t.html">IS_IP_WHITELIST_ENABLED_MANAGEMENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1328202019%2FProperties%2F-747618391" anchor-label="IS_IP_WHITELIST_ENABLED_OPEN" id="-1328202019%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-s_-i-p_-w-h-i-t-e-l-i-s-t_-e-n-a-b-l-e-d_-o-p-e-n.html"><span>IS_</span><wbr><span>IP_</span><wbr><span>WHITELIST_</span><wbr><span>ENABLED_</span><wbr><span>OPEN</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1328202019%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-s_-i-p_-w-h-i-t-e-l-i-s-t_-e-n-a-b-l-e-d_-o-p-e-n.html">IS_IP_WHITELIST_ENABLED_OPEN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1766478670%2FProperties%2F-747618391" anchor-label="IS_SELF_SERVICE_UNLOCK_ENABLED" id="-1766478670%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-s_-s-e-l-f_-s-e-r-v-i-c-e_-u-n-l-o-c-k_-e-n-a-b-l-e-d.html"><span>IS_</span><wbr><span>SELF_</span><wbr><span>SERVICE_</span><wbr><span>UNLOCK_</span><wbr><span>ENABLED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1766478670%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-i-s_-s-e-l-f_-s-e-r-v-i-c-e_-u-n-l-o-c-k_-e-n-a-b-l-e-d.html">IS_SELF_SERVICE_UNLOCK_ENABLED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1843136628%2FProperties%2F-747618391" anchor-label="MFA_TOKEN_EXPIRATION_SECONDS" id="1843136628%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-m-f-a_-t-o-k-e-n_-e-x-p-i-r-a-t-i-o-n_-s-e-c-o-n-d-s.html"><span>MFA_</span><wbr><span>TOKEN_</span><wbr><span>EXPIRATION_</span><wbr><span>SECONDS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1843136628%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-m-f-a_-t-o-k-e-n_-e-x-p-i-r-a-t-i-o-n_-s-e-c-o-n-d-s.html">MFA_TOKEN_EXPIRATION_SECONDS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2141702243%2FProperties%2F-747618391" anchor-label="OTP_EXPIRATION_SECONDS" id="-2141702243%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-o-t-p_-e-x-p-i-r-a-t-i-o-n_-s-e-c-o-n-d-s.html"><span>OTP_</span><wbr><span>EXPIRATION_</span><wbr><span>SECONDS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2141702243%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-o-t-p_-e-x-p-i-r-a-t-i-o-n_-s-e-c-o-n-d-s.html">OTP_EXPIRATION_SECONDS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-39387%2FProperties%2F-747618391" anchor-label="OTP_NUMBER_OF_SYMBOLS" id="-39387%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-o-t-p_-n-u-m-b-e-r_-o-f_-s-y-m-b-o-l-s.html"><span>OTP_</span><wbr><span>NUMBER_</span><wbr><span>OF_</span><wbr><span>SYMBOLS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-39387%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-o-t-p_-n-u-m-b-e-r_-o-f_-s-y-m-b-o-l-s.html">OTP_NUMBER_OF_SYMBOLS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1464195593%2FProperties%2F-747618391" anchor-label="OTP_RETRY_AFTER_SECONDS" id="1464195593%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-o-t-p_-r-e-t-r-y_-a-f-t-e-r_-s-e-c-o-n-d-s.html"><span>OTP_</span><wbr><span>RETRY_</span><wbr><span>AFTER_</span><wbr><span>SECONDS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1464195593%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-o-t-p_-r-e-t-r-y_-a-f-t-e-r_-s-e-c-o-n-d-s.html">OTP_RETRY_AFTER_SECONDS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1461695507%2FProperties%2F-747618391" anchor-label="PASSWORD_POLICY_COMMON_PASSWORDS" id="1461695507%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-c-o-m-m-o-n_-p-a-s-s-w-o-r-d-s.html"><span>PASSWORD_</span><wbr><span>POLICY_</span><wbr><span>COMMON_</span><wbr><span>PASSWORDS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1461695507%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-c-o-m-m-o-n_-p-a-s-s-w-o-r-d-s.html">PASSWORD_POLICY_COMMON_PASSWORDS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="468768932%2FProperties%2F-747618391" anchor-label="PASSWORD_POLICY_MIN_LENGTH" id="468768932%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-m-i-n_-l-e-n-g-t-h.html"><span>PASSWORD_</span><wbr><span>POLICY_</span><wbr><span>MIN_</span><wbr><span>LENGTH</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="468768932%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-m-i-n_-l-e-n-g-t-h.html">PASSWORD_POLICY_MIN_LENGTH</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2112886736%2FProperties%2F-747618391" anchor-label="PASSWORD_POLICY_REQUIRE_DIGIT" id="-2112886736%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-r-e-q-u-i-r-e_-d-i-g-i-t.html"><span>PASSWORD_</span><wbr><span>POLICY_</span><wbr><span>REQUIRE_</span><wbr><span>DIGIT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2112886736%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-r-e-q-u-i-r-e_-d-i-g-i-t.html">PASSWORD_POLICY_REQUIRE_DIGIT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1692266121%2FProperties%2F-747618391" anchor-label="PASSWORD_POLICY_REQUIRE_LETTER" id="-1692266121%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-r-e-q-u-i-r-e_-l-e-t-t-e-r.html"><span>PASSWORD_</span><wbr><span>POLICY_</span><wbr><span>REQUIRE_</span><wbr><span>LETTER</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1692266121%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-r-e-q-u-i-r-e_-l-e-t-t-e-r.html">PASSWORD_POLICY_REQUIRE_LETTER</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-188733233%2FProperties%2F-747618391" anchor-label="PASSWORD_POLICY_REQUIRE_LOWER_CASE" id="-188733233%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-r-e-q-u-i-r-e_-l-o-w-e-r_-c-a-s-e.html"><span>PASSWORD_</span><wbr><span>POLICY_</span><wbr><span>REQUIRE_</span><wbr><span>LOWER_</span><wbr><span>CASE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-188733233%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-r-e-q-u-i-r-e_-l-o-w-e-r_-c-a-s-e.html">PASSWORD_POLICY_REQUIRE_LOWER_CASE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-169810143%2FProperties%2F-747618391" anchor-label="PASSWORD_POLICY_REQUIRE_SPECIAL_CHAR" id="-169810143%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-r-e-q-u-i-r-e_-s-p-e-c-i-a-l_-c-h-a-r.html"><span>PASSWORD_</span><wbr><span>POLICY_</span><wbr><span>REQUIRE_</span><wbr><span>SPECIAL_</span><wbr><span>CHAR</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-169810143%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-r-e-q-u-i-r-e_-s-p-e-c-i-a-l_-c-h-a-r.html">PASSWORD_POLICY_REQUIRE_SPECIAL_CHAR</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1587054256%2FProperties%2F-747618391" anchor-label="PASSWORD_POLICY_REQUIRE_UPPER_CASE" id="1587054256%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-r-e-q-u-i-r-e_-u-p-p-e-r_-c-a-s-e.html"><span>PASSWORD_</span><wbr><span>POLICY_</span><wbr><span>REQUIRE_</span><wbr><span>UPPER_</span><wbr><span>CASE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1587054256%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-p-a-s-s-w-o-r-d_-p-o-l-i-c-y_-r-e-q-u-i-r-e_-u-p-p-e-r_-c-a-s-e.html">PASSWORD_POLICY_REQUIRE_UPPER_CASE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-923226912%2FProperties%2F-747618391" anchor-label="RATE_LIMIT_MAX_REQUESTS_PER_PERIOD" id="-923226912%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-a-t-e_-l-i-m-i-t_-m-a-x_-r-e-q-u-e-s-t-s_-p-e-r_-p-e-r-i-o-d.html"><span>RATE_</span><wbr><span>LIMIT_</span><wbr><span>MAX_</span><wbr><span>REQUESTS_</span><wbr><span>PER_</span><wbr><span>PERIOD</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-923226912%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-a-t-e_-l-i-m-i-t_-m-a-x_-r-e-q-u-e-s-t-s_-p-e-r_-p-e-r-i-o-d.html">RATE_LIMIT_MAX_REQUESTS_PER_PERIOD</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1867004758%2FProperties%2F-747618391" anchor-label="RATE_LIMIT_PERIOD_SECONDS" id="1867004758%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-a-t-e_-l-i-m-i-t_-p-e-r-i-o-d_-s-e-c-o-n-d-s.html"><span>RATE_</span><wbr><span>LIMIT_</span><wbr><span>PERIOD_</span><wbr><span>SECONDS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1867004758%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-a-t-e_-l-i-m-i-t_-p-e-r-i-o-d_-s-e-c-o-n-d-s.html">RATE_LIMIT_PERIOD_SECONDS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1986617387%2FProperties%2F-747618391" anchor-label="RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS" id="1986617387%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-c-e-n-t_-a-u-t-h-e-n-t-i-c-a-t-i-o-n_-v-a-l-i-d-i-t-y_-i-n_-s-e-c-o-n-d-s.html"><span>RECENT_</span><wbr><span>AUTHENTICATION_</span><wbr><span>VALIDITY_</span><wbr><span>IN_</span><wbr><span>SECONDS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1986617387%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-e-c-e-n-t_-a-u-t-h-e-n-t-i-c-a-t-i-o-n_-v-a-l-i-d-i-t-y_-i-n_-s-e-c-o-n-d-s.html">RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="160602327%2FProperties%2F-747618391" anchor-label="RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT" id="160602327%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-c-e-n-t_-a-u-t-h-e-n-t-i-c-a-t-i-o-n_-v-a-l-i-d-i-t-y_-i-n_-s-e-c-o-n-d-s_-f-o-r_-m-a-n-a-g-e-m-e-n-t.html"><span>RECENT_</span><wbr><span>AUTHENTICATION_</span><wbr><span>VALIDITY_</span><wbr><span>IN_</span><wbr><span>SECONDS_</span><wbr><span>FOR_</span><wbr><span>MANAGEMENT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="160602327%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-e-c-e-n-t_-a-u-t-h-e-n-t-i-c-a-t-i-o-n_-v-a-l-i-d-i-t-y_-i-n_-s-e-c-o-n-d-s_-f-o-r_-m-a-n-a-g-e-m-e-n-t.html">RECENT_AUTHENTICATION_VALIDITY_IN_SECONDS_FOR_MANAGEMENT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1629039781%2FProperties%2F-747618391" anchor-label="REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS" id="-1629039781%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-f-r-e-s-h_-t-o-k-e-n_-r-o-t-a-t-i-o-n_-g-r-a-c-e_-p-e-r-i-o-d_-s-e-c-o-n-d-s.html"><span>REFRESH_</span><wbr><span>TOKEN_</span><wbr><span>ROTATION_</span><wbr><span>GRACE_</span><wbr><span>PERIOD_</span><wbr><span>SECONDS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1629039781%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-r-e-f-r-e-s-h_-t-o-k-e-n_-r-o-t-a-t-i-o-n_-g-r-a-c-e_-p-e-r-i-o-d_-s-e-c-o-n-d-s.html">REFRESH_TOKEN_ROTATION_GRACE_PERIOD_SECONDS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1498262147%2FProperties%2F-747618391" anchor-label="TOTP_ENCRYPTION_SECRET_FILE" id="1498262147%2FProperties%2F-747618391" data-filterable-set=":core:security/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:security/main" data-filterable-set=":core:security/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-t-o-t-p_-e-n-c-r-y-p-t-i-o-n_-s-e-c-r-e-t_-f-i-l-e.html"><span>TOTP_</span><wbr><span>ENCRYPTION_</span><wbr><span>SECRET_</span><wbr><span>FILE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1498262147%2FProperties%2F-747618391"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:security/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-t-o-t-p_-e-n-c-r-y-p-t-i-o-n_-s-e-c-r-e-t_-f-i-l-e.html">TOTP_ENCRYPTION_SECRET_FILE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

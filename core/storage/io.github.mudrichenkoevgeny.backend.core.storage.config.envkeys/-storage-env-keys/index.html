@@ -1,0 +1,516 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>StorageEnvKeys</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../../index.html" tabindex="1">
+                    backend-platform-sdk
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">0.0.23
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":core:storage/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":core:storage/main" data-filter=":core:storage/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    backend-platform-sdk
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="storage::io.github.mudrichenkoevgeny.backend.core.storage.config.envkeys/StorageEnvKeys///PointingToDeclaration//-199525728">
+  <div class="breadcrumbs"><a href="../../index.html">storage</a><span class="delimiter">/</span><a href="../index.html">io.github.mudrichenkoevgeny.backend.core.storage.config.envkeys</a><span class="delimiter">/</span><span class="current">StorageEnvKeys</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Storage</span><wbr><span>Env</span><wbr><span><span>Keys</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">StorageEnvKeys</a></div><p class="paragraph">Environment variable names used to build <a href="../../io.github.mudrichenkoevgeny.backend.core.storage.config.model/-storage-config/index.html">StorageConfig</a>.</p><p class="paragraph">Consumed by <a href="../../io.github.mudrichenkoevgeny.backend.core.storage.config.factory/-storage-config-factory/index.html">StorageConfigFactory</a> implementations.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-657811328%2FProperties%2F-199525728" anchor-label="S3_ACCESS_KEY_FILE" id="-657811328%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s3_-a-c-c-e-s-s_-k-e-y_-f-i-l-e.html"><span>S3_</span><wbr><span>ACCESS_</span><wbr><span>KEY_</span><wbr><span>FILE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-657811328%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s3_-a-c-c-e-s-s_-k-e-y_-f-i-l-e.html">S3_ACCESS_KEY_FILE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Secret file path for the S3 access key.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-171297741%2FProperties%2F-199525728" anchor-label="S3_BUCKET_NAME_PRIVATE" id="-171297741%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s3_-b-u-c-k-e-t_-n-a-m-e_-p-r-i-v-a-t-e.html"><span>S3_</span><wbr><span>BUCKET_</span><wbr><span>NAME_</span><wbr><span>PRIVATE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-171297741%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s3_-b-u-c-k-e-t_-n-a-m-e_-p-r-i-v-a-t-e.html">S3_BUCKET_NAME_PRIVATE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Default S3 bucket name for private files.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1282926043%2FProperties%2F-199525728" anchor-label="S3_BUCKET_NAME_PUBLIC" id="1282926043%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s3_-b-u-c-k-e-t_-n-a-m-e_-p-u-b-l-i-c.html"><span>S3_</span><wbr><span>BUCKET_</span><wbr><span>NAME_</span><wbr><span>PUBLIC</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1282926043%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s3_-b-u-c-k-e-t_-n-a-m-e_-p-u-b-l-i-c.html">S3_BUCKET_NAME_PUBLIC</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Default S3 bucket name for public files.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-648369106%2FProperties%2F-199525728" anchor-label="S3_ENDPOINT" id="-648369106%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s3_-e-n-d-p-o-i-n-t.html"><span>S3_</span><wbr><span>ENDPOINT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-648369106%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s3_-e-n-d-p-o-i-n-t.html">S3_ENDPOINT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">S3 endpoint URL.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="119039384%2FProperties%2F-199525728" anchor-label="S3_FORCE_PATH_STYLE" id="119039384%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s3_-f-o-r-c-e_-p-a-t-h_-s-t-y-l-e.html"><span>S3_</span><wbr><span>FORCE_</span><wbr><span>PATH_</span><wbr><span>STYLE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="119039384%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s3_-f-o-r-c-e_-p-a-t-h_-s-t-y-l-e.html">S3_FORCE_PATH_STYLE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Whether to force path-style S3 addressing ("true"/"false").</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="361954890%2FProperties%2F-199525728" anchor-label="S3_PUBLIC_URL" id="361954890%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s3_-p-u-b-l-i-c_-u-r-l.html"><span>S3_</span><wbr><span>PUBLIC_</span><wbr><span>URL</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="361954890%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s3_-p-u-b-l-i-c_-u-r-l.html">S3_PUBLIC_URL</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Base public URL used to build object URLs.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1599014609%2FProperties%2F-199525728" anchor-label="S3_REGION" id="-1599014609%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s3_-r-e-g-i-o-n.html"><span>S3_</span><wbr><span>REGION</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1599014609%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s3_-r-e-g-i-o-n.html">S3_REGION</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">S3 region name.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1781473588%2FProperties%2F-199525728" anchor-label="S3_SECRET_KEY_FILE" id="-1781473588%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s3_-s-e-c-r-e-t_-k-e-y_-f-i-l-e.html"><span>S3_</span><wbr><span>SECRET_</span><wbr><span>KEY_</span><wbr><span>FILE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1781473588%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s3_-s-e-c-r-e-t_-k-e-y_-f-i-l-e.html">S3_SECRET_KEY_FILE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Secret file path for the S3 secret key.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-402759258%2FProperties%2F-199525728" anchor-label="STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS" id="-402759258%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-d-e-l-e-t-e-d_-f-i-l-e-s_-c-l-e-a-n-u-p_-i-n-t-e-r-v-a-l_-s-e-c-o-n-d-s.html"><span>STORAGE_</span><wbr><span>DELETED_</span><wbr><span>FILES_</span><wbr><span>CLEANUP_</span><wbr><span>INTERVAL_</span><wbr><span>SECONDS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-402759258%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-d-e-l-e-t-e-d_-f-i-l-e-s_-c-l-e-a-n-u-p_-i-n-t-e-r-v-a-l_-s-e-c-o-n-d-s.html">STORAGE_DELETED_FILES_CLEANUP_INTERVAL_SECONDS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Interval in seconds for physical cleanup of soft-deleted files from S3/storage.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-906034287%2FProperties%2F-199525728" anchor-label="STORAGE_IMGPROXY_BASE_URL" id="-906034287%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-b-a-s-e_-u-r-l.html"><span>STORAGE_</span><wbr><span>IMGPROXY_</span><wbr><span>BASE_</span><wbr><span>URL</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-906034287%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-b-a-s-e_-u-r-l.html">STORAGE_IMGPROXY_BASE_URL</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Base public URL of the imgproxy service.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1436296583%2FProperties%2F-199525728" anchor-label="STORAGE_IMGPROXY_ENABLED" id="1436296583%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-e-n-a-b-l-e-d.html"><span>STORAGE_</span><wbr><span>IMGPROXY_</span><wbr><span>ENABLED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1436296583%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-e-n-a-b-l-e-d.html">STORAGE_IMGPROXY_ENABLED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Whether imgproxy image/video preview and thumbnail generation is enabled.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1971770793%2FProperties%2F-199525728" anchor-label="STORAGE_IMGPROXY_KEY" id="1971770793%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-k-e-y.html"><span>STORAGE_</span><wbr><span>IMGPROXY_</span><wbr><span>KEY</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1971770793%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-k-e-y.html">STORAGE_IMGPROXY_KEY</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Hex-encoded secret key used for imgproxy HMAC-SHA256 URL signing (fallback if key file is not provided).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="786590550%2FProperties%2F-199525728" anchor-label="STORAGE_IMGPROXY_KEY_FILE" id="786590550%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-k-e-y_-f-i-l-e.html"><span>STORAGE_</span><wbr><span>IMGPROXY_</span><wbr><span>KEY_</span><wbr><span>FILE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="786590550%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-k-e-y_-f-i-l-e.html">STORAGE_IMGPROXY_KEY_FILE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Secret file path for the imgproxy HMAC-SHA256 secret key.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="639076020%2FProperties%2F-199525728" anchor-label="STORAGE_IMGPROXY_PRESETS" id="639076020%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-p-r-e-s-e-t-s.html"><span>STORAGE_</span><wbr><span>IMGPROXY_</span><wbr><span>PRESETS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="639076020%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-p-r-e-s-e-t-s.html">STORAGE_IMGPROXY_PRESETS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">String of preset specifications for imgproxy (format: "thumbnail=150:fill,preview=600:fit").</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-42261956%2FProperties%2F-199525728" anchor-label="STORAGE_IMGPROXY_SALT" id="-42261956%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-s-a-l-t.html"><span>STORAGE_</span><wbr><span>IMGPROXY_</span><wbr><span>SALT</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-42261956%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-s-a-l-t.html">STORAGE_IMGPROXY_SALT</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Hex-encoded salt used for imgproxy HMAC-SHA256 URL signing (fallback if salt file is not provided).</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="714474147%2FProperties%2F-199525728" anchor-label="STORAGE_IMGPROXY_SALT_FILE" id="714474147%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-s-a-l-t_-f-i-l-e.html"><span>STORAGE_</span><wbr><span>IMGPROXY_</span><wbr><span>SALT_</span><wbr><span>FILE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="714474147%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-s-a-l-t_-f-i-l-e.html">STORAGE_IMGPROXY_SALT_FILE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Secret file path for the imgproxy HMAC-SHA256 salt.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1744501319%2FProperties%2F-199525728" anchor-label="STORAGE_IMGPROXY_VIDEO_THUMBNAIL_SECOND" id="1744501319%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-v-i-d-e-o_-t-h-u-m-b-n-a-i-l_-s-e-c-o-n-d.html"><span>STORAGE_</span><wbr><span>IMGPROXY_</span><wbr><span>VIDEO_</span><wbr><span>THUMBNAIL_</span><wbr><span>SECOND</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1744501319%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-i-m-g-p-r-o-x-y_-v-i-d-e-o_-t-h-u-m-b-n-a-i-l_-s-e-c-o-n-d.html">STORAGE_IMGPROXY_VIDEO_THUMBNAIL_SECOND</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Default video seek timestamp in seconds when extracting video thumbnail frames.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="165378842%2FProperties%2F-199525728" anchor-label="STORAGE_IS_DEDUPLICATION_ENABLED" id="165378842%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-i-s_-d-e-d-u-p-l-i-c-a-t-i-o-n_-e-n-a-b-l-e-d.html"><span>STORAGE_</span><wbr><span>IS_</span><wbr><span>DEDUPLICATION_</span><wbr><span>ENABLED</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="165378842%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-i-s_-d-e-d-u-p-l-i-c-a-t-i-o-n_-e-n-a-b-l-e-d.html">STORAGE_IS_DEDUPLICATION_ENABLED</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Whether Content-Addressable Storage (CAS) file deduplication is enabled.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1050955646%2FProperties%2F-199525728" anchor-label="STORAGE_MAINTENANCE_BATCH_SIZE" id="-1050955646%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-m-a-i-n-t-e-n-a-n-c-e_-b-a-t-c-h_-s-i-z-e.html"><span>STORAGE_</span><wbr><span>MAINTENANCE_</span><wbr><span>BATCH_</span><wbr><span>SIZE</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1050955646%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-m-a-i-n-t-e-n-a-n-c-e_-b-a-t-c-h_-s-i-z-e.html">STORAGE_MAINTENANCE_BATCH_SIZE</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Batch size for background maintenance jobs.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-758304529%2FProperties%2F-199525728" anchor-label="STORAGE_MAX_PENDING_UPLOADS_MANAGEMENT_USER" id="-758304529%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-m-a-x_-p-e-n-d-i-n-g_-u-p-l-o-a-d-s_-m-a-n-a-g-e-m-e-n-t_-u-s-e-r.html"><span>STORAGE_</span><wbr><span>MAX_</span><wbr><span>PENDING_</span><wbr><span>UPLOADS_</span><wbr><span>MANAGEMENT_</span><wbr><span>USER</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-758304529%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-m-a-x_-p-e-n-d-i-n-g_-u-p-l-o-a-d-s_-m-a-n-a-g-e-m-e-n-t_-u-s-e-r.html">STORAGE_MAX_PENDING_UPLOADS_MANAGEMENT_USER</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Maximum concurrent unfinalized upload sessions for management users.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1632679050%2FProperties%2F-199525728" anchor-label="STORAGE_MAX_PENDING_UPLOADS_OPEN_USER" id="-1632679050%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-m-a-x_-p-e-n-d-i-n-g_-u-p-l-o-a-d-s_-o-p-e-n_-u-s-e-r.html"><span>STORAGE_</span><wbr><span>MAX_</span><wbr><span>PENDING_</span><wbr><span>UPLOADS_</span><wbr><span>OPEN_</span><wbr><span>USER</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1632679050%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-m-a-x_-p-e-n-d-i-n-g_-u-p-l-o-a-d-s_-o-p-e-n_-u-s-e-r.html">STORAGE_MAX_PENDING_UPLOADS_OPEN_USER</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Maximum concurrent unfinalized upload sessions for open users.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="825065014%2FProperties%2F-199525728" anchor-label="STORAGE_MAX_UPLOAD_SIZE_BYTES" id="825065014%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-m-a-x_-u-p-l-o-a-d_-s-i-z-e_-b-y-t-e-s.html"><span>STORAGE_</span><wbr><span>MAX_</span><wbr><span>UPLOAD_</span><wbr><span>SIZE_</span><wbr><span>BYTES</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="825065014%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-m-a-x_-u-p-l-o-a-d_-s-i-z-e_-b-y-t-e-s.html">STORAGE_MAX_UPLOAD_SIZE_BYTES</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Maximum permitted single file upload size in bytes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1761047688%2FProperties%2F-199525728" anchor-label="STORAGE_MIN_UPLOAD_SIZE_BYTES" id="1761047688%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-m-i-n_-u-p-l-o-a-d_-s-i-z-e_-b-y-t-e-s.html"><span>STORAGE_</span><wbr><span>MIN_</span><wbr><span>UPLOAD_</span><wbr><span>SIZE_</span><wbr><span>BYTES</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1761047688%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-m-i-n_-u-p-l-o-a-d_-s-i-z-e_-b-y-t-e-s.html">STORAGE_MIN_UPLOAD_SIZE_BYTES</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Minimum permitted single file upload size in bytes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1487271787%2FProperties%2F-199525728" anchor-label="STORAGE_PRESIGNED_URL_EXPIRATION_SECONDS" id="-1487271787%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-p-r-e-s-i-g-n-e-d_-u-r-l_-e-x-p-i-r-a-t-i-o-n_-s-e-c-o-n-d-s.html"><span>STORAGE_</span><wbr><span>PRESIGNED_</span><wbr><span>URL_</span><wbr><span>EXPIRATION_</span><wbr><span>SECONDS</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1487271787%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-p-r-e-s-i-g-n-e-d_-u-r-l_-e-x-p-i-r-a-t-i-o-n_-s-e-c-o-n-d-s.html">STORAGE_PRESIGNED_URL_EXPIRATION_SECONDS</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Presigned URL expiration duration in seconds.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="346040853%2FProperties%2F-199525728" anchor-label="STORAGE_TOTAL_QUOTA_MANAGEMENT_USER_BYTES" id="346040853%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-t-o-t-a-l_-q-u-o-t-a_-m-a-n-a-g-e-m-e-n-t_-u-s-e-r_-b-y-t-e-s.html"><span>STORAGE_</span><wbr><span>TOTAL_</span><wbr><span>QUOTA_</span><wbr><span>MANAGEMENT_</span><wbr><span>USER_</span><wbr><span>BYTES</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="346040853%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-t-o-t-a-l_-q-u-o-t-a_-m-a-n-a-g-e-m-e-n-t_-u-s-e-r_-b-y-t-e-s.html">STORAGE_TOTAL_QUOTA_MANAGEMENT_USER_BYTES</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Cumulative storage quota in bytes per management user.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1076838180%2FProperties%2F-199525728" anchor-label="STORAGE_TOTAL_QUOTA_OPEN_USER_BYTES" id="-1076838180%2FProperties%2F-199525728" data-filterable-set=":core:storage/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core:storage/main" data-filterable-set=":core:storage/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-s-t-o-r-a-g-e_-t-o-t-a-l_-q-u-o-t-a_-o-p-e-n_-u-s-e-r_-b-y-t-e-s.html"><span>STORAGE_</span><wbr><span>TOTAL_</span><wbr><span>QUOTA_</span><wbr><span>OPEN_</span><wbr><span>USER_</span><wbr><span>BYTES</span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1076838180%2FProperties%2F-199525728"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core:storage/main"><div class="symbol monospace"><span class="token keyword">const </span><span class="token keyword">val </span><a href="-s-t-o-r-a-g-e_-t-o-t-a-l_-q-u-o-t-a_-o-p-e-n_-u-s-e-r_-b-y-t-e-s.html">STORAGE_TOTAL_QUOTA_OPEN_USER_BYTES</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Cumulative storage quota in bytes per regular open user.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© 2026 Copyright</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
