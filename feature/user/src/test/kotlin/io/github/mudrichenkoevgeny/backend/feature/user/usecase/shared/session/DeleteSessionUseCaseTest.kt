@@ -16,6 +16,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.a
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionPrivate
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -56,6 +57,14 @@ class DeleteSessionUseCaseTest {
                 context.userId.asHexDashString()
             )
         } returns AppResult.Success(Unit)
+
+        val userSessionPrivate = createTestUserSessionPrivate(
+            id = targetSessionId,
+            userId = context.userId
+        )
+        coEvery {
+            sessionManager.getUserSessionPrivate(targetSessionId)
+        } returns AppResult.Success(userSessionPrivate)
 
         coEvery {
             sessionManager.deleteSessionById(targetSessionId)
@@ -144,6 +153,15 @@ class DeleteSessionUseCaseTest {
                 any()
             )
         } returns AppResult.Success(Unit)
+
+        val userSessionPrivate = createTestUserSessionPrivate(
+            id = targetSessionId,
+            userId = context.userId
+        )
+        coEvery {
+            sessionManager.getUserSessionPrivate(targetSessionId)
+        } returns AppResult.Success(userSessionPrivate)
+
         coEvery { sessionManager.deleteSessionById(targetSessionId) } returns AppResult.Error(error)
 
         val result = useCase(

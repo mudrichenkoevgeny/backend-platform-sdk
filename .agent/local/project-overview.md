@@ -42,14 +42,15 @@ alwaysApply: true
 - **`feature/user`:** Comprehensive IAM (Identity & Access Management). Auth (Email, Phone, OAuth), JWT sessions, 2FA, access control (blocklists), account security (lockouts, new device detection), global and security settings management, audit trail logs, and WebSocket synchronization.
 
 ### Tools Modules (`tools/`)
-*Build-time plugins and static analysis extensions.*
+*Build-time plugins, generators, and static analysis extensions.*
 
 - **`tools/gradle-plugin`:** Gradle convention plugins (`backend-platform-sdk-gradle-plugin`):
   - `backendAgentSync`: Synchronizes `.agent/global/backend` AI rules into consumer microservice projects.
   - `backendQuality`: Configures Detekt (with custom rules) and Ktlint.
   - `backendKotlinConvention`: Configures Kotlin compiler options and `explicitApi()` mode.
   - `backendPublishConvention`: Configures Maven Central publishing, Dokka, and POM metadata.
-- **`tools:detekt-rules`:** Custom Detekt rules enforcing platform-specific coding conventions and static analysis.
+- **`tools/detekt-rules`:** Custom Detekt rules enforcing platform-specific coding conventions and static analysis ([module README](../../tools/detekt-rules/README.md)).
+- **`tools/project-generator`:** Internal JVM generator triggered via `./gradlew initProject` / `./gradlew scaffoldProject` for scaffolding clean, minimal, production-ready downstream Ktor microservice repositories (`<name>-backend`) on disk ([module README](../../tools/project-generator/README.md)).
 
 ### Infrastructure & Reference
 - **`bom`:** Bill of Materials (`backend-platform-sdk-bom`) for dependency version alignment.

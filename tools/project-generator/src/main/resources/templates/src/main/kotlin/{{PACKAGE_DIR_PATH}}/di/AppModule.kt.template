@@ -1,0 +1,29 @@
+package {{PACKAGE_NAME}}.di
+
+import dagger.Binds
+import dagger.Module
+import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.AppInfo
+import {{PACKAGE_NAME}}.{{PROJECT_TITLE}}AppInfo
+import {{PACKAGE_NAME}}.lifecycle.AppShutdownHook
+import {{PACKAGE_NAME}}.lifecycle.AppShutdownHookImpl
+import {{PACKAGE_NAME}}.lifecycle.RuntimeShutdownHookRegistrar
+import {{PACKAGE_NAME}}.lifecycle.ShutdownHookRegistrar
+import javax.inject.Singleton
+
+/**
+ * App-specific Dagger bindings for {{PROJECT_TITLE}}.
+ */
+@Module
+public interface AppModule {
+    @Binds
+    @Singleton
+    public fun bindAppMetadata(impl: {{PROJECT_TITLE}}AppInfo): AppInfo
+
+    @Binds
+    @Singleton
+    public fun bindAppShutdownHook(appShutdownHookImpl: AppShutdownHookImpl): AppShutdownHook
+
+    @Binds
+    @Singleton
+    public fun bindShutdownHookRegistrar(impl: RuntimeShutdownHookRegistrar): ShutdownHookRegistrar
+}

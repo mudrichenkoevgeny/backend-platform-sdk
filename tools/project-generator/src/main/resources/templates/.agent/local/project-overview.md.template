@@ -1,0 +1,11 @@
+---
+description: Project overview for {{PROJECT_TITLE}} Backend
+alwaysApply: true
+---
+
+# {{PROJECT_TITLE}} Backend — Overview
+
+## Project identity
+- **Type:** Kotlin/Ktor backend microservice application built on `backend-platform-sdk`.
+- **Package:** `{{PACKAGE_NAME}}`
+- **Group:** `{{GROUP_ID}}`

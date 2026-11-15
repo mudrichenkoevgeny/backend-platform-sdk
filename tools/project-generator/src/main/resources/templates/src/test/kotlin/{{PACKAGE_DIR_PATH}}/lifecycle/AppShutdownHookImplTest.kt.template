@@ -1,0 +1,53 @@
+package {{PACKAGE_NAME}}.lifecycle
+
+import io.github.mudrichenkoevgeny.backend.core.audit.service.AuditService
+import io.github.mudrichenkoevgeny.backend.core.database.manager.database.DatabaseManager
+import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
+import io.ktor.server.engine.EmbeddedServer
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.slot
+import io.mockk.verify
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Test
+
+class AppShutdownHookImplTest {
+    @Test
+    fun `register attaches thread hook that stops server and shuts down database and redis`() {
+        val databaseManager = mockk<DatabaseManager>(relaxed = true)
+        val redisManager = mockk<RedisManager>(relaxed = true)
+        val auditService = mockk<AuditService>(relaxed = true)
+        val shutdownHookRegistrar = mockk<ShutdownHookRegistrar>()
+        val server = mockk<EmbeddedServer<*, *>>()
+
+        val threadSlot = slot<Thread>()
+        every { shutdownHookRegistrar.addShutdownHook(capture(threadSlot)) } just runs
+        every { server.stop(any(), any()) } just runs
+        coEvery { auditService.awaitAll() } returns Unit
+
+        val appShutdownHook = AppShutdownHookImpl(
+            databaseManager = databaseManager,
+            redisManager = redisManager,
+            auditService = auditService,
+            shutdownHookRegistrar = shutdownHookRegistrar
+        )
+
+        appShutdownHook.register(server)
+
+        verify { shutdownHookRegistrar.addShutdownHook(any()) }
+
+        val capturedThread = threadSlot.captured
+        assertNotNull(capturedThread)
+
+        capturedThread.run()
+
+        verify { server.stop(3000L, 5000L) }
+        coVerify { auditService.awaitAll() }
+        verify { databaseManager.shutdown() }
+        verify { redisManager.shutdown() }
+    }
+}

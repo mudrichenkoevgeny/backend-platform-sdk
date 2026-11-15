@@ -57,7 +57,7 @@ public class GetSessionUseCase @Inject constructor(
             return AppResult.Error(UserError.UserForbidden(currentUserId))
         }
 
-        return sessionManager.getUserSessionPrivate(
+        val sessionResult = sessionManager.getUserSessionPrivate(
             userSessionId = sessionId
         ).mapNotNullOrError(
             CommonError.NotFound(
@@ -65,5 +65,21 @@ public class GetSessionUseCase @Inject constructor(
                 identifier = sessionId.asHexDashString()
             )
         )
+
+        val session = when (sessionResult) {
+            is AppResult.Error -> return sessionResult
+            is AppResult.Success -> sessionResult.data
+        }
+
+        if (session.userId != currentUserId) {
+            return AppResult.Error(
+                CommonError.NotFound(
+                    resource = UserSessionPrivate::class.java.simpleName,
+                    identifier = sessionId.asHexDashString()
+                )
+            )
+        }
+
+        return AppResult.Success(session)
     }
 }

@@ -1,0 +1,14 @@
+package {{PACKAGE_NAME}}.lifecycle
+
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/**
+ * Production [ShutdownHookRegistrar] backed by [Runtime.getRuntime].
+ */
+@Singleton
+public class RuntimeShutdownHookRegistrar @Inject constructor() : ShutdownHookRegistrar {
+    override fun addShutdownHook(hook: Thread) {
+        Runtime.getRuntime().addShutdownHook(hook)
+    }
+}

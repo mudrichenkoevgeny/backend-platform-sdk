@@ -1,0 +1,48 @@
+package {{PACKAGE_NAME}}
+
+import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathResolverConfig
+import io.github.mudrichenkoevgeny.backend.core.common.config.pathresolver.PathResolverConfigHolder
+import io.github.mudrichenkoevgeny.backend.core.common.server.KtorServer
+import io.github.mudrichenkoevgeny.backend.core.database.cli.DatabaseCliArgs
+import {{PACKAGE_NAME}}.appbootstrap.AppBootstrap
+import {{PACKAGE_NAME}}.di.AppComponent
+import {{PACKAGE_NAME}}.di.DaggerAppComponent
+import {{PACKAGE_NAME}}.lifecycle.AppShutdownHook
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import java.util.TimeZone
+import kotlin.system.exitProcess
+
+/**
+ * Main application entry point for {{PROJECT_TITLE}}.
+ */
+public fun main(args: Array<String>) {
+    TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+
+    PathResolverConfigHolder.set(PathResolverConfig())
+
+    val backgroundScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    val appComponent = DaggerAppComponent.factory().create(
+        backgroundScope = backgroundScope
+    )
+
+    if (DatabaseCliArgs.MIGRATE_ONLY in args) {
+        appComponent.databaseMigrator().migrate(
+            dataSource = appComponent.dataSource(),
+            resources = appComponent.databaseConfig().migrationPaths
+        )
+        exitProcess(0)
+    }
+
+    appComponent.appBootstrap().initialize()
+
+    val server = KtorServer.create(appComponent.commonConfig()) {
+        module(appComponent)
+    }
+
+    appComponent.appShutdownHook().register(server)
+
+    server.start(wait = true)
+}

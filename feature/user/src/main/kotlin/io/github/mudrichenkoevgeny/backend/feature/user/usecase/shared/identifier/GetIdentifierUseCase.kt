@@ -60,11 +60,27 @@ public class GetIdentifierUseCase @Inject constructor(
             return AppResult.Error(UserError.UserForbidden(currentUserId))
         }
 
-        return identifierManager.getUserIdentifierPrivateById(identifierId).mapNotNullOrError(
+        val identifierResult = identifierManager.getUserIdentifierPrivateById(identifierId).mapNotNullOrError(
             CommonError.NotFound(
                 resource = UserIdentifierPrivate::class.java.simpleName,
                 identifier = identifierId.asHexDashString()
             )
         )
+
+        val identifier = when (identifierResult) {
+            is AppResult.Error -> return identifierResult
+            is AppResult.Success -> identifierResult.data
+        }
+
+        if (identifier.userId != currentUserId) {
+            return AppResult.Error(
+                CommonError.NotFound(
+                    resource = UserIdentifierPrivate::class.java.simpleName,
+                    identifier = identifierId.asHexDashString()
+                )
+            )
+        }
+
+        return AppResult.Success(identifier)
     }
 }

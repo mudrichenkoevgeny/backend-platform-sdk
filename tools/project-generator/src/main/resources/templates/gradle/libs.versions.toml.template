@@ -1,0 +1,88 @@
+[versions]
+# Plugins & Core
+jvmToolchain = "{{TOOLCHAIN_JVM}}"
+kotlin = "{{KOTLIN_VERSION}}"
+ksp = "{{KSP_VERSION}}"
+
+# SDK & Foundation
+backend-platform-sdk = "{{BACKEND_SDK_VERSION}}"
+shared-foundation = "{{SF_VERSION}}"
+
+# Dependencies
+kotlinx-serialization = "{{SERIALIZATION_VERSION}}"
+kotlinx-coroutines = "{{COROUTINES_VERSION}}"
+ktor = "{{KTOR_VERSION}}"
+dagger = "{{DAGGER_VERSION}}"
+javax-inject = "{{JAVAX_INJECT_VERSION}}"
+exposed = "{{EXPOSED_VERSION}}"
+postgresql = "{{POSTGRESQL_VERSION}}"
+flyway = "{{FLYWAY_VERSION}}"
+slf4j = "{{SLF4J_VERSION}}"
+detekt = "{{DETEKT_VERSION}}"
+ktlint = "{{KTLINT_VERSION}}"
+junit = "{{JUNIT_VERSION}}"
+mockk = "{{MOCKK_VERSION}}"
+testcontainers = "{{TESTCONTAINERS_VERSION}}"
+
+# Optional downstream contract library (uncomment if linking a custom shared contract library)
+# {{PROJECT_NAME}}-shared = "1.0.0-SNAPSHOT"
+
+[libraries]
+# Backend Platform SDK BOM
+backend-platform-sdk-bom = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-bom", version.ref = "backend-platform-sdk" }
+shared-foundation-bom = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-bom", version.ref = "shared-foundation" }
+
+# SDK Core Modules
+backend-platform-sdk-core-common = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-common" }
+backend-platform-sdk-core-database = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-database" }
+backend-platform-sdk-core-settings = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-settings" }
+backend-platform-sdk-core-security = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-security" }
+backend-platform-sdk-core-audit = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-audit" }
+backend-platform-sdk-core-events = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-events" }
+backend-platform-sdk-core-observability = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-observability" }
+backend-platform-sdk-core-storage = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-storage" }
+backend-platform-sdk-feature-user = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-feature-user" }
+
+# Shared Foundation
+shared-foundation-feature-user = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-feature-user" }
+shared-foundation-core-security = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-security" }
+
+# Kotlin & Coroutines
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+
+# Ktor
+ktor-server-core = { group = "io.ktor", name = "ktor-server-core-jvm", version.ref = "ktor" }
+ktor-events = { group = "io.ktor", name = "ktor-events", version.ref = "ktor" }
+
+# DI
+dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
+dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
+javax-inject = { group = "javax.inject", name = "javax.inject", version.ref = "javax-inject" }
+
+# Database
+exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
+exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
+postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
+flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway" }
+flyway-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway" }
+
+# Logging
+slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+
+# Testing
+junit-jupiter-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit" }
+junit-jupiter-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit" }
+kotlin-test-junit5 = { group = "org.jetbrains.kotlin", name = "kotlin-test-junit5", version.ref = "kotlin" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+testcontainers-core = { group = "org.testcontainers", name = "testcontainers", version.ref = "testcontainers" }
+testcontainers-postgresql = { group = "org.testcontainers", name = "postgresql", version.ref = "testcontainers" }
+testcontainers-junit-jupiter = { group = "org.testcontainers", name = "junit-jupiter", version.ref = "testcontainers" }
+
+[plugins]
+backend-platform-agent-sync = { id = "io.github.mudrichenkoevgeny.backend-platform-agent-sync", version.ref = "backend-platform-sdk" }
+backend-platform-quality = { id = "io.github.mudrichenkoevgeny.backend-platform-quality", version.ref = "backend-platform-sdk" }
+backend-platform-kotlin = { id = "io.github.mudrichenkoevgeny.backend-platform-kotlin", version.ref = "backend-platform-sdk" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+java-library = { id = "java-library" }

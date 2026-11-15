@@ -1,0 +1,7 @@
+# {{PROJECT_TITLE}} Backend — Project Standards
+
+This project is built on top of `backend-platform-sdk`.
+
+## Core Principles
+- All architectural and coding standards from `.agent/global/backend/` apply.
+- Refer to `AGENTS.md` in `backend-platform-sdk` for full SDK guidelines.

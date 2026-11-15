@@ -16,11 +16,30 @@ apiValidation {
     ignoredProjects += listOf(
         "bom",
         "sample",
-        "detekt-rules"
+        "detekt-rules",
+        "project-generator"
     )
 }
 
 allprojects {
     group = rootProject.group
     version = rootProject.version
+}
+
+tasks.register("initProject") {
+    group = "scaffolding"
+    description = "Scaffolds a new backend microservice project"
+    dependsOn(":tools:project-generator:initProject")
+}
+
+tasks.register("scaffoldProject") {
+    group = "scaffolding"
+    description = "Alias for initProject"
+    dependsOn(":tools:project-generator:scaffoldProject")
+}
+
+tasks.register("verifyProjectGenerator") {
+    group = "verification"
+    description = "Scaffolds a test project and runs ./gradlew check jar E2E"
+    dependsOn(":tools:project-generator:verifyProjectGenerator")
 }

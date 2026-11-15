@@ -36,7 +36,7 @@ class GetIdentifierUseCaseTest {
             id = userId,
             accountStatus = UserAccountStatus.ACTIVE
         )
-        val userIdentifier = createTestUserIdentifierPrivate(id = targetIdentifierId)
+        val userIdentifier = createTestUserIdentifierPrivate(id = targetIdentifierId, userId = userId)
 
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery {
@@ -85,7 +85,7 @@ class GetIdentifierUseCaseTest {
             id = userId,
             accountStatus = UserAccountStatus.READ_ONLY
         )
-        val userIdentifier = createTestUserIdentifierPrivate(id = targetIdentifierId)
+        val userIdentifier = createTestUserIdentifierPrivate(id = targetIdentifierId, userId = userId)
 
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery {

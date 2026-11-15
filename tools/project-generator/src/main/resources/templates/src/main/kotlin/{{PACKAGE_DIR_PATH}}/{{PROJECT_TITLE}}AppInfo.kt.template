@@ -1,0 +1,14 @@
+package {{PACKAGE_NAME}}
+
+import io.github.mudrichenkoevgeny.backend.core.common.config.common.model.AppInfo
+import javax.inject.Inject
+import javax.inject.Singleton
+
+/**
+ * Application metadata implementation for {{PROJECT_TITLE}}.
+ */
+@Singleton
+public class {{PROJECT_TITLE}}AppInfo @Inject constructor() : AppInfo {
+    override val version: String = "1.0.0"
+    override val appName: String = "{{PROJECT_TITLE}} Backend"
+}

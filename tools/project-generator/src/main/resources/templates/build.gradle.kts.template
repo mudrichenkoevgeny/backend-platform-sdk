@@ -1,0 +1,70 @@
+plugins {
+    alias(libs.plugins.backend.platform.agent.sync)
+    alias(libs.plugins.backend.platform.quality)
+    alias(libs.plugins.backend.platform.kotlin)
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.java.library)
+}
+
+dependencies {
+    api(platform(libs.backend.platform.sdk.bom))
+    api(platform(libs.shared.foundation.bom))
+
+    api(libs.backend.platform.sdk.core.common)
+    api(libs.backend.platform.sdk.core.database)
+    api(libs.backend.platform.sdk.core.settings)
+    api(libs.backend.platform.sdk.core.security)
+    api(libs.backend.platform.sdk.core.audit)
+    api(libs.backend.platform.sdk.core.events)
+    api(libs.backend.platform.sdk.core.observability)
+    api(libs.backend.platform.sdk.core.storage)
+    api(libs.backend.platform.sdk.feature.user)
+
+    api(libs.shared.foundation.feature.user)
+    implementation(libs.shared.foundation.core.security)
+    implementation(libs.slf4j)
+
+    implementation(libs.kotlinx.coroutines.core)
+
+    api(libs.ktor.server.core)
+    api(libs.ktor.events)
+
+    ksp(libs.dagger.compiler)
+    api(libs.dagger)
+    api(libs.javax.inject)
+
+    implementation(libs.exposed.jdbc)
+
+    testImplementation(testFixtures(libs.backend.platform.sdk.core.common))
+    testImplementation(libs.junit.jupiter.api)
+    testRuntimeOnly(libs.kotlin.test.junit5)
+    testRuntimeOnly(libs.junit.jupiter.engine)
+    testImplementation(libs.mockk)
+    testImplementation(libs.testcontainers.core)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.testcontainers.junit.jupiter)
+    testImplementation(libs.flyway.core)
+    testRuntimeOnly(libs.flyway.postgresql)
+    testImplementation(libs.postgresql)
+    testImplementation(libs.exposed.core)
+    testImplementation(libs.exposed.jdbc)
+}
+
+tasks.register(
+    "copyLibs",
+    Copy::class
+) {
+    from(configurations.runtimeClasspath)
+    into(layout.buildDirectory.dir("libs/lib"))
+}
+
+tasks.jar {
+    archiveFileName.set("app.jar")
+    finalizedBy("copyLibs")
+    manifest {
+        attributes["Main-Class"] = "{{PACKAGE_NAME}}.MainKt"
+        attributes["Class-Path"] = configurations.runtimeClasspath.get().joinToString(" ") { "lib/${it.name}" }
+    }
+}

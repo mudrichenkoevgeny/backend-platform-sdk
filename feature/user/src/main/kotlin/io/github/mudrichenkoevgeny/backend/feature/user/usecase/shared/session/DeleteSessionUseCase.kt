@@ -3,6 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.session
 import io.github.mudrichenkoevgeny.backend.core.audit.error.AuditErrorConverter
 import io.github.mudrichenkoevgeny.backend.core.audit.logger.AuditLogger
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
+import io.github.mudrichenkoevgeny.backend.core.common.error.model.CommonError
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.security.ratelimiter.RateLimiter
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionManager
@@ -19,6 +20,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.r
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserWebSocketEventTypes
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -69,6 +71,33 @@ public class DeleteSessionUseCase @Inject constructor(
         if (rateLimitCheck is AppResult.Error) {
             return handleError(
                 error = rateLimitCheck.error,
+                actorId = auditActorId,
+                actorUserRole = auditActorUserRole,
+                resourceId = auditResourceId,
+                baseMetadata = auditMetadata
+            )
+        }
+
+        val sessionResult = sessionManager.getUserSessionPrivate(sessionId)
+        when (sessionResult) {
+            is AppResult.Success -> {
+                val session = sessionResult.data
+                if (session == null || session.userId != currentUserId) {
+                    return handleError(
+                        error = CommonError.NotFound(
+                            resource = UserSessionPrivate::class.java.simpleName,
+                            identifier = sessionId.asHexDashString()
+                        ),
+                        actorId = auditActorId,
+                        actorUserRole = auditActorUserRole,
+                        resourceId = auditResourceId,
+                        baseMetadata = auditMetadata
+                    )
+                }
+            }
+
+            is AppResult.Error -> return handleError(
+                error = sessionResult.error,
                 actorId = auditActorId,
                 actorUserRole = auditActorUserRole,
                 resourceId = auditResourceId,

@@ -1,0 +1,124 @@
+package {{PACKAGE_NAME}}
+
+import io.github.mudrichenkoevgeny.backend.core.common.application.httpconfiguration.configureHTTP
+import io.github.mudrichenkoevgeny.backend.core.common.application.ratelimit.configureGlobalRateLimit
+import io.github.mudrichenkoevgeny.backend.core.common.application.serialization.configureSerialization
+import io.github.mudrichenkoevgeny.backend.core.common.application.statuspages.configureStatusPages
+import io.github.mudrichenkoevgeny.backend.core.common.application.websockets.configureWebSockets
+import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppEnvironment
+import io.github.mudrichenkoevgeny.backend.core.common.config.model.AppInstanceMode
+import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.route.setupSwaggerEndpoints
+import io.github.mudrichenkoevgeny.backend.core.common.routing.onPort
+import io.github.mudrichenkoevgeny.backend.core.observability.application.configureObservability
+import io.github.mudrichenkoevgeny.backend.core.observability.metrics.route.installMetricsEndpoint
+import io.github.mudrichenkoevgeny.backend.core.security.application.iprestriction.configureIpRestriction
+import {{PACKAGE_NAME}}.di.AppComponent
+import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.permissions.AuditPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.permission.SecurityPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.settings.domain.permission.SettingsPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.permission.StoragePermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.AuthSettingsPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.IdentifierPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.SessionPermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.permission.UserPermissionCode
+import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.routing.routing
+import kotlinx.coroutines.launch
+
+/**
+ * Ktor application module for {{PROJECT_TITLE}}.
+ */
+public fun Application.module(appComponent: AppComponent) {
+    val commonConfig = appComponent.commonConfig()
+    val telemetryProvider = appComponent.telemetryProvider()
+    val appLogger = appComponent.appLogger()
+
+    configureHTTP(
+        environment = commonConfig.environment,
+        allowedOrigins = commonConfig.allowedOrigins
+    )
+
+    this.monitor.subscribe(ApplicationStarted) {
+        if (commonConfig.instanceMode != AppInstanceMode.PUBLIC) {
+            appComponent.storageScheduledJobs().start()
+            appComponent.userScheduledJobs().start()
+
+            launch {
+                appComponent.healthCheckerManager().checkNonCriticalHealth()
+            }
+
+            launch {
+                appComponent.seedAdminAccountsUseCase()(
+                    permissionCodesForUserCreation = setOf(SettingsPermissionCode.GLOBAL_SETTINGS_UPDATE) + setOf(
+                        SecurityPermissionCode.SECURITY_SETTINGS_UPDATE
+                    ) + setOf(
+                        AuthSettingsPermissionCode.AUTH_SETTINGS_UPDATE
+                    ) + StoragePermissionCode.ALL + AuditPermissionCode.ALL + UserPermissionCode.ALL +
+                        IdentifierPermissionCode.ALL +
+                        SessionPermissionCode.ALL
+                )
+                appComponent.seedGlobalSettingsUseCase()()
+                appComponent.seedSecuritySettingsUseCase()()
+                appComponent.seedStorageSettingsUseCase()()
+                appComponent.seedAuthSettingsUseCase()()
+            }
+        }
+    }
+
+    appComponent.authenticationProvider().configureAuthentication(this)
+
+    configureSerialization()
+    configureObservability(
+        telemetryProvider,
+        appLogger
+    )
+    configureStatusPages(
+        appErrorParser = appComponent.appErrorParser(),
+        appLogger = appLogger
+    )
+    val securitySettingsProvider = appComponent.securitySettingsProvider()
+    configureIpRestriction(
+        commonConfig = commonConfig,
+        securitySettingsProvider = securitySettingsProvider,
+        validator = appComponent.ipRestrictionPolicyValidator()
+    )
+    configureGlobalRateLimit(
+        getMaxRequestsPerPeriod = { securitySettingsProvider.getMaxRequestsPerPeriod() },
+        getRateLimitPeriodSeconds = { securitySettingsProvider.getRateLimitPeriodSeconds() }
+    )
+    configureWebSockets()
+
+    appComponent.swaggerInitializer().initialize(this)
+
+    routing {
+        appComponent.managementHealthRouter().register(this)
+
+        onPort(commonConfig.ktorManagementPort) {
+            installMetricsEndpoint(telemetryProvider)
+        }
+
+        if (commonConfig.environment != AppEnvironment.PROD) {
+            setupSwaggerEndpoints()
+        }
+
+        when (commonConfig.instanceMode) {
+            AppInstanceMode.PUBLIC -> {
+                appComponent.openWebSocketRouter().register(this)
+                appComponent.openCoreUserRouter().register(this)
+            }
+
+            AppInstanceMode.MANAGEMENT -> {
+                appComponent.managementWebSocketRouter().register(this)
+                appComponent.managementCoreUserRouter().register(this)
+            }
+
+            AppInstanceMode.FULL -> {
+                appComponent.openWebSocketRouter().register(this)
+                appComponent.managementWebSocketRouter().register(this)
+                appComponent.openCoreUserRouter().register(this)
+                appComponent.managementCoreUserRouter().register(this)
+            }
+        }
+    }
+}

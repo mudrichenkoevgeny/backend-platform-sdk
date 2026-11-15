@@ -1,0 +1,15 @@
+# {{PROJECT_TITLE}} Backend Microservice
+
+Deployable backend microservice for {{PROJECT_TITLE}}, built on `backend-platform-sdk`.
+
+## Building & Running
+
+### Local Development
+```bash
+./gradlew check jar
+```
+
+### Docker
+```bash
+docker compose -f deploy/docker-compose.base.yml -f deploy/docker-compose.dev.yml up --build
+```

@@ -1,0 +1,13 @@
+package {{PACKAGE_NAME}}
+
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+
+class {{PROJECT_TITLE}}AppInfoTest {
+    @Test
+    fun `app info returns non-empty name and version`() {
+        val appInfo = {{PROJECT_TITLE}}AppInfo()
+        assertEquals("1.0.0", appInfo.version)
+        assertEquals("{{PROJECT_TITLE}} Backend", appInfo.appName)
+    }
+}

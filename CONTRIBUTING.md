@@ -1,5 +1,13 @@
 # Development and Publishing
 
+## Tooling & Code Generation (`tools/*`)
+
+- **`tools/detekt-rules`:** Custom Detekt static analysis rules enforcing architectural constraints across consumer applications ([module README](tools/detekt-rules/README.md)).
+- **`tools/gradle-plugin`:** Gradle Convention Plugins (`backend-platform-agent-sync`, `backend-platform-quality`, `backend-platform-kotlin`, `backend-platform-publish`) providing build tasks, quality checks, compiler options, and AI agent rule synchronization across consumer applications ([module README](tools/gradle-plugin/README.md)).
+- **`tools/project-generator`:** Internal JVM generator triggered via `./gradlew initProject` / `./gradlew scaffoldProject` for scaffolding clean, minimal, production-ready downstream Ktor microservice repositories (`<name>-backend`) on disk ([module README](tools/project-generator/README.md)).
+
+---
+
 ## Dependency Analysis
 
 The project uses the `com.autonomousapps.dependency-analysis` plugin to maintain a clean classpath and optimize the artifact size.
@@ -52,6 +60,21 @@ To audit up-to-date and outdated dependencies across the project using the `com.
 
 The report will display outdated milestone and release versions in the console and write a plain text report to `build/dependencyUpdates/report.txt`.
 
+---
+
+## Verification Workflows
+
+### Project Skeleton Generator Verification
+When modifying `:tools:project-generator` or resource templates in `tools/project-generator/src/main/resources/templates/`, verify E2E scaffolding by running:
+
+```bash
+./gradlew verifyProjectGenerator
+```
+
+This task compiles `backend-platform-sdk`, publishes artifacts to `mavenLocal()`, scaffolds a test project in `build/tmp/scaffold-test/scaffold-test-backend`, and verifies that `./gradlew check jar` passes cleanly out of the box inside the scaffolded project.
+
+---
+
 ## Artifact Deployment
 
 The project utilizes the `com.vanniktech.maven.publish` plugin for artifact management.
@@ -87,14 +110,14 @@ Because `tools/gradle-plugin` is configured as an included build (`includeBuild`
    }
    ```
 
-### 1. Remote Staging
+### 2. Remote Staging
 Uploads all publications to the remote staging repository (Maven Central) without performing a final release. Use this for manual verification in the repository manager:
 
 ```bash
 ./gradlew publishAllPublicationsToMavenCentralRepository
 ```
 
-### 2. Full Release Cycle
+### 3. Full Release Cycle
 Performs a complete deployment workflow, including uploading, closing the staging repository, and releasing artifacts to Maven Central:
 
 ```bash

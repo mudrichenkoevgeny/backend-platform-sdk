@@ -37,6 +37,13 @@ Published artifacts (versions aligned via the BOM):
 - **feature-user** — Advanced IAM: Multi-method auth (Email, Phone, OAuth), JWT/Refresh sessions (with reuse detection), 2FA/TOTP, device login detection, lockouts, global/security settings APIs, audit log management, and WebSocket sync ([module README](feature/user/README.md)).
 - **bom** — Dependency constraints for the modules above.
 
+### Internal Tooling & Scaffolding
+- **tools/project-generator** — Internal JVM module for scaffolding clean, minimal, production-ready downstream Ktor microservices (`<name>-backend`) on disk ([module README](tools/project-generator/README.md)).
+
+```bash
+./gradlew initProject -Pname=my-service
+```
+
 ## Documentation & Architecture
 
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — High-level architecture, module dependency graph, lifecycle state machines, and links to detailed sequence diagrams for runtime flows (authentication, MFA/security, WebSockets).

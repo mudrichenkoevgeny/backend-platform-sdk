@@ -1,0 +1,11 @@
+# Development and Verification
+
+## Building and Verification
+```bash
+./gradlew check jar
+```
+
+## Running with Docker Compose
+```bash
+docker compose -f deploy/docker-compose.base.yml -f deploy/docker-compose.dev.yml up --build
+```

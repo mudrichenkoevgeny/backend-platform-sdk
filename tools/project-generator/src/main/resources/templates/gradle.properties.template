@@ -1,0 +1,4 @@
+group={{GROUP_ID}}
+version=1.0.0-SNAPSHOT
+
+org.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8

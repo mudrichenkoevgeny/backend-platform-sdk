@@ -1,0 +1,11 @@
+package {{PACKAGE_NAME}}.lifecycle
+
+/**
+ * Abstraction for JVM shutdown hook registration.
+ */
+public interface ShutdownHookRegistrar {
+    /**
+     * Registers a new shutdown [hook] thread to be executed on JVM termination.
+     */
+    public fun addShutdownHook(hook: Thread)
+}

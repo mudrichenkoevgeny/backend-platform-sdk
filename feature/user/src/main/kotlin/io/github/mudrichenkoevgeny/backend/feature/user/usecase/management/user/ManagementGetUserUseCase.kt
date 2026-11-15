@@ -33,10 +33,12 @@ public class ManagementGetUserUseCase @Inject constructor(
      * - Verifies that the management caller (STAFF or ADMIN) is active.
      * - The [userManager] verifies if the caller has the required [UserPermissionCode]
      *   to view the specific target user based on the target's role.
+     * - If [userId] matches the caller's own ID, returns the caller's private profile directly.
      *
      * **Workflow:**
      * 1. Validates the management caller's status.
-     * 2. Fetches the target [userId] via [userManager] with a permission check.
+     * 2. Checks if requesting self; if so, returns caller details directly.
+     * 3. Fetches the target [userId] via [userManager] with a permission check.
      *
      * @param userId The ID of the target user to retrieve.
      * @param authenticatedRequestContext The context of the authenticated management request.
@@ -58,6 +60,10 @@ public class ManagementGetUserUseCase @Inject constructor(
 
         if (managementUser.accountStatus != UserAccountStatus.ACTIVE) {
             return AppResult.Error(UserError.UserIllegalAccountStatus(managementUserId))
+        }
+
+        if (userId == managementUserId) {
+            return AppResult.Success(managementUser.toUserPrivate())
         }
 
         return userManager.getUserInternal(

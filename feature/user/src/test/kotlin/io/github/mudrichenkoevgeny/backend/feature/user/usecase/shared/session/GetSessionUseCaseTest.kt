@@ -37,7 +37,7 @@ class GetSessionUseCaseTest {
             id = userId,
             accountStatus = UserAccountStatus.ACTIVE
         )
-        val userSessionPrivate = createTestUserSessionPrivate(id = targetSessionId)
+        val userSessionPrivate = createTestUserSessionPrivate(id = targetSessionId, userId = userId)
 
         coEvery { userManager.getUserInternalById(userId) } returns AppResult.Success(userInternal)
         coEvery { sessionManager.getUserSessionPrivate(targetSessionId) } returns AppResult.Success(userSessionPrivate)

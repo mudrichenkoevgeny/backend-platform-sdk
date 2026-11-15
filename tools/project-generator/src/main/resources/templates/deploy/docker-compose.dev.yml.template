@@ -1,0 +1,4 @@
+services:
+  db:
+    environment:
+      POSTGRES_DB: {{PROJECT_NAME}}_dev_db
