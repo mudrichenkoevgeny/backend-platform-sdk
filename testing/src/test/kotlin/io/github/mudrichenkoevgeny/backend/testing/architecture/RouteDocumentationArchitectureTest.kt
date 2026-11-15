@@ -1,4 +1,4 @@
-package io.github.mudrichenkoevgeny.backend.core.common.architecture
+package io.github.mudrichenkoevgeny.backend.testing.architecture
 
 import com.lemonappdev.konsist.api.Konsist
 import com.lemonappdev.konsist.api.provider.KoKDocProvider

@@ -42,6 +42,7 @@ backend-platform-sdk-core-events = { group = "io.github.mudrichenkoevgeny", name
 backend-platform-sdk-core-observability = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-observability" }
 backend-platform-sdk-core-storage = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-core-storage" }
 backend-platform-sdk-feature-user = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-feature-user" }
+backend-platform-sdk-testing = { group = "io.github.mudrichenkoevgeny", name = "backend-platform-sdk-testing" }
 
 # Shared Foundation
 shared-foundation-feature-user = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-feature-user" }

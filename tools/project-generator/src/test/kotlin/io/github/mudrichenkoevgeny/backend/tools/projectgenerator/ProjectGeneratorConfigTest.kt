@@ -106,7 +106,7 @@ class ProjectGeneratorConfigTest {
             linkLocal = true,
             skipGit = true,
             versionProperties = mapOf(
-                "backendSdkVersion" to "0.0.24",
+                "backendSdkVersion" to "0.0.25",
                 "sharedFoundationVersion" to "0.1.16"
             )
         )
@@ -120,7 +120,7 @@ class ProjectGeneratorConfigTest {
         assertTrue(result.contains("project=sample-app"))
         assertTrue(result.contains("title=SampleApp"))
         assertTrue(result.contains("package=com.example.sample.backend"))
-        assertTrue(result.contains("sdk=0.0.24"))
+        assertTrue(result.contains("sdk=0.0.25"))
         assertTrue(result.contains("mavenLocal()"))
     }
 }

@@ -65,7 +65,6 @@ dependencies {
     testImplementation(libs.junit.jupiter.api)
     testImplementation(libs.junit.jupiter.params)
     testImplementation(libs.mockk)
-    testImplementation(libs.konsist)
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.ktor.server.test.host)
     testFixturesApi(libs.mockk)

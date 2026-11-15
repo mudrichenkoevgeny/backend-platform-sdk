@@ -42,6 +42,7 @@ This document is the entry point for architectural and coding standards. These r
 - **`tools/gradle-plugin`:** Gradle convention plugins (`backendAgentSync`, `backendQuality`, `backendKotlinConvention`, `backendPublishConvention`).
 - **`tools/detekt-rules`:** Custom Detekt static analysis rules enforcing platform coding conventions.
 - **`tools/project-generator`:** Internal JVM module for scaffolding clean, minimal, production-ready downstream Ktor microservice repositories (`<name>-backend`) on disk.
+- **`testing`:** Aggregated `testFixtures`, Testcontainers infrastructure (`@RequiresDocker`), and repository-wide Konsist architecture suite.
 - **`bom`:** Bill of Materials (`backend-platform-sdk-bom`) for dependency version alignment.
 - **`sample`:** Reference host application demonstrating Dagger DI wiring, Flyway migrations, and SDK integration. Never move SDK or business logic into `sample`.
 

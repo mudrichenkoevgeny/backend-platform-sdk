@@ -37,7 +37,7 @@ dependencies {
 
     implementation(libs.exposed.jdbc)
 
-    testImplementation(testFixtures(libs.backend.platform.sdk.core.common))
+    testImplementation(libs.backend.platform.sdk.testing)
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)

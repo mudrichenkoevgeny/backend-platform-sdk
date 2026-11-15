@@ -53,6 +53,7 @@ alwaysApply: true
 - **`tools/project-generator`:** Internal JVM generator triggered via `./gradlew initProject` / `./gradlew scaffoldProject` for scaffolding clean, minimal, production-ready downstream Ktor microservice repositories (`<name>-backend`) on disk ([module README](../../tools/project-generator/README.md)).
 
 ### Infrastructure & Reference
+- **`testing`:** Aggregated `testFixtures`, Testcontainers infrastructure (`@RequiresDocker`), and repository-wide Konsist architecture suite ([module README](../../testing/README.md)).
 - **`bom`:** Bill of Materials (`backend-platform-sdk-bom`) for dependency version alignment.
 - **`sample`:** Reference host application demonstrating Dagger DI wiring, Flyway migrations, and SDK module integration. **Never move SDK or business logic into sample.**
 

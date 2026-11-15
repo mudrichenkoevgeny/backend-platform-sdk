@@ -64,6 +64,13 @@ The report will display outdated milestone and release versions in the console a
 
 ## Verification Workflows
 
+### Architecture & Testing Verification (`:testing`)
+To run repository-wide Konsist architecture tests, Detekt, and Ktlint for the `:testing` module:
+
+```bash
+./gradlew :testing:check
+```
+
 ### Project Skeleton Generator Verification
 When modifying `:tools:project-generator` or resource templates in `tools/project-generator/src/main/resources/templates/`, verify E2E scaffolding by running:
 

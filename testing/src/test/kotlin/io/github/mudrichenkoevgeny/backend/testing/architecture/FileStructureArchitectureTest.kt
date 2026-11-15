@@ -1,4 +1,4 @@
-package io.github.mudrichenkoevgeny.backend.core.common.architecture
+package io.github.mudrichenkoevgeny.backend.testing.architecture
 
 import com.lemonappdev.konsist.api.KoModifier
 import com.lemonappdev.konsist.api.Konsist
@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 internal class FileStructureArchitectureTest {
-
     @Test
     @Disabled("Fails on current codebase, keeping logic for future enforcement")
     fun `single primary public declaration per file`() {

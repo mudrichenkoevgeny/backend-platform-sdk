@@ -35,6 +35,7 @@ Published artifacts (versions aligned via the BOM):
 - **core-storage** — Object storage abstraction supporting S3 (AWS/MinIO) and Local Filesystem ([module README](core/storage/README.md)).
 - **core-events** — Event publishing/subscribing via Kafka or In-Memory bus ([module README](core/events/README.md)).
 - **feature-user** — Advanced IAM: Multi-method auth (Email, Phone, OAuth), JWT/Refresh sessions (with reuse detection), 2FA/TOTP, device login detection, lockouts, global/security settings APIs, audit log management, and WebSocket sync ([module README](feature/user/README.md)).
+- **testing** — Aggregated `testFixtures`, Testcontainers infrastructure (`@RequiresDocker`), and repository-wide Konsist architecture suite ([module README](testing/README.md)).
 - **bom** — Dependency constraints for the modules above.
 
 ### Internal Tooling & Scaffolding

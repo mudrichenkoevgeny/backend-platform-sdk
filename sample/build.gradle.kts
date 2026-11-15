@@ -40,7 +40,7 @@ dependencies {
     implementation(libs.exposed.jdbc)
 
     // Testing
-    testImplementation(testFixtures(project(":core:common")))
+    testImplementation(project(":testing"))
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)

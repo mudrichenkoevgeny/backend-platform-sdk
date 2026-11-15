@@ -58,6 +58,8 @@ registerModules(
 
 include(":bom")
 
+include(":testing")
+
 include(":sample")
 
 include(":tools:detekt-rules")
