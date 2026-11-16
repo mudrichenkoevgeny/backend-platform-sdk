@@ -35,10 +35,32 @@ dependencies {
 
 ```
 io.github.mudrichenkoevgeny.backend.testing
+├── architecture (main)
+│   └── BackendArchitectureAssertions.kt
 └── architecture (test)
     ├── ArchitectureTest.kt
     ├── DocumentationArchitectureTest.kt
     ├── FileStructureArchitectureTest.kt
     └── RouteDocumentationArchitectureTest.kt
+```
+
+## Konsist Architecture Testing & Reuse
+
+`:testing` exports `BackendArchitectureAssertions` in its `main` source set, allowing consumer backend services to run the same architecture checks used internally by the SDK.
+
+To use it in a downstream service, create an architecture test class in your `src/test/kotlin/.../architecture/` package:
+
+```kotlin
+package com.example.backend.architecture
+
+import io.github.mudrichenkoevgeny.backend.testing.architecture.BackendArchitectureAssertions
+import org.junit.jupiter.api.Test
+
+internal class ArchitectureTest {
+    @Test
+    fun `assert all consumer architecture rules`() {
+        BackendArchitectureAssertions.assertAllConsumerRules()
+    }
+}
 ```
 ````

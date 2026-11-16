@@ -1,0 +1,11 @@
+package {{PACKAGE_NAME}}.architecture
+
+import io.github.mudrichenkoevgeny.backend.testing.architecture.BackendArchitectureAssertions
+import org.junit.jupiter.api.Test
+
+internal class ArchitectureTest {
+    @Test
+    fun `assert all consumer architecture rules`() {
+        BackendArchitectureAssertions.assertAllConsumerRules()
+    }
+}

@@ -16,7 +16,7 @@ dependencies {
     api(testFixtures(project(":core:storage")))
     api(testFixtures(project(":feature:user")))
 
-    testImplementation(libs.konsist)
+    api(libs.konsist)
     testImplementation(libs.junit.jupiter.api)
     testRuntimeOnly(libs.kotlin.test.junit5)
     testRuntimeOnly(libs.junit.jupiter.engine)

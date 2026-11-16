@@ -1,4 +1,4 @@
----
+``---
 description: JVM backend testing framework standards (JUnit 5, MockK, Testcontainers, targeted execution)
 globs: "**/src/test/kotlin/**/*.kt"
 alwaysApply: true
@@ -24,3 +24,21 @@ This document defines the JVM/Backend testing methodology for backend platform m
 
 - **Unit & Use Case Tests:** Always run targeted unit tests (`./gradlew :module:test --tests "com.example.SubjectTest"`) after modifying business logic or fixing bugs.
 - **Integration Tests (Testcontainers):** Run targeted `*IntegrationTest` classes when modifying Exposed tables, queries, repositories, or Flyway migrations (assuming Docker daemon is available). Never run full-repository test suites (`./gradlew test`) automatically unless explicitly requested.
+
+## 4. Konsist Architecture Testing & Reuse
+
+The `:testing` module exports `BackendArchitectureAssertions` in its `main` source set. This provides reusable composition-based architecture assertions using Konsist.
+
+Downstream consumer backend services should include a test that invokes these assertions to maintain architectural consistency:
+
+```kotlin
+import io.github.mudrichenkoevgeny.backend.testing.architecture.BackendArchitectureAssertions
+import org.junit.jupiter.api.Test
+
+internal class ArchitectureTest {
+    @Test
+    fun `assert all consumer architecture rules`() {
+        BackendArchitectureAssertions.assertAllConsumerRules()
+    }
+}
+```
