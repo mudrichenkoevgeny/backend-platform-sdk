@@ -35,9 +35,9 @@ A documentation task is considered complete ONLY if:
 
 ## 5. Inline Comments vs. KDoc
 
-- **No Agent-Generated Inline Comments or TODOs:** AI agents must NOT write inline implementation comments (`//` or `/* ... */`) or generate new `TODO` / `FIXME` markers unless explicitly requested by the developer. Decompose complex multi-step logic into private helper functions with self-documenting names.
+- **No Agent-Generated Inline Comments or TODOs:** Agents must NOT write inline implementation comments (`//` or `/* ... */`) or generate new `TODO` / `FIXME` markers unless explicitly requested by the developer. Decompose complex multi-step logic into private helper functions with self-documenting names.
 - **Preserve Existing Developer TODOs:** Never delete or strip pre-existing `// TODO:` or `// FIXME:` comments left by the developer unless the task explicitly resolves that specific TODO item.
-- **MANDATORY KDoc Preservation:** KDoc blocks (`/** ... */`) are structured API documentation, NOT code comments. AI agents must NEVER delete, strip, wipe, or omit KDoc documentation during refactorings, updates, or code edits. All KDoc must be kept and updated.
+- **MANDATORY KDoc Preservation:** KDoc blocks (`/** ... */`) are structured API documentation, NOT code comments. Agents must NEVER delete, strip, wipe, or omit KDoc documentation during refactorings, updates, or code edits. All KDoc must be kept and updated.
 
 ---
 *Refer to `AGENTS.md` for the full list of project standards.*

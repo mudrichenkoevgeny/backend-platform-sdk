@@ -32,6 +32,9 @@ ij_kotlin_call_parameters_right_paren_on_new_line = false
 # https://ktlint.github.io/ktlint/latest/rules/code-styles/
 ktlint_code_style = intellij_idea
 
+# https://ktlint.github.io/ktlint/latest/rules/standard/#indentation
+ktlint_standard_indent = disabled
+
 # https://pinterest.github.io/ktlint/latest/rules/standard/#function-signature
 ktlint_standard_function-signature = disabled
 

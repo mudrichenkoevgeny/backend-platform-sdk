@@ -3,9 +3,9 @@ description: Backend architectural rules, Dual-Connector pattern, routing, and D
 alwaysApply: true
 ---
 
-# AI Collaboration & Workflow Standards — Backend Platform Additions
+# Agent Workflow Standards — Backend Platform Additions
 
-This document defines backend-specific architectural and workflow requirements for Kotlin/Ktor microservices and backend SDKs. It builds upon `ai-collaboration-basics.md`.
+This document defines backend-specific architectural and workflow requirements for Kotlin/Ktor microservices and backend SDKs. It builds upon `agent-workflow-basics.md`.
 
 ## 1. Architectural Workflow & Dual-Connector Ports
 - **Dual-Connector Architecture:** All backend services must support port separation:

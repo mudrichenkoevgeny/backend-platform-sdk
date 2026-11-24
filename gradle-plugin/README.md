@@ -1,6 +1,6 @@
 # tools/gradle-plugin
 
-**Gradle Convention Plugins for backend-platform-sdk** providing build tasks, Ktor-specific compiler configurations, AI agent rules synchronization, and quality check aggregations across consumer backend microservices.
+**Gradle Convention Plugins for backend-platform-sdk** providing build tasks, Ktor-specific compiler configurations, agent rules synchronization, and quality check aggregations across consumer backend microservices.
 
 These plugins natively depend on and extend the foundation plugins from `shared-foundation-gradle-plugin`.
 
@@ -9,8 +9,8 @@ Published Maven artifact: **`backend-platform-sdk-gradle-plugin`**.
 ## Included Convention Plugins
 
 1. **`io.github.mudrichenkoevgeny.backend-platform-agent-sync`** (`BackendAgentSyncPlugin`):
-   - **Description:** Applies `shared-foundation-agent-sync` and registers the backend-specific AI agent rules layer.
-   - **Layer Sync:** Extracts backend AI agent rules (`.agent/global/backend/`) from plugin resources directly into downstream `.agent/global/backend/` folders to ensure AI coding agents comply with backend Ktor architectural standards.
+   - **Description:** Applies `shared-foundation-agent-sync` and registers the backend-specific agent rules layer.
+   - **Layer Sync:** Extracts backend agent rules (`.agent/global/backend/`) from plugin resources directly into downstream `.agent/global/backend/` folders to ensure coding agents comply with backend Ktor architectural standards.
 
 2. **`io.github.mudrichenkoevgeny.backend-platform-quality`** (`BackendQualityPlugin`):
    - **Description:** Applies `shared-foundation-quality` and layers backend-specific static analysis overrides for Ktlint and Detekt.

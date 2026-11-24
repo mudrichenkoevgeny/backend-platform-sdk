@@ -14,7 +14,7 @@ gradlePlugin {
             id = "io.github.mudrichenkoevgeny.backend-platform-agent-sync"
             implementationClass = "io.github.mudrichenkoevgeny.backend.tools.gradleplugin.BackendAgentSyncPlugin"
             displayName = "Backend Platform Agent Sync Gradle Plugin"
-            description = "Gradle plugin synchronizing backend platform AI agent rules into consumer projects"
+            description = "Gradle plugin synchronizing backend platform agent rules into consumer projects"
         }
         create("backendQuality") {
             id = "io.github.mudrichenkoevgeny.backend-platform-quality"

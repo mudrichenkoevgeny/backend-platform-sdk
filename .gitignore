@@ -36,6 +36,10 @@ captures/
 .m2/
 sample/deploy/docker/m2/
 
+# --- Code review artifacts ---
+.code-review/state.json
+.code-review/payload.md
+
 # --- SECRETS ---
 sample/deploy/secrets/UNIONE_API_KEY
 sample/deploy/secrets/RESEND_API_KEY

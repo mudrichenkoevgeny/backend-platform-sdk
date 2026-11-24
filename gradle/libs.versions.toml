@@ -10,7 +10,7 @@ bcv = "0.18.2"
 dokka = "2.3.0"
 
 # Shared Foundation
-shared-foundation = "0.1.16"
+shared-foundation = "0.1.23"
 
 # Kotlin
 kotlinx-serialization = "1.12.0"

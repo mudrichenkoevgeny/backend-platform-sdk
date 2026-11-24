@@ -1,7 +1,26 @@
+# Version control
+.git
+
+# Build outputs & caches
 .gradle
-.idea
+.kotlin
 build
 **/build
-*.iml
-.git
 out
+.artifacts
+sample/deploy/docker/m2
+
+# IDE & editor files
+.idea
+.vscode
+*.iml
+
+# Local configuration, logs & secrets
+local.properties
+.env
+.env.*
+*.log
+sample/deploy/secrets
+
+# Code review artifacts
+.code-review

@@ -16,9 +16,9 @@ This document defines the mandatory Kotlin syntax and formatting standards for t
 - **Exceptions:** Permitted inside `@Deprecated(..., replaceWith = ReplaceWith(...))` import parameters, or when imports are technically impossible or cause unresolvable ambiguity (justify in the task summary).
 
 ### Implementation Comments vs. KDoc Documentation
-- **No Agent-Generated Inline Comments or TODOs:** AI agents must NOT write inline implementation comments (`//` or `/* ... */`) or generate new `TODO` / `FIXME` markers unless explicitly requested by the developer. Logic must be self-documenting through expressive naming and clean decomposition of complex steps into private helper functions.
+- **No Agent-Generated Inline Comments or TODOs:** Agents must NOT write inline implementation comments (`//` or `/* ... */`) or generate new `TODO` / `FIXME` markers unless explicitly requested by the developer. Logic must be self-documenting through expressive naming and clean decomposition of complex steps into private helper functions.
 - **Preserve Existing Developer TODOs:** Never delete pre-existing `// TODO:` or `// FIXME:` comments left by the developer unless the current task explicitly resolves that specific TODO item.
-- **MANDATORY KDoc Preservation:** KDoc blocks (`/** ... */`) are structured API documentation and are strictly MANDATORY. AI agents must **NEVER** delete, strip, wipe, or omit existing KDoc documentation blocks during refactoring, updates, or code edits. All public interfaces, classes, functions, and properties must retain and maintain their KDoc documentation.
+- **MANDATORY KDoc Preservation:** KDoc blocks (`/** ... */`) are structured API documentation and are strictly MANDATORY. Agents must **NEVER** delete, strip, wipe, or omit existing KDoc documentation blocks during refactoring, updates, or code edits. All public interfaces, classes, functions, and properties must retain and maintain their KDoc documentation.
 
 ### Single Declaration Per File
 - **Strict Requirement:** Every public `interface`, `class`, or `object` must reside in its own dedicated file matching its declaration name.

@@ -11,7 +11,7 @@ This document defines universal testing methodology and code quality standards f
 ## 1. Operational Policy (Targeted Execution)
 
 - **No Full-Suite Auto-Runs:** Never automatically trigger full-project test suites (`./gradlew test`, `./gradlew check`) unless explicitly requested by the developer, to prevent resource exhaustion and maintain a focused development flow.
-- **Mandatory Targeted Verification:** Whenever writing new tests, fixing a bug, or modifying production logic, the AI agent MUST compile and execute the specific affected test class or method (e.g., `./gradlew :module:test --tests "com.example.SubjectTest"` or platform-specific targets like `jvmTest` / `testDebugUnitTest`) to verify that the code compiles and tests pass.
+- **Mandatory Targeted Verification:** Whenever writing new tests, fixing a bug, or modifying production logic, the agent MUST compile and execute the specific affected test class or method (e.g., `./gradlew :module:test --tests "com.example.SubjectTest"` or platform-specific targets like `jvmTest` / `testDebugUnitTest`) to verify that the code compiles and tests pass.
 - **Mandatory Bug Fix Test Coverage:** Whenever fixing a bug, defect, or regression, automated unit or integration test coverage MUST be written and executed via a targeted test run to verify that the bug is resolved and cannot resurface.
 
 ## 2. Test Organization & Naming
@@ -35,6 +35,28 @@ This document defines universal testing methodology and code quality standards f
 
 - **Explicit Declaration Only:** Declare all test dependencies explicitly in `build.gradle.kts` for the appropriate source sets. Never rely on transitive test dependencies.
 - **Version Catalog:** Always use `libs.versions.toml` aliases for all test libraries (e.g., `implementation(libs.kotlin.test)`).
+
+## 5. Konsist Architecture Testing & Reuse
+
+The `testing` module (`jvmMain`) exports `FoundationArchitectureAssertions` for consumer applications and SDKs to enforce architectural correctness uniformly.
+
+- **What it validates:** `assertAllConsumerRules()` ensures:
+  1. No classes end with `InternalPayload` (preventing internal DB entity leaks).
+  2. Domain classes ending in `FilterValues` and `SortBy` are `isTopLevel`.
+  3. API network route constants (`*Routes.kt`) have strict KDoc sections (`HTTP method:`, `Request body:`, `Response body:`, `UI Presentation:`, `Audit logging:`).
+  4. All JSON keys in `localization/**/*.json` are strict `snake_case`.
+- **How to invoke (in `jvmTest`):**
+  ```kotlin
+  import io.github.mudrichenkoevgeny.shared.foundation.testing.architecture.FoundationArchitectureAssertions
+  import kotlin.test.Test
+
+  class ArchitectureTest {
+      @Test
+      fun `run all shared foundation architecture rules`() {
+          FoundationArchitectureAssertions.assertAllConsumerRules()
+      }
+  }
+  ```
 
 ---
 *Refer to `AGENTS.md` for the full list of project standards.*

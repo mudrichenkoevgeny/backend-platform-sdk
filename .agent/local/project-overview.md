@@ -45,12 +45,12 @@ alwaysApply: true
 *Build-time plugins, generators, and static analysis extensions.*
 
 - **`tools/gradle-plugin`:** Gradle convention plugins (`backend-platform-sdk-gradle-plugin`):
-  - `backendAgentSync`: Synchronizes `.agent/global/backend` AI rules into consumer microservice projects.
+  - `backendAgentSync`: Synchronizes `.agent/global/backend` agent rules into consumer microservice projects.
   - `backendQuality`: Configures Detekt (with custom rules) and Ktlint.
   - `backendKotlinConvention`: Configures Kotlin compiler options and `explicitApi()` mode.
   - `backendPublishConvention`: Configures Maven Central publishing, Dokka, and POM metadata.
 - **`tools/detekt-rules`:** Custom Detekt rules enforcing platform-specific coding conventions and static analysis ([module README](../../tools/detekt-rules/README.md)).
-- **`tools/project-generator`:** Internal JVM generator triggered via `./gradlew initProject` / `./gradlew scaffoldProject` for scaffolding clean, minimal, production-ready downstream Ktor microservice repositories (`<name>-backend`) on disk ([module README](../../tools/project-generator/README.md)).
+- **`tools/project-generator`:** Internal JVM generator triggered via `initProject` / `scaffoldProject` tasks for scaffolding clean, minimal, production-ready downstream Ktor microservice repositories (`<name>-backend`) on disk ([module README](../../tools/project-generator/README.md)).
 
 ### Infrastructure & Reference
 - **`testing`:** Aggregated `testFixtures`, Testcontainers infrastructure (`@RequiresDocker`), and repository-wide Konsist architecture suite ([module README](../../testing/README.md)).
@@ -63,7 +63,7 @@ alwaysApply: true
 - **Feature-to-Core:** Feature modules aggregate core modules (e.g., `feature/user` depends on `core/security`, `core/audit`, `core/database`, and `core/common`).
 - **Tools Isolation:** `tools/*` modules are build-time infrastructure and do not depend on runtime SDK modules.
 
-## Guidelines for AI
+## Guidelines for Agents
 - All architectural and coding standards are located in the `.agent/` directory.
 - Refer to `AGENTS.md` for the full list of project standards.
 - **Integration Rule:** When adding features, ensure they support the Dual-connector Ktor setup (separation of public API and management ports).

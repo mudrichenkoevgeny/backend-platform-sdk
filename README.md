@@ -47,9 +47,9 @@ Published artifacts (versions aligned via the BOM):
 
 ## Documentation & Architecture
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** — High-level architecture, module dependency graph, lifecycle state machines, and links to detailed sequence diagrams for runtime flows (authentication, MFA/security, WebSockets).
+- **[ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md)** — High-level architecture, module dependency graph, lifecycle state machines, and links to detailed sequence diagrams for runtime flows (authentication, MFA/security, WebSockets).
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — Build instructions, project health checks, and Maven Central publishing guidelines.
-- **[AGENTS.MD](AGENTS.md)** — Project standards, module map, KDoc requirements, and architectural rules for contributors and AI coding assistants.
+- **[AGENTS.MD](AGENTS.md)** — Project standards, module map, KDoc requirements, and architectural rules for contributors and coding agents.
 
 ## Integration Steps
 

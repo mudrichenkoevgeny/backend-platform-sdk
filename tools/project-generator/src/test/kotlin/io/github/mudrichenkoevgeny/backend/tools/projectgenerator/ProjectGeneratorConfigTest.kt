@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.io.File
 
-class ProjectGeneratorConfigTest {
+internal class ProjectGeneratorConfigTest {
     private val mutatedSystemProperties = mutableListOf<String>()
 
     @AfterEach
@@ -58,28 +58,8 @@ class ProjectGeneratorConfigTest {
             setProp("linkLocal", "true")
             setProp("skipGit", "true")
 
-            val knownKeys = listOf(
-                "backendSdkVersion",
-                "sharedFoundationVersion",
-                "toolchainJvm",
-                "kotlinVersion",
-                "kspVersion",
-                "detektVersion",
-                "ktlintVersion",
-                "coroutinesVersion",
-                "serializationVersion",
-                "ktorVersion",
-                "daggerVersion",
-                "javaxInjectVersion",
-                "exposedVersion",
-                "postgresqlVersion",
-                "flywayVersion",
-                "slf4jVersion",
-                "junitVersion",
-                "mockkVersion",
-                "testcontainersVersion"
-            )
-            knownKeys.forEach { key -> setProp(key, "1.0.0") }
+            val testVersions = createTestVersionMap()
+            testVersions.forEach { (key, value) -> setProp(key, value) }
 
             val config = ProjectGeneratorConfig.fromSystemProperties()
 
@@ -89,6 +69,7 @@ class ProjectGeneratorConfigTest {
             assertEquals("com.testcompany.backend", config.packageName)
             assertTrue(config.linkLocal)
             assertTrue(config.skipGit)
+            assertEquals(testVersions, config.versionProperties)
         } finally {
             tempDir.deleteRecursively()
         }
@@ -96,31 +77,51 @@ class ProjectGeneratorConfigTest {
 
     @Test
     fun `template replacer substitutes tokens correctly`() {
-        val config = ProjectGeneratorConfig(
+        val config = createTestConfig()
+        val replacer = TemplateReplacer(config)
+
+        val rawTemplate = "project={{PROJECT_NAME}}, title={{PROJECT_TITLE}}, pkg={{PACKAGE_NAME}}, " +
+            "sdk={{BACKEND_SDK_VERSION}}, repo=\n{{MAVEN_LOCAL_REPOS}}"
+        val evaluated = replacer.replaceTokens(rawTemplate)
+
+        val expected = "project=sample-app, title=SampleApp, pkg=com.example.sample.backend, " +
+            "sdk=1.0.0, repo=\n        mavenLocal()\n"
+        assertEquals(expected, evaluated)
+    }
+
+    private fun createTestConfig(): ProjectGeneratorConfig =
+        ProjectGeneratorConfig(
             projectName = "sample-app",
             projectTitle = "SampleApp",
             groupId = "com.example.sample",
             packageName = "com.example.sample.backend",
-            targetDir = File("/tmp/target"),
-            sdkRootDir = File("/tmp/sdk"),
+            targetDir = File("build/tmp/test"),
+            sdkRootDir = File("."),
             linkLocal = true,
             skipGit = true,
-            versionProperties = mapOf(
-                "backendSdkVersion" to "0.0.26",
-                "sharedFoundationVersion" to "0.1.16"
-            )
+            versionProperties = createTestVersionMap()
         )
 
-        val replacer = TemplateReplacer(config)
-
-        val input = "project={{PROJECT_NAME}}, title={{PROJECT_TITLE}}, package={{PACKAGE_NAME}}, " +
-            "sdk={{BACKEND_SDK_VERSION}}, repo=\n{{MAVEN_LOCAL_REPOS}}"
-        val result = replacer.replaceTokens(input)
-
-        assertTrue(result.contains("project=sample-app"))
-        assertTrue(result.contains("title=SampleApp"))
-        assertTrue(result.contains("package=com.example.sample.backend"))
-        assertTrue(result.contains("sdk=0.0.26"))
-        assertTrue(result.contains("mavenLocal()"))
-    }
+    private fun createTestVersionMap(): Map<String, String> =
+        mapOf(
+            "backendSdkVersion" to "1.0.0",
+            "sharedFoundationVersion" to "1.0.0",
+            "toolchainJvm" to "25",
+            "kotlinVersion" to "1.0.0",
+            "kspVersion" to "1.0.0",
+            "detektVersion" to "1.0.0",
+            "ktlintVersion" to "1.0.0",
+            "coroutinesVersion" to "1.0.0",
+            "serializationVersion" to "1.0.0",
+            "ktorVersion" to "1.0.0",
+            "daggerVersion" to "1.0.0",
+            "javaxInjectVersion" to "1.0.0",
+            "exposedVersion" to "1.0.0",
+            "postgresqlVersion" to "1.0.0",
+            "flywayVersion" to "1.0.0",
+            "slf4jVersion" to "1.0.0",
+            "junitVersion" to "1.0.0",
+            "mockkVersion" to "1.0.0",
+            "testcontainersVersion" to "1.0.0"
+        )
 }

@@ -1,0 +1,21 @@
+# Build outputs & caches
+**/build/
+**/.gradle/
+**/.kotlin/
+**/kotlin-js-store/
+**/.m2/
+.artifacts/
+
+# Local configuration & secrets
+local.properties
+.env
+.env.*
+!.env.example
+sample/deploy/secrets/**
+
+# Binary assets
+gradle/wrapper/gradle-wrapper.jar
+
+# Code review artifacts
+.code-review/payload.md
+.code-review/state.json
