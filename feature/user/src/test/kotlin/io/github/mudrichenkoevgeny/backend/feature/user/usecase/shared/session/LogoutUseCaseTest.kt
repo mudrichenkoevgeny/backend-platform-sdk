@@ -10,9 +10,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTe
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -66,7 +66,7 @@ class LogoutUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.LOGOUT,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),
@@ -101,7 +101,7 @@ class LogoutUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.LOGOUT,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),

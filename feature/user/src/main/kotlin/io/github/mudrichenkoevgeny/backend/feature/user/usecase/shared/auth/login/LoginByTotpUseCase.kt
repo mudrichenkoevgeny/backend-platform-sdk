@@ -20,13 +20,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.auth.data.AuthData
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.toUserIdentifierIdOrNull
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.toUserIdOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -104,10 +102,10 @@ public class LoginByTotpUseCase @Inject constructor(
             is AppResult.Success -> getChallengeResult.data
         }
 
-        val userId = mfaChallengeData.userId.toUserIdOrNull()
-        val userRole = UserRole.fromValueOrNull(mfaChallengeData.userRole)
-        val identifierId = mfaChallengeData.identifierId?.toUserIdentifierIdOrNull()
-        if (userId == null || identifierId == null) {
+        val userId = mfaChallengeData.userId
+        val userRole = mfaChallengeData.userRole
+        val identifierId = mfaChallengeData.identifierId
+        if (identifierId == null) {
             val error = SecurityError.InvalidMfaToken()
             return handleError(
                 error = error,
@@ -116,13 +114,13 @@ public class LoginByTotpUseCase @Inject constructor(
         }
 
         val checkLockoutResult = userLockoutService.checkLockout(
-            identifier = userId.asHexDashString(),
+            identifier = userId.value.toHexDashString(),
             userId = userId
         )
         if (checkLockoutResult is AppResult.Error) {
             return handleError(
                 error = checkLockoutResult.error,
-                actorId = userId.asHexDashString(),
+                actorId = userId.value.toHexDashString(),
                 actorUserRole = userRole,
                 baseMetadata = auditMetadata
             )
@@ -134,7 +132,7 @@ public class LoginByTotpUseCase @Inject constructor(
         )
         if (verifyResult is AppResult.Error) {
             val recordFailedAttemptResult = userLockoutService.recordFailedAttempt(
-                identifier = userId.asHexDashString(),
+                identifier = userId.value.toHexDashString(),
                 type = LockoutAttemptType.TOTP,
                 userId = userId
             )
@@ -144,13 +142,13 @@ public class LoginByTotpUseCase @Inject constructor(
                 } else {
                     verifyResult.error
                 },
-                actorId = userId.asHexDashString(),
+                actorId = userId.value.toHexDashString(),
                 actorUserRole = userRole,
                 baseMetadata = auditMetadata
             )
         }
 
-        lockoutManager.clearLockout(userId.asHexDashString())
+        lockoutManager.clearLockout(userId.value.toHexDashString())
 
         mfaService.consumeChallenge(mfaToken)
 
@@ -208,7 +206,7 @@ public class LoginByTotpUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.value,
+            actorUserRole = actorUserRole,
             action = UserAuditActionType.LOGIN_BY_TOTP,
             resource = UserAuditResourceType.USER,
             resourceId = actorId,

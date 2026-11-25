@@ -2,6 +2,7 @@ package io.github.mudrichenkoevgeny.backend.core.common.model.client
 
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceId
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 import java.security.MessageDigest
 import kotlin.uuid.Uuid
 
@@ -15,12 +16,12 @@ public object DeviceIdResolver {
     /**
      * Resolves the [ClientDeviceId] for a given user and request context.
      *
-     * @param userId user identifier string.
+     * @param userId user identifier.
      * @param clientInfo client request metadata containing device, IP, and user-agent information.
      * @return explicit or deterministic fallback [ClientDeviceId].
      */
     public fun resolveDeviceId(
-        userId: String,
+        userId: UserId,
         clientInfo: ClientInfo
     ): ClientDeviceId {
         val clientDeviceId = clientInfo.clientDeviceInfo.deviceId
@@ -30,7 +31,7 @@ public object DeviceIdResolver {
 
         val ip = clientInfo.ipAddress ?: "unknown_ip"
         val userAgent = clientInfo.userAgent ?: "unknown_ua"
-        val rawString = "$userId:$ip:$userAgent"
+        val rawString = "${userId.value}:$ip:$userAgent"
         val hashBytes = MessageDigest.getInstance("SHA-256").digest(rawString.toByteArray())
         val mostSigBits = hashBytes.toLong(0)
         val leastSigBits = hashBytes.toLong(8)

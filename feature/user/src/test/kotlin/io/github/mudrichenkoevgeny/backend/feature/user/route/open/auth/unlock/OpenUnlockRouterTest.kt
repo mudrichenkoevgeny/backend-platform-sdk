@@ -9,10 +9,10 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.auth.unlock
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.SendUnlockConfirmationToEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.SendUnlockConfirmationToPhoneUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.unlock.UnlockByEmailUseCase
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.unlock.UnlockByEmailConfirmationRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.unlock.UnlockByExternalAuthProviderRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.unlock.UnlockByPhoneConfirmationRequest

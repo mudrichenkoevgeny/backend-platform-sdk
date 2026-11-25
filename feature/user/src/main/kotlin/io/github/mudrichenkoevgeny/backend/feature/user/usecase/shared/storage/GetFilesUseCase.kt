@@ -6,8 +6,8 @@ import io.github.mudrichenkoevgeny.backend.core.storage.network.model.SelfStorag
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileSummary
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -41,7 +41,7 @@ public class GetFilesUseCase @Inject constructor(
         val currentUserId = authenticatedRequestContext.userId
 
         return storageManager.getSelfStorageFilesSummaryPage(
-            ownerUserId = currentUserId.asHexDashString(),
+            ownerUserId = currentUserId,
             queryParams = queryParams
         )
     }

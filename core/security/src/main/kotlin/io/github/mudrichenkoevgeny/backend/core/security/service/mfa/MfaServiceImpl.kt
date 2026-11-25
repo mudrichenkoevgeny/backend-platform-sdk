@@ -6,6 +6,10 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.mapSuccess
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import kotlinx.serialization.SerializationException
 import javax.inject.Inject
@@ -26,11 +30,11 @@ public class MfaServiceImpl @Inject constructor(
     private val securitySettingsProvider: SecuritySettingsProvider
 ) : MfaService {
     override suspend fun createChallenge(
-        userId: String,
-        userRole: String,
+        userId: UserId,
+        userRole: UserRole,
         type: MfaChallengeType,
-        identifierId: String?,
-        sessionId: String?,
+        identifierId: UserIdentifierId?,
+        sessionId: UserSessionId?,
         metadata: Map<String, String>?
     ): AppResult<MfaChallengeData> {
         val token = Uuid.random().toString()
@@ -88,8 +92,8 @@ public class MfaServiceImpl @Inject constructor(
     override suspend fun validateChallenge(
         token: String,
         type: MfaChallengeType,
-        userId: String,
-        sessionId: String?
+        userId: UserId,
+        sessionId: UserSessionId?
     ): AppResult<Unit> {
         val challengeResult = getChallenge(token, type)
 

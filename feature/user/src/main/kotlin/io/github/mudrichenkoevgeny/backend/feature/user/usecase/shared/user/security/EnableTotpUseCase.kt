@@ -19,11 +19,11 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.totprecoverycodes.TotpRecoveryCodes
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -121,7 +121,7 @@ public class EnableTotpUseCase @Inject constructor(
             is AppResult.Success -> mfaChallengeResult.data
         }
 
-        if (mfaChallenge.sessionId != authenticatedRequestContext.sessionId.asHexDashString()) {
+        if (mfaChallenge.sessionId != authenticatedRequestContext.sessionId) {
             return handleError(
                 error = SecurityError.InvalidMfaToken(),
                 actorId = auditActorId,
@@ -252,7 +252,7 @@ public class EnableTotpUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.value,
+            actorUserRole = actorUserRole,
             action = UserAuditActionType.SELF_ENABLE_TOTP,
             resource = UserAuditResourceType.USER,
             resourceId = actorId,

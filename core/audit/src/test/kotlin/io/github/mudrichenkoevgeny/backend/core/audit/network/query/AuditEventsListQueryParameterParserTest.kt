@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.lis
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditEventSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CompositeAuditResourceTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.ktor.http.Parameters
@@ -59,6 +60,7 @@ class AuditEventsListQueryParameterParserTest {
     private fun getSampleValidValueForAuditFilterKey(key: String): String = when {
         key == params.EVENT_ID -> "00000000-0000-0000-0000-000000000001"
         key == params.ACTOR_TYPE || key == params.EXCLUDE_ACTOR_TYPE -> AuditActorType.USER.value
+        key == params.ACTOR_USER_ROLE -> UserRole.USER.value
         key == params.STATUS || key == params.EXCLUDE_STATUS -> AuditStatus.SUCCESS.value
         key == params.ACTION || key == params.EXCLUDE_ACTION -> UserAuditActionType.LOGIN_BY_EMAIL.value
         key == params.RESOURCE -> UserAuditResourceType.USER.value
@@ -88,7 +90,7 @@ class AuditEventsListQueryParameterParserTest {
         val queryParameters = Parameters.build {
             append(params.ACTOR_ID, "user-123")
             append(params.ACTOR_TYPE, AuditActorType.USER.value)
-            append(params.ACTOR_USER_ROLE, "admin")
+            append(params.ACTOR_USER_ROLE, UserRole.ADMIN.value)
             append(params.RESOURCE_ID, "res-456")
             append(params.STATUS, AuditStatus.SUCCESS.value)
             append(params.SEARCH_QUERY, "test-message")
@@ -99,7 +101,7 @@ class AuditEventsListQueryParameterParserTest {
 
         assertEquals(listOf("user-123"), result.actorIds)
         assertEquals(listOf(AuditActorType.USER), result.actorTypes)
-        assertEquals(listOf("admin"), result.actorUserRoles)
+        assertEquals(listOf(UserRole.ADMIN), result.actorUserRoles)
         assertEquals(listOf("res-456"), result.resourceIds)
         assertEquals(listOf(AuditStatus.SUCCESS), result.statuses)
         assertEquals("test-message", result.searchQuery)

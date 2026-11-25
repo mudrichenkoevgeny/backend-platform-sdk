@@ -8,15 +8,14 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.v
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.UserSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByTotpRecoveryCodeUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByTotpUseCase
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.verifytotp.VerifyTotpPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.auth.data.toAuthDataPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.auth.data.AuthDataPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByEmailRequest
@@ -142,8 +141,8 @@ public class SelfManagementLoginRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_EMAIL_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = true,
             securityType = SecurityRequirementType.SENSITIVE_LOGIN_CHALLENGE
         )
@@ -188,8 +187,8 @@ public class SelfManagementLoginRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_TOTP_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = true
         )
         request { body<VerifyTotpPayload>() }
@@ -233,8 +232,8 @@ public class SelfManagementLoginRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.AUTH)
         description = getFormattedDescription(
             description = LOGIN_BY_TOTP_RECOVERY_CODE_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = true
         )
         request { body<VerifyTotpPayload>() }

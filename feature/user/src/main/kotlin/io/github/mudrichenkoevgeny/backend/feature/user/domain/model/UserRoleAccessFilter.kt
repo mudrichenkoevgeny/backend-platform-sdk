@@ -1,6 +1,6 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.domain.model
 
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 
 /**
  * Generic row-level visibility predicate based on owner user roles.

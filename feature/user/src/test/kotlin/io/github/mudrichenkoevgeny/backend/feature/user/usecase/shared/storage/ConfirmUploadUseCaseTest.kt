@@ -28,7 +28,7 @@ class ConfirmUploadUseCaseTest {
 
     private val filePrivate = createTestStorageFilePrivate(
         id = fileId,
-        ownerUserId = currentUserId.asHexDashString(),
+        ownerUserId = currentUserId,
         fileName = "avatar.png",
         fileSizeBytes = 500L,
         mimeType = "image/png",
@@ -44,7 +44,7 @@ class ConfirmUploadUseCaseTest {
     fun `successfully confirms upload`() = runTest {
         coEvery {
             storageManager.confirmUpload(
-                ownerUserId = currentUserId.asHexDashString(),
+                ownerUserId = currentUserId,
                 fileId = fileId
             )
         } returns AppResult.Success(filePrivate)
@@ -66,7 +66,7 @@ class ConfirmUploadUseCaseTest {
 
         coEvery {
             storageManager.confirmUpload(
-                ownerUserId = currentUserId.asHexDashString(),
+                ownerUserId = currentUserId,
                 fileId = fileId
             )
         } returns AppResult.Error(expectedError)

@@ -4,19 +4,23 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.cl
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.user.createTestUserId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 import kotlin.uuid.Uuid
 
 class DeviceIdResolverTest {
+    private val testUserId = createTestUserId()
+
     @Test
     fun `resolveDeviceId returns explicit deviceId when present in clientInfo`() {
         val explicitDeviceId = ClientDeviceId(Uuid.random())
         val clientInfo = createTestClientInfo(deviceId = explicitDeviceId)
 
         val resolved = DeviceIdResolver.resolveDeviceId(
-            "user-123",
+            testUserId,
             clientInfo
         )
 
@@ -40,11 +44,11 @@ class DeviceIdResolverTest {
         )
 
         val resolved1 = DeviceIdResolver.resolveDeviceId(
-            "user-123",
+            testUserId,
             clientInfo1
         )
         val resolved2 = DeviceIdResolver.resolveDeviceId(
-            "user-123",
+            testUserId,
             clientInfo2
         )
 
@@ -63,11 +67,11 @@ class DeviceIdResolverTest {
         )
 
         val resolvedUser1 = DeviceIdResolver.resolveDeviceId(
-            "user-1",
+            UserId.generate(),
             clientInfo
         )
         val resolvedUser2 = DeviceIdResolver.resolveDeviceId(
-            "user-2",
+            UserId.generate(),
             clientInfo
         )
 
@@ -91,11 +95,11 @@ class DeviceIdResolverTest {
         )
 
         val resolvedIp1 = DeviceIdResolver.resolveDeviceId(
-            "user-123",
+            testUserId,
             clientInfoIp1
         )
         val resolvedIp2 = DeviceIdResolver.resolveDeviceId(
-            "user-123",
+            testUserId,
             clientInfoIp2
         )
 
@@ -119,11 +123,11 @@ class DeviceIdResolverTest {
         )
 
         val resolvedUa1 = DeviceIdResolver.resolveDeviceId(
-            "user-123",
+            testUserId,
             clientInfoUa1
         )
         val resolvedUa2 = DeviceIdResolver.resolveDeviceId(
-            "user-123",
+            testUserId,
             clientInfoUa2
         )
 
@@ -142,11 +146,11 @@ class DeviceIdResolverTest {
         )
 
         val resolved1 = DeviceIdResolver.resolveDeviceId(
-            "user-123",
+            testUserId,
             clientInfoNulls
         )
         val resolved2 = DeviceIdResolver.resolveDeviceId(
-            "user-123",
+            testUserId,
             clientInfoNulls
         )
 

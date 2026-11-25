@@ -1,6 +1,8 @@
 package io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.formatter
 
 import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.model.SecurityRequirementType
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 
 /**
  * Formats a Markdown string for Swagger documentation by appending structured Authorization
@@ -26,8 +28,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.documentation.swagger.mod
  */
 public fun getFormattedDescription(
     description: String,
-    allowedRoles: Set<String>,
-    allowedAccountStatuses: Set<String>,
+    allowedRoles: Set<UserRole>,
+    allowedAccountStatuses: Set<UserAccountStatus>,
     requiredPermissions: Set<String> = emptySet(),
     isPublic: Boolean = false,
     hasAuthorityRequirement: Boolean = false,
@@ -42,13 +44,13 @@ public fun getFormattedDescription(
     val rolesText = if (allowedRoles.isEmpty()) {
         SwaggerDocConstants.NONE
     } else {
-        "${allowedRoles.joinToString(", ")} ${SwaggerDocConstants.OR_SEMANTICS}"
+        "${allowedRoles.joinToString(", ") { it.value }} ${SwaggerDocConstants.OR_SEMANTICS}"
     }
 
     val statusesText = if (allowedAccountStatuses.isEmpty()) {
         SwaggerDocConstants.NONE
     } else {
-        "${allowedAccountStatuses.joinToString(", ")} ${SwaggerDocConstants.OR_SEMANTICS}"
+        "${allowedAccountStatuses.joinToString(", ") { it.value }} ${SwaggerDocConstants.OR_SEMANTICS}"
     }
 
     val permissionsText = if (requiredPermissions.isEmpty()) {

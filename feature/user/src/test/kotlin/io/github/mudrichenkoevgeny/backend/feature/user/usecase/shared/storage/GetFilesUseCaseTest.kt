@@ -53,7 +53,7 @@ class GetFilesUseCaseTest {
 
         coEvery {
             storageManager.getSelfStorageFilesSummaryPage(
-                ownerUserId = currentUserId.asHexDashString(),
+                ownerUserId = currentUserId,
                 queryParams = any()
             )
         } returns AppResult.Success(pagedResult)

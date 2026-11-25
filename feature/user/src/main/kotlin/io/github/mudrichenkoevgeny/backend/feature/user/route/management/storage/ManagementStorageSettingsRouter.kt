@@ -27,6 +27,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.audit.action.StorageAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.audit.resource.StorageAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.permission.StoragePermissionCode
@@ -36,8 +38,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.mapper.storage
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.model.storagesettings.ManagementStorageSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.model.storagesettings.OpenStorageSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.route.management.ManagementStorageSettingsRoutes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
 import io.github.smiley4.ktoropenapi.post
@@ -148,8 +148,8 @@ public class ManagementStorageSettingsRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = UPDATE_STORAGE_SETTINGS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             requiredPermissions = requiredPermissions.mapToSet { it.value },
             isPublic = false,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
@@ -220,8 +220,8 @@ public class ManagementStorageSettingsRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_STORAGE_SETTINGS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -301,8 +301,8 @@ public class ManagementStorageSettingsRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = RESET_STORAGE_SETTINGS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             requiredPermissions = requiredPermissions.mapToSet { it.value },
             isPublic = false,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
@@ -383,8 +383,8 @@ public class ManagementStorageSettingsRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_OPEN_STORAGE_SETTINGS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = true
         )
 
@@ -419,7 +419,7 @@ public class ManagementStorageSettingsRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.value,
+            actorUserRole = authenticatedRequestContext.userRole,
             action = actionType,
             resource = StorageAuditResourceType.STORAGE_SETTINGS,
             status = AuditStatus.DENIED,

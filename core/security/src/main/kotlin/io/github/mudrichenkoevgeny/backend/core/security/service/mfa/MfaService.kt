@@ -1,6 +1,10 @@
 package io.github.mudrichenkoevgeny.backend.core.security.service.mfa
 
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserSessionId
 
 /**
  * Service for managing MultiFactor Authentication (MFA) challenges.
@@ -21,11 +25,11 @@ public interface MfaService {
      * @return The created [MfaChallengeData] containing the generated token.
      */
     public suspend fun createChallenge(
-        userId: String,
-        userRole: String,
+        userId: UserId,
+        userRole: UserRole,
         type: MfaChallengeType,
-        identifierId: String? = null,
-        sessionId: String? = null,
+        identifierId: UserIdentifierId? = null,
+        sessionId: UserSessionId? = null,
         metadata: Map<String, String>? = null
     ): AppResult<MfaChallengeData>
 
@@ -68,7 +72,7 @@ public interface MfaService {
     public suspend fun validateChallenge(
         token: String,
         type: MfaChallengeType,
-        userId: String,
-        sessionId: String? = null
+        userId: UserId,
+        sessionId: UserSessionId? = null
     ): AppResult<Unit>
 }

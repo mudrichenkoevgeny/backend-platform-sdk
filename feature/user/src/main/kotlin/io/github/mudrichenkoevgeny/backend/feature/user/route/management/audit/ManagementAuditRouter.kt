@@ -9,7 +9,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.AuditSwaggerTags
 import io.github.mudrichenkoevgeny.backend.feature.user.security.authenticationprovider.AuthenticationProvider
@@ -26,9 +25,9 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.model.ev
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.model.event.AuditEventSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.route.management.ManagementAuditRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
 import io.ktor.http.HttpStatusCode
@@ -126,8 +125,8 @@ public class ManagementAuditRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_AUDIT_EVENTS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -191,8 +190,8 @@ public class ManagementAuditRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_AUDIT_EVENT_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 

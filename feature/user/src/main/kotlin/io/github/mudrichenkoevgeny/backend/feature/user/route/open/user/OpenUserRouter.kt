@@ -12,7 +12,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.mapper.user.toUpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
@@ -28,10 +27,10 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.model.user.UserPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.user.SelfUpdateUserRequest
@@ -179,8 +178,8 @@ public class OpenUserRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_USER_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -236,8 +235,8 @@ public class OpenUserRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = SCHEDULE_DELETION_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
 
@@ -298,8 +297,8 @@ public class OpenUserRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = RESTORE_USER_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP
         )
 
@@ -360,8 +359,8 @@ public class OpenUserRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = UPDATE_USER_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -432,7 +431,7 @@ public class OpenUserRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.value,
+            actorUserRole = authenticatedRequestContext.userRole,
             action = actionType,
             resource = UserAuditResourceType.USER,
             resourceId = authenticatedRequestContext.userId.asHexDashString(),

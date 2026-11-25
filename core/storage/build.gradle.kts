@@ -10,7 +10,7 @@ plugins {
 
 dependencies {
     // Shared Foundation
-    api(libs.shared.foundation.core.storage)
+    api(libs.shared.foundation.core)
 
     // Project Modules
     api(project(":core:common"))
@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.aws.sdk.core) // Transitive for aws
 
     // Testing
+    testImplementation(libs.shared.foundation.fixtures)
     testImplementation(testFixtures(project(":core:common")))
     testImplementation(testFixtures(project(":core:database")))
     testRuntimeOnly(libs.h2database)

@@ -15,9 +15,9 @@ import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.user
 import io.github.mudrichenkoevgeny.backend.feature.user.database.repository.usertotpsettings.UserTotpSettingsRepository
 import io.github.mudrichenkoevgeny.backend.feature.user.domain.model.user.UpdateUserParams
 import io.github.mudrichenkoevgeny.backend.feature.user.model.totp.UserTotpSettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Instant

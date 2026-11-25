@@ -6,9 +6,9 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.mapNotNullOrError
 import io.github.mudrichenkoevgeny.backend.core.storage.manager.StorageManager
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFilePrivate
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -43,7 +43,7 @@ public class GetFileUseCase @Inject constructor(
         val currentUserId = authenticatedRequestContext.userId
 
         return storageManager.getSelfStorageFilePrivate(
-            ownerUserId = currentUserId.asHexDashString(),
+            ownerUserId = currentUserId,
             fileId = fileId
         ).mapNotNullOrError(
             CommonError.NotFound(

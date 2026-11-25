@@ -12,7 +12,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseManagementSessionsListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
@@ -28,13 +27,13 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.toUserIdOrThrow
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.toUserSessionIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.toUserSessionIdOrThrow
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.toUserIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.contract.UserApiPaths
@@ -224,8 +223,8 @@ public class ManagementSessionRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = GET_SESSIONS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
         response {
             code(HttpStatusCode.OK) {
@@ -280,8 +279,8 @@ public class ManagementSessionRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = GET_USER_SESSIONS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
         request {
             pathParameter<String>(UserApiPaths.USER_ID) {
@@ -349,8 +348,8 @@ public class ManagementSessionRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = GET_SESSION_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
         request {
             pathParameter<String>(UserApiPaths.SESSION_ID) {
@@ -412,8 +411,8 @@ public class ManagementSessionRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = DELETE_SESSION_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
@@ -480,8 +479,8 @@ public class ManagementSessionRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = DELETE_ALL_USER_SESSIONS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
         request {
@@ -551,7 +550,7 @@ public class ManagementSessionRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.value,
+            actorUserRole = authenticatedRequestContext.userRole,
             action = actionType,
             resource = UserAuditResourceType.SESSION,
             resourceId = resourceId,

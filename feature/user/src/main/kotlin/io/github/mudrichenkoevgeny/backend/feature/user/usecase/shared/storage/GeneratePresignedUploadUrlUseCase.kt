@@ -6,10 +6,10 @@ import io.github.mudrichenkoevgeny.backend.core.storage.manager.StorageManager
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.presigned.PresignedUrl
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -60,7 +60,7 @@ public class GeneratePresignedUploadUrlUseCase @Inject constructor(
         val isManagementUser = currentUser.role in setOf(UserRole.STAFF, UserRole.ADMIN)
 
         return storageManager.initiateFileUpload(
-            ownerUserId = currentUserId.asHexDashString(),
+            ownerUserId = currentUserId,
             isManagementUser = isManagementUser,
             fileName = fileName,
             fileSizeBytes = fileSizeBytes,

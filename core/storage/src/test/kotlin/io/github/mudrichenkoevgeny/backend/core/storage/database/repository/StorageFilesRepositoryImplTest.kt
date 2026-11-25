@@ -7,12 +7,14 @@ import io.github.mudrichenkoevgeny.backend.core.database.testing.assertAllQueryP
 import io.github.mudrichenkoevgeny.backend.core.storage.database.table.StorageFilesTable
 import io.github.mudrichenkoevgeny.backend.core.storage.network.model.ManagementStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.backend.core.storage.network.model.SelfStorageFileListQueryParams
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageFileSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.user.createTestUserId
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -55,7 +57,7 @@ class StorageFilesRepositoryImplTest {
 
     private fun createSampleFile(
         id: FileId = FileId.generate(),
-        ownerUserId: String = "usr_123",
+        ownerUserId: UserId = createTestUserId(),
         status: StorageFileStatus = StorageFileStatus.PENDING_UPLOAD,
         createdAt: Instant = Clock.System.now()
     ) = StorageFileInternal(
@@ -262,7 +264,7 @@ class StorageFilesRepositoryImplTest {
                 ignoredProperties = emptySet()
             ) { queryParams ->
                 repository.getStorageFilesPageByOwnerUserId(
-                    ownerUserId = "owner-123",
+                    ownerUserId = createTestUserId(),
                     queryParams = queryParams
                 )
             }

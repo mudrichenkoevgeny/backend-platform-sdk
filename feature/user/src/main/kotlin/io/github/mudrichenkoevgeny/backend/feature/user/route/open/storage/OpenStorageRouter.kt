@@ -11,7 +11,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.core.storage.network.query.parseSelfStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.route.StorageSwaggerTags
@@ -24,6 +23,8 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.storage.G
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.storage.GetFileUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.storage.GetFilesUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.toFileIdOrThrow
@@ -39,8 +40,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.model.
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.request.file.DeleteFilesBatchRequest
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.request.presigned.PresignedUrlRequest
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.route.open.OpenStorageRoutes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get
@@ -121,8 +120,8 @@ public class OpenStorageRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_FILES_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -204,8 +203,8 @@ public class OpenStorageRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_FILE_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -292,8 +291,8 @@ public class OpenStorageRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + StorageSwaggerTags.STORAGE_FILES)
         description = getFormattedDescription(
             description = POST_PRESIGNED_URL_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
         request { body<PresignedUrlRequest>() }
@@ -388,8 +387,8 @@ public class OpenStorageRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.OPEN_PREFIX + StorageSwaggerTags.STORAGE_FILES)
         description = getFormattedDescription(
             description = CONFIRM_UPLOAD_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
         response {
@@ -469,8 +468,8 @@ public class OpenStorageRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = DELETE_FILE_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -555,8 +554,8 @@ public class OpenStorageRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = DELETE_FILES_BATCH_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 

@@ -12,7 +12,7 @@ plugins {
 
 dependencies {
     // Shared Foundation
-    api(libs.shared.foundation.core.common)
+    api(libs.shared.foundation.core)
 
     // Kotlin
     api(libs.kotlinx.serialization.json)

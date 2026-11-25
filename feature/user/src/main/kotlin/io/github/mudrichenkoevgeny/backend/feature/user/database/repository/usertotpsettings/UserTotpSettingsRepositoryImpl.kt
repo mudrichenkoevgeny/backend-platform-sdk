@@ -9,8 +9,8 @@ import io.github.mudrichenkoevgeny.backend.core.common.util.toJavaInstant
 import io.github.mudrichenkoevgeny.backend.core.common.util.toKotlinInstant
 import io.github.mudrichenkoevgeny.backend.feature.user.database.table.UserTotpSettingsTable
 import io.github.mudrichenkoevgeny.backend.feature.user.model.totp.UserTotpSettings
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.exceptions.ExposedSQLException

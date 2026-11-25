@@ -10,7 +10,7 @@ bcv = "0.18.2"
 dokka = "2.3.0"
 
 # Shared Foundation
-shared-foundation = "0.1.23"
+shared-foundation = "0.1.25"
 
 # Kotlin
 kotlinx-serialization = "1.12.0"
@@ -69,11 +69,7 @@ testcontainers = "1.21.4"
 
 [libraries]
 # Shared Foundation
-shared-foundation-core-common = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-common", version.ref = "shared-foundation" }
-shared-foundation-core-storage = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-storage", version.ref = "shared-foundation" }
-shared-foundation-core-settings = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-settings", version.ref = "shared-foundation" }
-shared-foundation-core-security = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-security", version.ref = "shared-foundation" }
-shared-foundation-core-audit = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core-audit", version.ref = "shared-foundation" }
+shared-foundation-core = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-core", version.ref = "shared-foundation" }
 shared-foundation-feature-user = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-feature-user", version.ref = "shared-foundation" }
 shared-foundation-fixtures = { group = "io.github.mudrichenkoevgeny", name = "shared-foundation-testing", version.ref = "shared-foundation" }
 

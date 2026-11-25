@@ -17,12 +17,12 @@ import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRa
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserIdentifierId
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.passwordhash.PasswordHash
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
@@ -137,7 +137,7 @@ class IdentifierEmailChangePasswordUseCaseTest {
                 resourceId = identifierId.asHexDashString(),
                 resource = UserAuditResourceType.IDENTIFIER,
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 metadata = any()
             )
         }
@@ -204,7 +204,7 @@ class IdentifierEmailChangePasswordUseCaseTest {
                 actorType = AuditActorType.USER,
                 resource = UserAuditResourceType.IDENTIFIER,
                 resourceId = identifierId.asHexDashString(),
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 metadata = any()
             )
         }

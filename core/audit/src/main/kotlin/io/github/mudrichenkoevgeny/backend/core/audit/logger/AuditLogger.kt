@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.eve
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 
 /**
  * Thin application API for **writing** audit events through [AuditService].
@@ -18,7 +19,7 @@ public interface AuditLogger {
     public fun log(
         actorId: String? = null,
         actorType: AuditActorType,
-        actorUserRole: String? = null,
+        actorUserRole: UserRole? = null,
         action: AuditActionType,
         resource: AuditResourceType,
         resourceId: String? = null,

@@ -3,8 +3,8 @@ package io.github.mudrichenkoevgeny.backend.feature.user.database.table
 import io.github.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
 import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientType
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.ReferenceOption
 import org.jetbrains.exposed.v1.core.dao.id.EntityID

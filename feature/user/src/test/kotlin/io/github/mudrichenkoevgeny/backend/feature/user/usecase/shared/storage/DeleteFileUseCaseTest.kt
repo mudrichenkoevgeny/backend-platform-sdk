@@ -25,7 +25,7 @@ class DeleteFileUseCaseTest {
     fun `successfully deletes file for current user`() = runTest {
         coEvery {
             storageManager.deleteSelfStorageFile(
-                ownerUserId = currentUserId.asHexDashString(),
+                ownerUserId = currentUserId,
                 fileId = fileId
             )
         } returns AppResult.Success(Unit)
@@ -41,7 +41,7 @@ class DeleteFileUseCaseTest {
         )
         coVerify(exactly = 1) {
             storageManager.deleteSelfStorageFile(
-                ownerUserId = currentUserId.asHexDashString(),
+                ownerUserId = currentUserId,
                 fileId = fileId
             )
         }
@@ -53,7 +53,7 @@ class DeleteFileUseCaseTest {
 
         coEvery {
             storageManager.deleteSelfStorageFile(
-                ownerUserId = currentUserId.asHexDashString(),
+                ownerUserId = currentUserId,
                 fileId = fileId
             )
         } returns AppResult.Error(expectedError)

@@ -5,7 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutAttemptT
 import io.github.mudrichenkoevgeny.backend.core.security.lockout.LockoutManager
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 
 /**
  * Orchestrates account lockout checks and enforcement across user authentication flows.

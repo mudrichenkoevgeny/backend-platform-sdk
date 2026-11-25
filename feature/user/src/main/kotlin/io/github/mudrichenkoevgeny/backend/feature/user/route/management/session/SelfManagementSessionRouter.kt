@@ -11,7 +11,6 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.common.route.CommonSwaggerTags
 import io.github.mudrichenkoevgeny.backend.core.common.routing.BaseRouter
 import io.github.mudrichenkoevgeny.backend.core.common.routing.respondResult
-import io.github.mudrichenkoevgeny.backend.core.common.util.mapToSet
 import io.github.mudrichenkoevgeny.backend.feature.user.network.query.parseSelfSessionsListQueryParams
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.AuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.backend.feature.user.network.utils.getAuthenticatedRequestContext
@@ -30,14 +29,14 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.met
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.toUserSessionIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.verifytotp.VerifyTotpPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.metadata.UserAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.toUserSessionIdOrThrow
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toDeletedSessionsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionPrivatePayload
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.session.toUserSessionSummaryPayload
@@ -259,8 +258,8 @@ public class SelfManagementSessionRouter @Inject constructor(
         tags = listOf(CommonSwaggerTags.MANAGEMENT_PREFIX + UserSwaggerTags.SESSION)
         description = getFormattedDescription(
             description = LOGOUT_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value }
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses
         )
         response {
             code(HttpStatusCode.NoContent) {
@@ -314,8 +313,8 @@ public class SelfManagementSessionRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_SELF_SESSIONS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -373,8 +372,8 @@ public class SelfManagementSessionRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_SELF_SESSION_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -440,8 +439,8 @@ public class SelfManagementSessionRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = DELETE_SELF_SESSION_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -517,8 +516,8 @@ public class SelfManagementSessionRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = DELETE_ALL_OTHER_SELF_SESSIONS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -586,8 +585,8 @@ public class SelfManagementSessionRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = REAUTHENTICATE_SESSION_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -656,7 +655,7 @@ public class SelfManagementSessionRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.value,
+            actorUserRole = authenticatedRequestContext.userRole,
             action = actionType,
             resource = UserAuditResourceType.SESSION,
             resourceId = resourceId,

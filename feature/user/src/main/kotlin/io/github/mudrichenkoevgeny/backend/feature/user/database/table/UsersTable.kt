@@ -2,10 +2,10 @@ package io.github.mudrichenkoevgeny.backend.feature.user.database.table
 
 import io.github.mudrichenkoevgeny.backend.core.database.BaseDbConstraints
 import io.github.mudrichenkoevgeny.backend.core.database.table.BaseTable
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.accountlockout.AccountLockoutType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import kotlinx.serialization.serializer
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.javatime.timestamp

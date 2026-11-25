@@ -12,11 +12,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.secur
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.security.ResetSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.security.UpdateSecuritySettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.security.GetOpenSecuritySettingsUseCase
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securitysettings.toManagementSecuritySettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.securitysettings.ManagementSecuritySettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.route.management.security.settings.ManagementSecuritySettingsRoutes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.ktor.client.call.body

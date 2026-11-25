@@ -14,10 +14,10 @@ import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRa
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.mapper.user.toUserPrivate
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
@@ -98,7 +98,7 @@ class RestoreUserUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.SELF_RESTORE_USER,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -125,7 +125,7 @@ class RestoreUserUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.SELF_RESTORE_USER,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -227,7 +227,7 @@ class RestoreUserUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.SELF_RESTORE_USER,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),

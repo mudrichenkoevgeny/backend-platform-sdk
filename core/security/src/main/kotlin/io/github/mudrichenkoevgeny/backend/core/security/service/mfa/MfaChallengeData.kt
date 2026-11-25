@@ -1,5 +1,9 @@
 package io.github.mudrichenkoevgeny.backend.core.security.service.mfa
 
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserSessionId
 import kotlinx.serialization.Serializable
 
 /**
@@ -9,7 +13,6 @@ import kotlinx.serialization.Serializable
  *
  * @property token The unique, high-entropy string (mfaToken) identifying this challenge.
  * @property userId The unique identifier of the user who must fulfill the challenge.
- * Linked as [String] to maintain module decoupling.
  * @property userRole The role of the user at the time the challenge was created.
  * Used for audit logging and to maintain context throughout the multistep
  * authentication process without additional database lookups.
@@ -26,10 +29,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 public data class MfaChallengeData(
     val token: String,
-    val userId: String,
-    val userRole: String,
-    val identifierId: String? = null,
-    val sessionId: String? = null,
+    val userId: UserId,
+    val userRole: UserRole,
+    val identifierId: UserIdentifierId? = null,
+    val sessionId: UserSessionId? = null,
     val type: MfaChallengeType,
     val metadata: Map<String, String> = emptyMap()
 )

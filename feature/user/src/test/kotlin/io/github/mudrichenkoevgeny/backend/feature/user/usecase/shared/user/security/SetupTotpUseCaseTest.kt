@@ -21,13 +21,14 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTe
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.user.createTestUserId
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
@@ -95,10 +96,10 @@ class SetupTotpUseCaseTest {
 
         val mfaChallengeData = createTestMfaChallengeData(
             token = "mfa-token",
-            userId = userId.asHexDashString(),
-            userRole = UserRole.USER.value,
-            identifierId = identifierId.asHexDashString(),
-            sessionId = sessionId.asHexDashString(),
+            userId = userId,
+            userRole = UserRole.USER,
+            identifierId = identifierId,
+            sessionId = sessionId,
             type = MfaChallengeType.SETUP_TOTP
         )
 
@@ -121,11 +122,11 @@ class SetupTotpUseCaseTest {
 
         coEvery {
             mfaService.createChallenge(
-                userId = userId.asHexDashString(),
-                userRole = UserRole.USER.value,
+                userId = userId,
+                userRole = UserRole.USER,
                 type = MfaChallengeType.SETUP_TOTP,
-                identifierId = identifierId.asHexDashString(),
-                sessionId = sessionId.asHexDashString()
+                identifierId = identifierId,
+                sessionId = sessionId
             )
         } returns AppResult.Success(mfaChallengeData)
 
@@ -151,7 +152,7 @@ class SetupTotpUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.SELF_SETUP_TOTP_INITIATED,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -183,7 +184,7 @@ class SetupTotpUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.SELF_SETUP_TOTP_INITIATED,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -277,8 +278,8 @@ class SetupTotpUseCaseTest {
         } returns AppResult.Success(
             createTestMfaChallengeData(
                 token = "t",
-                userId = "id",
-                userRole = "r",
+                userId = createTestUserId(),
+                userRole = UserRole.USER,
                 type = MfaChallengeType.SETUP_TOTP
             )
         )

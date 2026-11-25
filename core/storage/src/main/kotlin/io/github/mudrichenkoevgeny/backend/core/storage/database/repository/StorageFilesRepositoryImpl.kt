@@ -18,6 +18,8 @@ import io.github.mudrichenkoevgeny.backend.core.storage.database.table.StorageFi
 import io.github.mudrichenkoevgeny.backend.core.storage.network.model.ManagementStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.backend.core.storage.network.model.SelfStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.toUserIdOrNull
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileInternal
@@ -86,12 +88,12 @@ public class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepo
 
     override suspend fun deleteStorageFile(
         fileId: FileId,
-        ownerUserId: String?
+        ownerUserId: UserId?
     ): AppResult<Unit> = try {
         StorageFilesTable.deleteWhere {
             val base = StorageFilesTable.id eq fileId.value
             if (ownerUserId != null) {
-                base and (StorageFilesTable.ownerUserId eq ownerUserId)
+                base and (StorageFilesTable.ownerUserId eq ownerUserId.value.toHexDashString())
             } else {
                 base
             }
@@ -108,7 +110,7 @@ public class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepo
 
     override suspend fun deleteStorageFilesBatch(
         fileIds: List<FileId>,
-        ownerUserId: String?
+        ownerUserId: UserId?
     ): AppResult<Unit> {
         if (fileIds.isEmpty()) return AppResult.Success(Unit)
         return try {
@@ -116,7 +118,7 @@ public class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepo
             StorageFilesTable.deleteWhere {
                 val base = StorageFilesTable.id inList ids
                 if (ownerUserId != null) {
-                    base and (StorageFilesTable.ownerUserId eq ownerUserId)
+                    base and (StorageFilesTable.ownerUserId eq ownerUserId.value.toHexDashString())
                 } else {
                     base
                 }
@@ -169,34 +171,41 @@ public class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepo
         }
     }
 
-    override suspend fun countPendingUploadsForUser(ownerUserId: String): AppResult<Long> = try {
+    override suspend fun countPendingUploadsForUser(ownerUserId: UserId): AppResult<Long> = try {
+        val ownerUserIdString = ownerUserId.value.toHexDashString()
         val countExpression = StorageFilesTable.id.count()
         val count = StorageFilesTable
             .select(countExpression)
             .where {
-                (StorageFilesTable.ownerUserId eq ownerUserId) and
+                (StorageFilesTable.ownerUserId eq ownerUserIdString) and
                     (StorageFilesTable.status eq StorageFileStatus.PENDING_UPLOAD)
             }.firstOrNull()
             ?.get(countExpression) ?: 0L
         AppResult.Success(count)
     } catch (e: ExposedSQLException) {
         AppResult.Error(
-            CommonError.Database("Error counting pending uploads for user $ownerUserId: ${e.message}")
+            CommonError.Database(
+                "Error counting pending uploads for user ${ownerUserId.value.toHexDashString()}: ${e.message}"
+            )
         )
     }
 
-    override suspend fun calculateUsedStorageForUser(ownerUserId: String): AppResult<Long> = try {
+    override suspend fun calculateUsedStorageForUser(ownerUserId: UserId): AppResult<Long> = try {
+        val ownerUserIdString = ownerUserId.value.toHexDashString()
         val sumExpression = StorageFilesTable.fileSizeBytes.sum()
         val sum = StorageFilesTable
             .select(sumExpression)
             .where {
-                (StorageFilesTable.ownerUserId eq ownerUserId) and (StorageFilesTable.status eq StorageFileStatus.READY)
+                (StorageFilesTable.ownerUserId eq ownerUserIdString) and
+                    (StorageFilesTable.status eq StorageFileStatus.READY)
             }.firstOrNull()
             ?.get(sumExpression) ?: 0L
         AppResult.Success(sum)
     } catch (e: ExposedSQLException) {
         AppResult.Error(
-            CommonError.Database("Error calculating used storage for user $ownerUserId: ${e.message}")
+            CommonError.Database(
+                "Error calculating used storage for user ${ownerUserId.value.toHexDashString()}: ${e.message}"
+            )
         )
     }
 
@@ -213,7 +222,8 @@ public class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepo
         val query = StorageFilesTable.selectAll()
 
         if (queryParams.ownerUserIds.isNotEmpty()) {
-            query.andWhere { StorageFilesTable.ownerUserId inList queryParams.ownerUserIds }
+            val ownerUserIdStrings = queryParams.ownerUserIds.map { it.value.toHexDashString() }
+            query.andWhere { StorageFilesTable.ownerUserId inList ownerUserIdStrings }
         }
 
         return executeStorageFilesPagedQuery(
@@ -223,10 +233,13 @@ public class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepo
     }
 
     override suspend fun getStorageFilesPageByOwnerUserId(
-        ownerUserId: String,
+        ownerUserId: UserId,
         queryParams: SelfStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileInternal>> {
-        val query = StorageFilesTable.selectAll().where { StorageFilesTable.ownerUserId eq ownerUserId }
+        val ownerUserIdString = ownerUserId.value.toHexDashString()
+        val query = StorageFilesTable.selectAll().where {
+            StorageFilesTable.ownerUserId eq ownerUserIdString
+        }
 
         if (queryParams.statuses.isEmpty()) {
             query.andWhere { StorageFilesTable.status neq StorageFileStatus.DELETED }
@@ -479,7 +492,7 @@ public class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepo
 
     private fun ResultRow.toStorageFileInternal(): StorageFileInternal = StorageFileInternal(
         id = FileId(this[StorageFilesTable.id].value),
-        ownerUserId = this[StorageFilesTable.ownerUserId],
+        ownerUserId = this[StorageFilesTable.ownerUserId]?.toUserIdOrNull(),
         fileName = this[StorageFilesTable.fileName],
         fileSizeBytes = this[StorageFilesTable.fileSizeBytes],
         mimeType = this[StorageFilesTable.mimeType],
@@ -500,7 +513,7 @@ public class StorageFilesRepositoryImpl @Inject constructor() : StorageFilesRepo
         updatedAt: JavaInstant? = file.updatedAt?.toJavaInstant()
     ) {
         this[StorageFilesTable.id] = file.id.value
-        this[StorageFilesTable.ownerUserId] = file.ownerUserId
+        this[StorageFilesTable.ownerUserId] = file.ownerUserId?.value?.toHexDashString()
         this[StorageFilesTable.fileName] = file.fileName
         this[StorageFilesTable.fileSizeBytes] = file.fileSizeBytes
         this[StorageFilesTable.mimeType] = file.mimeType

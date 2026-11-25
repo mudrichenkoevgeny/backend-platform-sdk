@@ -21,8 +21,8 @@ dependencies {
 
     // Shared foundation
     api(libs.shared.foundation.feature.user)
-    implementation(libs.shared.foundation.core.security) // Transitive
-    implementation(libs.slf4j) // Transitive
+    implementation(libs.shared.foundation.core)
+    implementation(libs.slf4j)
 
     // Kotlin
     implementation(libs.kotlinx.coroutines.core) // Transitive

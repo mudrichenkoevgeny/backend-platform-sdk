@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.storage.network.model
 
 import io.github.mudrichenkoevgeny.backend.core.common.pagination.ListingQueryParams
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageFileSortBy
@@ -14,7 +15,7 @@ import kotlin.time.Instant
 public data class ManagementStorageFileListQueryParams(
     val listing: ListingQueryParams<StorageFileSortBy>,
     val fileIds: List<FileId> = emptyList(),
-    val ownerUserIds: List<String> = emptyList(),
+    val ownerUserIds: List<UserId> = emptyList(),
     val isOwnerUserIdSet: Boolean? = null,
     val fileName: String? = null,
     val fileSizeBytesFrom: Long? = null,

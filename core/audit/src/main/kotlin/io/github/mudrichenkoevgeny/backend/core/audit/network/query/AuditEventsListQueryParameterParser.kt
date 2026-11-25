@@ -16,6 +16,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.lis
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.CompositeAuditResourceTypeParser
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.ktor.server.application.ApplicationCall
 
 /**
@@ -68,13 +69,18 @@ public fun ApplicationCall.parseAuditEventsListQueryParams(
         AuditStatus::fromValueOrNull
     )
 
+    val actorUserRoles = parseValidatedQueryList(
+        filterNames.ACTOR_USER_ROLE,
+        UserRole::fromValueOrNull
+    )
+
     return ManagementAuditEventListQueryParams(
         listing = listing,
         eventIds = eventIds,
         actorIds = getQueryValues(filterNames.ACTOR_ID),
         actorTypes = actorTypes,
         excludeActorTypes = excludeActorTypes,
-        actorUserRoles = getQueryValues(filterNames.ACTOR_USER_ROLE),
+        actorUserRoles = actorUserRoles,
         actions = actions,
         excludeActions = excludeActions,
         resources = resources,

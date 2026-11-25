@@ -14,11 +14,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manage
 import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationchallenge.AuthenticationChallengeService
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.action.SecurityAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.resource.SecurityAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.contract.SecurityWebSocketEventTypes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestManagementSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.security.domain.model.securitysettings.createTestOpenSecuritySettings
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
@@ -99,7 +99,7 @@ class UpdateSecuritySettingsUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.ADMIN.value,
+                actorUserRole = UserRole.ADMIN,
                 action = SecurityAuditActionType.MANAGEMENT_UPDATE_SECURITY_SETTINGS,
                 resource = SecurityAuditResourceType.SECURITY_SETTINGS,
                 status = AuditStatus.SUCCESS,
@@ -146,7 +146,7 @@ class UpdateSecuritySettingsUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.ADMIN.value,
+                actorUserRole = UserRole.ADMIN,
                 action = SecurityAuditActionType.MANAGEMENT_UPDATE_SECURITY_SETTINGS,
                 resource = SecurityAuditResourceType.SECURITY_SETTINGS,
                 status = AuditStatus.FAILED,

@@ -11,12 +11,12 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.audit.action.StorageAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.audit.resource.StorageAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.permission.StoragePermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -77,7 +77,7 @@ class ManagementDeleteFilesUseCaseTest {
             auditLogger.log(
                 actorId = managementUserId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.ADMIN.value,
+                actorUserRole = UserRole.ADMIN,
                 action = StorageAuditActionType.MANAGEMENT_DELETE_FILE,
                 resource = StorageAuditResourceType.STORAGE_FILE,
                 resourceId = fileId1.asHexDashString(),
@@ -89,7 +89,7 @@ class ManagementDeleteFilesUseCaseTest {
             auditLogger.log(
                 actorId = managementUserId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.ADMIN.value,
+                actorUserRole = UserRole.ADMIN,
                 action = StorageAuditActionType.MANAGEMENT_DELETE_FILE,
                 resource = StorageAuditResourceType.STORAGE_FILE,
                 resourceId = fileId2.asHexDashString(),
@@ -160,7 +160,7 @@ class ManagementDeleteFilesUseCaseTest {
             auditLogger.log(
                 actorId = managementUserId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.ADMIN.value,
+                actorUserRole = UserRole.ADMIN,
                 action = StorageAuditActionType.MANAGEMENT_DELETE_FILE,
                 resource = StorageAuditResourceType.STORAGE_FILE,
                 resourceId = fileId1.asHexDashString(),
@@ -172,7 +172,7 @@ class ManagementDeleteFilesUseCaseTest {
             auditLogger.log(
                 actorId = managementUserId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.ADMIN.value,
+                actorUserRole = UserRole.ADMIN,
                 action = StorageAuditActionType.MANAGEMENT_DELETE_FILE,
                 resource = StorageAuditResourceType.STORAGE_FILE,
                 resourceId = fileId2.asHexDashString(),

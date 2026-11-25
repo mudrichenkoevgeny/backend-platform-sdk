@@ -1,7 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.feature.user.model.totp
 
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import kotlin.time.Instant
 
 fun createTestUserTotpSettings(

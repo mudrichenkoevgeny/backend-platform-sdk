@@ -12,11 +12,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manage
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.DeletedSessions
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -88,7 +88,7 @@ class DeleteAllOtherSessionsUseCaseTest {
             auditLogger.log(
                 actorId = context.userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.SELF_DELETE_OTHER_SESSIONS,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = context.sessionId.asHexDashString(),

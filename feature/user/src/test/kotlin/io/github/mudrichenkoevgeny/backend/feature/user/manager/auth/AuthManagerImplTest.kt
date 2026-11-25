@@ -14,10 +14,10 @@ import io.github.mudrichenkoevgeny.backend.feature.user.manager.session.SessionM
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.websocket.manager.WebSocketManager
 import io.github.mudrichenkoevgeny.backend.feature.user.provider.authsettings.AuthSettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.client.createTestClientInfo
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.identifier.createTestUserIdentifierInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
@@ -522,9 +522,9 @@ class AuthManagerImplTest {
             val userIdentifier = createTestUserIdentifierInternal(userId = userId)
             val mfaChallengeData = createTestMfaChallengeData(
                 token = "test-mfa-token",
-                userId = userId.asHexDashString(),
-                userRole = UserRole.USER.value,
-                identifierId = userIdentifier.id.asHexDashString(),
+                userId = userId,
+                userRole = UserRole.USER,
+                identifierId = userIdentifier.id,
                 type = MfaChallengeType.LOGIN_TOTP
             )
 
@@ -543,10 +543,10 @@ class AuthManagerImplTest {
             } returns AppResult.Success(true)
             coEvery {
                 mfaService.createChallenge(
-                    userId = userId.asHexDashString(),
-                    userRole = UserRole.USER.value,
+                    userId = userId,
+                    userRole = UserRole.USER,
                     type = MfaChallengeType.LOGIN_TOTP,
-                    identifierId = userIdentifier.id.asHexDashString()
+                    identifierId = userIdentifier.id
                 )
             } returns AppResult.Success(mfaChallengeData)
 

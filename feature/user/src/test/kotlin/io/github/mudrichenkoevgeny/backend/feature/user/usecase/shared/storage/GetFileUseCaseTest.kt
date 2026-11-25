@@ -28,7 +28,7 @@ class GetFileUseCaseTest {
 
     private val filePrivate = createTestStorageFilePrivate(
         id = fileId,
-        ownerUserId = currentUserId.asHexDashString(),
+        ownerUserId = currentUserId,
         fileName = "avatar.png",
         fileSizeBytes = 500L,
         mimeType = "image/png",
@@ -44,7 +44,7 @@ class GetFileUseCaseTest {
     fun `returns file details when file exists`() = runTest {
         coEvery {
             storageManager.getSelfStorageFilePrivate(
-                ownerUserId = currentUserId.asHexDashString(),
+                ownerUserId = currentUserId,
                 fileId = fileId
             )
         } returns AppResult.Success(filePrivate)
@@ -64,7 +64,7 @@ class GetFileUseCaseTest {
     fun `returns NotFound error when file is not found`() = runTest {
         coEvery {
             storageManager.getSelfStorageFilePrivate(
-                ownerUserId = currentUserId.asHexDashString(),
+                ownerUserId = currentUserId,
                 fileId = fileId
             )
         } returns AppResult.Success(null)

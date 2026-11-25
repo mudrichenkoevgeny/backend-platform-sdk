@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.p
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseTimestampQueryOrNull
 import io.github.mudrichenkoevgeny.backend.core.common.network.request.handler.parseValidatedQueryList
 import io.github.mudrichenkoevgeny.backend.core.storage.network.model.ManagementStorageFileListQueryParams
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.toUserIdOrNull
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.toFileIdOrNull
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.listing.StorageFileFilterValues
@@ -31,7 +32,10 @@ public fun ApplicationCall.parseManagementStorageFileListQueryParams(): Manageme
             filterNames.FILE_ID,
             String::toFileIdOrNull
         ),
-        ownerUserIds = getQueryValues(filterNames.OWNER_USER_ID),
+        ownerUserIds = parseValidatedQueryList(
+            filterNames.OWNER_USER_ID,
+            String::toUserIdOrNull
+        ),
         isOwnerUserIdSet = parseBooleanQueryOrNull(filterNames.IS_OWNER_USER_ID_SET),
         fileName = firstNonBlankQueryValue(filterNames.FILE_NAME),
         fileSizeBytesFrom = parseLongQueryOrNull(filterNames.FILE_SIZE_BYTES_FROM),

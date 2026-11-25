@@ -34,7 +34,7 @@ public class DeleteFilesUseCase @Inject constructor(
             return AppResult.Success(Unit)
         }
 
-        val ownerUserId = authenticatedRequestContext.userId.asHexDashString()
+        val ownerUserId = authenticatedRequestContext.userId
         return storageManager.deleteSelfStorageFilesBatch(
             ownerUserId = ownerUserId,
             fileIds = fileIds

@@ -27,6 +27,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.action.SecurityAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.audit.resource.SecurityAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.permission.SecurityPermissionCode
@@ -36,8 +38,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.security.mapper.securi
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.securitysettings.ManagementSecuritySettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.securitysettings.OpenSecuritySettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.route.management.security.settings.ManagementSecuritySettingsRoutes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.get
 import io.github.smiley4.ktoropenapi.post
@@ -148,8 +148,8 @@ public class ManagementSecuritySettingsRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = UPDATE_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             requiredPermissions = requiredPermissions.mapToSet { it.value },
             isPublic = false,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
@@ -219,8 +219,8 @@ public class ManagementSecuritySettingsRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = false
         )
 
@@ -300,8 +300,8 @@ public class ManagementSecuritySettingsRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = RESET_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             requiredPermissions = requiredPermissions.mapToSet { it.value },
             isPublic = false,
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
@@ -379,8 +379,8 @@ public class ManagementSecuritySettingsRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_OPEN_SECURITY_SETTINGS_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             isPublic = true
         )
 
@@ -415,7 +415,7 @@ public class ManagementSecuritySettingsRouter @Inject constructor(
         auditLogger.log(
             actorId = authenticatedRequestContext.userId.asHexDashString(),
             actorType = AuditActorType.USER,
-            actorUserRole = authenticatedRequestContext.userRole.value,
+            actorUserRole = authenticatedRequestContext.userRole,
             action = actionType,
             resource = SecurityAuditResourceType.SECURITY_SETTINGS,
             status = AuditStatus.DENIED,

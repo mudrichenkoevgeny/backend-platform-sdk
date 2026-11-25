@@ -4,7 +4,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.model.UpdateField
 import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.feature.user.model.device.UserKnownDevice
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.client.ClientDeviceId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 import kotlin.time.Instant
 
 /**

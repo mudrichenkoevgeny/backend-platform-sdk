@@ -18,11 +18,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTe
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.DecryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.crypt.EncryptedString
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -69,7 +69,7 @@ class EnableTotpUseCaseTest {
             id = userId,
             isTotpEnabled = false
         )
-        val mfaChallenge = createTestMfaChallengeData(sessionId = context.sessionId.asHexDashString())
+        val mfaChallenge = createTestMfaChallengeData(sessionId = context.sessionId)
         val encryptedSecret = EncryptedString("encrypted-secret")
         val settings = UserTotpSettings(
             userId = userId,
@@ -133,7 +133,7 @@ class EnableTotpUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.SELF_ENABLE_TOTP,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -164,7 +164,7 @@ class EnableTotpUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.SELF_ENABLE_TOTP,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),
@@ -180,7 +180,7 @@ class EnableTotpUseCaseTest {
             id = userId,
             isTotpEnabled = false
         )
-        val mfaChallenge = createTestMfaChallengeData(sessionId = context.sessionId.asHexDashString())
+        val mfaChallenge = createTestMfaChallengeData(sessionId = context.sessionId)
 
         coEvery {
             rateLimiter.checkRateLimit(
@@ -213,7 +213,7 @@ class EnableTotpUseCaseTest {
             id = userId,
             isTotpEnabled = false
         )
-        val mfaChallenge = createTestMfaChallengeData(sessionId = context.sessionId.asHexDashString())
+        val mfaChallenge = createTestMfaChallengeData(sessionId = context.sessionId)
         val settings = UserTotpSettings(
             userId = userId,
             encryptedSecret = EncryptedString("secret"),
@@ -253,7 +253,7 @@ class EnableTotpUseCaseTest {
             id = userId,
             isTotpEnabled = false
         )
-        val mfaChallenge = createTestMfaChallengeData(sessionId = context.sessionId.asHexDashString())
+        val mfaChallenge = createTestMfaChallengeData(sessionId = context.sessionId)
         val encryptedSecret = EncryptedString("secret")
         val settings = UserTotpSettings(
             userId,
@@ -296,7 +296,7 @@ class EnableTotpUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.SELF_ENABLE_TOTP,
                 resource = UserAuditResourceType.USER,
                 resourceId = userId.asHexDashString(),

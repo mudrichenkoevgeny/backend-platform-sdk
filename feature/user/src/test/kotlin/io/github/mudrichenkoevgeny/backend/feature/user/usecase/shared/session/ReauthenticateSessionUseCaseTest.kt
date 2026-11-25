@@ -17,11 +17,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTe
 import io.github.mudrichenkoevgeny.backend.feature.user.ratelimiter.model.UserRateLimitAction
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -102,9 +102,9 @@ class ReauthenticateSessionUseCaseTest {
 
         val mfaChallengeData = createTestMfaChallengeData(
             token = mfaToken,
-            userId = userId.asHexDashString(),
-            userRole = context.userRole.value,
-            sessionId = sessionId.asHexDashString(),
+            userId = userId,
+            userRole = context.userRole,
+            sessionId = sessionId,
             type = MfaChallengeType.STEP_UP
         )
 
@@ -147,7 +147,7 @@ class ReauthenticateSessionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.REAUTHENTICATE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),
@@ -186,7 +186,7 @@ class ReauthenticateSessionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.REAUTHENTICATE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),
@@ -208,9 +208,9 @@ class ReauthenticateSessionUseCaseTest {
 
         val wrongMfaChallengeData = createTestMfaChallengeData(
             token = mfaToken,
-            userId = UserId.generate().asHexDashString(),
-            userRole = context.userRole.value,
-            sessionId = sessionId.asHexDashString(),
+            userId = UserId.generate(),
+            userRole = context.userRole,
+            sessionId = sessionId,
             type = MfaChallengeType.STEP_UP
         )
 
@@ -240,7 +240,7 @@ class ReauthenticateSessionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.REAUTHENTICATE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),
@@ -262,9 +262,9 @@ class ReauthenticateSessionUseCaseTest {
 
         val mfaChallengeData = createTestMfaChallengeData(
             token = mfaToken,
-            userId = userId.asHexDashString(),
-            userRole = context.userRole.value,
-            sessionId = sessionId.asHexDashString(),
+            userId = userId,
+            userRole = context.userRole,
+            sessionId = sessionId,
             type = MfaChallengeType.STEP_UP
         )
         val error = CommonError.Unknown()
@@ -304,7 +304,7 @@ class ReauthenticateSessionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.REAUTHENTICATE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),
@@ -326,9 +326,9 @@ class ReauthenticateSessionUseCaseTest {
 
         val mfaChallengeData = createTestMfaChallengeData(
             token = mfaToken,
-            userId = userId.asHexDashString(),
-            userRole = context.userRole.value,
-            sessionId = sessionId.asHexDashString(),
+            userId = userId,
+            userRole = context.userRole,
+            sessionId = sessionId,
             type = MfaChallengeType.STEP_UP
         )
         val error = CommonError.Unknown()
@@ -366,7 +366,7 @@ class ReauthenticateSessionUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = context.userRole.value,
+                actorUserRole = context.userRole,
                 action = UserAuditActionType.REAUTHENTICATE_SESSION,
                 resource = UserAuditResourceType.SESSION,
                 resourceId = sessionId.asHexDashString(),

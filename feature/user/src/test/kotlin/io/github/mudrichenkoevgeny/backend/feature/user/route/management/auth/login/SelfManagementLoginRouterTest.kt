@@ -7,10 +7,10 @@ import io.github.mudrichenkoevgeny.backend.feature.user.network.route.BaseRouter
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByEmailUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByTotpRecoveryCodeUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.shared.auth.login.LoginByTotpUseCase
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.network.model.verifytotp.VerifyTotpPayload
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.request.auth.login.LoginByEmailRequest
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.network.route.management.auth.login.SelfManagementLoginRoutes
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.auth.data.createTestAuthData

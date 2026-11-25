@@ -15,8 +15,7 @@ dependencies {
     api(project(":core:database"))
 
     // Shared Foundation
-    implementation(libs.shared.foundation.core.common)
-    api(libs.shared.foundation.core.settings)
+    api(libs.shared.foundation.core)
 
     // Ktor
     runtimeOnly(libs.ktor.server.core) // Transitive for Project Modules

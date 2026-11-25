@@ -13,7 +13,7 @@ dependencies {
     api(project(":core:common"))
 
     // Shared Foundation
-    api(libs.shared.foundation.core.common)
+    api(libs.shared.foundation.core)
 
     // Kotlin
     implementation(libs.kotlinx.serialization.json)

@@ -3,7 +3,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.security.authentication
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import io.github.mudrichenkoevgeny.backend.feature.user.network.contract.UserTokenClaims
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication

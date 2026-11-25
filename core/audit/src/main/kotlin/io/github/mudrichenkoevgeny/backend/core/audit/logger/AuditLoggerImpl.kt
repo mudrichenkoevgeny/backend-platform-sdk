@@ -8,6 +8,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.eve
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.time.Clock
@@ -23,7 +24,7 @@ public class AuditLoggerImpl @Inject constructor(
     override fun log(
         actorId: String?,
         actorType: AuditActorType,
-        actorUserRole: String?,
+        actorUserRole: UserRole?,
         action: AuditActionType,
         resource: AuditResourceType,
         resourceId: String?,

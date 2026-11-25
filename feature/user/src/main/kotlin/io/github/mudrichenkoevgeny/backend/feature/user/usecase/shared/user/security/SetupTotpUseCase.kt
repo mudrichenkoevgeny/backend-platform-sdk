@@ -22,12 +22,12 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.act
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.security.domain.model.totpsetup.TotpSetup
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.action.UserAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.audit.resource.UserAuditResourceType
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.authprovider.UserAuthProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionPrivate
 import javax.inject.Inject
@@ -168,11 +168,11 @@ public class SetupTotpUseCase @Inject constructor(
         }
 
         val mfaChallengeResult = mfaService.createChallenge(
-            userId = auditActorId,
-            userRole = user.role.value,
+            userId = authenticatedRequestContext.userId,
+            userRole = user.role,
             type = MfaChallengeType.SETUP_TOTP,
-            identifierId = userSession.identifierId.asHexDashString(),
-            sessionId = authenticatedRequestContext.sessionId.asHexDashString()
+            identifierId = userSession.identifierId,
+            sessionId = authenticatedRequestContext.sessionId
         )
 
         val mfaChallenge = when (mfaChallengeResult) {
@@ -253,7 +253,7 @@ public class SetupTotpUseCase @Inject constructor(
         auditLogger.log(
             actorId = actorId,
             actorType = AuditActorType.USER,
-            actorUserRole = actorUserRole?.value,
+            actorUserRole = actorUserRole,
             action = UserAuditActionType.SELF_SETUP_TOTP_INITIATED,
             resource = UserAuditResourceType.USER,
             resourceId = actorId,

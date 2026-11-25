@@ -6,7 +6,10 @@ import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityErr
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChallengeType
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserInternal
 import javax.inject.Inject
@@ -52,10 +55,10 @@ public class AuthenticationChallengeServiceImpl @Inject constructor(
         }
 
         return createChallenge(
-            userId = userInternal.id.asHexDashString(),
-            userRole = userInternal.role.value,
-            identifierId = userSession.identifierId.asHexDashString(),
-            sessionId = userSession.id.asHexDashString()
+            userId = userInternal.id,
+            userRole = userInternal.role,
+            identifierId = userSession.identifierId,
+            sessionId = userSession.id
         )
     }
 
@@ -69,10 +72,10 @@ public class AuthenticationChallengeServiceImpl @Inject constructor(
     }
 
     private suspend fun createChallenge(
-        userId: String,
-        userRole: String,
-        identifierId: String,
-        sessionId: String
+        userId: UserId,
+        userRole: UserRole,
+        identifierId: UserIdentifierId,
+        sessionId: UserSessionId
     ): AppResult<Unit> {
         val mfaResult = mfaService.createChallenge(
             userId = userId,

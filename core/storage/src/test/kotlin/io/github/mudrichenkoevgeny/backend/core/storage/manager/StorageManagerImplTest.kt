@@ -10,6 +10,7 @@ import io.github.mudrichenkoevgeny.backend.core.storage.database.repository.Stor
 import io.github.mudrichenkoevgeny.backend.core.storage.domain.model.S3ObjectMetadata
 import io.github.mudrichenkoevgeny.backend.core.storage.service.StorageService
 import io.github.mudrichenkoevgeny.backend.core.storage.settings.provider.StorageSettingsProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileUrlPresets
@@ -17,6 +18,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.f
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.user.createTestUserId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -66,11 +68,12 @@ class StorageManagerImplTest {
 
     private fun createSampleFileInternal(
         id: FileId = FileId.generate(),
+        ownerUserId: UserId = createTestUserId(),
         status: StorageFileStatus = StorageFileStatus.DELETED,
         s3Key: String = "uploads/${id.value}"
     ) = StorageFileInternal(
         id = id,
-        ownerUserId = "usr_123",
+        ownerUserId = ownerUserId,
         fileName = "test.png",
         fileSizeBytes = 100L,
         mimeType = "image/png",
@@ -230,7 +233,7 @@ class StorageManagerImplTest {
 
     @Test
     fun `getSelfStorageFilePrivate auto-heals pending upload file to READY if S3 confirms metadata`() = runTest {
-        val userId = "usr_123"
+        val userId = createTestUserId()
         val fileId = FileId.generate()
         val pendingFile = createSampleFileInternal(
             id = fileId,

@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.eve
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.event.AuditValueSensitivity
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.network.model.event.AuditEventMetadataPayload
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import kotlinx.serialization.serializer
 import org.jetbrains.exposed.v1.core.Column
@@ -29,9 +30,10 @@ public object AuditEventsTable : BaseTable("audit_events") {
         BaseDbConstraints.ENUM_MAX_LENGTH,
         AuditActorType::class
     )
-    public val actorUserRole: Column<String?> = varchar(
+    public val actorUserRole: Column<UserRole?> = enumerationByName(
         "actor_user_role",
-        BaseDbConstraints.DEFAULT_MAX_LENGTH
+        BaseDbConstraints.ENUM_MAX_LENGTH,
+        UserRole::class
     ).nullable()
     public val action: Column<String> = varchar(
         "action",

@@ -17,9 +17,7 @@ dependencies {
     api(project(":core:audit"))
 
     // Shared Foundation
-    implementation(libs.shared.foundation.core.common)
-    api(libs.shared.foundation.core.security)
-    implementation(libs.shared.foundation.core.audit)
+    api(libs.shared.foundation.core)
 
     // Kotlin
     implementation(libs.kotlinx.serialization.json)

@@ -30,7 +30,7 @@ public class ConfirmUploadUseCase @Inject constructor(
         fileId: FileId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<StorageFilePrivate> {
-        val ownerUserId = authenticatedRequestContext.userId.asHexDashString()
+        val ownerUserId = authenticatedRequestContext.userId
         return storageManager.confirmUpload(
             ownerUserId = ownerUserId,
             fileId = fileId

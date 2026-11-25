@@ -19,10 +19,7 @@ dependencies {
     api(project(":core:storage"))
 
     // Shared Foundation
-    api(libs.shared.foundation.core.common)
-    api(libs.shared.foundation.core.settings)
-    api(libs.shared.foundation.core.security)
-    api(libs.shared.foundation.core.storage)
+    api(libs.shared.foundation.core)
     api(libs.shared.foundation.feature.user)
 
     // Kotlin

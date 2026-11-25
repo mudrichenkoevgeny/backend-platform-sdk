@@ -12,11 +12,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.setti
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.ResetGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.settings.UpdateGlobalSettingsUseCase
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.open.settings.GetOpenGlobalSettingsUseCase
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.mapper.globalsettings.toManagementGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.model.globalsettings.ManagementGlobalSettingsPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.settings.network.route.management.globalsettings.ManagementGlobalSettingsRoutes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.settings.domain.model.globalsettings.createTestManagementGlobalSettings
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.ktor.client.call.body

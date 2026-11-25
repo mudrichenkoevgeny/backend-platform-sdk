@@ -5,6 +5,7 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.storage.network.model.ManagementStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.backend.core.storage.network.model.SelfStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFileInternal
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.status.StorageFileStatus
@@ -42,7 +43,7 @@ public interface StorageFilesRepository {
      */
     public suspend fun deleteStorageFile(
         fileId: FileId,
-        ownerUserId: String? = null
+        ownerUserId: UserId? = null
     ): AppResult<Unit>
 
     /**
@@ -63,7 +64,7 @@ public interface StorageFilesRepository {
      */
     public suspend fun deleteStorageFilesBatch(
         fileIds: List<FileId>,
-        ownerUserId: String? = null
+        ownerUserId: UserId? = null
     ): AppResult<Unit>
 
     /**
@@ -85,18 +86,18 @@ public interface StorageFilesRepository {
     /**
      * Counts active unfinalized upload records for a given user.
      *
-     * @param ownerUserId unique owner user identifier string.
+     * @param ownerUserId unique owner user identifier.
      * @return [AppResult] containing the count of pending uploads or an error.
      */
-    public suspend fun countPendingUploadsForUser(ownerUserId: String): AppResult<Long>
+    public suspend fun countPendingUploadsForUser(ownerUserId: UserId): AppResult<Long>
 
     /**
      * Calculates the cumulative total file size in bytes for active files owned by a user.
      *
-     * @param ownerUserId unique owner user identifier string.
+     * @param ownerUserId unique owner user identifier.
      * @return [AppResult] containing used storage size in bytes or an error.
      */
-    public suspend fun calculateUsedStorageForUser(ownerUserId: String): AppResult<Long>
+    public suspend fun calculateUsedStorageForUser(ownerUserId: UserId): AppResult<Long>
 
     /**
      * Retrieves a file record by its unique identifier.
@@ -124,7 +125,7 @@ public interface StorageFilesRepository {
      * @return [AppResult] containing [PagedResult] of [StorageFileInternal] records or an error.
      */
     public suspend fun getStorageFilesPageByOwnerUserId(
-        ownerUserId: String,
+        ownerUserId: UserId,
         queryParams: SelfStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileInternal>>
 

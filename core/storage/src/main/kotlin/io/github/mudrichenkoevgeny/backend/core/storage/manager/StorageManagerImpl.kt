@@ -18,6 +18,7 @@ import io.github.mudrichenkoevgeny.backend.core.storage.service.StorageService
 import io.github.mudrichenkoevgeny.backend.core.storage.settings.provider.StorageSettingsProvider
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
@@ -58,7 +59,7 @@ public class StorageManagerImpl @Inject constructor(
     private val httpClient by lazy { httpClientProvider.create(HttpClientSettings()) }
 
     override suspend fun initiateFileUpload(
-        ownerUserId: String,
+        ownerUserId: UserId,
         isManagementUser: Boolean,
         fileName: String,
         fileSizeBytes: Long,
@@ -154,7 +155,7 @@ public class StorageManagerImpl @Inject constructor(
     }
 
     private suspend fun checkUploadLimits(
-        ownerUserId: String,
+        ownerUserId: UserId,
         isManagementUser: Boolean,
         fileName: String,
         fileSizeBytes: Long,
@@ -227,7 +228,7 @@ public class StorageManagerImpl @Inject constructor(
     }
 
     override suspend fun confirmUpload(
-        ownerUserId: String,
+        ownerUserId: UserId,
         fileId: FileId
     ): AppResult<StorageFilePrivate> = dbQuery {
         filesRepository
@@ -292,7 +293,7 @@ public class StorageManagerImpl @Inject constructor(
     }
 
     override suspend fun deleteSelfStorageFile(
-        ownerUserId: String,
+        ownerUserId: UserId,
         fileId: FileId
     ): AppResult<Unit> = dbQuery {
         filesRepository.deleteStorageFile(
@@ -312,7 +313,7 @@ public class StorageManagerImpl @Inject constructor(
     }
 
     override suspend fun deleteSelfStorageFilesBatch(
-        ownerUserId: String,
+        ownerUserId: UserId,
         fileIds: List<FileId>
     ): AppResult<Unit> = dbQuery {
         if (fileIds.isEmpty()) {
@@ -325,7 +326,7 @@ public class StorageManagerImpl @Inject constructor(
     }
 
     override suspend fun getSelfStorageFilePrivate(
-        ownerUserId: String,
+        ownerUserId: UserId,
         fileId: FileId
     ): AppResult<StorageFilePrivate?> = dbQuery {
         val fileResult = filesRepository.getStorageFileById(fileId)
@@ -377,7 +378,7 @@ public class StorageManagerImpl @Inject constructor(
     }
 
     override suspend fun getSelfStorageFilesSummaryPage(
-        ownerUserId: String,
+        ownerUserId: UserId,
         queryParams: SelfStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileSummary>> = dbQuery {
         val result = filesRepository.getStorageFilesPageByOwnerUserId(

@@ -1,6 +1,7 @@
 package io.github.mudrichenkoevgeny.backend.core.audit.domain.model
 
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 
 /**
  * Row-level visibility predicate for listing audit events from the database.
@@ -23,5 +24,5 @@ public data class AuditAccessFilter(
     /** Actor kinds the caller may see. USER rows still require a matching [allowedUserRoles] entry (see class KDoc). */
     val allowedActorTypes: Set<AuditActorType>,
     /** Allowed `actor_user_role` values when USER events are permitted; ignored if USER is not in [allowedActorTypes]. */
-    val allowedUserRoles: Set<String>
+    val allowedUserRoles: Set<UserRole>
 )

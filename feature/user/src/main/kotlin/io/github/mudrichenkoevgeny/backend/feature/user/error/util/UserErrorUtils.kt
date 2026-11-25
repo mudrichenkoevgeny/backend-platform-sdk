@@ -2,7 +2,7 @@ package io.github.mudrichenkoevgeny.backend.feature.user.error.util
 
 import io.github.mudrichenkoevgeny.backend.core.common.error.model.AppError
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 
 /**
  * Attempts to extract the associated [UserId] from an [AppError] if it is a [UserError] containing a user ID.

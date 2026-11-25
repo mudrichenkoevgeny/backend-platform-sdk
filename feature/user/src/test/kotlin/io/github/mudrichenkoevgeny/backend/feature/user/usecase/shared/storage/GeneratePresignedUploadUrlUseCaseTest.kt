@@ -5,11 +5,11 @@ import io.github.mudrichenkoevgeny.backend.core.storage.manager.StorageManager
 import io.github.mudrichenkoevgeny.backend.feature.user.error.model.UserError
 import io.github.mudrichenkoevgeny.backend.feature.user.manager.user.UserManager
 import io.github.mudrichenkoevgeny.backend.feature.user.network.request.createTestAuthenticatedRequestContext
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.presigned.PresignedUrl
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.visibility.StorageFileVisibility
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.storage.UserStorageTargetScopes
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
@@ -49,7 +49,7 @@ class GeneratePresignedUploadUrlUseCaseTest {
         coEvery { userManager.getUserInternalById(currentUserId) } returns AppResult.Success(user)
         coEvery {
             storageManager.initiateFileUpload(
-                ownerUserId = currentUserId.asHexDashString(),
+                ownerUserId = currentUserId,
                 isManagementUser = false,
                 fileName = "avatar.png",
                 fileSizeBytes = 500L,
@@ -106,7 +106,7 @@ class GeneratePresignedUploadUrlUseCaseTest {
         coEvery { userManager.getUserInternalById(currentUserId) } returns AppResult.Success(adminUser)
         coEvery {
             storageManager.initiateFileUpload(
-                ownerUserId = currentUserId.asHexDashString(),
+                ownerUserId = currentUserId,
                 isManagementUser = true,
                 fileName = "avatar.png",
                 fileSizeBytes = 500L,

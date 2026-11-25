@@ -15,11 +15,11 @@ import io.github.mudrichenkoevgeny.backend.feature.user.service.authenticationch
 import io.github.mudrichenkoevgeny.backend.feature.user.usecase.management.storage.settings.ResetStorageSettingsUseCase
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.actor.AuditActorType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.audit.action.StorageAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.audit.resource.StorageAuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.contract.StorageWebSocketEventTypes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.storage.domain.model.storagesettings.createTestManagementStorageSettings
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.storage.domain.model.storagesettings.createTestOpenStorageSettings
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
@@ -100,7 +100,7 @@ class ResetStorageSettingsUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.ADMIN.value,
+                actorUserRole = UserRole.ADMIN,
                 action = StorageAuditActionType.MANAGEMENT_RESET_STORAGE_SETTINGS,
                 resource = StorageAuditResourceType.STORAGE_SETTINGS,
                 status = AuditStatus.SUCCESS,
@@ -136,7 +136,7 @@ class ResetStorageSettingsUseCaseTest {
             auditLogger.log(
                 actorId = userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = UserRole.ADMIN.value,
+                actorUserRole = UserRole.ADMIN,
                 action = StorageAuditActionType.MANAGEMENT_RESET_STORAGE_SETTINGS,
                 resource = StorageAuditResourceType.STORAGE_SETTINGS,
                 status = AuditStatus.FAILED,

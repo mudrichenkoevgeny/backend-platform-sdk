@@ -6,11 +6,11 @@ import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaChalleng
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.MfaService
 import io.github.mudrichenkoevgeny.backend.core.security.service.mfa.createTestMfaChallengeData
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.identifier.UserIdentifierId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.session.UserSessionId
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserIdentifierId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserSessionId
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionInternal
 import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.user.createTestUserInternal
 import io.mockk.coEvery
@@ -71,10 +71,10 @@ class AuthenticationChallengeServiceImplTest {
 
         val expectedChallengeData = createTestMfaChallengeData(
             token = testMfaToken,
-            userId = userId.asHexDashString(),
-            userRole = UserRole.USER.value,
-            identifierId = identifierId.asHexDashString(),
-            sessionId = sessionId.asHexDashString(),
+            userId = userId,
+            userRole = UserRole.USER,
+            identifierId = identifierId,
+            sessionId = sessionId,
             type = MfaChallengeType.STEP_UP
         )
 

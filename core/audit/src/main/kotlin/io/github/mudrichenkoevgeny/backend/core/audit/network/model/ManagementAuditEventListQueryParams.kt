@@ -7,6 +7,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.eve
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.listing.AuditEventSortBy
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.resource.AuditResourceType
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import kotlin.time.Instant
 
 /**
@@ -21,7 +22,7 @@ public data class ManagementAuditEventListQueryParams(
     val actorIds: List<String> = emptyList(),
     val actorTypes: List<AuditActorType> = emptyList(),
     val excludeActorTypes: List<AuditActorType> = emptyList(),
-    val actorUserRoles: List<String> = emptyList(),
+    val actorUserRoles: List<UserRole> = emptyList(),
     val actions: List<AuditActionType> = emptyList(),
     val excludeActions: List<AuditActionType> = emptyList(),
     val resources: List<AuditResourceType> = emptyList(),

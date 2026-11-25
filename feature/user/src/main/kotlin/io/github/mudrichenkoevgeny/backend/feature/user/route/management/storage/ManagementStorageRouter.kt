@@ -30,6 +30,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.sta
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserAccountStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.mapper.pagedresult.mapItems
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.audit.action.StorageAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.audit.resource.StorageAuditResourceType
@@ -42,8 +44,6 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.model.
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.model.file.StorageFileSummaryPayload
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.request.file.DeleteFilesBatchRequest
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.network.route.management.ManagementStorageRoutes
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.accountstatus.UserAccountStatus
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
 import io.github.smiley4.ktoropenapi.config.RouteConfig
 import io.github.smiley4.ktoropenapi.delete
 import io.github.smiley4.ktoropenapi.get
@@ -127,8 +127,8 @@ public class ManagementStorageRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_FILES_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             requiredPermissions = requiredPermissions.mapToSet { it.value },
             isPublic = false
         )
@@ -220,8 +220,8 @@ public class ManagementStorageRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = GET_FILE_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             requiredPermissions = requiredPermissions.mapToSet { it.value },
             isPublic = false
         )
@@ -319,8 +319,8 @@ public class ManagementStorageRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = DELETE_FILES_BATCH_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             requiredPermissions = requiredPermissions.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
@@ -420,8 +420,8 @@ public class ManagementStorageRouter @Inject constructor(
 
         description = getFormattedDescription(
             description = DELETE_FILE_ROUTE_DESCRIPTION,
-            allowedRoles = allowedRoles.mapToSet { it.value },
-            allowedAccountStatuses = allowedAccountStatuses.mapToSet { it.value },
+            allowedRoles = allowedRoles,
+            allowedAccountStatuses = allowedAccountStatuses,
             requiredPermissions = requiredPermissions.mapToSet { it.value },
             securityType = SecurityRequirementType.SENSITIVE_STEP_UP_TOTP_REQUIRED
         )
@@ -497,7 +497,7 @@ public class ManagementStorageRouter @Inject constructor(
             auditLogger.log(
                 actorId = authenticatedRequestContext.userId.asHexDashString(),
                 actorType = AuditActorType.USER,
-                actorUserRole = authenticatedRequestContext.userRole.value,
+                actorUserRole = authenticatedRequestContext.userRole,
                 action = actionType,
                 resource = StorageAuditResourceType.STORAGE_FILE,
                 resourceId = null,
@@ -509,7 +509,7 @@ public class ManagementStorageRouter @Inject constructor(
                 auditLogger.log(
                     actorId = authenticatedRequestContext.userId.asHexDashString(),
                     actorType = AuditActorType.USER,
-                    actorUserRole = authenticatedRequestContext.userRole.value,
+                    actorUserRole = authenticatedRequestContext.userRole,
                     action = actionType,
                     resource = StorageAuditResourceType.STORAGE_FILE,
                     resourceId = resourceId,

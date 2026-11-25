@@ -19,8 +19,8 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toA
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.mapper.audit.toAuditEventSummary
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.role.UserRole
-import io.github.mudrichenkoevgeny.shared.foundation.feature.user.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -103,7 +103,7 @@ public class AuditManagerImpl @Inject constructor(
 
     private fun buildAccessFilter(userPermissionCodes: Set<PermissionCode>): AuditAccessFilter {
         val allowedActorTypes = mutableSetOf<AuditActorType>()
-        val allowedUserRoles = mutableSetOf<String>()
+        val allowedUserRoles = mutableSetOf<UserRole>()
 
         if (userPermissionCodes.contains(
                 AuditPermissionCode.AUDIT_GET_FOR_SYSTEM_ACTOR_MASKED
@@ -139,13 +139,13 @@ public class AuditManagerImpl @Inject constructor(
         if (hasUserAccess || hasStaffAccess || hasAdminAccess) {
             allowedActorTypes.add(AuditActorType.USER)
             if (hasUserAccess) {
-                allowedUserRoles.add(UserRole.USER.value)
+                allowedUserRoles.add(UserRole.USER)
             }
             if (hasStaffAccess) {
-                allowedUserRoles.add(UserRole.STAFF.value)
+                allowedUserRoles.add(UserRole.STAFF)
             }
             if (hasAdminAccess) {
-                allowedUserRoles.add(UserRole.ADMIN.value)
+                allowedUserRoles.add(UserRole.ADMIN)
             }
         }
 
@@ -181,7 +181,7 @@ public class AuditManagerImpl @Inject constructor(
             )
 
             AuditActorType.USER -> {
-                when (UserRole.fromValueOrNull(auditEvent.actorUserRole ?: "")) {
+                when (auditEvent.actorUserRole) {
                     UserRole.USER -> PermissionSet(
                         masked = AuditPermissionCode.AUDIT_GET_FOR_USER_ACTOR_MASKED,
                         unmasked = AuditPermissionCode.AUDIT_GET_FOR_USER_ACTOR_UNMASKED

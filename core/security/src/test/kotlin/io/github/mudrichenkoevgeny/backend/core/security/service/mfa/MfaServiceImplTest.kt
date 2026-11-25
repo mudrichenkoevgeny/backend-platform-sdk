@@ -4,8 +4,10 @@ import io.github.mudrichenkoevgeny.backend.core.common.result.AppResult
 import io.github.mudrichenkoevgeny.backend.core.database.manager.redis.RedisManager
 import io.github.mudrichenkoevgeny.backend.core.security.error.model.SecurityError
 import io.github.mudrichenkoevgeny.backend.core.security.settings.provider.SecuritySettingsProvider
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.serialization.FoundationJson
-import io.github.mudrichenkoevgeny.shared.foundation.testing.feature.user.domain.model.session.createTestUserSessionId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.user.createTestUserId
+import io.github.mudrichenkoevgeny.shared.foundation.testing.core.common.domain.model.user.createTestUserSessionId
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -25,8 +27,8 @@ class MfaServiceImplTest {
 
     @Test
     fun `createChallenge saves data to redis and returns it`() = runTest {
-        val userId = "user-1"
-        val userRole = "USER"
+        val userId = createTestUserId()
+        val userRole = UserRole.USER
         val type = MfaChallengeType.LOGIN_TOTP
         val expiration = 300
 
@@ -108,7 +110,7 @@ class MfaServiceImplTest {
         val token = "token"
         val challengeData = createTestMfaChallengeData(
             token = token,
-            userRole = "r",
+            userRole = UserRole.USER,
             type = MfaChallengeType.SETUP_TOTP
         )
         val json = FoundationJson.encodeToString(challengeData)
@@ -127,8 +129,8 @@ class MfaServiceImplTest {
     @Test
     fun `validateChallenge succeeds and consumes token when data matches`() = runTest {
         val token = "valid-token"
-        val userId = createTestUserSessionId().asHexDashString()
-        val sessionId = createTestUserSessionId().asHexDashString()
+        val userId = createTestUserId()
+        val sessionId = createTestUserSessionId()
         val type = MfaChallengeType.STEP_UP
         val challengeData = createTestMfaChallengeData(
             token = token,
@@ -156,9 +158,11 @@ class MfaServiceImplTest {
     fun `validateChallenge returns InvalidMfaToken when userId does not match`() = runTest {
         val token = "token"
         val type = MfaChallengeType.LOGIN_TOTP
+        val realUser = createTestUserId()
+        val imposterUser = createTestUserId()
         val challengeData = createTestMfaChallengeData(
             token = token,
-            userId = "real-user",
+            userId = realUser,
             type = type
         )
         val json = FoundationJson.encodeToString(challengeData)
@@ -168,7 +172,7 @@ class MfaServiceImplTest {
         val result = service.validateChallenge(
             token,
             type,
-            "imposter",
+            imposterUser,
             null
         )
 

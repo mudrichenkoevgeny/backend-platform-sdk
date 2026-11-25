@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.eve
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.AuditEventMetadata
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.metadata.CommonAuditMetadataKey
 import io.github.mudrichenkoevgeny.shared.foundation.core.audit.domain.model.status.AuditStatus
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserRole
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.action.TestAuditActionType
 import io.github.mudrichenkoevgeny.shared.foundation.testing.core.audit.domain.model.resource.TestAuditResourceType
 import io.mockk.mockk
@@ -92,7 +93,7 @@ class AuditLoggerImplTest {
         const val RESOURCE = "test_resource"
         const val ACTOR_ID = "actor-1"
         const val RESOURCE_ID = "res-1"
-        const val ROLE = "user"
+        val ROLE = UserRole.USER
         const val MESSAGE = "msg"
     }
 }

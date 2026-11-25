@@ -75,6 +75,9 @@ indent_size = 2
 [*.properties]
 ij_formatter_enabled = false
 
+[*.{xml,svg}]
+ij_formatter_enabled = false
+
 [*.json]
 indent_size = 2
 

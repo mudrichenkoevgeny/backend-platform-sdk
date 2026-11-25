@@ -6,6 +6,7 @@ import io.github.mudrichenkoevgeny.backend.core.storage.network.model.Management
 import io.github.mudrichenkoevgeny.backend.core.storage.network.model.SelfStorageFileListQueryParams
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.listing.PagedResult
 import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.permission.PermissionCode
+import io.github.mudrichenkoevgeny.shared.foundation.core.common.domain.model.user.UserId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.category.StorageCategory
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.FileId
 import io.github.mudrichenkoevgeny.shared.foundation.core.storage.domain.model.file.StorageFilePrivate
@@ -20,7 +21,7 @@ public interface StorageManager {
     /**
      * Validates quotas, creates a pending storage file record, and generates a presigned upload URL.
      *
-     * @param ownerUserId Owner user ID string.
+     * @param ownerUserId Owner user ID.
      * @param isManagementUser Whether the user has management privileges (affects quotas).
      * @param fileName Original file name.
      * @param fileSizeBytes File size in bytes.
@@ -34,7 +35,7 @@ public interface StorageManager {
      * @return [AppResult] containing domain [PresignedUrl] or an error.
      */
     public suspend fun initiateFileUpload(
-        ownerUserId: String,
+        ownerUserId: UserId,
         isManagementUser: Boolean,
         fileName: String,
         fileSizeBytes: Long,
@@ -50,12 +51,12 @@ public interface StorageManager {
     /**
      * Confirms upload by verifying S3 object size and marks file as READY.
      *
-     * @param ownerUserId Owner user ID string.
+     * @param ownerUserId Owner user ID.
      * @param fileId Target pending file ID.
      * @return [AppResult] containing updated [StorageFilePrivate] or an error.
      */
     public suspend fun confirmUpload(
-        ownerUserId: String,
+        ownerUserId: UserId,
         fileId: FileId
     ): AppResult<StorageFilePrivate>
 
@@ -70,12 +71,12 @@ public interface StorageManager {
     /**
      * Deletes a file record belonging to a specific user by its unique identifier.
      *
-     * @param ownerUserId Owner user ID string.
+     * @param ownerUserId Owner user ID.
      * @param fileId Unique file identifier.
      * @return [AppResult] containing [Unit] on success or an error.
      */
     public suspend fun deleteSelfStorageFile(
-        ownerUserId: String,
+        ownerUserId: UserId,
         fileId: FileId
     ): AppResult<Unit>
 
@@ -90,12 +91,12 @@ public interface StorageManager {
     /**
      * Deletes multiple file records belonging to a specific user in a single batch operation.
      *
-     * @param ownerUserId Owner user ID string.
+     * @param ownerUserId Owner user ID.
      * @param fileIds List of unique file identifiers.
      * @return [AppResult] containing [Unit] on success or an error.
      */
     public suspend fun deleteSelfStorageFilesBatch(
-        ownerUserId: String,
+        ownerUserId: UserId,
         fileIds: List<FileId>
     ): AppResult<Unit>
 
@@ -109,7 +110,7 @@ public interface StorageManager {
      * @return [AppResult.Success] containing [StorageFilePrivate], null if missing, or an error.
      */
     public suspend fun getSelfStorageFilePrivate(
-        ownerUserId: String,
+        ownerUserId: UserId,
         fileId: FileId
     ): AppResult<StorageFilePrivate?>
 
@@ -137,7 +138,7 @@ public interface StorageManager {
      * @return [AppResult.Success] with [PagedResult] of the user's storage file summaries or an error.
      */
     public suspend fun getSelfStorageFilesSummaryPage(
-        ownerUserId: String,
+        ownerUserId: UserId,
         queryParams: SelfStorageFileListQueryParams
     ): AppResult<PagedResult<StorageFileSummary>>
 

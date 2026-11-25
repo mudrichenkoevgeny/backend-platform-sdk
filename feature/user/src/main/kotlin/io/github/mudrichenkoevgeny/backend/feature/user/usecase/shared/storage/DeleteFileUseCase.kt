@@ -30,7 +30,7 @@ public class DeleteFileUseCase @Inject constructor(
         fileId: FileId,
         authenticatedRequestContext: AuthenticatedRequestContext
     ): AppResult<Unit> {
-        val ownerUserId = authenticatedRequestContext.userId.asHexDashString()
+        val ownerUserId = authenticatedRequestContext.userId
         return storageManager.deleteSelfStorageFile(
             ownerUserId = ownerUserId,
             fileId = fileId
