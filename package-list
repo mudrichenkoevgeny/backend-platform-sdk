@@ -291,5 +291,7 @@ io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.adminaccounts
 io.github.mudrichenkoevgeny.backend.feature.user.usecase.system.auth.settings
 io.github.mudrichenkoevgeny.backend.feature.user.validator.emailrestriction
 io.github.mudrichenkoevgeny.backend.feature.user.validator.user
+module:testing
+io.github.mudrichenkoevgeny.backend.testing.architecture
 module:detekt-rules
 io.github.mudrichenkoevgeny.backend.tools.detektrules
